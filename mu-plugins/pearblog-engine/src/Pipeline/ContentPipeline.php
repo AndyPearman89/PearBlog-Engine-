@@ -14,6 +14,7 @@ namespace PearBlogEngine\Pipeline;
 
 use PearBlogEngine\AI\AIClient;
 use PearBlogEngine\Content\PromptBuilder;
+use PearBlogEngine\Content\PromptBuilderFactory;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Monetization\MonetizationEngine;
 use PearBlogEngine\SEO\SEOEngine;
@@ -65,8 +66,8 @@ class ContentPipeline {
 		 */
 		do_action( 'pearblog_pipeline_started', $topic, $this->context );
 
-		// Step 1 – Build prompt.
-		$builder = new PromptBuilder( $this->context->profile );
+		// Step 1 – Build prompt using the appropriate builder.
+		$builder = PromptBuilderFactory::create( $this->context->profile );
 		$prompt  = $builder->build( $topic );
 
 		// Step 2 – Generate content via AI.

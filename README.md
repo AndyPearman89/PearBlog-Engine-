@@ -39,6 +39,29 @@ PearBlog has evolved from a theme into a **Frontend Operating System (FOS)** - a
 
 ## Repository Contents
 
+### `/mu-plugins/pearblog-engine/` - AI Content Generation Engine
+
+Enterprise-grade AI SEO content pipeline with specialized travel content builders:
+
+**Content Generation:**
+- ✅ **PromptBuilder** - Generic SEO content for any industry
+- ✅ **TravelPromptBuilder** - Structured travel content with mandatory sections
+- ✅ **BeskidyPromptBuilder** - Enhanced Beskidy mountains content with weather + day planner
+- ✅ **MultiLanguageTravelBuilder** - True localization for PL/EN/DE markets (not translation)
+- ✅ **PromptBuilderFactory** - Automatic builder selection based on industry keywords
+
+**Features:**
+- 🗻 **Weather-Aware Content** - Seasonal recommendations, weather impact, what to bring
+- 📅 **AI Day Planner** - Morning/midday/evening itineraries with time estimates
+- 🔄 **Plan B Alternatives** - Indoor/backup options for bad weather
+- 🌍 **Multi-Language Localization** - Culturally adapted content (not just translated)
+- ✅ **Content Validator** - Ensures all mandatory sections and quality standards
+- 🎯 **Intent-Aware** - Adapts to informational, navigational, or transactional queries
+- 💰 **Travel Monetization** - Natural accommodation recommendations with soft CTAs
+
+**See:** [`TRAVEL-CONTENT-ENGINE.md`](TRAVEL-CONTENT-ENGINE.md) for full documentation
+**Quick Ref:** [`BESKIDY-QUICK-REFERENCE.md`](BESKIDY-QUICK-REFERENCE.md) for quick access
+
 ### `/theme/pearblog-theme/` v2 PRO
 
 Production-ready Frontend Operating System featuring:
