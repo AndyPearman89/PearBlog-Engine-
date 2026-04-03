@@ -4,6 +4,12 @@
 
 > Not just a theme. A complete frontend operating system.
 
+## 📸 Live Demo
+
+![PearBlog.pro Front Page](.github/images/pearblog-frontpage-screenshot.png)
+
+*Screenshot of PearBlog.pro showcasing the Frontend Operating System in action*
+
 ## 🚀 What's New in v2 PRO
 
 PearBlog has evolved from a theme into a **Frontend Operating System (FOS)** - an enterprise-grade platform for maximum UX, SEO, and monetization with multisite white-label support.
