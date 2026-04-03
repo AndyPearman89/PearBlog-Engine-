@@ -12,10 +12,11 @@ if (!defined('ABSPATH')) {
 }
 
 // Theme constants
-define('PEARBLOG_VERSION', '2.0.0');
+define('PEARBLOG_VERSION', '4.0.0');
 define('PEARBLOG_DIR', get_template_directory());
 define('PEARBLOG_URI', get_template_directory_uri());
 define('PEARBLOG_IS_PRO', true);
+define('PEARBLOG_AI_ENGINE', true);
 
 // Include helper files
 require_once PEARBLOG_DIR . '/inc/ui.php';
@@ -23,6 +24,12 @@ require_once PEARBLOG_DIR . '/inc/layout.php';
 require_once PEARBLOG_DIR . '/inc/components.php';
 require_once PEARBLOG_DIR . '/inc/performance.php';
 require_once PEARBLOG_DIR . '/inc/monetization.php';
+
+// AI Personalization Engine (v4)
+require_once PEARBLOG_DIR . '/inc/user-context.php';
+require_once PEARBLOG_DIR . '/inc/behavior-tracking.php';
+require_once PEARBLOG_DIR . '/inc/dynamic-content.php';
+require_once PEARBLOG_DIR . '/inc/ai-optimizer.php';
 
 /**
  * Theme setup
@@ -76,12 +83,18 @@ function pearblog_enqueue_assets() {
     // Main app JS
     wp_enqueue_script('pearblog-app', PEARBLOG_URI . '/assets/js/app.js', array('pearblog-lazyload'), PEARBLOG_VERSION, true);
 
+    // AI Personalization Engine JS (v4)
+    if (defined('PEARBLOG_AI_ENGINE') && PEARBLOG_AI_ENGINE) {
+        wp_enqueue_script('pearblog-personalization', PEARBLOG_URI . '/assets/js/personalization.js', array('pearblog-app'), PEARBLOG_VERSION, true);
+    }
+
     // Pass PHP data to JavaScript
     wp_localize_script('pearblog-app', 'pearblogData', array(
         'ajaxurl' => admin_url('admin-ajax.php'),
         'nonce' => wp_create_nonce('pearblog_nonce'),
         'darkMode' => get_option('pearblog_dark_mode_enabled', true),
         'stickyMobileCTA' => get_option('pearblog_sticky_mobile_cta', true),
+        'aiEngine' => defined('PEARBLOG_AI_ENGINE') && PEARBLOG_AI_ENGINE,
     ));
 
     // Multisite branding + Dark mode - dynamic CSS
@@ -266,6 +279,27 @@ function pearblog_get_related_posts($post_id = null, $limit = 3) {
 
     return get_posts($args);
 }
+
+/**
+ * Add AI personalization body classes
+ */
+function pearblog_ai_body_classes($classes) {
+    if (defined('PEARBLOG_AI_ENGINE') && PEARBLOG_AI_ENGINE) {
+        $context = pb_get_user_context();
+
+        $classes[] = 'pb-ai-enabled';
+        $classes[] = 'pb-device-' . ($context['device'] ?? 'desktop');
+        $classes[] = 'pb-segment-' . ($context['user_segment'] ?? 'informational');
+        $classes[] = 'pb-traffic-' . ($context['traffic_source']['type'] ?? 'direct');
+
+        if ($context['is_returning'] ?? false) {
+            $classes[] = 'pb-returning-user';
+        }
+    }
+
+    return $classes;
+}
+add_filter('body_class', 'pearblog_ai_body_classes');
 
 /**
  * Monetization - AdSense support
