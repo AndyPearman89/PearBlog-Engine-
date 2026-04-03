@@ -4,13 +4,23 @@
 
 > Not just a theme. A complete frontend operating system.
 
-## 📸 Live Demo
+## 💰 Is PearBlog Worth It?
 
-![PearBlog.pro Front Page](.github/images/pearblog-frontpage-screenshot.png)
+**YES ✅** - When used as a systematic Traffic → Monetization Engine
 
-*Screenshot of PearBlog.pro showcasing the Frontend Operating System in action*
+**Revenue Path:**
+- Months 1-3: 0-200 zł/month (foundation building)
+- Months 3-6: 500-3,000 zł/month (momentum)
+- Months 6-12: 3,000-15,000 zł/month (real business)
+- Multi-site: 10,000-50,000+ zł/month (target model)
 
-## 🚀 What's New in v2 PRO
+**📚 Complete Business Documentation:**
+- **[Business Strategy Guide](BUSINESS-STRATEGY.md)** - Revenue thresholds, monetization roadmap, ROI analysis
+- **[Marketing Guide](MARKETING-GUIDE.md)** - SEO strategy, keyword research, traffic acquisition, 30-day plan
+
+> See detailed analysis in [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) for full breakdown of whether PearBlog is worth your investment.
+
+## 🚀 What's New in PearBlog.pro
 
 PearBlog has evolved from a theme into a **Frontend Operating System (FOS)** - an enterprise-grade platform for maximum UX, SEO, and monetization with multisite white-label support.
 
