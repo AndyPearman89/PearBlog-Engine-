@@ -957,3 +957,325 @@ body.pb-dark-mode .pb-form-input {
     max-height: none;
   }
 }
+
+/* AFFILIATE BOX Component */
+.pb-affiliate-box {
+  background: var(--pb-bg-secondary);
+  border: 2px solid var(--pb-border);
+  border-radius: var(--pb-radius-lg);
+  padding: var(--pb-space-xl);
+  margin: var(--pb-space-2xl) 0;
+  box-shadow: var(--pb-shadow-sm);
+}
+
+.pb-affiliate-box.pb-affiliate-position-top {
+  margin-top: var(--pb-space-lg);
+  margin-bottom: var(--pb-space-2xl);
+}
+
+.pb-affiliate-box.pb-affiliate-position-middle {
+  margin: var(--pb-space-2xl) 0;
+}
+
+.pb-affiliate-box.pb-affiliate-position-bottom {
+  margin-top: var(--pb-space-2xl);
+  margin-bottom: var(--pb-space-lg);
+}
+
+.pb-affiliate-container {
+  max-width: 100%;
+}
+
+/* Affiliate Header */
+.pb-affiliate-header {
+  margin-bottom: var(--pb-space-lg);
+  text-align: center;
+}
+
+.pb-affiliate-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--pb-text);
+  margin: 0 0 var(--pb-space-sm);
+}
+
+.pb-affiliate-location {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--pb-space-xs);
+  color: var(--pb-text-muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.pb-affiliate-location .pb-icon {
+  color: var(--pb-primary);
+}
+
+/* Affiliate Offers */
+.pb-affiliate-offers {
+  display: grid;
+  gap: var(--pb-space-lg);
+  margin-bottom: var(--pb-space-lg);
+}
+
+.pb-affiliate-offer {
+  display: flex;
+  gap: var(--pb-space-md);
+  background: var(--pb-bg);
+  border: 1px solid var(--pb-border);
+  border-radius: var(--pb-radius-md);
+  padding: var(--pb-space-md);
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.pb-affiliate-offer:hover {
+  box-shadow: var(--pb-shadow-md);
+  transform: translateY(-2px);
+}
+
+.pb-offer-image {
+  flex-shrink: 0;
+  width: 120px;
+  height: 90px;
+  border-radius: var(--pb-radius-sm);
+  overflow: hidden;
+}
+
+.pb-offer-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pb-offer-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pb-space-sm);
+}
+
+.pb-offer-name {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--pb-text);
+  margin: 0;
+  line-height: 1.3;
+}
+
+.pb-offer-rating {
+  display: flex;
+  align-items: center;
+  gap: var(--pb-space-xs);
+}
+
+.pb-stars {
+  display: flex;
+  gap: 2px;
+}
+
+.pb-star {
+  color: var(--pb-text-muted);
+}
+
+.pb-star-filled {
+  color: #f59e0b;
+}
+
+.pb-rating-value {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--pb-text);
+}
+
+.pb-offer-price {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pb-space-xs);
+  flex-wrap: wrap;
+}
+
+.pb-price-label {
+  font-size: 0.875rem;
+  color: var(--pb-text-muted);
+}
+
+.pb-price-value {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--pb-primary);
+}
+
+.pb-price-period {
+  font-size: 0.875rem;
+  color: var(--pb-text-muted);
+}
+
+.pb-offer-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pb-space-xs);
+  padding: var(--pb-space-sm) var(--pb-space-lg);
+  background: var(--pb-primary);
+  color: white;
+  text-decoration: none;
+  border-radius: var(--pb-radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.2s ease, transform 0.1s ease;
+  align-self: flex-start;
+  margin-top: auto;
+}
+
+.pb-offer-cta:hover {
+  background: var(--pb-primary-dark, #1e40af);
+  transform: translateX(2px);
+}
+
+.pb-offer-cta .pb-icon-arrow {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2.5;
+}
+
+.pb-affiliate-footer {
+  text-align: center;
+  padding-top: var(--pb-space-md);
+  border-top: 1px solid var(--pb-border);
+}
+
+.pb-affiliate-disclaimer {
+  font-size: 0.8rem;
+  color: var(--pb-text-muted);
+  margin: 0;
+  font-style: italic;
+}
+
+/* Affiliate Fallback */
+.pb-affiliate-fallback {
+  text-align: center;
+  padding: var(--pb-space-xl) var(--pb-space-lg);
+}
+
+.pb-fallback-content {
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.pb-fallback-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--pb-text);
+  margin: 0 0 var(--pb-space-sm);
+}
+
+.pb-fallback-text {
+  color: var(--pb-text-muted);
+  margin: 0 0 var(--pb-space-lg);
+  line-height: 1.6;
+}
+
+.pb-fallback-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pb-space-md);
+  align-items: center;
+}
+
+.pb-fallback-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--pb-space-sm);
+  padding: var(--pb-space-md) var(--pb-space-xl);
+  border-radius: var(--pb-radius-md);
+  font-weight: 600;
+  font-size: 1rem;
+  text-decoration: none;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  min-width: 200px;
+  justify-content: center;
+  box-shadow: var(--pb-shadow-sm);
+}
+
+.pb-fallback-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--pb-shadow-md);
+}
+
+.pb-fallback-booking {
+  background: #003580;
+  color: white;
+}
+
+.pb-fallback-booking:hover {
+  background: #00244d;
+}
+
+.pb-fallback-airbnb {
+  background: #FF5A5F;
+  color: white;
+}
+
+.pb-fallback-airbnb:hover {
+  background: #E04E53;
+}
+
+.pb-btn-icon {
+  flex-shrink: 0;
+}
+
+/* Responsive - Desktop */
+@media (min-width: 768px) {
+  .pb-affiliate-offers {
+    grid-template-columns: 1fr;
+  }
+
+  .pb-offer-image {
+    width: 150px;
+    height: 110px;
+  }
+
+  .pb-offer-name {
+    font-size: 1.2rem;
+  }
+
+  .pb-fallback-buttons {
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  .pb-affiliate-title {
+    font-size: 1.75rem;
+  }
+}
+
+/* Mobile optimization */
+@media (max-width: 767px) {
+  .pb-affiliate-box {
+    padding: var(--pb-space-lg);
+    margin-left: calc(var(--pb-space-md) * -1);
+    margin-right: calc(var(--pb-space-md) * -1);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+  }
+
+  .pb-affiliate-offer {
+    flex-direction: column;
+  }
+
+  .pb-offer-image {
+    width: 100%;
+    height: 150px;
+  }
+
+  .pb-offer-cta {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .pb-fallback-btn {
+    width: 100%;
+  }
+}
