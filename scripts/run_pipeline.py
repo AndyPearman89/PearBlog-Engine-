@@ -61,15 +61,30 @@ class PipelineExecutor:
         self.logger.info("PearBlog Content Pipeline - Execution Started")
         self.logger.info("="*60)
 
-    def validate_config(self):
+    def validate_config(self) -> None:
         """Validate required environment variables."""
         missing = []
+
+        # Validate SITE_URL
         if not self.site_url:
             missing.append("SITE_URL")
+        elif not (self.site_url.startswith("http://") or self.site_url.startswith("https://")):
+            self.logger.error("SITE_URL must start with http:// or https://")
+            sys.exit(1)
+
+        # Validate API_ENDPOINT
         if not self.api_endpoint:
             missing.append("API_ENDPOINT")
+        elif not self.api_endpoint.startswith("/"):
+            self.logger.warning("API_ENDPOINT should start with / - auto-correcting")
+            self.api_endpoint = "/" + self.api_endpoint
+
+        # Validate API_KEY
         if not self.api_key:
             missing.append("API_KEY")
+        elif len(self.api_key) < 10:
+            self.logger.error("API_KEY appears to be too short (minimum 10 characters)")
+            sys.exit(1)
 
         if missing:
             self.logger.error(f"Missing required environment variables: {', '.join(missing)}")
@@ -142,9 +157,22 @@ class PipelineExecutor:
 
                 self.logger.info(f"Response status: {response.status_code}")
 
-                if response.status_code == 200:
+                if response.status_code in [200, 201, 202, 204]:
                     self.logger.info("✓ API request successful")
-                    return response.json()
+                    try:
+                        return response.json() if response.content else {}
+                    except json.JSONDecodeError as e:
+                        self.logger.error(f"Invalid JSON response: {e}")
+                        return None
+                elif response.status_code == 401:
+                    self.logger.error("Authentication failed - check API_KEY")
+                    return None
+                elif response.status_code == 403:
+                    self.logger.error("Access forbidden - check API permissions")
+                    return None
+                elif response.status_code == 404:
+                    self.logger.error("API endpoint not found - check API_ENDPOINT")
+                    return None
                 elif response.status_code == 429:
                     self.logger.warning("Rate limit exceeded, waiting before retry...")
                     time.sleep(RATE_LIMIT_DELAY * attempt * 2)
@@ -152,7 +180,9 @@ class PipelineExecutor:
                     self.logger.warning(f"Server error ({response.status_code}), retrying...")
                     time.sleep(RETRY_DELAY * attempt)
                 else:
-                    self.logger.error(f"API error: {response.status_code} - {response.text}")
+                    # Limit error message length to avoid exposing sensitive data
+                    error_msg = response.text[:200] if response.text else "No error message"
+                    self.logger.error(f"API error: {response.status_code} - {error_msg}")
                     return None
 
             except requests.exceptions.Timeout:
@@ -175,17 +205,22 @@ class PipelineExecutor:
             True if successful, False otherwise
         """
         try:
-            # Prepare payload
-            payload = {
-                "timestamp": datetime.now().isoformat(),
+            # Prepare payload for duplicate detection (without timestamp)
+            payload_base = {
                 "action": "process_content",
                 "seo_enabled": True,
                 "source": "github_automation"
             }
 
-            # Check for duplicates
-            execution_hash = self.generate_execution_hash(payload)
+            # Check for duplicates using base payload
+            execution_hash = self.generate_execution_hash(payload_base)
             history = self.load_execution_history()
+
+            # Add timestamp to actual payload
+            payload = {
+                **payload_base,
+                "timestamp": datetime.now().isoformat()
+            }
 
             if self.is_duplicate(execution_hash, history):
                 self.logger.warning("⚠ Duplicate execution detected - skipping")
@@ -215,9 +250,13 @@ class PipelineExecutor:
                 self.logger.info("="*60)
 
                 # Save execution summary
-                summary_file = LOG_DIR / "latest_execution.json"
-                with open(summary_file, 'w') as f:
-                    json.dump(execution_record, f, indent=2)
+                try:
+                    summary_file = LOG_DIR / "latest_execution.json"
+                    with open(summary_file, 'w') as f:
+                        json.dump(execution_record, f, indent=2)
+                except Exception as e:
+                    self.logger.warning(f"Could not save execution summary: {e}")
+                    # Continue - this is not critical
 
                 return True
             else:
