@@ -268,6 +268,142 @@ function pearblog_get_related_posts($post_id = null, $limit = 3) {
 }
 
 /**
+ * Brand Assets - ULTRA PRO System
+ * Helper functions for accessing brand assets (logos, favicons, social images)
+ */
+
+/**
+ * Get brand logo URL
+ *
+ * @param string $type Logo type: primary, dark, light, icon, wordmark
+ * @param string $format File format: svg, png
+ * @return string Logo URL
+ */
+function pearblog_get_brand_logo($type = 'primary', $format = 'svg') {
+    // Check if custom logo is set in options (multisite override)
+    $config = pb_get_site_config();
+
+    if ($type === 'primary' && !empty($config['logo_url'])) {
+        return $config['logo_url'];
+    }
+
+    if ($type === 'dark' && !empty($config['logo_dark_url'])) {
+        return $config['logo_dark_url'];
+    }
+
+    // Fallback to brand assets directory
+    $base_path = PEARBLOG_URI . '/../../brand-assets/logo/';
+
+    $logos = array(
+        'primary' => $base_path . 'pearblog-logo-primary.' . $format,
+        'dark' => $base_path . 'pearblog-logo-dark.' . $format,
+        'light' => $base_path . 'pearblog-logo-light.' . $format,
+        'icon' => $base_path . 'pearblog-icon.' . $format,
+        'wordmark' => $base_path . 'pearblog-wordmark.' . $format,
+    );
+
+    return $logos[$type] ?? $logos['primary'];
+}
+
+/**
+ * Get favicon URL
+ *
+ * @param string $size Favicon size: 16, 32, 48, 64, 96, 128, 256, 512, or special types
+ * @return string Favicon URL
+ */
+function pearblog_get_favicon($size = '32') {
+    $base_path = PEARBLOG_URI . '/../../brand-assets/favicon/';
+
+    $special_types = array(
+        'ico' => $base_path . 'favicon.ico',
+        'apple' => $base_path . 'apple-touch-icon.png',
+        'safari' => $base_path . 'safari-pinned-tab.svg',
+    );
+
+    if (isset($special_types[$size])) {
+        return $special_types[$size];
+    }
+
+    return $base_path . 'favicon-' . $size . 'x' . $size . '.png';
+}
+
+/**
+ * Get social media image URL
+ *
+ * @param string $type Social image type: og, twitter, profile
+ * @return string Social image URL
+ */
+function pearblog_get_social_image($type = 'og') {
+    $base_path = PEARBLOG_URI . '/../../brand-assets/social/';
+
+    $images = array(
+        'og' => $base_path . 'pearblog-og-default.png',
+        'twitter' => $base_path . 'pearblog-twitter-card.png',
+        'profile' => $base_path . 'pearblog-profile-default.png',
+    );
+
+    return $images[$type] ?? $images['og'];
+}
+
+/**
+ * Add favicons to wp_head
+ */
+function pearblog_add_favicons() {
+    $favicon_path = PEARBLOG_URI . '/../../brand-assets/favicon/';
+    ?>
+    <!-- Favicons - ULTRA PRO -->
+    <link rel="icon" type="image/x-icon" href="<?php echo esc_url($favicon_path . 'favicon.ico'); ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($favicon_path . 'favicon-32x32.png'); ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo esc_url($favicon_path . 'favicon-16x16.png'); ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url($favicon_path . 'apple-touch-icon.png'); ?>">
+    <link rel="mask-icon" href="<?php echo esc_url($favicon_path . 'safari-pinned-tab.svg'); ?>" color="#4ADE80">
+    <meta name="theme-color" content="#4ADE80">
+    <?php
+}
+add_action('wp_head', 'pearblog_add_favicons', 1);
+
+/**
+ * Add Open Graph and Twitter Card meta tags
+ */
+function pearblog_add_social_meta_tags() {
+    $site_name = get_bloginfo('name');
+    $site_desc = get_bloginfo('description');
+    $og_image = pearblog_get_social_image('og');
+
+    if (is_singular()) {
+        global $post;
+        $title = get_the_title();
+        $description = get_the_excerpt($post);
+        $url = get_permalink();
+
+        // Use featured image if available
+        if (has_post_thumbnail()) {
+            $og_image = get_the_post_thumbnail_url($post, 'full');
+        }
+    } else {
+        $title = $site_name;
+        $description = $site_desc;
+        $url = home_url('/');
+    }
+    ?>
+    <!-- Open Graph Meta Tags -->
+    <meta property="og:title" content="<?php echo esc_attr($title); ?>">
+    <meta property="og:description" content="<?php echo esc_attr(wp_strip_all_tags($description)); ?>">
+    <meta property="og:image" content="<?php echo esc_url($og_image); ?>">
+    <meta property="og:url" content="<?php echo esc_url($url); ?>">
+    <meta property="og:type" content="<?php echo is_singular() ? 'article' : 'website'; ?>">
+    <meta property="og:site_name" content="<?php echo esc_attr($site_name); ?>">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="<?php echo esc_attr($title); ?>">
+    <meta name="twitter:description" content="<?php echo esc_attr(wp_strip_all_tags($description)); ?>">
+    <meta name="twitter:image" content="<?php echo esc_url($og_image); ?>">
+    <?php
+}
+add_action('wp_head', 'pearblog_add_social_meta_tags', 2);
+
+/**
  * Monetization - AdSense support
  */
 function pearblog_adsense_slot($slot_id = 'default') {
