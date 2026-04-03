@@ -1,0 +1,239 @@
+/* PearBlog v2 PRO - Base Styles
+ * Core foundation styles and CSS variables
+ */
+
+:root {
+  /* Primary Brand Colors */
+  --pb-primary: #2563eb;
+  --pb-primary-hover: #1d4ed8;
+  --pb-secondary: #7c3aed;
+  --pb-secondary-hover: #6d28d9;
+  --pb-accent: #f59e0b;
+
+  /* Background Colors */
+  --pb-bg: #ffffff;
+  --pb-bg-alt: #f9fafb;
+  --pb-bg-dark: #111827;
+
+  /* Text Colors */
+  --pb-text: #1f2937;
+  --pb-text-light: #6b7280;
+  --pb-text-white: #ffffff;
+
+  /* Border & Radius */
+  --pb-radius: 0.5rem;
+  --pb-radius-sm: 0.25rem;
+  --pb-radius-md: 0.5rem;
+  --pb-radius-lg: 0.75rem;
+  --pb-radius-xl: 1rem;
+
+  /* Shadows */
+  --pb-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --pb-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --pb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  --pb-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+  --pb-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+
+  /* Typography */
+  --pb-font-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --pb-font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  --pb-font-mono: 'Courier New', Courier, monospace;
+
+  /* Spacing */
+  --pb-space-xs: 0.25rem;
+  --pb-space-sm: 0.5rem;
+  --pb-space-md: 1rem;
+  --pb-space-lg: 1.5rem;
+  --pb-space-xl: 2rem;
+  --pb-space-2xl: 3rem;
+  --pb-space-3xl: 4rem;
+
+  /* Container */
+  --pb-container-max: 1200px;
+  --pb-container-padding: 1rem;
+
+  /* Transitions */
+  --pb-transition: all 0.2s ease;
+  --pb-transition-slow: all 0.3s ease;
+}
+
+/* Dark Mode Variables */
+@media (prefers-color-scheme: dark) {
+  body.pb-dark-mode-auto {
+    --pb-bg: #111827;
+    --pb-bg-alt: #1f2937;
+    --pb-text: #f9fafb;
+    --pb-text-light: #d1d5db;
+  }
+}
+
+body.pb-dark-mode {
+  --pb-bg: #111827;
+  --pb-bg-alt: #1f2937;
+  --pb-text: #f9fafb;
+  --pb-text-light: #d1d5db;
+}
+
+/* CSS Reset & Base */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: var(--pb-font-base);
+  color: var(--pb-text);
+  background-color: var(--pb-bg);
+  line-height: 1.6;
+  font-size: 1rem;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* Typography - Mobile First */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--pb-font-heading);
+  font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: var(--pb-space-lg);
+  color: var(--pb-text);
+}
+
+h1 {
+  font-size: 2rem;
+  margin-bottom: var(--pb-space-xl);
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+}
+
+h4 {
+  font-size: 1.125rem;
+}
+
+p {
+  margin-bottom: var(--pb-space-md);
+}
+
+a {
+  color: var(--pb-primary);
+  text-decoration: none;
+  transition: var(--pb-transition);
+}
+
+a:hover {
+  color: var(--pb-primary-hover);
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+/* Tablet & Desktop */
+@media (min-width: 768px) {
+  :root {
+    --pb-container-padding: 1.5rem;
+  }
+
+  h1 {
+    font-size: 3rem;
+  }
+
+  h2 {
+    font-size: 2rem;
+  }
+
+  h3 {
+    font-size: 1.5rem;
+  }
+
+  body {
+    font-size: 18px;
+  }
+}
+
+@media (min-width: 1024px) {
+  :root {
+    --pb-container-padding: 2rem;
+  }
+
+  h1 {
+    font-size: 3.5rem;
+  }
+}
+
+/* Container */
+.pb-container {
+  max-width: var(--pb-container-max);
+  margin: 0 auto;
+  padding: 0 var(--pb-container-padding);
+  width: 100%;
+}
+
+/* Layout */
+.pb-main {
+  min-height: calc(100vh - 400px);
+}
+
+/* Loading States */
+.pb-loading {
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.pb-skeleton {
+  background: linear-gradient(90deg, var(--pb-bg-alt) 25%, var(--pb-bg) 50%, var(--pb-bg-alt) 75%);
+  background-size: 200% 100%;
+  animation: pb-skeleton-loading 1.5s ease-in-out infinite;
+}
+
+@keyframes pb-skeleton-loading {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* Focus Styles for Accessibility */
+*:focus {
+  outline: 2px solid var(--pb-primary);
+  outline-offset: 2px;
+}
+
+*:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Print Styles */
+@media print {
+  .pb-nav,
+  .pb-ad-slot,
+  .pb-cta,
+  .pb-footer {
+    display: none !important;
+  }
+}

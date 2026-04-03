@@ -1,9 +1,9 @@
 <?php
 /**
- * PearBlog Theme Functions
+ * PearBlog Theme Functions - Frontend Operating System (FOS)
  *
  * @package PearBlog
- * @version 1.0.0
+ * @version 2.0.0
  */
 
 // Prevent direct access
@@ -12,14 +12,17 @@ if (!defined('ABSPATH')) {
 }
 
 // Theme constants
-define('PEARBLOG_VERSION', '1.0.0');
+define('PEARBLOG_VERSION', '2.0.0');
 define('PEARBLOG_DIR', get_template_directory());
 define('PEARBLOG_URI', get_template_directory_uri());
+define('PEARBLOG_IS_PRO', true);
 
 // Include helper files
 require_once PEARBLOG_DIR . '/inc/ui.php';
 require_once PEARBLOG_DIR . '/inc/layout.php';
 require_once PEARBLOG_DIR . '/inc/components.php';
+require_once PEARBLOG_DIR . '/inc/performance.php';
+require_once PEARBLOG_DIR . '/inc/monetization.php';
 
 /**
  * Theme setup
@@ -52,48 +55,124 @@ function pearblog_setup() {
 add_action('after_setup_theme', 'pearblog_setup');
 
 /**
- * Enqueue scripts and styles
+ * Enqueue scripts and styles - v2 PRO
  */
 function pearblog_enqueue_assets() {
     // Main stylesheet
     wp_enqueue_style('pearblog-style', get_stylesheet_uri(), array(), PEARBLOG_VERSION);
 
+    // Base CSS
+    wp_enqueue_style('pearblog-base', PEARBLOG_URI . '/assets/css/base.css', array('pearblog-style'), PEARBLOG_VERSION);
+
     // Component styles
-    wp_enqueue_style('pearblog-components', PEARBLOG_URI . '/assets/css/components.css', array('pearblog-style'), PEARBLOG_VERSION);
+    wp_enqueue_style('pearblog-components', PEARBLOG_URI . '/assets/css/components.css', array('pearblog-base'), PEARBLOG_VERSION);
 
-    // Minimal JS for lazy loading and interactions
-    wp_enqueue_script('pearblog-main', PEARBLOG_URI . '/assets/js/main.js', array(), PEARBLOG_VERSION, true);
+    // Utilities
+    wp_enqueue_style('pearblog-utilities', PEARBLOG_URI . '/assets/css/utilities.css', array('pearblog-components'), PEARBLOG_VERSION);
 
-    // Multisite branding - dynamic CSS
-    wp_add_inline_style('pearblog-style', pearblog_get_multisite_css());
+    // Lazy load script
+    wp_enqueue_script('pearblog-lazyload', PEARBLOG_URI . '/assets/js/lazyload.js', array(), PEARBLOG_VERSION, true);
+
+    // Main app JS
+    wp_enqueue_script('pearblog-app', PEARBLOG_URI . '/assets/js/app.js', array('pearblog-lazyload'), PEARBLOG_VERSION, true);
+
+    // Pass PHP data to JavaScript
+    wp_localize_script('pearblog-app', 'pearblogData', array(
+        'ajaxurl' => admin_url('admin-ajax.php'),
+        'nonce' => wp_create_nonce('pearblog_nonce'),
+        'darkMode' => get_option('pearblog_dark_mode_enabled', true),
+        'stickyMobileCTA' => get_option('pearblog_sticky_mobile_cta', true),
+    ));
+
+    // Multisite branding + Dark mode - dynamic CSS
+    wp_add_inline_style('pearblog-style', pearblog_get_dynamic_css());
+
+    // Critical CSS inline for performance
+    if (function_exists('pearblog_inline_critical_css')) {
+        pearblog_inline_critical_css();
+    }
 }
 add_action('wp_enqueue_scripts', 'pearblog_enqueue_assets');
 
 /**
- * Get multisite dynamic CSS
+ * Get multisite dynamic CSS + Dark Mode
  */
-function pearblog_get_multisite_css() {
+function pearblog_get_dynamic_css() {
+    $config = pb_get_site_config();
     $css = '';
 
-    // Get site-specific branding options
-    $primary_color = get_option('pearblog_primary_color', '#2563eb');
-    $secondary_color = get_option('pearblog_secondary_color', '#7c3aed');
+    $css .= ':root {';
+    $css .= '--pb-primary: ' . esc_attr($config['primary_color']) . ';';
+    $css .= '--pb-secondary: ' . esc_attr($config['secondary_color']) . ';';
+    $css .= '--pb-accent: ' . esc_attr($config['accent_color']) . ';';
+    $css .= '}';
 
-    if ($primary_color || $secondary_color) {
-        $css .= ':root {';
+    // Dark mode variables
+    if ($config['dark_mode_enabled']) {
+        $css .= '@media (prefers-color-scheme: dark) {';
+        $css .= 'body.pb-dark-mode-auto {';
+        $css .= '--pb-bg: #111827;';
+        $css .= '--pb-bg-alt: #1f2937;';
+        $css .= '--pb-text: #f9fafb;';
+        $css .= '--pb-text-light: #d1d5db;';
+        $css .= '}';
+        $css .= '}';
 
-        if ($primary_color) {
-            $css .= '--pb-primary: ' . esc_attr($primary_color) . ';';
-        }
-
-        if ($secondary_color) {
-            $css .= '--pb-secondary: ' . esc_attr($secondary_color) . ';';
-        }
-
+        $css .= 'body.pb-dark-mode {';
+        $css .= '--pb-bg: #111827;';
+        $css .= '--pb-bg-alt: #1f2937;';
+        $css .= '--pb-text: #f9fafb;';
+        $css .= '--pb-text-light: #d1d5db;';
         $css .= '}';
     }
 
     return $css;
+}
+
+/**
+ * Multisite Configuration System
+ * Central function to get all site-specific settings
+ */
+function pb_get_site_config() {
+    static $config = null;
+
+    if ($config !== null) {
+        return $config;
+    }
+
+    $config = array(
+        // Colors
+        'primary_color' => get_option('pearblog_primary_color', '#2563eb'),
+        'secondary_color' => get_option('pearblog_secondary_color', '#7c3aed'),
+        'accent_color' => get_option('pearblog_accent_color', '#f59e0b'),
+
+        // Branding
+        'logo_url' => get_option('pearblog_logo_url', ''),
+        'logo_dark_url' => get_option('pearblog_logo_dark_url', ''),
+
+        // Hero Style
+        'hero_style' => get_option('pearblog_hero_style', 'gradient'), // gradient, image, video
+        'hero_title' => get_option('pearblog_hero_title', get_bloginfo('name')),
+        'hero_subtitle' => get_option('pearblog_hero_subtitle', get_bloginfo('description')),
+        'hero_image' => get_option('pearblog_hero_image', ''),
+        'hero_video' => get_option('pearblog_hero_video', ''),
+
+        // Layout Variant
+        'layout_variant' => get_option('pearblog_layout_variant', 'default'), // default, minimal, magazine
+
+        // Features
+        'dark_mode_enabled' => get_option('pearblog_dark_mode_enabled', true),
+        'toc_enabled' => get_option('pearblog_toc_enabled', true),
+        'sticky_mobile_cta' => get_option('pearblog_sticky_mobile_cta', true),
+        'auto_ad_injection' => get_option('pearblog_auto_ad_injection', false),
+        'ad_injection_paragraphs' => get_option('pearblog_ad_injection_paragraphs', 3),
+
+        // AI Features
+        'ai_summaries_enabled' => get_option('pearblog_ai_summaries', false),
+        'ai_recommendations' => get_option('pearblog_ai_recommendations', false),
+    );
+
+    return apply_filters('pearblog_site_config', $config);
 }
 
 /**
