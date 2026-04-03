@@ -1,10 +1,10 @@
-# PearBlog Engine v2 PRO
+# PearBlog Engine PRO
 
 **Enterprise Frontend Operating System (FOS) for AI SEO SaaS**
 
 > Not just a theme. A complete frontend operating system.
 
-## 🚀 What's New in v2 PRO
+## 🚀 What's New in PearBlog.pro
 
 PearBlog has evolved from a theme into a **Frontend Operating System (FOS)** - an enterprise-grade platform for maximum UX, SEO, and monetization with multisite white-label support.
 
