@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\Pipeline;
 
 use PearBlogEngine\AI\AIClient;
+use PearBlogEngine\AI\ImageGenerator;
 use PearBlogEngine\Content\PromptBuilder;
 use PearBlogEngine\Content\PromptBuilderFactory;
 use PearBlogEngine\Content\TopicQueue;
@@ -34,13 +35,17 @@ class ContentPipeline {
 	/** @var AIClient */
 	private AIClient $ai;
 
+	/** @var ImageGenerator */
+	private ImageGenerator $image_generator;
+
 	/** @var SEOEngine */
 	private SEOEngine $seo;
 
-	public function __construct( TenantContext $context, ?AIClient $ai = null ) {
-		$this->context = $context;
-		$this->ai      = $ai ?? new AIClient();
-		$this->seo     = new SEOEngine();
+	public function __construct( TenantContext $context, ?AIClient $ai = null, ?ImageGenerator $image_generator = null ) {
+		$this->context         = $context;
+		$this->ai              = $ai ?? new AIClient();
+		$this->image_generator = $image_generator ?? new ImageGenerator();
+		$this->seo             = new SEOEngine();
 	}
 
 	/**
@@ -83,7 +88,10 @@ class ContentPipeline {
 		$monetizer       = new MonetizationEngine( $this->context->profile );
 		$final_content   = $monetizer->apply( $post_id, $seo_data['content'] );
 
-		// Step 6 – Update post with final content and publish.
+		// Step 6 – Generate and attach featured image (AI-generated).
+		$this->generate_featured_image( $post_id, $seo_data['title'] ?: $topic );
+
+		// Step 7 – Update post with final content and publish.
 		wp_update_post( [
 			'ID'           => $post_id,
 			'post_title'   => $seo_data['title'] ?: $topic,
@@ -134,5 +142,34 @@ class ContentPipeline {
 		}
 
 		return $post_id;
+	}
+
+	/**
+	 * Generate and attach a featured image using DALL-E 3.
+	 *
+	 * @param int    $post_id Post ID.
+	 * @param string $title   Post title for image generation.
+	 * @return void
+	 */
+	private function generate_featured_image( int $post_id, string $title ): void {
+		try {
+			$attachment_id = $this->image_generator->generate_and_attach( $post_id, $title );
+
+			if ( null !== $attachment_id ) {
+				// Log success for monitoring.
+				error_log( sprintf(
+					'PearBlog Engine: Generated featured image (ID: %d) for post %d',
+					$attachment_id,
+					$post_id
+				) );
+			}
+		} catch ( \Throwable $e ) {
+			// Log but don't fail the pipeline if image generation fails.
+			error_log( sprintf(
+				'PearBlog Engine: Failed to generate featured image for post %d – %s',
+				$post_id,
+				$e->getMessage()
+			) );
+		}
 	}
 }

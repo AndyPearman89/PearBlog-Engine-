@@ -53,6 +53,10 @@ class AdminPage {
 		register_setting( self::OPTION_GRP, 'pearblog_monetization',         [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_publish_rate',         [ 'sanitize_callback' => 'absint' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_language',             [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// Image generation settings.
+		register_setting( self::OPTION_GRP, 'pearblog_enable_image_generation', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+		register_setting( self::OPTION_GRP, 'pearblog_image_style',             [ 'sanitize_callback' => 'sanitize_text_field' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -193,6 +197,45 @@ class AdminPage {
 						<td><input type="text" id="pearblog_language" name="pearblog_language" value="<?php echo esc_attr( get_option( 'pearblog_language', 'en' ) ); ?>" class="small-text" maxlength="5" /></td>
 					</tr>
 				</table>
+
+				<h2><?php esc_html_e( 'AI Image Generation', 'pearblog-engine' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="pearblog_enable_image_generation"><?php esc_html_e( 'Enable Image Generation', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" id="pearblog_enable_image_generation" name="pearblog_enable_image_generation" value="1" <?php checked( get_option( 'pearblog_enable_image_generation', true ) ); ?> />
+								<?php esc_html_e( 'Automatically generate featured images using DALL-E 3', 'pearblog-engine' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'Each article will get a unique AI-generated featured image. Requires OpenAI API key.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_image_style"><?php esc_html_e( 'Image Style', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<select id="pearblog_image_style" name="pearblog_image_style">
+								<?php
+								$current_style = get_option( 'pearblog_image_style', 'photorealistic' );
+								$styles        = [
+									'photorealistic' => __( 'Photorealistic', 'pearblog-engine' ),
+									'illustration'   => __( 'Digital Illustration', 'pearblog-engine' ),
+									'artistic'       => __( 'Artistic / Painterly', 'pearblog-engine' ),
+									'minimal'        => __( 'Minimal / Clean', 'pearblog-engine' ),
+								];
+								foreach ( $styles as $val => $label ) {
+									printf(
+										'<option value="%s" %s>%s</option>',
+										esc_attr( $val ),
+										selected( $current_style, $val, false ),
+										esc_html( $label )
+									);
+								}
+								?>
+							</select>
+							<p class="description"><?php esc_html_e( 'Visual style for AI-generated images', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+				</table>
 				<?php submit_button(); ?>
 			</form>
 
@@ -247,6 +290,16 @@ class AdminPage {
 	// -----------------------------------------------------------------------
 	// Private helpers
 	// -----------------------------------------------------------------------
+
+	/**
+	 * Sanitize checkbox value to boolean.
+	 *
+	 * @param mixed $value Input value.
+	 * @return bool
+	 */
+	public function sanitize_checkbox( $value ): bool {
+		return (bool) $value;
+	}
 
 	private function redirect_with_notice( string $message, string $type = 'success' ): void {
 		wp_safe_redirect( add_query_arg(
