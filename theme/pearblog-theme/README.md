@@ -52,10 +52,16 @@ Every single post follows an SEO-optimized structure:
 
 ### 💰 Monetization
 
-- AdSense integration
-- Multiple ad slot positions
-- Affiliate link support
-- CTA sections for conversion
+PearBlog includes a comprehensive monetization engine designed for maximum revenue:
+
+- **Auto Ad Injection** - Automatically place ads every X paragraphs (configurable)
+- **Sticky Mobile Ads** - Bottom CTA with close button for mobile users
+- **Affiliate Automation** - Auto-convert product links to affiliate links
+- **CTR Tracking** - Scroll-depth tracking for ad optimization
+- **Revenue Analytics** - Per-post revenue tracking
+- **Smart CTA Placement** - Intelligent CTA positioning based on content analysis
+
+See [BUSINESS-STRATEGY.md](../../BUSINESS-STRATEGY.md) for complete monetization roadmap and revenue expectations.
 
 ### 🌐 Multisite Support
 
@@ -156,12 +162,67 @@ update_option('pearblog_hero_image', 'https://your-site.com/hero.jpg');
 
 ### AdSense
 
+**Basic Setup:**
 ```php
 update_option('pearblog_ads_enabled', true);
 update_option('pearblog_adsense_client', 'ca-pub-XXXXXXXXXXXXXXXX');
 update_option('pearblog_adsense_slot_header', 'XXXXXXXXXX');
 update_option('pearblog_adsense_slot_content', 'XXXXXXXXXX');
 ```
+
+**Auto Ad Injection:**
+```php
+// Enable automatic ad injection every N paragraphs
+update_option('pearblog_auto_ad_injection', true);
+update_option('pearblog_ad_injection_paragraphs', 3); // Every 3 paragraphs
+```
+
+**Sticky Mobile Ads:**
+```php
+// Enable sticky bottom ad on mobile devices
+update_option('pearblog_sticky_mobile_cta', true);
+update_option('pearblog_adsense_slot_mobile_sticky', 'XXXXXXXXXX');
+```
+
+**Affiliate Link Automation:**
+```php
+// Automatically convert links to affiliate links
+update_option('pearblog_affiliate_rules', array(
+    array(
+        'domain' => 'amazon.com',
+        'affiliate_tag' => 'tag=your-tag-20'
+    ),
+    array(
+        'domain' => 'booking.com',
+        'affiliate_tag' => 'aid=XXXXXX'
+    )
+));
+```
+
+**Smart CTA Placement:**
+```php
+// Enable intelligent CTA placement (60% through content)
+update_option('pearblog_smart_cta_enabled', true);
+```
+
+**Monetization Best Practices:**
+
+1. **Phase 1 (Months 1-3):** Start with basic AdSense
+   - Configure auto ad injection every 3-4 paragraphs
+   - Enable sticky mobile ads
+   - Focus on content creation
+
+2. **Phase 2 (Months 3-6):** Add affiliate monetization
+   - Set up affiliate automation rules
+   - Add affiliate CTAs to relevant content
+   - Track conversion rates
+
+3. **Phase 3 (Months 6-12):** Optimize for revenue
+   - A/B test ad positions
+   - Analyze revenue per post
+   - Focus on high-converting content
+
+See [BUSINESS-STRATEGY.md](../../BUSINESS-STRATEGY.md) for complete monetization timeline and expected revenue thresholds.
 
 ## Component Usage
 
