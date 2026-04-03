@@ -1,251 +1,413 @@
-# PearBlog Content Pipeline Automation
+# PearBlog Engine v2 PRO
 
-Autonomous DevOps + AI content automation system for PearBlog.
+**Enterprise Frontend Operating System (FOS) for AI SEO SaaS**
 
-## Overview
+> Not just a theme. A complete frontend operating system.
 
-This automation system handles:
-- **Content Pipeline Execution**: Triggers API endpoints to process and update content
-- **SEO Processing**: Automated SEO optimization through API calls
-- **Deployment**: Automatic commits and pushes of updates
-- **Error Handling**: Comprehensive retry logic and error recovery
-- **Logging**: Full execution tracking and history
+## 🚀 What's New in v2 PRO
+
+PearBlog has evolved from a theme into a **Frontend Operating System (FOS)** - an enterprise-grade platform for maximum UX, SEO, and monetization with multisite white-label support.
+
+### Major Upgrades
+
+- ✨ **Frontend Operating System Architecture** - Modular, scalable, enterprise-ready
+- 🌓 **Dark Mode** - Auto-detection + manual toggle with smooth transitions
+- 📑 **Table of Contents** - Auto-generated from H2/H3, sticky sidebar with progress
+- 💰 **Auto Ad Injection Engine** - Smart ad placement every X paragraphs
+- ⚡ **Performance Module** - Critical CSS inline, preloading, Gzip compression
+- 🎯 **Smart Monetization** - CTR tracking, affiliate automation, revenue analytics
+- 🎨 **Grid/List Views** - Flexible post layouts with view switcher
+- 🎬 **Video Hero** - Support for video backgrounds
+- 🤖 **AI Blocks** - Dynamic content sections and recommendations
+- 🎨 **Enhanced Design System** - Complete utility class library
+
+## Repository Contents
+
+### `/theme/pearblog-theme/` v2 PRO
+
+Production-ready Frontend Operating System featuring:
+
+**SEO & Performance:**
+- ✅ **Critical CSS Inline** - Instant above-the-fold rendering
+- ✅ **Auto-Generated TOC** - From H2/H3 headings with reading progress
+- ✅ **Semantic HTML** - Schema.org Article, FAQPage, BreadcrumbList
+- ✅ **Lazy Loading** - Images, iframes, videos, background images
+- ✅ **Core Web Vitals Optimized** - LCP, FID, CLS tracking
+
+**UX & Design:**
+- ✅ **Dark Mode** - System preference detection + manual toggle
+- ✅ **Grid/List Views** - Flexible post layouts with view persistence
+- ✅ **Video Hero** - Background video support with overlay
+- ✅ **Sticky TOC** - Sidebar navigation with active section highlighting
+- ✅ **Mobile-First** - Touch-friendly, responsive, fast
+
+**Monetization:**
+- ✅ **Auto Ad Injection** - Smart placement every X paragraphs
+- ✅ **Sticky Mobile Ads** - Bottom CTA with close button
+- ✅ **Affiliate Automation** - Auto-convert product links
+- ✅ **Smart CTA Placement** - Content analysis for optimal positioning
+- ✅ **Revenue Tracking** - Per-post monetization analytics
+
+**Enterprise & Multisite:**
+- ✅ **White-Label Ready** - Complete multisite branding system
+- ✅ **pb_get_site_config()** - Centralized configuration API
+- ✅ **Layout Variants** - Default, minimal, magazine styles
+- ✅ **Feature Toggles** - Per-site enable/disable controls
+
+## Quick Start
+
+### Installation
+
+```bash
+# Copy theme to WordPress installation
+cp -r theme/pearblog-theme /path/to/wordpress/wp-content/themes/
+
+# Or create a symlink for development
+ln -s $(pwd)/theme/pearblog-theme /path/to/wordpress/wp-content/themes/pearblog-theme
+```
+
+### Activation
+
+1. Log in to WordPress Admin
+2. Navigate to **Appearance → Themes**
+3. Activate **PearBlog Theme**
 
 ## Features
 
-✅ **No Duplicates**: Hash-based duplicate detection prevents redundant executions
-✅ **Rate Limit Safe**: Built-in delays and rate limit handling
-✅ **Complete Logging**: All executions logged with timestamps and results
-✅ **Automatic Retry**: Up to 3 retry attempts with exponential backoff
-✅ **Execution History**: JSON-based history tracking for audit trail
+### Page Types
+- **Homepage** - Hero + cards grid + CTA
+- **Single Post** - Full SEO layout with all components
+- **Category Pages** - Archive with category header
 
-## Setup
+### Components
+- Hero (dynamic header with gradient/image)
+- Card (article listing)
+- Related Posts (internal linking)
+- FAQ (with Schema.org markup)
+- Ads (monetization blocks)
 
-### 1. Configure Secrets
+### SEO Features
+- Breadcrumbs
+- Schema.org Article markup
+- Schema.org FAQPage markup
+- Meta descriptions
+- Semantic HTML structure
+- Internal linking
 
-Add the following secrets to your GitHub repository (Settings → Secrets and variables → Actions):
+### Performance
+- Lazy loading images
+- Minimal JavaScript footprint
+- CSS variables for theming
+- No external dependencies
+- Core Web Vitals optimized
 
-- `SITE_URL`: Your PearBlog site URL (e.g., `https://example.com`)
-- `API_ENDPOINT`: API endpoint path (e.g., `/api/content/process`)
-- `API_KEY`: Authentication API key
+## Documentation
 
-### 2. Workflow Configuration
-
-The GitHub Action runs:
-- **Scheduled**: Daily at 2:00 AM UTC
-- **Manual**: Via workflow_dispatch in GitHub Actions tab
-
-To modify the schedule, edit `.github/workflows/content-pipeline.yml`:
-
-```yaml
-on:
-  schedule:
-    - cron: '0 2 * * *'  # Change this cron expression
-```
-
-### 3. Manual Execution
-
-Trigger manually:
-1. Go to Actions tab in GitHub
-2. Select "PearBlog Content Pipeline Automation"
-3. Click "Run workflow"
+Full documentation is available in [`/theme/pearblog-theme/README.md`](theme/pearblog-theme/README.md)
 
 ## Architecture
 
-### Workflow (`.github/workflows/content-pipeline.yml`)
-
-1. Checks out repository
-2. Sets up Python environment
-3. Installs dependencies
-4. Executes pipeline script
-5. Uploads logs as artifacts
-6. Commits and pushes any changes
-7. Handles failures with notifications
-
-### Pipeline Script (`scripts/run_pipeline.py`)
-
 ```
-┌─────────────────────────────────────┐
-│  Load Configuration & Validate      │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│  Generate Execution Hash            │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│  Check Duplicate (History)          │
-└──────────────┬──────────────────────┘
-               │
-        ┌──────┴──────┐
-        │ Duplicate?  │
-        └──────┬──────┘
-         No    │    Yes → Skip
-               │
-┌──────────────▼──────────────────────┐
-│  Trigger API (with Retry Logic)     │
-│  - Max 3 attempts                   │
-│  - Exponential backoff              │
-│  - Rate limit handling              │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│  Save Execution History             │
-└──────────────┬──────────────────────┘
-               │
-┌──────────────▼──────────────────────┐
-│  Generate Logs & Summary            │
-└─────────────────────────────────────┘
+PearBlog Engine v1
+├── Components (Hero, Card, Related, FAQ, Ads)
+├── Design System (CSS Variables)
+├── SEO Layout (H1, Intro, TL;DR, Sections, FAQ, Related, CTA)
+├── Performance (Lazy Load, Minimal JS)
+├── Mobile First (Responsive)
+├── Monetization (AdSense, CTA, Affiliate)
+└── Multisite (Dynamic Branding)
 ```
 
-## Configuration
+## Use Cases
 
-### Environment Variables
+Perfect for:
+- AI-powered content sites
+- SEO-focused blogs
+- SaaS marketing sites
+- Multisite networks
+- Affiliate marketing sites
+- Content monetization
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `SITE_URL` | PearBlog site URL | ✅ |
-| `API_ENDPOINT` | API endpoint path | ✅ |
-| `API_KEY` | Authentication key | ✅ |
+## Roadmap
 
-### Script Constants
+### v1.0 (Current)
+- ✅ Core theme structure
+- ✅ All essential components
+- ✅ SEO optimization
+- ✅ Performance features
+- ✅ Multisite support
 
-Edit `scripts/run_pipeline.py` to customize:
+### v2.0 (Planned)
+- UI PRO components
+- Admin dashboard
+- Custom widgets
+- Advanced customization panel
+- Gutenberg blocks
+- Page builder integration
 
-```python
-MAX_RETRIES = 3          # Maximum retry attempts
-RETRY_DELAY = 5          # Seconds between retries
-RATE_LIMIT_DELAY = 1     # Seconds between requests
-TIMEOUT = 30             # Request timeout
-```
+## Tech Stack
 
-## Logs
-
-### Location
-
-- **Local**: `logs/` directory
-- **GitHub Actions**: Artifacts section of workflow runs
-
-### Files
-
-- `pipeline_YYYYMMDD_HHMMSS.log`: Detailed execution log
-- `execution_history.json`: All execution records
-- `latest_execution.json`: Most recent execution summary
-
-### Log Format
-
-```
-2026-04-03 21:30:00 - INFO - ============================================================
-2026-04-03 21:30:00 - INFO - PearBlog Content Pipeline - Execution Started
-2026-04-03 21:30:00 - INFO - ============================================================
-2026-04-03 21:30:00 - INFO - Configuration validated successfully
-2026-04-03 21:30:00 - INFO - Site URL: https://example.com
-2026-04-03 21:30:00 - INFO - API Endpoint: /api/content/process
-2026-04-03 21:30:00 - INFO - No duplicate detected - proceeding with execution
-2026-04-03 21:30:01 - INFO - API request attempt 1/3
-2026-04-03 21:30:02 - INFO - Response status: 200
-2026-04-03 21:30:02 - INFO - ✓ API request successful
-2026-04-03 21:30:02 - INFO - ✓ Pipeline execution completed successfully
-```
-
-## Error Handling
-
-### Retry Logic
-
-| Error Type | Handling |
-|------------|----------|
-| Timeout | Retry with exponential backoff |
-| 429 (Rate Limit) | Extended delay + retry |
-| 5xx (Server Error) | Retry with backoff |
-| 4xx (Client Error) | Log and fail (no retry) |
-
-### Duplicate Prevention
-
-Execution hash calculated from:
-- Timestamp
-- Action type
-- Configuration
-
-Last 100 executions checked to prevent duplicates.
-
-## Testing Locally
-
-```bash
-# Set environment variables
-export SITE_URL="https://your-site.com"
-export API_ENDPOINT="/api/content/process"
-export API_KEY="your-api-key"
-
-# Run the script
-python scripts/run_pipeline.py
-```
-
-## Monitoring
-
-### Check Workflow Status
-
-```bash
-# Via GitHub CLI
-gh run list --workflow=content-pipeline.yml
-
-# View latest run
-gh run view --log
-```
-
-### Check Logs
-
-1. Go to Actions tab
-2. Select workflow run
-3. Download artifacts: `pipeline-logs-{run-number}`
-
-## Troubleshooting
-
-### Common Issues
-
-**Issue**: Missing environment variables
-```
-ERROR - Missing required environment variables: SITE_URL, API_KEY
-```
-**Solution**: Add secrets in repository settings
-
-**Issue**: Rate limit exceeded
-```
-WARNING - Rate limit exceeded, waiting before retry...
-```
-**Solution**: Automatic - script handles with delays
-
-**Issue**: All retries exhausted
-```
-ERROR - All retry attempts exhausted
-```
-**Solution**: Check API endpoint availability and credentials
-
-### Debug Mode
-
-Add to workflow for verbose output:
-
-```yaml
-- name: Run content pipeline
-  env:
-    PYTHONUNBUFFERED: 1
-    LOG_LEVEL: DEBUG
-```
-
-## Security
-
-- ✅ Secrets stored in GitHub Secrets (encrypted)
-- ✅ No credentials in logs
-- ✅ API key sent via Authorization header
-- ✅ HTTPS required for all endpoints
-- ✅ Rate limiting prevents abuse
+- **PHP** 7.4+
+- **WordPress** 5.9+
+- **CSS3** with CSS Variables
+- **Vanilla JavaScript** (no jQuery)
+- **HTML5** semantic markup
 
 ## License
 
-MIT License - See LICENSE file
+GNU General Public License v2 or later
 
 ## Support
 
-For issues or questions:
-1. Check logs in GitHub Actions artifacts
-2. Review execution history in `logs/execution_history.json`
-3. Open an issue in this repository
+For issues, questions, or feature requests, please open an issue in this repository.
+
+---
+
+**Built for AI + SEO + SaaS**
+## 🏗️ Architecture
+
+```
+PearBlog v2 PRO - Frontend Operating System
+├── Core Modules
+│   ├── performance.php    - Critical CSS, preloading, optimization
+│   ├── monetization.php   - Auto ads, affiliate, CTR tracking
+│   ├── ui.php            - UI utilities and helpers
+│   ├── layout.php        - Layout rendering system
+│   └── components.php    - Component registration & Schema.org
+│
+├── Template Components
+│   ├── hero.php          - Video/image/gradient hero
+│   ├── card.php          - Article cards
+│   ├── grid.php          - Grid/list view system
+│   ├── block-toc.php     - Table of Contents
+│   ├── block-cta.php     - Dynamic CTA blocks
+│   ├── block-faq.php     - FAQ with Schema.org
+│   ├── block-related.php - Internal linking
+│   └── block-ads.php     - Monetization blocks
+│
+├── CSS Architecture
+│   ├── base.css          - Variables, reset, typography
+│   ├── components.css    - All component styles
+│   └── utilities.css     - 100+ utility classes
+│
+└── JavaScript Modules
+    ├── lazyload.js       - Advanced lazy loading
+    └── app.js            - Dark mode, TOC, FAQ, interactions
+```
+
+## 📦 What's Included
+
+### Page Templates
+- **index.php** - Homepage with hero, featured posts, grid
+- **single.php** - Full SEO layout with TOC integration
+- **category.php** - Category archive with cluster SEO
+
+### Components (Template Parts)
+- **Hero v2** - Gradient, image, or video backgrounds with CTA
+- **Card System** - Grid/list views with featured post support
+- **Grid** - Flexible layout with view switcher and filtering
+- **TOC** - Auto-generated from H2/H3 with sticky sidebar
+- **CTA Blocks** - Affiliate, lead capture, click variants
+- **FAQ** - Accordion with Schema.org markup
+- **Related Posts** - SEO-optimized internal linking
+- **Ads Engine** - Auto injection and sticky mobile ads
+
+### Modules (inc/)
+- **performance.php** - Critical CSS, preloading, Gzip, caching
+- **monetization.php** - Ad injection, affiliate automation, tracking
+- **ui.php** - Breadcrumbs, social share, pagination, reading time
+- **layout.php** - Header, footer, TL;DR, CTA rendering
+- **components.php** - Registration, Schema.org, shortcodes
+
+### Assets
+- **base.css** - Design system foundation
+- **components.css** - Complete component library
+- **utilities.css** - Utility-first helpers
+- **lazyload.js** - Intersection Observer lazy loading
+- **app.js** - All interactive features
+
+## 🎯 Key Features Deep Dive
+
+### Dark Mode System
+```php
+// Auto-detection + manual toggle
+localStorage preference + system preference
+Smooth transitions for all elements
+Complete variable system for dark theme
+Dark mode toggle button with icon switching
+```
+
+### Table of Contents (TOC)
+```php
+// Auto-generated from content
+Extracts H2 and H3 headings
+Adds IDs to headings automatically
+Sticky sidebar navigation
+Reading progress bar
+Active section highlighting on scroll
+Mobile collapsible version
+```
+
+### Auto Ad Injection
+```php
+// Smart placement engine
+Inject ads every X paragraphs (configurable)
+Multiple ad positions (top, middle, bottom)
+Scroll-depth tracking for optimization
+CTR zone detection
+Sticky mobile ads with close button
+```
+
+### Multisite Configuration
+```php
+// Centralized config system
+pb_get_site_config() - Single source of truth
+Per-site colors (primary/secondary/accent)
+Per-site logos (light/dark variants)
+Per-site hero styles
+Per-site layout variants
+Feature toggles per site
+AI feature flags
+```
+
+### Performance Optimization
+```php
+// Enterprise-grade performance
+Critical CSS inline for instant rendering
+DNS prefetch for external resources
+Resource preloading (images, fonts)
+Lazy loading (images, iframes, videos, backgrounds)
+Gzip compression
+Cache control headers
+Core Web Vitals tracking
+```
+
+## 🔧 Configuration
+
+### Multisite Branding
+```php
+// Set via WordPress options or pb_get_site_config()
+update_option('pearblog_primary_color', '#your-color');
+update_option('pearblog_secondary_color', '#your-color');
+update_option('pearblog_accent_color', '#your-color');
+update_option('pearblog_logo_url', 'https://your-site.com/logo.png');
+update_option('pearblog_logo_dark_url', 'https://your-site.com/logo-dark.png');
+```
+
+### Hero Configuration
+```php
+update_option('pearblog_hero_style', 'video'); // gradient, image, video
+update_option('pearblog_hero_title', 'Your Title');
+update_option('pearblog_hero_subtitle', 'Your subtitle');
+update_option('pearblog_hero_video', 'https://your-site.com/hero.mp4');
+update_option('pearblog_hero_cta_text', 'Get Started');
+update_option('pearblog_hero_cta_url', '/signup');
+```
+
+### Monetization Settings
+```php
+// AdSense
+update_option('pearblog_adsense_client', 'ca-pub-XXXXXXXXXXXXXXXX');
+update_option('pearblog_adsense_slot_content', 'XXXXXXXXXX');
+
+// Auto injection
+update_option('pearblog_auto_ad_injection', true);
+update_option('pearblog_ad_injection_paragraphs', 3); // Every 3 paragraphs
+
+// Affiliate automation
+update_option('pearblog_affiliate_rules', array(
+    array(
+        'domain' => 'amazon.com',
+        'affiliate_tag' => 'tag=your-tag-20'
+    )
+));
+```
+
+### Feature Toggles
+```php
+update_option('pearblog_dark_mode_enabled', true);
+update_option('pearblog_toc_enabled', true);
+update_option('pearblog_sticky_mobile_cta', true);
+update_option('pearblog_smart_cta_enabled', false);
+update_option('pearblog_ai_summaries', false);
+update_option('pearblog_ai_recommendations', false);
+```
+
+## 🎨 Design System
+
+### CSS Variables
+```css
+:root {
+  /* Colors */
+  --pb-primary: #2563eb;
+  --pb-secondary: #7c3aed;
+  --pb-accent: #f59e0b;
+  
+  /* Spacing */
+  --pb-space-xs to --pb-space-3xl
+  
+  /* Typography */
+  --pb-font-base, --pb-font-heading
+  
+  /* Effects */
+  --pb-radius, --pb-shadow, --pb-transition
+}
+```
+
+### Utility Classes
+```css
+/* Over 100 utility classes */
+.pb-mt-{size}, .pb-mb-{size}, .pb-p-{size}
+.pb-text-{align}, .pb-text-{size}, .pb-text-{color}
+.pb-flex, .pb-grid, .pb-justify-{value}, .pb-items-{value}
+.pb-bg-{color}, .pb-rounded-{size}, .pb-shadow-{size}
+.pb-hover-{effect}, .pb-transition, .pb-fade-in
+```
+
+## 📊 Performance Metrics
+
+- **Core Web Vitals Optimized** - LCP, FID, CLS tracking
+- **Critical CSS** - Above-the-fold instant rendering
+- **Lazy Loading** - All media types supported
+- **Minimal JavaScript** - ~15KB gzipped
+- **Lighthouse Ready** - 90+ scores achievable
+
+## 🔮 Roadmap
+
+### v2.0 (Current) ✅
+- Complete FOS architecture
+- Dark mode system
+- TOC with progress tracking
+- Auto ad injection
+- Performance module
+- Monetization engine
+- Grid/list views
+- Video hero support
+
+### v2.1 (Planned)
+- Gutenberg blocks integration
+- Advanced customizer panel
+- More AI-powered features
+- A/B testing framework
+- Advanced analytics dashboard
+
+### v3.0 (Future)
+- Headless architecture (Next.js + API)
+- Ultra SEO scaling
+- GraphQL API
+- Advanced caching layers
+- Multi-cloud support
+
+## 📄 License
+
+GNU General Public License v2 or later
+
+## 🤝 Support
+
+For issues, questions, or feature requests, please open an issue in this repository.
+
+---
+
+**Frontend Operating System (FOS) - Built for AI + SEO + SaaS**
+
+*v2 PRO - The enterprise WordPress theme that's not just a theme.*
