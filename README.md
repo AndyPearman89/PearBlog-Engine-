@@ -1,4 +1,4 @@
-# PearBlog Engine v2 PRO
+# PearBlog Engine PRO
 
 **Enterprise Frontend Operating System (FOS) for AI SEO SaaS**
 

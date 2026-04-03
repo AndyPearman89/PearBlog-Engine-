@@ -23,7 +23,7 @@ function pearblog_render_header() {
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
         <?php wp_head(); ?>
     </head>
-    <body <?php body_class(); ?>>
+    <body <?php body_class(); ?> data-post-id="<?php echo esc_attr(get_the_ID()); ?>">
     <?php wp_body_open(); ?>
 
     <header class="pb-nav">
