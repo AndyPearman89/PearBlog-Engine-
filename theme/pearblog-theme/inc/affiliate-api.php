@@ -205,46 +205,111 @@ function pearblog_get_affiliate_offers($location = '') {
 /**
  * Fetch offers from Booking.com API
  *
- * Note: This is a placeholder. You'll need to implement actual Booking.com API integration
- * or use their affiliate program links
+ * Generates Booking.com deep links using affiliate ID.
+ * Note: Booking.com API requires separate registration and approval.
  */
 function pearblog_fetch_booking_offers($location, $api_key, $affiliate_id) {
-    // Placeholder for Booking.com API integration
-    // In production, this would make an API call to Booking.com
+    // Generate deep link for Booking.com
+    // In production with API access, you would make an actual API call here
 
-    // For now, return empty array
-    // You would implement actual API call here
+    if (empty($affiliate_id)) {
+        return array();
+    }
 
-    return array();
+    // Build deep link URL
+    $query_args = array(
+        'aid' => rawurlencode($affiliate_id),
+        'lang' => 'pl',
+    );
+
+    if (!empty($location)) {
+        $query_args['ss'] = rawurlencode($location);
+    }
+
+    $search_url = add_query_arg($query_args, 'https://www.booking.com/searchresults.html');
+
+    // Return standardized offer format
+    return array(
+        array(
+            'source' => 'booking',
+            'name' => sprintf(__('Search accommodations in %s', 'pearblog-theme'), $location),
+            'url' => $search_url,
+            'cta' => __('Check Booking.com offers →', 'pearblog-theme'),
+        ),
+    );
 }
 
 /**
  * Fetch offers from Airbnb
  *
- * Note: This is a placeholder. Airbnb doesn't have a public API for affiliates,
- * so you would typically use deep links or manual offers
+ * Generates Airbnb deep links with partner cookie attribution.
+ * Note: Airbnb doesn't have a public API for affiliates, uses deep links.
  */
 function pearblog_fetch_airbnb_offers($location, $api_key, $affiliate_id) {
-    // Placeholder for Airbnb integration
-    // Airbnb typically uses deep links rather than API
+    // Airbnb uses deep links rather than API
+    // Partner cookie format: .pi80.pk{id}_
 
-    return array();
+    if (empty($affiliate_id)) {
+        return array();
+    }
+
+    // Build Airbnb deep link with partner cookie
+    $partner_cookie = '.pi80.pk' . $affiliate_id . '_';
+    $base_url = 'https://www.airbnb.com/s/';
+
+    if (!empty($location)) {
+        $search_url = $base_url . rawurlencode($location) . '/homes';
+        $search_url = add_query_arg('c', $partner_cookie, $search_url);
+    } else {
+        $search_url = add_query_arg('c', $partner_cookie, 'https://www.airbnb.com/');
+    }
+
+    /**
+     * Filter: pearblog_airbnb_search_url
+     *
+     * Allows customization of Airbnb search URL generation.
+     *
+     * @param string $search_url  Generated search URL with partner cookie.
+     * @param string $location    Location being searched.
+     * @param string $affiliate_id Airbnb affiliate/partner ID.
+     */
+    $search_url = apply_filters('pearblog_airbnb_search_url', $search_url, $location, $affiliate_id);
+
+    // Return standardized offer format
+    return array(
+        array(
+            'source' => 'airbnb',
+            'name' => sprintf(__('Find unique stays in %s', 'pearblog-theme'), $location),
+            'url' => $search_url,
+            'cta' => __('Browse Airbnb →', 'pearblog-theme'),
+        ),
+    );
 }
 
 /**
  * Extract location from content
  *
- * Simple keyword extraction - can be enhanced with NLP or AI
+ * Uses keyword matching to detect Polish locations in content.
+ * Can be extended with AI/NLP for better extraction.
  */
 function pearblog_extract_location_from_content($content) {
-    // This is a simple implementation
-    // In production, you might use AI/ML or more sophisticated extraction
-
     // Common Polish location keywords
+    // Extended list for better coverage
     $location_keywords = array(
         'Babia Góra', 'Zakopane', 'Kraków', 'Warszawa', 'Gdańsk',
         'Tatry', 'Karkonosze', 'Bieszczady', 'Mazury', 'Karpacz',
+        'Wrocław', 'Poznań', 'Łódź', 'Szczecin', 'Lublin',
+        'Białystok', 'Katowice', 'Rzeszów', 'Toruń', 'Bydgoszcz',
     );
+
+    /**
+     * Filter: pearblog_location_keywords
+     *
+     * Allows extending the list of location keywords for detection.
+     *
+     * @param array $location_keywords Array of location names to search for.
+     */
+    $location_keywords = apply_filters('pearblog_location_keywords', $location_keywords);
 
     foreach ($location_keywords as $keyword) {
         if (stripos($content, $keyword) !== false) {
