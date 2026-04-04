@@ -372,11 +372,26 @@ def main():
     # Initialize orchestrator
     orchestrator = AutomationOrchestrator(site_url, api_key)
 
-    # Example: Run single cycle
-    keyword = os.getenv("KEYWORD", "Babia Góra szlaki")
     niche = os.getenv("NICHE", "travel")
+    batch_mode = os.getenv("BATCH_MODE", "false").lower() == "true"
 
-    success = orchestrator.run_single_cycle(keyword, niche)
+    if batch_mode:
+        # Batch mode: read keywords from KEYWORDS env var (comma-separated) or use defaults
+        keywords_env = os.getenv("KEYWORDS", "")
+        if keywords_env:
+            keywords = [k.strip() for k in keywords_env.split(",") if k.strip()]
+        else:
+            keywords = [
+                "Babia Góra szlaki",
+                "Tatry szlaki turystyczne",
+                "Bieszczady atrakcje",
+            ]
+
+        stats = orchestrator.run_batch_cycle(keywords, niche)
+        success = stats["failed"] == 0
+    else:
+        keyword = os.getenv("KEYWORD", "Babia Góra szlaki")
+        success = orchestrator.run_single_cycle(keyword, niche)
 
     sys.exit(0 if success else 1)
 
