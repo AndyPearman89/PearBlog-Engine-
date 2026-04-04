@@ -303,7 +303,7 @@ function pearblog_analytics_render_page() {
 								<span class="pb-analytics-cat-count"><?php echo esc_html( $cat['count'] ); ?></span>
 								<div class="pb-analytics-cat-bar">
 									<?php
-									$max = $categories[0]['count'] ?: 1;
+									$max = ( $categories[0]['count'] > 0 ) ? $categories[0]['count'] : 1;
 									$pct = round( ( $cat['count'] / $max ) * 100 );
 									?>
 									<div class="pb-analytics-cat-bar-fill" style="width: <?php echo esc_attr( $pct ); ?>%;"></div>
@@ -385,7 +385,10 @@ function pearblog_analytics_render_page() {
 							<tr>
 								<td><a href="<?php echo esc_url( $test['edit_url'] ); ?>"><?php echo esc_html( wp_trim_words( $test['title'], 10 ) ); ?></a></td>
 								<td><span class="pb-analytics-winner"><?php echo esc_html( strtoupper( $test['winner'] ) ); ?></span></td>
-								<td><?php echo esc_html( date_i18n( get_option( 'date_format' ), strtotime( $test['completed_at'] ) ) ); ?></td>
+								<td><?php
+									$ts = strtotime( $test['completed_at'] );
+									echo esc_html( $ts ? date_i18n( get_option( 'date_format' ), $ts ) : $test['completed_at'] );
+								?></td>
 							</tr>
 						<?php endforeach; ?>
 					</tbody>

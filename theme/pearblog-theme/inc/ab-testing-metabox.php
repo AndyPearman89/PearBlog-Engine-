@@ -104,7 +104,7 @@ function pearblog_ab_test_meta_box_render( $post ) {
 		<script>
 		document.getElementById('pb-ab-generate').addEventListener('click', function() {
 			var title = document.getElementById('pb_headline_variant_a').value || document.getElementById('title').value || '';
-			if (!title) { alert('Enter a headline in Variant A first.'); return; }
+			if (!title) { this.textContent = 'Enter Variant A first'; setTimeout(function(){ document.getElementById('pb-ab-generate').textContent = 'Auto-generate variant B'; }, 2000); return; }
 			// Simple client-side variation: prepend power word.
 			var words = ['Ultimate', 'Complete', 'Essential', 'Proven', 'Expert'];
 			var word = words[Math.floor(Math.random() * words.length)];
@@ -162,7 +162,7 @@ function pearblog_ab_test_meta_box_render( $post ) {
 function pearblog_ab_test_save_meta( $post_id ) {
 	// Verify nonce.
 	if ( ! isset( $_POST['pearblog_ab_test_nonce'] ) ||
-		! wp_verify_nonce( $_POST['pearblog_ab_test_nonce'], 'pearblog_ab_test_nonce_action' ) ) {
+		! wp_verify_nonce( sanitize_text_field( wp_unslash( $_POST['pearblog_ab_test_nonce'] ) ), 'pearblog_ab_test_nonce_action' ) ) {
 		return;
 	}
 
