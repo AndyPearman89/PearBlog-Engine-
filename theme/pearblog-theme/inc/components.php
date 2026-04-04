@@ -112,10 +112,26 @@ function pearblog_add_article_schema() {
         ),
     );
 
-    // Add main image if available
+    // Add main image if available with full metadata
     $thumbnail = get_the_post_thumbnail_url($post->ID, 'full');
     if ($thumbnail) {
-        $schema['image'] = $thumbnail;
+        $thumbnail_id = get_post_thumbnail_id($post->ID);
+        $image_meta = wp_get_attachment_metadata($thumbnail_id);
+        $image_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
+
+        // Full image object for Schema.org
+        $schema['image'] = array(
+            '@type' => 'ImageObject',
+            'url' => $thumbnail,
+            'width' => $image_meta['width'] ?? 1200,
+            'height' => $image_meta['height'] ?? 630,
+        );
+
+        // Add caption/description if available
+        if (!empty($image_alt)) {
+            $schema['image']['caption'] = $image_alt;
+            $schema['image']['description'] = $image_alt;
+        }
     }
 
     echo '<script type="application/ld+json">' . wp_json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT) . '</script>';

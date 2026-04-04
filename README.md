@@ -4,6 +4,8 @@
 
 > Not just a theme. A complete frontend operating system.
 
+📚 **[Complete Documentation Index →](DOCUMENTATION-INDEX.md)**
+
 ## 💰 Is PearBlog Worth It?
 
 **YES ✅** - When used as a systematic Traffic → Monetization Engine

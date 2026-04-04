@@ -204,8 +204,20 @@ class ImageGenerator {
 			return null;
 		}
 
-		// Set alt text.
+		// Set alt text for SEO and accessibility.
 		update_post_meta( $attachment_id, '_wp_attachment_image_alt', $title );
+
+		// Set canonical image description for Open Graph and Schema.org
+		update_post_meta( $attachment_id, '_pearblog_canonical_description', $title );
+
+		// Mark as AI-generated for tracking
+		update_post_meta( $attachment_id, '_pearblog_ai_generated', true );
+		update_post_meta( $attachment_id, '_pearblog_generation_date', current_time( 'timestamp' ) );
+		update_post_meta( $attachment_id, '_pearblog_image_source', 'dall-e-3' );
+
+		// DALL-E 3 standard size is 1792x1024
+		update_post_meta( $attachment_id, '_pearblog_original_width', 1792 );
+		update_post_meta( $attachment_id, '_pearblog_original_height', 1024 );
 
 		return $attachment_id;
 	}

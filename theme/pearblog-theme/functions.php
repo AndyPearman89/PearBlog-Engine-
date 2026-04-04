@@ -377,12 +377,15 @@ function pearblog_add_favicons() {
 add_action('wp_head', 'pearblog_add_favicons', 1);
 
 /**
- * Add Open Graph and Twitter Card meta tags
+ * Add Open Graph and Twitter Card meta tags with canonical image support
  */
 function pearblog_add_social_meta_tags() {
     $site_name = get_bloginfo('name');
     $site_desc = get_bloginfo('description');
     $og_image = pearblog_get_social_image('og');
+    $image_width = 1200;
+    $image_height = 630;
+    $image_alt = $site_name;
 
     if (is_singular()) {
         global $post;
@@ -392,7 +395,24 @@ function pearblog_add_social_meta_tags() {
 
         // Use featured image if available
         if (has_post_thumbnail()) {
+            $thumbnail_id = get_post_thumbnail_id($post);
             $og_image = get_the_post_thumbnail_url($post, 'full');
+
+            // Get image dimensions
+            $image_meta = wp_get_attachment_metadata($thumbnail_id);
+            if ($image_meta) {
+                $image_width = $image_meta['width'] ?? 1200;
+                $image_height = $image_meta['height'] ?? 630;
+            }
+
+            // Get image alt text (canonical description)
+            $image_alt = get_post_meta($thumbnail_id, '_wp_attachment_image_alt', true);
+            if (empty($image_alt)) {
+                $image_alt = get_the_title($thumbnail_id);
+            }
+            if (empty($image_alt)) {
+                $image_alt = $title;
+            }
         }
     } else {
         $title = $site_name;
@@ -400,10 +420,16 @@ function pearblog_add_social_meta_tags() {
         $url = home_url('/');
     }
     ?>
+    <!-- Canonical Link -->
+    <link rel="canonical" href="<?php echo esc_url($url); ?>">
+
     <!-- Open Graph Meta Tags -->
     <meta property="og:title" content="<?php echo esc_attr($title); ?>">
     <meta property="og:description" content="<?php echo esc_attr(wp_strip_all_tags($description)); ?>">
     <meta property="og:image" content="<?php echo esc_url($og_image); ?>">
+    <meta property="og:image:width" content="<?php echo esc_attr($image_width); ?>">
+    <meta property="og:image:height" content="<?php echo esc_attr($image_height); ?>">
+    <meta property="og:image:alt" content="<?php echo esc_attr($image_alt); ?>">
     <meta property="og:url" content="<?php echo esc_url($url); ?>">
     <meta property="og:type" content="<?php echo is_singular() ? 'article' : 'website'; ?>">
     <meta property="og:site_name" content="<?php echo esc_attr($site_name); ?>">
@@ -413,6 +439,7 @@ function pearblog_add_social_meta_tags() {
     <meta name="twitter:title" content="<?php echo esc_attr($title); ?>">
     <meta name="twitter:description" content="<?php echo esc_attr(wp_strip_all_tags($description)); ?>">
     <meta name="twitter:image" content="<?php echo esc_url($og_image); ?>">
+    <meta name="twitter:image:alt" content="<?php echo esc_attr($image_alt); ?>">
     <?php
 }
 add_action('wp_head', 'pearblog_add_social_meta_tags', 2);
