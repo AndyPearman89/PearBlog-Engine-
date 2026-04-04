@@ -42,8 +42,9 @@ All autonomous content generation features described in the documentation have b
 | **Site Profile Management** | ✅ COMPLETE | `src/Tenant/SiteProfile.php` | Full file |
 | **Plugin Bootstrap** | ✅ COMPLETE | `src/Core/Plugin.php` | Lines 38-41 |
 | **PSR-4 Autoloading** | ✅ COMPLETE | `pearblog-engine.php` | Lines 26-40 |
+| **Automation REST API** | ✅ COMPLETE | `src/API/AutomationController.php` | Full file |
 
-**Total Features:** 24/24 ✅
+**Total Features:** 25/25 ✅
 **Implementation Rate:** 100%
 **Production Ready:** YES ✅
 
@@ -665,12 +666,15 @@ mu-plugins/pearblog-engine/
     │   ├── TenantContext.php         # Multi-site context management
     │   └── SiteProfile.php           # Per-site configuration
     │
+    ├── API/
+    │   └── AutomationController.php  # REST API for external automation
+    │
     └── Admin/
         └── AdminPage.php             # WordPress admin settings UI
 ```
 
-**Total Files:** 24 PHP classes
-**Lines of Code:** ~6,000+ LOC
+**Total Files:** 25 PHP classes
+**Lines of Code:** ~6,500+ LOC
 **Architecture:** Clean, modular, PSR-4 compliant
 **Quality:** Production-ready with error handling
 
