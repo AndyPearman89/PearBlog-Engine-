@@ -16,18 +16,18 @@ PearBlog Theme is a frontend system for AI-powered content sites. It combines an
 
 Every single post follows a mandatory structure:
 
-1. H1 → TL;DR → Ad (top) → Affiliate (top) → TOC → Content (split at 33 % / 66 %)
+1. H1 → TL;DR → Ad (top) → Affiliate (top) → TOC → Content (split at 33%/66%)
 2. Ads (middle / bottom) → Affiliate (middle / bottom) → FAQ → Related Posts
 
 ### AI Personalization Engine (v4)
 
 The frontend adapts in real-time based on:
 
-- **User context** — location, device, behaviour (`inc/user-context.php`)
+- **User context** — location, device, behavior (`inc/user-context.php`)
 - **Dynamic content** — headlines, CTA copy, section order (`inc/dynamic-content.php`)
 - **A/B testing** — automatic headline testing with daily winner detection (`inc/ai-optimizer.php`)
-- **Behaviour tracking** — scroll depth, time on page, clicks (`inc/behavior-tracking.php`)
-- **Smart monetization** — ads shown only to engaged users above 50 % scroll
+- **Behavior tracking** — scroll depth, time on page, clicks (`inc/behavior-tracking.php`)
+- **Smart monetization** — ads shown only to engaged users above 50% scroll
 
 ### Monetization
 
@@ -117,13 +117,13 @@ theme/pearblog-theme/
 
 1. Upload `pearblog-theme/` to `/wp-content/themes/`.
 2. Activate in **Appearance → Themes**.
-3. Configure options (colours, logo, AdSense, API keys) in the Customizer or via `update_option()`.
+3. Configure options (colors, logo, AdSense, API keys) in the Customizer or via `update_option()`.
 
 ---
 
 ## Configuration
 
-### Colours & Branding
+### Colors & Branding
 
 ```php
 update_option('pearblog_primary_color', '#your-color');

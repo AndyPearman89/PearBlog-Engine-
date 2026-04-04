@@ -8,7 +8,7 @@
 
 ## What It Does
 
-PearBlog Engine generates, optimises, and publishes SEO articles autonomously — every hour via WP-Cron — with zero manual intervention.
+PearBlog Engine generates, optimizes, and publishes SEO articles autonomously — every hour via WP-Cron — with zero manual intervention.
 
 **Pipeline (7 steps, ~55 sec, $0.08/article):**
 
@@ -87,7 +87,7 @@ PearBlog-Engine/
 | `PromptBuilder` | Generic SEO content for any industry | configurable |
 | `TravelPromptBuilder` | Structured travel content with mandatory sections | configurable |
 | `BeskidyPromptBuilder` | Beskidy mountains — weather + day planner | PL |
-| `MultiLanguageTravelBuilder` | Culturally localised travel content | PL / EN / DE |
+| `MultiLanguageTravelBuilder` | Culturally localized travel content | PL / EN / DE |
 
 Builder selection is automatic via `PromptBuilderFactory` (based on industry keywords). Override with the `pearblog_prompt_builder_class` filter.
 
