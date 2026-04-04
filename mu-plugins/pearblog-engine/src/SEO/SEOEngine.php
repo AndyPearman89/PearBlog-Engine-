@@ -48,6 +48,10 @@ class SEOEngine {
 			update_post_meta( $post_id, 'rank_math_title', $title );
 		}
 
+		// Store canonical URL
+		$canonical_url = $this->canonical_url( $post_id );
+		update_post_meta( $post_id, '_pearblog_canonical_url', $canonical_url );
+
 		/**
 		 * Action: pearblog_seo_applied
 		 *
