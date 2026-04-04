@@ -193,3 +193,195 @@ function pearblog_ab_test_save_meta( $post_id ) {
 	update_post_meta( $post_id, 'pb_headline_variant_b', $variant_b );
 }
 add_action( 'save_post', 'pearblog_ab_test_save_meta' );
+
+/**
+ * Get headline variant for A/B test
+ *
+ * Randomly serves variant A or B and tracks impressions
+ *
+ * @param int $post_id Post ID
+ * @param array $context User context (optional)
+ * @return string|null Headline variant or null if test not enabled
+ */
+function pb_get_headline_variant($post_id = null, $context = array()) {
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+
+    // Check if A/B test is enabled
+    $enabled = get_post_meta($post_id, 'pb_ab_test_enabled', true);
+    if (!$enabled) {
+        return null;
+    }
+
+    // Check if test is already completed
+    $completed = get_post_meta($post_id, 'pb_ab_test_completed', true);
+    if ($completed) {
+        // Return winner
+        $winner = get_post_meta($post_id, 'pb_ab_test_winner', true);
+        if ($winner === 'a') {
+            return get_post_meta($post_id, 'pb_headline_variant_a', true);
+        } elseif ($winner === 'b') {
+            return get_post_meta($post_id, 'pb_headline_variant_b', true);
+        }
+        return null;
+    }
+
+    // Get variants
+    $variant_a = get_post_meta($post_id, 'pb_headline_variant_a', true);
+    $variant_b = get_post_meta($post_id, 'pb_headline_variant_b', true);
+
+    if (empty($variant_a) || empty($variant_b)) {
+        return null;
+    }
+
+    // Use session or cookie to ensure consistent variant for user
+    if (!session_id()) {
+        @session_start();
+    }
+
+    $session_key = 'pb_ab_variant_' . $post_id;
+
+    // Check if user has already been assigned a variant
+    if (isset($_SESSION[$session_key])) {
+        $variant = $_SESSION[$session_key];
+    } else {
+        // Randomly assign variant (50/50 split)
+        $variant = (mt_rand(0, 1) === 0) ? 'a' : 'b';
+        $_SESSION[$session_key] = $variant;
+
+        // Track impression
+        pb_track_ab_impression($post_id, $variant);
+    }
+
+    return ($variant === 'a') ? $variant_a : $variant_b;
+}
+
+/**
+ * Track A/B test impression
+ *
+ * @param int $post_id Post ID
+ * @param string $variant Variant ('a' or 'b')
+ */
+function pb_track_ab_impression($post_id, $variant) {
+    $variant = sanitize_key($variant);
+    if (!in_array($variant, array('a', 'b'), true)) {
+        return;
+    }
+
+    $today = gmdate('Y-m-d');
+    $meta_key = "_pb_ab_impressions_{$variant}_{$today}";
+
+    $current = intval(get_post_meta($post_id, $meta_key, true));
+    update_post_meta($post_id, $meta_key, $current + 1);
+
+    // Also update lifetime total
+    $lifetime_key = "_pb_ab_impressions_{$variant}";
+    $lifetime = intval(get_post_meta($post_id, $lifetime_key, true));
+    update_post_meta($post_id, $lifetime_key, $lifetime + 1);
+
+    // Check if we should determine winner
+    pb_check_ab_test_winner($post_id);
+}
+
+/**
+ * Track A/B test click
+ *
+ * @param int $post_id Post ID
+ * @param string $variant Variant ('a' or 'b')
+ */
+function pb_track_ab_click($post_id, $variant) {
+    $variant = sanitize_key($variant);
+    if (!in_array($variant, array('a', 'b'), true)) {
+        return;
+    }
+
+    $today = gmdate('Y-m-d');
+    $meta_key = "_pb_ab_clicks_{$variant}_{$today}";
+
+    $current = intval(get_post_meta($post_id, $meta_key, true));
+    update_post_meta($post_id, $meta_key, $current + 1);
+
+    // Also update lifetime total
+    $lifetime_key = "_pb_ab_clicks_{$variant}";
+    $lifetime = intval(get_post_meta($post_id, $lifetime_key, true));
+    update_post_meta($post_id, $lifetime_key, $lifetime + 1);
+
+    // Check if we should determine winner
+    pb_check_ab_test_winner($post_id);
+}
+
+/**
+ * Get A/B test results
+ *
+ * @param int $post_id Post ID
+ * @return array Test results with impressions, clicks, CTR for each variant
+ */
+function pb_get_ab_test_results($post_id) {
+    $impressions_a = intval(get_post_meta($post_id, '_pb_ab_impressions_a', true));
+    $impressions_b = intval(get_post_meta($post_id, '_pb_ab_impressions_b', true));
+    $clicks_a = intval(get_post_meta($post_id, '_pb_ab_clicks_a', true));
+    $clicks_b = intval(get_post_meta($post_id, '_pb_ab_clicks_b', true));
+
+    $ctr_a = $impressions_a > 0 ? ($clicks_a / $impressions_a) * 100 : 0;
+    $ctr_b = $impressions_b > 0 ? ($clicks_b / $impressions_b) * 100 : 0;
+
+    $winner = null;
+    if ($impressions_a >= 100 && $impressions_b >= 100) {
+        // Determine winner (simple: higher CTR wins with at least 10% difference)
+        if ($ctr_a > $ctr_b && ($ctr_a - $ctr_b) / $ctr_b > 0.1) {
+            $winner = 'a';
+        } elseif ($ctr_b > $ctr_a && ($ctr_b - $ctr_a) / $ctr_a > 0.1) {
+            $winner = 'b';
+        }
+    }
+
+    return array(
+        'a' => array(
+            'impressions' => $impressions_a,
+            'clicks' => $clicks_a,
+            'ctr' => round($ctr_a, 2),
+        ),
+        'b' => array(
+            'impressions' => $impressions_b,
+            'clicks' => $clicks_b,
+            'ctr' => round($ctr_b, 2),
+        ),
+        'winner' => $winner,
+    );
+}
+
+/**
+ * Check if A/B test should declare a winner
+ *
+ * @param int $post_id Post ID
+ */
+function pb_check_ab_test_winner($post_id) {
+    // Don't check if already completed
+    $completed = get_post_meta($post_id, 'pb_ab_test_completed', true);
+    if ($completed) {
+        return;
+    }
+
+    $results = pb_get_ab_test_results($post_id);
+
+    // Need minimum impressions
+    if ($results['a']['impressions'] < 100 || $results['b']['impressions'] < 100) {
+        return;
+    }
+
+    // Check for winner
+    if (!empty($results['winner'])) {
+        update_post_meta($post_id, 'pb_ab_test_winner', $results['winner']);
+        update_post_meta($post_id, 'pb_ab_test_completed', current_time('mysql'));
+
+        // Update post title with winning variant
+        $winning_headline = get_post_meta($post_id, 'pb_headline_variant_' . $results['winner'], true);
+        if (!empty($winning_headline)) {
+            wp_update_post(array(
+                'ID' => $post_id,
+                'post_title' => $winning_headline,
+            ));
+        }
+    }
+}
