@@ -73,11 +73,13 @@ function pearblog_ab_test_meta_box_render( $post ) {
 	<?php if ( $completed ) : ?>
 		<p class="pb-ab-completed">
 			<?php
+			$completed_ts = strtotime( $completed );
+			$formatted_date = $completed_ts ? date_i18n( get_option( 'date_format' ), $completed_ts ) : esc_html( $completed );
 			printf(
 				/* translators: 1: winning variant letter, 2: completion date */
 				esc_html__( '✅ Test completed — Variant %1$s won on %2$s', 'pearblog-theme' ),
 				esc_html( strtoupper( $winner ) ),
-				esc_html( date_i18n( get_option( 'date_format' ), strtotime( $completed ) ) )
+				esc_html( $formatted_date )
 			);
 			?>
 		</p>

@@ -264,7 +264,9 @@ function pearblog_fetch_airbnb_offers($location, $api_key, $affiliate_id) {
     }
 
     // Build an Airbnb search deep link.
-    // Dates default to 7 days from now for a 2-night stay.
+    // Airbnb partner links use a cookie-based attribution parameter (`c`).
+    // The format `.pi80.pk<PARTNER_ID>_` encodes: pi80 = programme identifier,
+    // pk = partner key.  See Airbnb Partner Centre documentation for details.
     $checkin  = gmdate('Y-m-d', strtotime('+7 days'));
     $checkout = gmdate('Y-m-d', strtotime('+9 days'));
 

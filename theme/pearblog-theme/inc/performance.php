@@ -201,19 +201,8 @@ function pearblog_get_lighthouse_score($url = null) {
         return $cached;
     }
 
-    // Build API request.
+    // Build API request URL.
     $api_key  = get_option('pearblog_pagespeed_api_key', '');
-    $endpoint = add_query_arg(
-        array_filter(array(
-            'url'      => rawurlencode($url),
-            'category' => array('PERFORMANCE', 'SEO', 'ACCESSIBILITY', 'BEST_PRACTICES'),
-            'strategy' => 'mobile',
-            'key'      => $api_key ?: null,
-        )),
-        'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
-    );
-
-    // PageSpeed Insights accepts category as repeated param.
     $endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=' . rawurlencode($url)
               . '&category=PERFORMANCE&category=SEO&category=ACCESSIBILITY&category=BEST_PRACTICES'
               . '&strategy=mobile'
@@ -238,12 +227,16 @@ function pearblog_get_lighthouse_score($url = null) {
     }
 
     $cats   = $body['lighthouseResult']['categories'];
-    $scores = array(
-        'performance'    => isset($cats['performance']['score'])    ? round($cats['performance']['score'] * 100)    : 0,
-        'seo'            => isset($cats['seo']['score'])            ? round($cats['seo']['score'] * 100)            : 0,
-        'accessibility'  => isset($cats['accessibility']['score'])  ? round($cats['accessibility']['score'] * 100)  : 0,
-        'best_practices' => isset($cats['best-practices']['score']) ? round($cats['best-practices']['score'] * 100) : 0,
+    $cat_map = array(
+        'performance'    => 'performance',
+        'seo'            => 'seo',
+        'accessibility'  => 'accessibility',
+        'best_practices' => 'best-practices',
     );
+    $scores = array();
+    foreach ($cat_map as $key => $api_key_name) {
+        $scores[$key] = isset($cats[$api_key_name]['score']) ? round($cats[$api_key_name]['score'] * 100) : 0;
+    }
 
     // Cache for 24 hours.
     set_transient($cache_key, $scores, DAY_IN_SECONDS);

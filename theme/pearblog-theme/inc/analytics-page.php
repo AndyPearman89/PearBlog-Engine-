@@ -229,16 +229,16 @@ function pearblog_analytics_get_revenue_data() {
 function pearblog_analytics_get_publishing_trend() {
 	global $wpdb;
 
-	$rows = $wpdb->get_results(
+	$rows = $wpdb->get_results( $wpdb->prepare(
 		"SELECT DATE(post_date) AS pub_date, COUNT(*) AS cnt
 		FROM {$wpdb->posts}
 		WHERE post_status = 'publish'
 		  AND post_type   = 'post'
-		  AND post_date   >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+		  AND post_date   >= %s
 		GROUP BY pub_date
 		ORDER BY pub_date ASC",
-		ARRAY_A
-	);
+		gmdate( 'Y-m-d H:i:s', strtotime( '-30 days' ) )
+	), ARRAY_A );
 
 	$trend = array();
 	for ( $i = 29; $i >= 0; $i-- ) {
@@ -489,7 +489,7 @@ function pearblog_analytics_render_page() {
 								<td><span class="pb-analytics-winner"><?php echo esc_html( strtoupper( $test['winner'] ) ); ?></span></td>
 								<td><?php
 									$ts = strtotime( $test['completed_at'] );
-									echo esc_html( $ts ? date_i18n( get_option( 'date_format' ), $ts ) : $test['completed_at'] );
+									echo $ts ? esc_html( date_i18n( get_option( 'date_format' ), $ts ) ) : esc_html( $test['completed_at'] );
 								?></td>
 							</tr>
 						<?php endforeach; ?>
