@@ -309,17 +309,27 @@ function pearblog_fetch_airbnb_offers($location, $api_key, $affiliate_id) {
 /**
  * Extract location from content
  *
- * Simple keyword extraction - can be enhanced with NLP or AI
+ * Uses keyword matching to detect Polish locations in content.
+ * Can be extended with AI/NLP for better extraction.
  */
 function pearblog_extract_location_from_content($content) {
-    // This is a simple implementation
-    // In production, you might use AI/ML or more sophisticated extraction
-
     // Common Polish location keywords
+    // Extended list for better coverage
     $location_keywords = array(
         'Babia Góra', 'Zakopane', 'Kraków', 'Warszawa', 'Gdańsk',
         'Tatry', 'Karkonosze', 'Bieszczady', 'Mazury', 'Karpacz',
+        'Wrocław', 'Poznań', 'Łódź', 'Szczecin', 'Lublin',
+        'Białystok', 'Katowice', 'Rzeszów', 'Toruń', 'Bydgoszcz',
     );
+
+    /**
+     * Filter: pearblog_location_keywords
+     *
+     * Allows extending the list of location keywords for detection.
+     *
+     * @param array $location_keywords Array of location names to search for.
+     */
+    $location_keywords = apply_filters('pearblog_location_keywords', $location_keywords);
 
     foreach ($location_keywords as $keyword) {
         if (stripos($content, $keyword) !== false) {

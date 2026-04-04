@@ -244,6 +244,59 @@ class AdminPage {
 						</td>
 					</tr>
 				</table>
+
+				<h2><?php esc_html_e( 'Email Marketing (Phase 3.2)', 'pearblog-engine' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="pearblog_esp_provider"><?php esc_html_e( 'Email Service Provider', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<select id="pearblog_esp_provider" name="pearblog_esp_provider">
+								<?php
+								$current_esp = get_option( 'pearblog_esp_provider', 'none' );
+								$providers   = [
+									'none'       => __( 'None (Local Only)', 'pearblog-engine' ),
+									'mailchimp'  => __( 'Mailchimp', 'pearblog-engine' ),
+									'convertkit' => __( 'ConvertKit', 'pearblog-engine' ),
+								];
+								foreach ( $providers as $val => $label ) {
+									printf(
+										'<option value="%s" %s>%s</option>',
+										esc_attr( $val ),
+										selected( $current_esp, $val, false ),
+										esc_html( $label )
+									);
+								}
+								?>
+							</select>
+							<p class="description"><?php esc_html_e( 'Select your email service provider for automated list syncing.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_mailchimp_api_key"><?php esc_html_e( 'Mailchimp API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_mailchimp_api_key" name="pearblog_mailchimp_api_key" value="<?php echo esc_attr( get_option( 'pearblog_mailchimp_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Format: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us1', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_mailchimp_list_id"><?php esc_html_e( 'Mailchimp List ID', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="pearblog_mailchimp_list_id" name="pearblog_mailchimp_list_id" value="<?php echo esc_attr( get_option( 'pearblog_mailchimp_list_id', '' ) ); ?>" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_convertkit_api_key"><?php esc_html_e( 'ConvertKit API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_convertkit_api_key" name="pearblog_convertkit_api_key" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_api_key', '' ) ); ?>" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_convertkit_form_id"><?php esc_html_e( 'ConvertKit Form ID', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="pearblog_convertkit_form_id" name="pearblog_convertkit_form_id" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_form_id', '' ) ); ?>" class="regular-text" />
+						</td>
+					</tr>
+				</table>
 				<?php submit_button(); ?>
 			</form>
 
