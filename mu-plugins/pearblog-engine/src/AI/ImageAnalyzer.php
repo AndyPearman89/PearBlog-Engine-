@@ -22,6 +22,18 @@ namespace PearBlogEngine\AI;
 class ImageAnalyzer {
 
 	/**
+	 * Common stop words (EN + PL) used across keyword extraction methods.
+	 */
+	private const STOP_WORDS = [
+		// English
+		'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'with', 'this', 'that', 'from', 'have',
+		'was', 'will', 'been', 'has', 'had', 'would', 'could', 'should', 'also', 'more', 'about', 'into',
+		// Polish
+		'jak', 'nie', 'dla', 'czy', 'jest', 'ten', 'lub', 'oraz', 'ale', 'przy', 'przez', 'się', 'pod',
+		'być', 'który', 'która', 'które', 'tego', 'tej', 'aby', 'już', 'może', 'można',
+	];
+
+	/**
 	 * Run a full image audit across the media library and posts.
 	 *
 	 * @return array{
@@ -339,15 +351,10 @@ class ImageAnalyzer {
 	 * @return string[] Keywords.
 	 */
 	private function extract_keywords_from_title( string $title ): array {
-		$stop_words = [
-			'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'with', 'this', 'that', 'from', 'have',
-			'jak', 'nie', 'dla', 'czy', 'jest', 'ten', 'lub', 'oraz', 'ale', 'przy', 'przez', 'się', 'pod',
-		];
-
 		$words = preg_split( '/[\s\-–—:,;.!?]+/', mb_strtolower( $title ) );
-		$words = array_filter( $words, function ( $word ) use ( $stop_words ) {
+		$words = array_filter( $words, function ( $word ) {
 			$word = preg_replace( '/[^\p{L}\p{N}]/u', '', $word );
-			return mb_strlen( $word ) >= 3 && ! in_array( $word, $stop_words, true );
+			return mb_strlen( $word ) >= 3 && ! in_array( $word, self::STOP_WORDS, true );
 		} );
 
 		return array_values( $words );
@@ -361,19 +368,11 @@ class ImageAnalyzer {
 	 * @return string[] Keywords.
 	 */
 	private function extract_keywords_from_content( string $content, int $top_n = 10 ): array {
-		$text = mb_strtolower( wp_strip_all_tags( $content ) );
-
-		$stop_words = [
-			'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'with', 'this', 'that', 'from', 'have',
-			'jak', 'nie', 'dla', 'czy', 'jest', 'ten', 'lub', 'oraz', 'ale', 'przy', 'przez', 'się', 'pod',
-			'was', 'will', 'been', 'has', 'had', 'would', 'could', 'should', 'also', 'more', 'about', 'into',
-			'być', 'który', 'która', 'które', 'tego', 'tej', 'aby', 'już', 'może', 'można',
-		];
-
+		$text  = mb_strtolower( wp_strip_all_tags( $content ) );
 		$words = preg_split( '/[\s\-–—:,;.!?\(\)\[\]"\']+/', $text );
-		$words = array_filter( $words, function ( $word ) use ( $stop_words ) {
+		$words = array_filter( $words, function ( $word ) {
 			$word = preg_replace( '/[^\p{L}\p{N}]/u', '', $word );
-			return mb_strlen( $word ) >= 3 && ! in_array( $word, $stop_words, true );
+			return mb_strlen( $word ) >= 3 && ! in_array( $word, self::STOP_WORDS, true );
 		} );
 
 		// Count frequency.

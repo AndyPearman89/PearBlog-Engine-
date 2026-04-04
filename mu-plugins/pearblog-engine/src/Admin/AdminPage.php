@@ -29,6 +29,7 @@ class AdminPage {
 	public function register(): void {
 		add_action( 'admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
 		add_action( 'admin_post_pearblog_add_topics', [ $this, 'handle_add_topics' ] );
 		add_action( 'admin_post_pearblog_clear_queue', [ $this, 'handle_clear_queue' ] );
 		add_action( 'admin_post_pearblog_generate_images', [ $this, 'handle_generate_images' ] );
@@ -41,12 +42,71 @@ class AdminPage {
 	// -----------------------------------------------------------------------
 
 	public function add_menu(): void {
-		add_options_page(
+		add_menu_page(
 			__( 'PearBlog Engine', 'pearblog-engine' ),
 			__( 'PearBlog Engine', 'pearblog-engine' ),
 			'manage_options',
 			self::MENU_SLUG,
+			[ $this, 'render_page' ],
+			'data:image/svg+xml;base64,' . base64_encode( '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>' ),
+			25
+		);
+
+		add_submenu_page(
+			self::MENU_SLUG,
+			__( 'Settings', 'pearblog-engine' ),
+			__( 'Settings', 'pearblog-engine' ),
+			'manage_options',
+			self::MENU_SLUG,
 			[ $this, 'render_page' ]
+		);
+	}
+
+	/**
+	 * Enqueue admin CSS/JS only on our page.
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function enqueue_admin_assets( string $hook ): void {
+		if ( false === strpos( $hook, self::MENU_SLUG ) ) {
+			return;
+		}
+
+		wp_enqueue_style(
+			'pearblog-admin',
+			PEARBLOG_ENGINE_URL . 'assets/css/admin.css',
+			[],
+			PEARBLOG_ENGINE_VERSION
+		);
+
+		// Inline tab-switching JavaScript.
+		wp_add_inline_script(
+			'jquery',
+			'document.addEventListener("DOMContentLoaded", function() {
+				var tabBtns = document.querySelectorAll(".pb-tab-btn");
+				var tabPanels = document.querySelectorAll(".pb-tab-panel");
+				tabBtns.forEach(function(btn) {
+					btn.addEventListener("click", function() {
+						var target = this.dataset.tab;
+						tabBtns.forEach(function(b) { b.classList.remove("is-active"); });
+						tabPanels.forEach(function(p) { p.classList.remove("is-active"); });
+						this.classList.add("is-active");
+						var panel = document.getElementById("pb-tab-" + target);
+						if (panel) panel.classList.add("is-active");
+						if (window.history && window.history.replaceState) {
+							var url = new URL(window.location);
+							url.searchParams.set("tab", target);
+							window.history.replaceState({}, "", url);
+						}
+					});
+				});
+				// Restore tab from URL
+				var urlTab = new URLSearchParams(window.location.search).get("tab");
+				if (urlTab) {
+					var activeBtn = document.querySelector(".pb-tab-btn[data-tab=\"" + urlTab + "\"]");
+					if (activeBtn) activeBtn.click();
+				}
+			});'
 		);
 	}
 
@@ -256,26 +316,87 @@ class AdminPage {
 		$context = TenantContext::for_site( get_current_blog_id() );
 
 		// Flush notice from redirect.
-		$notice = '';
+		$notice_html = '';
 		if ( isset( $_GET['pearblog_notice'] ) ) {
-			$type   = isset( $_GET['pearblog_type'] ) && 'success' === $_GET['pearblog_type'] ? 'success' : 'warning';
-			$notice = '<div class="notice notice-' . esc_attr( $type ) . ' is-dismissible"><p>'
+			$type         = isset( $_GET['pearblog_type'] ) && 'success' === $_GET['pearblog_type'] ? 'success' : 'warning';
+			$notice_html  = '<div class="notice notice-' . esc_attr( $type ) . ' is-dismissible"><p>'
 				. esc_html( urldecode( (string) $_GET['pearblog_notice'] ) )
 				. '</p></div>';
 		}
 
+		// Quick stats for the header.
+		$queue_count     = count( $queue->get_all() );
+		$openai_ok       = ! empty( get_option( 'pearblog_openai_api_key', '' ) ) || defined( 'PEARBLOG_OPENAI_API_KEY' );
+		$img_gen_enabled = get_option( 'pearblog_enable_image_generation', false );
+
 		?>
-		<div class="wrap">
-			<h1><?php esc_html_e( 'PearBlog Engine', 'pearblog-engine' ); ?></h1>
+		<div class="pb-admin-wrap">
 
-			<?php echo wp_kses_post( $notice ); ?>
+			<!-- Page header -->
+			<div class="pb-admin-header">
+				<span class="pb-admin-header-icon" aria-hidden="true">🍐</span>
+				<div>
+					<h1 class="pb-admin-header-title"><?php esc_html_e( 'PearBlog Engine', 'pearblog-engine' ); ?></h1>
+					<p class="pb-admin-header-subtitle"><?php esc_html_e( 'Autonomous AI content production system', 'pearblog-engine' ); ?></p>
+				</div>
+				<div class="pb-admin-badges">
+					<span class="pb-badge <?php echo $openai_ok ? 'pb-badge-success' : 'pb-badge-danger'; ?>">
+						<?php echo $openai_ok ? '✓ OpenAI' : '✗ OpenAI'; ?>
+					</span>
+					<span class="pb-badge pb-badge-info">
+						<?php echo esc_html( PEARBLOG_ENGINE_VERSION ); ?>
+					</span>
+					<?php if ( $queue_count > 0 ) : ?>
+						<span class="pb-badge pb-badge-warning">
+							<?php echo esc_html( $queue_count ); ?> <?php esc_html_e( 'in queue', 'pearblog-engine' ); ?>
+						</span>
+					<?php endif; ?>
+				</div>
+			</div>
 
-			<!-- Settings form -->
-			<h2><?php esc_html_e( 'Settings', 'pearblog-engine' ); ?></h2>
-			<form method="post" action="options.php">
-				<?php settings_fields( self::OPTION_GRP ); ?>
-				<table class="form-table" role="presentation">
-					<tr>
+			<?php echo wp_kses_post( $notice_html ); ?>
+
+			<!-- Tab navigation -->
+			<div class="pb-admin-tabs" role="tablist">
+				<button class="pb-tab-btn is-active" data-tab="general" role="tab" aria-selected="true" aria-controls="pb-tab-general">
+					<span class="pb-tab-icon" aria-hidden="true">⚙️</span>
+					<?php esc_html_e( 'General', 'pearblog-engine' ); ?>
+				</button>
+				<button class="pb-tab-btn" data-tab="images" role="tab" aria-selected="false" aria-controls="pb-tab-images">
+					<span class="pb-tab-icon" aria-hidden="true">🖼️</span>
+					<?php esc_html_e( 'AI Images', 'pearblog-engine' ); ?>
+				</button>
+				<button class="pb-tab-btn" data-tab="seo" role="tab" aria-selected="false" aria-controls="pb-tab-seo">
+					<span class="pb-tab-icon" aria-hidden="true">📈</span>
+					<?php esc_html_e( 'SEO', 'pearblog-engine' ); ?>
+				</button>
+				<button class="pb-tab-btn" data-tab="monetization" role="tab" aria-selected="false" aria-controls="pb-tab-monetization">
+					<span class="pb-tab-icon" aria-hidden="true">💰</span>
+					<?php esc_html_e( 'Monetization', 'pearblog-engine' ); ?>
+				</button>
+				<button class="pb-tab-btn" data-tab="email" role="tab" aria-selected="false" aria-controls="pb-tab-email">
+					<span class="pb-tab-icon" aria-hidden="true">✉️</span>
+					<?php esc_html_e( 'Email', 'pearblog-engine' ); ?>
+				</button>
+				<button class="pb-tab-btn" data-tab="queue" role="tab" aria-selected="false" aria-controls="pb-tab-queue">
+					<span class="pb-tab-icon" aria-hidden="true">📋</span>
+					<?php esc_html_e( 'Queue', 'pearblog-engine' ); ?>
+				</button>
+			</div>
+
+			<!-- ============================================================
+				TAB: GENERAL
+				============================================================ -->
+			<div id="pb-tab-general" class="pb-tab-panel is-active">
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">⚙️</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'General Settings', 'pearblog-engine' ); ?></h2>
+					</div>
+					<form method="post" action="options.php">
+						<?php settings_fields( self::OPTION_GRP ); ?>
+						<table class="form-table" role="presentation">
+						<tr>
 						<th scope="row"><label for="pearblog_openai_api_key"><?php esc_html_e( 'OpenAI API Key', 'pearblog-engine' ); ?></label></th>
 						<td><input type="password" id="pearblog_openai_api_key" name="pearblog_openai_api_key" value="<?php echo esc_attr( get_option( 'pearblog_openai_api_key', '' ) ); ?>" class="regular-text" /></td>
 					</tr>
@@ -348,165 +469,244 @@ class AdminPage {
 						<td><input type="text" id="pearblog_language" name="pearblog_language" value="<?php echo esc_attr( get_option( 'pearblog_language', 'en' ) ); ?>" class="small-text" maxlength="5" /></td>
 					</tr>
 				</table>
+						<?php submit_button(); ?>
+					</form>
+				</div><!-- /pb-admin-card -->
+			</div><!-- /pb-tab-general -->
 
-				<h2><?php esc_html_e( 'AI Image Generation', 'pearblog-engine' ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="pearblog_enable_image_generation"><?php esc_html_e( 'Enable Image Generation', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<label>
-								<input type="checkbox" id="pearblog_enable_image_generation" name="pearblog_enable_image_generation" value="1" <?php checked( get_option( 'pearblog_enable_image_generation', true ) ); ?> />
-								<?php esc_html_e( 'Automatically generate featured images using DALL-E 3', 'pearblog-engine' ); ?>
-							</label>
-							<p class="description"><?php esc_html_e( 'Each article will get a unique AI-generated featured image. Requires OpenAI API key.', 'pearblog-engine' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="pearblog_image_style"><?php esc_html_e( 'Image Style', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<select id="pearblog_image_style" name="pearblog_image_style">
-								<?php
-								$current_style = get_option( 'pearblog_image_style', 'photorealistic' );
-								$styles        = [
-									'photorealistic' => __( 'Photorealistic', 'pearblog-engine' ),
-									'illustration'   => __( 'Digital Illustration', 'pearblog-engine' ),
-									'artistic'       => __( 'Artistic / Painterly', 'pearblog-engine' ),
-									'minimal'        => __( 'Minimal / Clean', 'pearblog-engine' ),
-								];
-								foreach ( $styles as $val => $label ) {
-									printf(
-										'<option value="%s" %s>%s</option>',
-										esc_attr( $val ),
-										selected( $current_style, $val, false ),
-										esc_html( $label )
-									);
-								}
-								?>
-							</select>
-							<p class="description"><?php esc_html_e( 'Visual style for AI-generated images', 'pearblog-engine' ); ?></p>
-						</td>
-					</tr>
-				</table>
-
-				<h2><?php esc_html_e( 'SaaS CTA Monetisation (v3)', 'pearblog-engine' ); ?></h2>
-				<p class="description"><?php esc_html_e( 'Configure SaaS product recommendations. Articles are scanned for matching keywords and a CTA box is injected automatically. Set "Monetisation Strategy" above to "SaaS (v3)" to activate pipeline injection, or use the pearblog_saas_cta_content filter for manual control.', 'pearblog-engine' ); ?></p>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="pearblog_saas_products"><?php esc_html_e( 'SaaS Products (JSON)', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<textarea id="pearblog_saas_products" name="pearblog_saas_products" rows="10" class="large-text code"><?php echo esc_textarea( get_option( 'pearblog_saas_products', '[]' ) ); ?></textarea>
-							<p class="description">
-								<?php esc_html_e( 'JSON array of products. Each product: {"name":"…","url":"https://…","keywords":["kw1","kw2"],"description":"…","cta_text":"…"}', 'pearblog-engine' ); ?>
-							</p>
-						</td>
-					</tr>
-				</table>
-
-				<h2><?php esc_html_e( 'Email Marketing (Phase 3.2)', 'pearblog-engine' ); ?></h2>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="pearblog_esp_provider"><?php esc_html_e( 'Email Service Provider', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<select id="pearblog_esp_provider" name="pearblog_esp_provider">
-								<?php
-								$current_esp = get_option( 'pearblog_esp_provider', 'none' );
-								$providers   = [
-									'none'       => __( 'None (Local Only)', 'pearblog-engine' ),
-									'mailchimp'  => __( 'Mailchimp', 'pearblog-engine' ),
-									'convertkit' => __( 'ConvertKit', 'pearblog-engine' ),
-								];
-								foreach ( $providers as $val => $label ) {
-									printf(
-										'<option value="%s" %s>%s</option>',
-										esc_attr( $val ),
-										selected( $current_esp, $val, false ),
-										esc_html( $label )
-									);
-								}
-								?>
-							</select>
-							<p class="description"><?php esc_html_e( 'Select your email service provider for automated list syncing.', 'pearblog-engine' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="pearblog_mailchimp_api_key"><?php esc_html_e( 'Mailchimp API Key', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<input type="password" id="pearblog_mailchimp_api_key" name="pearblog_mailchimp_api_key" value="<?php echo esc_attr( get_option( 'pearblog_mailchimp_api_key', '' ) ); ?>" class="regular-text" />
-							<p class="description"><?php esc_html_e( 'Format: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us1', 'pearblog-engine' ); ?></p>
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="pearblog_mailchimp_list_id"><?php esc_html_e( 'Mailchimp List ID', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<input type="text" id="pearblog_mailchimp_list_id" name="pearblog_mailchimp_list_id" value="<?php echo esc_attr( get_option( 'pearblog_mailchimp_list_id', '' ) ); ?>" class="regular-text" />
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="pearblog_convertkit_api_key"><?php esc_html_e( 'ConvertKit API Key', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<input type="password" id="pearblog_convertkit_api_key" name="pearblog_convertkit_api_key" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_api_key', '' ) ); ?>" class="regular-text" />
-						</td>
-					</tr>
-					<tr>
-						<th scope="row"><label for="pearblog_convertkit_form_id"><?php esc_html_e( 'ConvertKit Form ID', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<input type="text" id="pearblog_convertkit_form_id" name="pearblog_convertkit_form_id" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_form_id', '' ) ); ?>" class="regular-text" />
-						</td>
-					</tr>
-				</table>
-				<?php submit_button(); ?>
-			</form>
-
-			<hr />
-
-			<!-- Programmatic SEO -->
-			<h2><?php esc_html_e( 'Programmatic SEO', 'pearblog-engine' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Automated SEO optimization: Schema.org markup, Open Graph tags, keyword density analysis, and bulk SEO audit for all published posts.', 'pearblog-engine' ); ?></p>
-
-			<?php
-			$seo_engine = new ProgrammaticSEO();
-			$seo_audit  = $seo_engine->bulk_audit( 20 );
-			?>
-
-			<table class="widefat striped" style="max-width: 700px; margin: 15px 0;">
-				<thead>
-					<tr>
-						<th colspan="2"><?php esc_html_e( 'SEO Audit Summary', 'pearblog-engine' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><?php esc_html_e( 'Posts Audited', 'pearblog-engine' ); ?></td>
-						<td><strong><?php echo esc_html( (string) $seo_audit['posts_audited'] ); ?></strong></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Issues Found', 'pearblog-engine' ); ?></td>
-						<td>
-							<strong style="color: <?php echo $seo_audit['issues_found'] > 0 ? '#d63638' : '#00a32a'; ?>;">
-								<?php echo esc_html( (string) $seo_audit['issues_found'] ); ?>
-							</strong>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-
-			<?php if ( ! empty( $seo_audit['issues'] ) ) : ?>
-				<table class="widefat striped" style="max-width: 900px; margin: 15px 0;">
-					<thead>
-						<tr>
-							<th><?php esc_html_e( 'Post', 'pearblog-engine' ); ?></th>
-							<th><?php esc_html_e( 'Issues', 'pearblog-engine' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<?php foreach ( array_slice( $seo_audit['issues'], 0, 15, true ) as $pid => $data ) : ?>
+			<!-- ============================================================
+				TAB: AI IMAGES
+				============================================================ -->
+			<div id="pb-tab-images" class="pb-tab-panel">
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">🎨</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'AI Image Generation Settings', 'pearblog-engine' ); ?></h2>
+					</div>
+					<form method="post" action="options.php">
+						<?php settings_fields( self::OPTION_GRP ); ?>
+						<h2><?php esc_html_e( 'AI Image Generation', 'pearblog-engine' ); ?></h2>
+						<table class="form-table" role="presentation">
 							<tr>
+								<th scope="row"><label for="pearblog_enable_image_generation"><?php esc_html_e( 'Enable Image Generation', 'pearblog-engine' ); ?></label></th>
 								<td>
-									<a href="<?php echo esc_url( get_edit_post_link( $pid, 'raw' ) ); ?>">
-										<?php echo esc_html( $data['title'] ); ?>
-									</a>
+									<label>
+										<input type="checkbox" id="pearblog_enable_image_generation" name="pearblog_enable_image_generation" value="1" <?php checked( get_option( 'pearblog_enable_image_generation', true ) ); ?> />
+										<?php esc_html_e( 'Automatically generate featured images using DALL-E 3', 'pearblog-engine' ); ?>
+									</label>
+									<p class="description"><?php esc_html_e( 'Each article will get a unique AI-generated featured image. Requires OpenAI API key.', 'pearblog-engine' ); ?></p>
 								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="pearblog_image_style"><?php esc_html_e( 'Image Style', 'pearblog-engine' ); ?></label></th>
 								<td>
+									<select id="pearblog_image_style" name="pearblog_image_style">
+										<?php
+										$current_style = get_option( 'pearblog_image_style', 'photorealistic' );
+										$styles        = [
+											'photorealistic' => __( 'Photorealistic', 'pearblog-engine' ),
+											'illustration'   => __( 'Digital Illustration', 'pearblog-engine' ),
+											'artistic'       => __( 'Artistic / Painterly', 'pearblog-engine' ),
+											'minimal'        => __( 'Minimal / Clean', 'pearblog-engine' ),
+										];
+										foreach ( $styles as $val => $label ) {
+											printf(
+												'<option value="%s" %s>%s</option>',
+												esc_attr( $val ),
+												selected( $current_style, $val, false ),
+												esc_html( $label )
+											);
+										}
+										?>
+									</select>
+									<p class="description"><?php esc_html_e( 'Visual style for AI-generated images', 'pearblog-engine' ); ?></p>
+								</td>
+							</tr>
+						</table>
+						<?php submit_button(); ?>
+					</form>
+				</div><!-- /image settings card -->
+
+				<?php
+				$img_analyzer = new ImageAnalyzer();
+				$img_summary  = $img_analyzer->get_summary();
+				?>
+
+				<!-- Image stats -->
+				<div class="pb-admin-stats-grid">
+					<div class="pb-admin-stat">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $img_summary['total_images'] ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'Total Images', 'pearblog-engine' ); ?></div>
+					</div>
+					<div class="pb-admin-stat <?php echo $img_summary['posts_without_images'] > 0 ? 'is-warning' : 'is-success'; ?>">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $img_summary['posts_without_images'] ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'Posts Missing Image', 'pearblog-engine' ); ?></div>
+					</div>
+					<div class="pb-admin-stat">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $img_summary['ai_generated'] ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'AI Generated', 'pearblog-engine' ); ?></div>
+					</div>
+					<div class="pb-admin-stat <?php echo $img_summary['missing_alt'] > 0 ? 'is-warning' : 'is-success'; ?>">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $img_summary['missing_alt'] ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'Missing Alt Text', 'pearblog-engine' ); ?></div>
+					</div>
+				</div>
+
+				<!-- Generate image from keywords -->
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">✨</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'Generate Image from Keywords', 'pearblog-engine' ); ?></h2>
+					</div>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pearblog_generate_images" />
+						<?php wp_nonce_field( 'pearblog_generate_images' ); ?>
+						<div class="pb-admin-form-row">
+							<label class="pb-admin-label" for="pearblog_image_keywords_single"><?php esc_html_e( 'Keywords / Title', 'pearblog-engine' ); ?></label>
+							<input type="text" id="pearblog_image_keywords_single" name="pearblog_image_keywords" class="pb-admin-input"
+								   placeholder="<?php esc_attr_e( 'e.g., Mountain landscape Tatry sunrise', 'pearblog-engine' ); ?>" />
+							<p class="pb-admin-desc"><?php esc_html_e( 'Image generated via DALL-E 3 using the style selected above.', 'pearblog-engine' ); ?></p>
+						</div>
+						<div class="pb-admin-actions">
+							<button type="submit" class="pb-admin-btn pb-admin-btn-primary">
+								🖼️ <?php esc_html_e( 'Generate Image', 'pearblog-engine' ); ?>
+							</button>
+						</div>
+					</form>
+				</div>
+
+				<!-- Posts without images for batch generation -->
+				<?php
+				$no_image_posts = $img_analyzer->find_posts_without_featured_image( 10 );
+				if ( ! empty( $no_image_posts ) ) :
+				?>
+					<div class="pb-admin-card">
+						<div class="pb-admin-card-header">
+							<span class="pb-admin-card-icon" aria-hidden="true">📸</span>
+							<h2 class="pb-admin-card-title"><?php esc_html_e( 'Posts Without Featured Images', 'pearblog-engine' ); ?></h2>
+						</div>
+						<p class="pb-admin-desc" style="margin-bottom: 16px;"><?php esc_html_e( 'Select posts to auto-generate featured images from their titles.', 'pearblog-engine' ); ?></p>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<input type="hidden" name="action" value="pearblog_generate_images" />
+							<input type="hidden" name="pearblog_image_keywords" value="" />
+							<?php wp_nonce_field( 'pearblog_generate_images' ); ?>
+							<div class="pb-posts-table-wrapper">
+								<table class="pb-admin-table">
+									<thead>
+										<tr>
+											<th style="width: 32px;"><input type="checkbox" id="pearblog-select-all-posts" /></th>
+											<th><?php esc_html_e( 'Post Title', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Suggested Keywords', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Date', 'pearblog-engine' ); ?></th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php foreach ( $no_image_posts as $nip ) : ?>
+											<tr>
+												<td><input type="checkbox" name="pearblog_image_post_ids[]" value="<?php echo esc_attr( (string) $nip['post_id'] ); ?>" /></td>
+												<td>
+													<a href="<?php echo esc_url( get_edit_post_link( $nip['post_id'], 'raw' ) ); ?>">
+														<?php echo esc_html( $nip['title'] ); ?>
+													</a>
+												</td>
+												<td><em><?php echo esc_html( implode( ', ', array_slice( $nip['keywords'], 0, 5 ) ) ); ?></em></td>
+												<td><?php echo esc_html( $nip['date'] ); ?></td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+								</table>
+							</div>
+							<div class="pb-admin-actions">
+								<button type="submit" class="pb-admin-btn pb-admin-btn-secondary">
+									🎨 <?php esc_html_e( 'Generate for Selected Posts', 'pearblog-engine' ); ?>
+								</button>
+							</div>
+						</form>
+					</div>
+					<script>
+					document.getElementById('pearblog-select-all-posts')?.addEventListener('change', function() {
+						document.querySelectorAll('input[name="pearblog_image_post_ids[]"]').forEach(function(cb) {
+							cb.checked = this.checked;
+						}.bind(this));
+					});
+					</script>
+				<?php endif; ?>
+
+				<!-- Fix missing alt texts -->
+				<?php if ( $img_summary['missing_alt'] > 0 ) : ?>
+					<div class="pb-admin-card">
+						<div class="pb-admin-card-header">
+							<span class="pb-admin-card-icon" aria-hidden="true">♿</span>
+							<h2 class="pb-admin-card-title"><?php esc_html_e( 'Fix Missing Alt Texts', 'pearblog-engine' ); ?></h2>
+						</div>
+						<p class="pb-admin-desc" style="margin-bottom: 16px;">
+							<?php esc_html_e( 'Auto-generate alt text from image titles and filenames for SEO and accessibility.', 'pearblog-engine' ); ?>
+						</p>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<input type="hidden" name="action" value="pearblog_fix_alt_texts" />
+							<?php wp_nonce_field( 'pearblog_fix_alt_texts' ); ?>
+							<div class="pb-admin-actions">
+								<button type="submit" class="pb-admin-btn pb-admin-btn-success">
+									✓ <?php echo esc_html( sprintf(
+										/* translators: %d: number of images */
+										__( 'Fix %d Missing Alt Texts', 'pearblog-engine' ),
+										$img_summary['missing_alt']
+									) ); ?>
+								</button>
+							</div>
+						</form>
+					</div>
+				<?php endif; ?>
+			</div><!-- /pb-tab-images -->
+
+			<!-- ============================================================
+				TAB: PROGRAMMATIC SEO
+				============================================================ -->
+			<div id="pb-tab-seo" class="pb-tab-panel">
+				<?php
+				$seo_engine = new ProgrammaticSEO();
+				$seo_audit  = $seo_engine->bulk_audit( 20 );
+				?>
+				<!-- SEO stats -->
+				<div class="pb-admin-stats-grid">
+					<div class="pb-admin-stat">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $seo_audit['posts_audited'] ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'Posts Audited', 'pearblog-engine' ); ?></div>
+					</div>
+					<div class="pb-admin-stat <?php echo $seo_audit['issues_found'] > 0 ? 'is-danger' : 'is-success'; ?>">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $seo_audit['issues_found'] ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'Issues Found', 'pearblog-engine' ); ?></div>
+					</div>
+				</div>
+
+				<!-- Auto-fix form -->
+				<div class="pb-admin-card" style="margin-bottom: 20px;">
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+						<input type="hidden" name="action" value="pearblog_run_seo_audit" />
+						<?php wp_nonce_field( 'pearblog_run_seo_audit' ); ?>
+						<button type="submit" class="pb-admin-btn pb-admin-btn-primary">
+							📈 <?php esc_html_e( 'Run SEO Audit & Auto-Fix Meta Descriptions', 'pearblog-engine' ); ?>
+						</button>
+						<span class="pb-admin-desc"><?php esc_html_e( 'Scans all posts and auto-generates missing meta descriptions.', 'pearblog-engine' ); ?></span>
+					</form>
+				</div>
+
+				<!-- Issues table -->
+				<?php if ( ! empty( $seo_audit['issues'] ) ) : ?>
+					<div class="pb-admin-card">
+						<div class="pb-admin-card-header">
+							<span class="pb-admin-card-icon" aria-hidden="true">⚠️</span>
+							<h2 class="pb-admin-card-title"><?php esc_html_e( 'SEO Issues by Post', 'pearblog-engine' ); ?></h2>
+						</div>
+						<div style="overflow-x: auto;">
+							<table class="pb-admin-table">
+								<thead>
+									<tr>
+										<th><?php esc_html_e( 'Post', 'pearblog-engine' ); ?></th>
+										<th><?php esc_html_e( 'Issues', 'pearblog-engine' ); ?></th>
+									</tr>
+								</thead>
+								<tbody>
 									<?php
 									$issue_labels = [
 										'missing_meta_description' => __( 'Missing meta description', 'pearblog-engine' ),
@@ -519,209 +719,205 @@ class AdminPage {
 										'thin_content'             => __( 'Thin content (<300 words)', 'pearblog-engine' ),
 										'missing_h2'               => __( 'Missing H2 headings', 'pearblog-engine' ),
 									];
-									$labels = array_map( function ( $issue ) use ( $issue_labels ) {
-										return $issue_labels[ $issue ] ?? $issue;
-									}, $data['issues'] );
-									echo esc_html( implode( ', ', $labels ) );
+									foreach ( array_slice( $seo_audit['issues'], 0, 15, true ) as $pid => $data ) :
 									?>
+										<tr>
+											<td>
+												<a href="<?php echo esc_url( get_edit_post_link( $pid, 'raw' ) ); ?>">
+													<?php echo esc_html( $data['title'] ); ?>
+												</a>
+											</td>
+											<td>
+												<?php foreach ( $data['issues'] as $issue ) : ?>
+													<span class="pb-issue-tag <?php echo in_array( $issue, [ 'missing_meta_description', 'missing_featured_image', 'thin_content' ], true ) ? 'pb-issue-tag-danger' : ''; ?>">
+														<?php echo esc_html( $issue_labels[ $issue ] ?? $issue ); ?>
+													</span>
+												<?php endforeach; ?>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				<?php else : ?>
+					<div class="pb-admin-card" style="text-align: center; padding: 40px;">
+						<div style="font-size: 2.5rem; margin-bottom: 12px;">✅</div>
+						<h3 style="margin: 0 0 8px;"><?php esc_html_e( 'No SEO Issues Found', 'pearblog-engine' ); ?></h3>
+						<p class="pb-admin-desc"><?php esc_html_e( 'All recently audited posts look good.', 'pearblog-engine' ); ?></p>
+					</div>
+				<?php endif; ?>
+			</div><!-- /pb-tab-seo -->
+
+			<!-- ============================================================
+				TAB: MONETIZATION
+				============================================================ -->
+			<div id="pb-tab-monetization" class="pb-tab-panel">
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">💰</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'Monetization Settings', 'pearblog-engine' ); ?></h2>
+					</div>
+					<form method="post" action="options.php">
+						<?php settings_fields( self::OPTION_GRP ); ?>
+						<h2><?php esc_html_e( 'SaaS CTA Monetisation (v3)', 'pearblog-engine' ); ?></h2>
+						<p class="description"><?php esc_html_e( 'Configure SaaS product recommendations. Articles are scanned for matching keywords and a CTA box is injected automatically. Set "Monetisation Strategy" in General to "SaaS (v3)" to activate.', 'pearblog-engine' ); ?></p>
+						<table class="form-table" role="presentation">
+							<tr>
+								<th scope="row"><label for="pearblog_saas_products"><?php esc_html_e( 'SaaS Products (JSON)', 'pearblog-engine' ); ?></label></th>
+								<td>
+									<textarea id="pearblog_saas_products" name="pearblog_saas_products" rows="10" class="large-text code"><?php echo esc_textarea( get_option( 'pearblog_saas_products', '[]' ) ); ?></textarea>
+									<p class="description">
+										<?php esc_html_e( 'JSON array. Each product: {"name":"…","url":"https://…","keywords":["kw1","kw2"],"description":"…","cta_text":"…"}', 'pearblog-engine' ); ?>
+									</p>
 								</td>
 							</tr>
-						<?php endforeach; ?>
-					</tbody>
-				</table>
-			<?php endif; ?>
+						</table>
+						<?php submit_button(); ?>
+					</form>
+				</div>
+			</div><!-- /pb-tab-monetization -->
 
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin: 10px 0;">
-				<input type="hidden" name="action" value="pearblog_run_seo_audit" />
-				<?php wp_nonce_field( 'pearblog_run_seo_audit' ); ?>
-				<?php submit_button( __( 'Run SEO Audit & Auto-Fix', 'pearblog-engine' ), 'secondary', '', false ); ?>
-				<p class="description"><?php esc_html_e( 'Scans all posts and auto-generates missing meta descriptions.', 'pearblog-engine' ); ?></p>
-			</form>
-
-			<hr />
-
-			<!-- Image Generator & Analysis -->
-			<h2><?php esc_html_e( 'Image Generator & Analysis', 'pearblog-engine' ); ?></h2>
-			<p class="description"><?php esc_html_e( 'Generate AI images from keywords, audit your media library, and fix missing alt texts.', 'pearblog-engine' ); ?></p>
-
-			<?php
-			$img_analyzer = new ImageAnalyzer();
-			$img_summary  = $img_analyzer->get_summary();
-			?>
-
-			<table class="widefat striped" style="max-width: 700px; margin: 15px 0;">
-				<thead>
-					<tr>
-						<th colspan="2"><?php esc_html_e( 'Image Library Summary', 'pearblog-engine' ); ?></th>
-					</tr>
-				</thead>
-				<tbody>
-					<tr>
-						<td><?php esc_html_e( 'Total Images', 'pearblog-engine' ); ?></td>
-						<td><strong><?php echo esc_html( (string) $img_summary['total_images'] ); ?></strong></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Total Published Posts', 'pearblog-engine' ); ?></td>
-						<td><strong><?php echo esc_html( (string) $img_summary['total_posts'] ); ?></strong></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Posts With Featured Image', 'pearblog-engine' ); ?></td>
-						<td>
-							<strong style="color: #00a32a;"><?php echo esc_html( (string) $img_summary['posts_with_images'] ); ?></strong>
-						</td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Posts Without Featured Image', 'pearblog-engine' ); ?></td>
-						<td>
-							<strong style="color: <?php echo $img_summary['posts_without_images'] > 0 ? '#d63638' : '#00a32a'; ?>;">
-								<?php echo esc_html( (string) $img_summary['posts_without_images'] ); ?>
-							</strong>
-						</td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'AI-Generated Images', 'pearblog-engine' ); ?></td>
-						<td><strong><?php echo esc_html( (string) $img_summary['ai_generated'] ); ?></strong></td>
-					</tr>
-					<tr>
-						<td><?php esc_html_e( 'Images Missing Alt Text', 'pearblog-engine' ); ?></td>
-						<td>
-							<strong style="color: <?php echo $img_summary['missing_alt'] > 0 ? '#dba617' : '#00a32a'; ?>;">
-								<?php echo esc_html( (string) $img_summary['missing_alt'] ); ?>
-							</strong>
-						</td>
-					</tr>
-				</tbody>
-			</table>
-
-			<!-- Generate images from keywords -->
-			<h3><?php esc_html_e( 'Generate Image from Keywords', 'pearblog-engine' ); ?></h3>
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="pearblog_generate_images" />
-				<?php wp_nonce_field( 'pearblog_generate_images' ); ?>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="pearblog_image_keywords"><?php esc_html_e( 'Keywords / Title', 'pearblog-engine' ); ?></label></th>
-						<td>
-							<input type="text" id="pearblog_image_keywords" name="pearblog_image_keywords" class="large-text" placeholder="<?php esc_attr_e( 'e.g., Mountain landscape Tatry sunrise', 'pearblog-engine' ); ?>" />
-							<p class="description"><?php esc_html_e( 'Enter keywords or a descriptive title. The image will be generated using DALL-E 3 in the style configured above.', 'pearblog-engine' ); ?></p>
-						</td>
-					</tr>
-				</table>
-				<?php submit_button( __( 'Generate Image', 'pearblog-engine' ), 'primary', '', false ); ?>
-			</form>
-
-			<?php
-			// Show posts without images for batch generation.
-			$no_image_posts = $img_analyzer->find_posts_without_featured_image( 10 );
-			if ( ! empty( $no_image_posts ) ) :
-			?>
-				<h3><?php esc_html_e( 'Posts Without Featured Images', 'pearblog-engine' ); ?></h3>
-				<p class="description"><?php esc_html_e( 'Select posts to generate featured images based on their titles and keywords.', 'pearblog-engine' ); ?></p>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="pearblog_generate_images" />
-					<?php wp_nonce_field( 'pearblog_generate_images' ); ?>
-					<table class="widefat striped" style="max-width: 900px; margin: 10px 0;">
-						<thead>
+			<!-- ============================================================
+				TAB: EMAIL
+				============================================================ -->
+			<div id="pb-tab-email" class="pb-tab-panel">
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">✉️</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'Email Marketing', 'pearblog-engine' ); ?></h2>
+					</div>
+					<form method="post" action="options.php">
+						<?php settings_fields( self::OPTION_GRP ); ?>
+						<h2><?php esc_html_e( 'Email Marketing (Phase 3.2)', 'pearblog-engine' ); ?></h2>
+						<table class="form-table" role="presentation">
 							<tr>
-								<th style="width: 30px;"><input type="checkbox" id="pearblog-select-all-posts" /></th>
-								<th><?php esc_html_e( 'Post Title', 'pearblog-engine' ); ?></th>
-								<th><?php esc_html_e( 'Suggested Keywords', 'pearblog-engine' ); ?></th>
-								<th><?php esc_html_e( 'Date', 'pearblog-engine' ); ?></th>
+								<th scope="row"><label for="pearblog_esp_provider"><?php esc_html_e( 'Email Service Provider', 'pearblog-engine' ); ?></label></th>
+								<td>
+									<select id="pearblog_esp_provider" name="pearblog_esp_provider">
+										<?php
+										$current_esp = get_option( 'pearblog_esp_provider', 'none' );
+										$providers   = [
+											'none'       => __( 'None (Local Only)', 'pearblog-engine' ),
+											'mailchimp'  => __( 'Mailchimp', 'pearblog-engine' ),
+											'convertkit' => __( 'ConvertKit', 'pearblog-engine' ),
+										];
+										foreach ( $providers as $val => $label ) {
+											printf(
+												'<option value="%s" %s>%s</option>',
+												esc_attr( $val ),
+												selected( $current_esp, $val, false ),
+												esc_html( $label )
+											);
+										}
+										?>
+									</select>
+									<p class="description"><?php esc_html_e( 'Select your email service provider for automated list syncing.', 'pearblog-engine' ); ?></p>
+								</td>
 							</tr>
-						</thead>
-						<tbody>
-							<?php foreach ( $no_image_posts as $nip ) : ?>
-								<tr>
-									<td><input type="checkbox" name="pearblog_image_post_ids[]" value="<?php echo esc_attr( (string) $nip['post_id'] ); ?>" /></td>
-									<td>
-										<a href="<?php echo esc_url( get_edit_post_link( $nip['post_id'], 'raw' ) ); ?>">
-											<?php echo esc_html( $nip['title'] ); ?>
-										</a>
-									</td>
-									<td><em><?php echo esc_html( implode( ', ', $nip['keywords'] ) ); ?></em></td>
-									<td><?php echo esc_html( $nip['date'] ); ?></td>
-								</tr>
+							<tr>
+								<th scope="row"><label for="pearblog_mailchimp_api_key"><?php esc_html_e( 'Mailchimp API Key', 'pearblog-engine' ); ?></label></th>
+								<td>
+									<input type="password" id="pearblog_mailchimp_api_key" name="pearblog_mailchimp_api_key" value="<?php echo esc_attr( get_option( 'pearblog_mailchimp_api_key', '' ) ); ?>" class="regular-text" />
+									<p class="description"><?php esc_html_e( 'Format: xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx-us1', 'pearblog-engine' ); ?></p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="pearblog_mailchimp_list_id"><?php esc_html_e( 'Mailchimp List ID', 'pearblog-engine' ); ?></label></th>
+								<td>
+									<input type="text" id="pearblog_mailchimp_list_id" name="pearblog_mailchimp_list_id" value="<?php echo esc_attr( get_option( 'pearblog_mailchimp_list_id', '' ) ); ?>" class="regular-text" />
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="pearblog_convertkit_api_key"><?php esc_html_e( 'ConvertKit API Key', 'pearblog-engine' ); ?></label></th>
+								<td>
+									<input type="password" id="pearblog_convertkit_api_key" name="pearblog_convertkit_api_key" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_api_key', '' ) ); ?>" class="regular-text" />
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><label for="pearblog_convertkit_form_id"><?php esc_html_e( 'ConvertKit Form ID', 'pearblog-engine' ); ?></label></th>
+								<td>
+									<input type="text" id="pearblog_convertkit_form_id" name="pearblog_convertkit_form_id" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_form_id', '' ) ); ?>" class="regular-text" />
+								</td>
+							</tr>
+						</table>
+						<?php submit_button(); ?>
+					</form>
+				</div>
+			</div><!-- /pb-tab-email -->
+
+			<!-- ============================================================
+				TAB: QUEUE
+				============================================================ -->
+			<div id="pb-tab-queue" class="pb-tab-panel">
+				<!-- Site profile -->
+				<div class="pb-admin-card" style="margin-bottom: 20px;">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">🏢</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'Active Site Profile', 'pearblog-engine' ); ?></h2>
+					</div>
+					<p><?php echo esc_html( $context->profile->summary() ); ?></p>
+				</div>
+
+				<!-- Queue status -->
+				<div class="pb-admin-stats-grid">
+					<div class="pb-admin-stat <?php echo $queue->count() > 0 ? 'is-success' : ''; ?>">
+						<div class="pb-admin-stat-value"><?php echo esc_html( (string) $queue->count() ); ?></div>
+						<div class="pb-admin-stat-label"><?php esc_html_e( 'Topics in Queue', 'pearblog-engine' ); ?></div>
+					</div>
+				</div>
+
+				<!-- Queue list -->
+				<?php if ( $queue->count() > 0 ) : ?>
+					<div class="pb-admin-card">
+						<div class="pb-admin-card-header">
+							<span class="pb-admin-card-icon" aria-hidden="true">📋</span>
+							<h2 class="pb-admin-card-title"><?php esc_html_e( 'Current Queue', 'pearblog-engine' ); ?></h2>
+						</div>
+						<ul class="pb-queue-list">
+							<?php foreach ( $queue->all() as $i => $topic ) : ?>
+								<li class="pb-queue-item">
+									<span class="pb-queue-num"><?php echo esc_html( (string) ( $i + 1 ) ); ?></span>
+									<?php echo esc_html( $topic ); ?>
+								</li>
 							<?php endforeach; ?>
-						</tbody>
-					</table>
-					<input type="hidden" name="pearblog_image_keywords" value="" />
-					<?php submit_button( __( 'Generate Images for Selected Posts', 'pearblog-engine' ), 'secondary', '', false ); ?>
-				</form>
-				<script>
-				document.getElementById('pearblog-select-all-posts')?.addEventListener('change', function() {
-					var checkboxes = document.querySelectorAll('input[name="pearblog_image_post_ids[]"]');
-					for (var i = 0; i < checkboxes.length; i++) {
-						checkboxes[i].checked = this.checked;
-					}
-				});
-				</script>
-			<?php endif; ?>
+						</ul>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<input type="hidden" name="action" value="pearblog_clear_queue" />
+							<?php wp_nonce_field( 'pearblog_clear_queue' ); ?>
+							<div class="pb-admin-actions">
+								<button type="submit" class="pb-admin-btn pb-admin-btn-danger">
+									🗑️ <?php esc_html_e( 'Clear Queue', 'pearblog-engine' ); ?>
+								</button>
+							</div>
+						</form>
+					</div>
+				<?php endif; ?>
 
-			<!-- Fix missing alt texts -->
-			<?php if ( $img_summary['missing_alt'] > 0 ) : ?>
-				<h3><?php esc_html_e( 'Fix Missing Alt Texts', 'pearblog-engine' ); ?></h3>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin: 10px 0;">
-					<input type="hidden" name="action" value="pearblog_fix_alt_texts" />
-					<?php wp_nonce_field( 'pearblog_fix_alt_texts' ); ?>
-					<?php submit_button(
-						sprintf(
-							/* translators: %d: number of images */
-							__( 'Auto-Fix %d Missing Alt Texts', 'pearblog-engine' ),
-							$img_summary['missing_alt']
-						),
-						'secondary',
-						'',
-						false
-					); ?>
-					<p class="description"><?php esc_html_e( 'Generates alt text from image titles and filenames for SEO and accessibility.', 'pearblog-engine' ); ?></p>
-				</form>
-			<?php endif; ?>
+				<!-- Add topics -->
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">➕</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'Add Topics to Queue', 'pearblog-engine' ); ?></h2>
+					</div>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pearblog_add_topics" />
+						<?php wp_nonce_field( 'pearblog_add_topics' ); ?>
+						<div class="pb-admin-form-row">
+							<label class="pb-admin-label" for="pearblog_topics"><?php esc_html_e( 'Topics (one per line)', 'pearblog-engine' ); ?></label>
+							<textarea id="pearblog_topics" name="pearblog_topics" rows="8" class="pb-admin-textarea" placeholder="<?php esc_attr_e( "Best hiking trails in Tatry\nWeather in Zakopane in winter\nTop restaurants in Kraków", 'pearblog-engine' ); ?>"></textarea>
+							<p class="pb-admin-desc"><?php esc_html_e( 'One topic per line. The pipeline will process them in order on the next scheduled run.', 'pearblog-engine' ); ?></p>
+						</div>
+						<div class="pb-admin-actions">
+							<button type="submit" class="pb-admin-btn pb-admin-btn-primary">
+								➕ <?php esc_html_e( 'Add to Queue', 'pearblog-engine' ); ?>
+							</button>
+						</div>
+					</form>
+				</div>
+			</div><!-- /pb-tab-queue -->
 
-			<hr />
-
-			<!-- Site profile summary -->
-			<h2><?php esc_html_e( 'Active Site Profile', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html( $context->profile->summary() ); ?></p>
-
-			<hr />
-
-			<!-- Topic queue -->
-			<h2><?php esc_html_e( 'Topic Queue', 'pearblog-engine' ); ?></h2>
-			<p>
-				<?php
-				echo esc_html( sprintf(
-					/* translators: %d: number of topics in queue */
-					_n( '%d topic in queue.', '%d topics in queue.', $queue->count(), 'pearblog-engine' ),
-					$queue->count()
-				) );
-				?>
-			</p>
-
-			<?php if ( $queue->count() > 0 ) : ?>
-				<ol>
-					<?php foreach ( $queue->all() as $topic ) : ?>
-						<li><?php echo esc_html( $topic ); ?></li>
-					<?php endforeach; ?>
-				</ol>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-					<input type="hidden" name="action" value="pearblog_clear_queue" />
-					<?php wp_nonce_field( 'pearblog_clear_queue' ); ?>
-					<?php submit_button( __( 'Clear Queue', 'pearblog-engine' ), 'delete', '', false ); ?>
-				</form>
-			<?php endif; ?>
-
-			<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
-				<input type="hidden" name="action" value="pearblog_add_topics" />
-				<?php wp_nonce_field( 'pearblog_add_topics' ); ?>
-				<table class="form-table" role="presentation">
-					<tr>
-						<th scope="row"><label for="pearblog_topics"><?php esc_html_e( 'Add Topics (one per line)', 'pearblog-engine' ); ?></label></th>
-						<td><textarea id="pearblog_topics" name="pearblog_topics" rows="6" class="large-text"></textarea></td>
-					</tr>
-				</table>
-				<?php submit_button( __( 'Add to Queue', 'pearblog-engine' ) ); ?>
-			</form>
-		</div>
+		</div><!-- /pb-admin-wrap -->
 		<?php
 	}
 
