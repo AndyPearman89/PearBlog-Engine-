@@ -172,11 +172,11 @@ function pearblog_get_affiliate_offers($location = '') {
         $offers = array_merge($offers, $manual_offers);
     }
 
-    // Option 2: Get offers from Booking.com API (if configured)
+    // Option 2: Get offers from Booking.com (affiliate ID required; API key optional)
     $booking_api_key = get_option('pearblog_booking_api_key', '');
     $booking_affiliate_id = get_option('pearblog_booking_affiliate_id', '');
 
-    if (!empty($booking_api_key) && !empty($booking_affiliate_id)) {
+    if (!empty($booking_affiliate_id)) {
         $booking_offers = pearblog_fetch_booking_offers($location, $booking_api_key, $booking_affiliate_id);
         if (!empty($booking_offers)) {
             $offers = array_merge($offers, $booking_offers);
@@ -203,19 +203,46 @@ function pearblog_get_affiliate_offers($location = '') {
 }
 
 /**
- * Fetch offers from Booking.com API
+ * Fetch offers from Booking.com via deep links.
  *
- * Note: This is a placeholder. You'll need to implement actual Booking.com API integration
- * or use their affiliate program links
+ * Booking.com affiliates use parameterised search URLs rather than a product
+ * API, so no API key is required — only the partner affiliate ID (aid).
+ * If a Booking.com Affiliate API key is also provided, this function can be
+ * extended to call their Demand API for live pricing data.
+ *
+ * @param string $location     Destination name (e.g. "Zakopane").
+ * @param string $api_key      Booking.com API key (optional – reserved for future Demand API use).
+ * @param string $affiliate_id Booking.com partner/affiliate ID (aid).
+ * @return array Array of offer arrays compatible with pearblog_get_affiliate_offers().
  */
 function pearblog_fetch_booking_offers($location, $api_key, $affiliate_id) {
-    // Placeholder for Booking.com API integration
-    // In production, this would make an API call to Booking.com
+    if (empty($affiliate_id) || empty($location)) {
+        return array();
+    }
 
-    // For now, return empty array
-    // You would implement actual API call here
+    $search_url = add_query_arg(
+        array(
+            'aid'  => rawurlencode($affiliate_id),
+            'ss'   => rawurlencode($location),
+            'lang' => 'pl',
+        ),
+        'https://www.booking.com/searchresults.html'
+    );
 
-    return array();
+    return array(
+        array(
+            'source' => 'booking',
+            'name'   => sprintf(
+                /* translators: %s: destination name */
+                __('Noclegi w %s – Booking.com', 'pearblog-theme'),
+                $location
+            ),
+            'price'  => '',
+            'rating' => 0,
+            'url'    => $search_url,
+            'image'  => '',
+        ),
+    );
 }
 
 /**
