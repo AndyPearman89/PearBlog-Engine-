@@ -2,6 +2,20 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [4.3.0] — 2026-04-04
+
+### Added
+- `mu-plugins/pearblog-engine/README.md` — plugin architecture documentation covering all 11 modules, WordPress options, filters, and REST API.
+- `scripts/README.md` — Python automation suite documentation with module details, environment variables, and usage examples.
+
+### Fixed
+- **Workflow:** `run-roadmap.yml` git rebase now falls back to merge on conflict instead of silently aborting.
+
+### Changed
+- `.gitignore` — added `.env` and `.env.*` patterns for secret protection.
+- `logs/.gitkeep` replaced with `logs/.gitignore` (properly ignores log files while keeping directory).
+- `DOCUMENTATION-INDEX.md` updated to reference new documentation and bumped to v4.3.
+
 ## [4.2.0] — 2026-04-04
 
 ### Fixed

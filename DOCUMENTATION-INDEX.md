@@ -31,6 +31,13 @@
 |----------|---------|
 | [theme/pearblog-theme/README.md](theme/pearblog-theme/README.md) | Theme features, layout, customization |
 
+### Plugin & Scripts
+
+| Document | Summary |
+|----------|---------|
+| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin architecture, modules, options, filters, REST API |
+| [scripts/README.md](scripts/README.md) | Python automation suite, environment variables, usage |
+
 ### Brand Assets
 
 | Document | Summary |
@@ -47,6 +54,8 @@
 | Get started quickly | [SETUP.md](SETUP.md) → [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) |
 | Understand how it works | [README.md](README.md) → [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) |
 | Make money from this | [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) → [MARKETING-GUIDE.md](MARKETING-GUIDE.md) |
+| Understand the plugin architecture | [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) |
+| Run Python automation scripts | [scripts/README.md](scripts/README.md) |
 | Create travel content | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) |
 | Scale to multiple sites | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 7 |
 | Optimize costs | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 9 |
@@ -57,7 +66,7 @@
 ## 🔧 Architecture Overview
 
 ```
-PearBlog Engine v4.2
+PearBlog Engine v4.3
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
 │   ├── src/Pipeline/               # 7-step autonomous content pipeline
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 integration
@@ -119,4 +128,4 @@ Topic Queue → PromptBuilder (Factory) → GPT-4o-mini → SEO Engine
 
 ---
 
-*PearBlog Engine v4.2 — Built for systematic content entrepreneurs*
+*PearBlog Engine v4.3 — Built for systematic content entrepreneurs*
