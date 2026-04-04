@@ -57,7 +57,7 @@ class KeywordCluster {
 	}
 
 	// -----------------------------------------------------------------------
-	// Serialisation helpers (used by ClusterEngine)
+	// Serialisation helpers
 	// -----------------------------------------------------------------------
 
 	/**

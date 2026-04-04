@@ -63,7 +63,11 @@ class SEOEngine {
 		 */
 		do_action( 'pearblog_seo_applied', $post_id, $title, $meta_description );
 
-		return compact( 'title', 'meta_description', 'content' => $body );
+		return [
+			'title'            => $title,
+			'meta_description' => $meta_description,
+			'content'          => $body,
+		];
 	}
 
 	/**

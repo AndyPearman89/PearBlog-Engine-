@@ -57,19 +57,22 @@
 ## 🔧 Architecture Overview
 
 ```
-PearBlog Engine v4.0
+PearBlog Engine v4.2
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
 │   ├── src/Pipeline/               # 7-step autonomous content pipeline
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 integration
-│   ├── src/Content/                # 4 prompt builders (Generic → Travel → Beskidy → MultiLang)
-│   ├── src/SEO/                    # Automatic SEO optimization
-│   ├── src/Monetization/           # AdSense + affiliate injection
+│   ├── src/Content/                # 4 prompt builders + validator + scorer
+│   ├── src/SEO/                    # SEO metadata engine
+│   ├── src/Monetization/           # AdSense + SaaS CTA injection
 │   ├── src/Scheduler/              # WP-Cron management
+│   ├── src/Keywords/               # Keyword clustering
+│   ├── src/API/                    # REST automation endpoints
+│   ├── src/Admin/                  # WordPress admin page
 │   └── src/Tenant/                 # Multi-site context
 │
 ├── theme/pearblog-theme/           # SEO-first WordPress theme
 │   ├── inc/                        # Monetization, analytics, lead gen, customizer
-│   ├── template-parts/             # Reusable blocks (affiliate, ads, FAQ, TOC)
+│   ├── template-parts/             # Reusable blocks (affiliate, ads, FAQ, TOC, TL;DR)
 │   └── assets/                     # CSS + JS
 │
 └── scripts/                        # Python automation (optional)
@@ -116,4 +119,4 @@ Topic Queue → PromptBuilder (Factory) → GPT-4o-mini → SEO Engine
 
 ---
 
-*PearBlog Engine v4.0 — Built for systematic content entrepreneurs*
+*PearBlog Engine v4.2 — Built for systematic content entrepreneurs*

@@ -2,6 +2,23 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [4.2.0] — 2026-04-04
+
+### Fixed
+- **CRITICAL:** `SEOEngine::apply()` — `compact()` call with `=>` syntax caused PHP parse error, breaking the entire content pipeline. Replaced with array literal.
+
+### Added
+- `template-parts/block-tldr.php` — missing template part called from `dynamic-content.php` for TL;DR rendering.
+
+### Removed
+- Dead code PHP classes never instantiated anywhere in the codebase:
+  - `ContentScorer.php` — unused content scoring class.
+  - `ClusterEngine.php` — unused cluster registry.
+  - `InternalLinker.php` — unused internal link injector.
+  - `KeywordEngine.php` (PHP) — functionality handled by Python `keyword_engine.py`.
+- `logs/README.md` — placeholder in otherwise empty directory.
+- `.github/images/README.md` — specification for non-existent screenshot.
+
 ## [4.1.0] — 2026-04-04
 
 ### Removed
