@@ -37,6 +37,8 @@ require_once PEARBLOG_DIR . '/inc/widgets.php';
 require_once PEARBLOG_DIR . '/inc/customizer.php';
 require_once PEARBLOG_DIR . '/inc/gutenberg-blocks.php';
 require_once PEARBLOG_DIR . '/inc/dashboard-widget.php';
+require_once PEARBLOG_DIR . '/inc/ab-testing-metabox.php';
+require_once PEARBLOG_DIR . '/inc/analytics-page.php';
 
 /**
  * Theme setup

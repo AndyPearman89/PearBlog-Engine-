@@ -1,0 +1,191 @@
+/**
+ * PearBlog Analytics Admin Page Styles
+ *
+ * @package PearBlog
+ * @version 2.1.0
+ */
+
+.pb-analytics-wrap {
+	max-width: 1200px;
+}
+
+/* Summary cards */
+.pb-analytics-cards {
+	display: grid;
+	grid-template-columns: repeat(6, 1fr);
+	gap: 12px;
+	margin-bottom: 20px;
+}
+
+.pb-analytics-card {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 16px;
+	text-align: center;
+}
+
+.pb-analytics-card-number {
+	display: block;
+	font-size: 28px;
+	font-weight: 700;
+	color: #2563eb;
+	line-height: 1.2;
+}
+
+.pb-analytics-card-label {
+	display: block;
+	font-size: 11px;
+	color: #646970;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-top: 4px;
+}
+
+/* Sections */
+.pb-analytics-section {
+	background: #fff;
+	border: 1px solid #c3c4c7;
+	border-radius: 6px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.pb-analytics-section h2 {
+	margin: 0 0 16px;
+	padding-bottom: 10px;
+	border-bottom: 1px solid #f0f0f1;
+	font-size: 16px;
+}
+
+.pb-analytics-section h3 {
+	font-size: 14px;
+	margin: 16px 0 10px;
+}
+
+/* Two-column layout */
+.pb-analytics-columns {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: 20px;
+}
+
+/* Tables */
+.pb-analytics-section .widefat {
+	border: none;
+	box-shadow: none;
+}
+
+.pb-analytics-section .widefat th {
+	font-size: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.3px;
+	color: #646970;
+}
+
+/* Score badge */
+.pb-analytics-score {
+	display: inline-block;
+	background: #dbeafe;
+	color: #1d4ed8;
+	padding: 2px 8px;
+	border-radius: 10px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pb-analytics-no-data {
+	color: #a0a5aa;
+}
+
+/* A/B test badges */
+.pb-analytics-winner {
+	display: inline-block;
+	background: #dcfce7;
+	color: #166534;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.pb-analytics-running {
+	display: inline-block;
+	background: #fef9c3;
+	color: #854d0e;
+	padding: 2px 8px;
+	border-radius: 3px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+/* Category list */
+.pb-analytics-category-list {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+}
+
+.pb-analytics-category-list li {
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 8px;
+	align-items: center;
+	padding: 6px 0;
+	border-bottom: 1px solid #f0f0f1;
+}
+
+.pb-analytics-category-list li:last-child {
+	border-bottom: none;
+}
+
+.pb-analytics-cat-name {
+	font-size: 13px;
+}
+
+.pb-analytics-cat-count {
+	font-size: 12px;
+	color: #646970;
+	font-weight: 600;
+	text-align: right;
+}
+
+.pb-analytics-cat-bar {
+	grid-column: 1 / -1;
+	height: 4px;
+	background: #f0f0f1;
+	border-radius: 2px;
+	overflow: hidden;
+}
+
+.pb-analytics-cat-bar-fill {
+	height: 100%;
+	background: #2563eb;
+	border-radius: 2px;
+	transition: width 0.3s ease;
+}
+
+/* Empty state */
+.pb-analytics-empty {
+	color: #646970;
+	font-style: italic;
+	text-align: center;
+	padding: 20px;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+	.pb-analytics-cards {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.pb-analytics-columns {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 600px) {
+	.pb-analytics-cards {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
