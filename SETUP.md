@@ -17,6 +17,52 @@
    - **Name**: `API_KEY`
      **Value**: Your API authentication key
 
+---
+
+## Server Deployment Setup
+
+The **Deploy to WordPress Server** workflow (`.github/workflows/deploy.yml`) pushes the
+mu-plugin and theme directly to your server via SSH/rsync whenever `main` is updated.
+
+### Required secrets for deployment
+
+| Secret | Description | Example |
+|---|---|---|
+| `SSH_HOST` | Server hostname or IP address | `185.23.45.67` |
+| `SSH_USER` | SSH login username | `deploy` |
+| `SSH_PRIVATE_KEY` | Private SSH key (full contents of `~/.ssh/id_ed25519`) | `-----BEGIN OPENSSH...` |
+| `WP_PATH` | Absolute path to WordPress root on the server | `/var/www/html` |
+| `SSH_PORT` | *(optional)* SSH port, default `22` | `22` |
+
+### One-time server preparation
+
+1. **Create a deploy key on your machine:**
+   ```bash
+   ssh-keygen -t ed25519 -C "github-deploy" -f ~/.ssh/pearblog_deploy
+   ```
+2. **Authorise the key on the server:**
+   ```bash
+   ssh-copy-id -i ~/.ssh/pearblog_deploy.pub $SSH_USER@$SSH_HOST
+   ```
+3. **Paste the private key** (`cat ~/.ssh/pearblog_deploy`) into the `SSH_PRIVATE_KEY` secret.
+4. **Add the remaining secrets** listed in the table above.
+
+### What gets deployed
+
+| Local path | WordPress destination |
+|---|---|
+| `mu-plugins/pearblog-engine/` | `{WP_PATH}/wp-content/mu-plugins/pearblog-engine/` |
+| `theme/pearblog-theme/` | `{WP_PATH}/wp-content/themes/pearblog-theme/` |
+
+After rsync the workflow flushes the WordPress object cache automatically (requires WP-CLI on the server).
+
+### Trigger the workflow
+
+- **Automatically** — on every push to `main` that changes `mu-plugins/**` or `theme/**`
+- **Manually** — go to **Actions** → *Deploy to WordPress Server* → **Run workflow**
+
+---
+
 ### Step 2: Enable GitHub Actions
 
 1. Go to **Actions** tab in your repository
