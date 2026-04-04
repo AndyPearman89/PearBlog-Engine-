@@ -42,8 +42,9 @@ All autonomous content generation features described in the documentation have b
 | **Site Profile Management** | ✅ COMPLETE | `src/Tenant/SiteProfile.php` | Full file |
 | **Plugin Bootstrap** | ✅ COMPLETE | `src/Core/Plugin.php` | Lines 38-41 |
 | **PSR-4 Autoloading** | ✅ COMPLETE | `pearblog-engine.php` | Lines 26-40 |
+| **Automation REST API** | ✅ COMPLETE | `src/API/AutomationController.php` | Full file |
 
-**Total Features:** 24/24 ✅
+**Total Features:** 25/25 ✅
 **Implementation Rate:** 100%
 **Production Ready:** YES ✅
 
@@ -382,7 +383,9 @@ public static function create( SiteProfile $profile ): PromptBuilder {
 **Implemented:**
 - ✅ AdSense auto-injection after first paragraph
 - ✅ Sticky mobile ad support
-- ✅ Filter hooks for affiliate plugins
+- ✅ Affiliate deep-link boxes (Booking.com)
+- ✅ SaaS CTA keyword-matched product recommendations (v3)
+- ✅ Filter hooks for affiliate and SaaS plugins
 - ✅ Revenue tracking metadata
 
 **Configuration:**
@@ -390,12 +393,15 @@ public static function create( SiteProfile $profile ): PromptBuilder {
 pearblog_monetization           // adsense|affiliate|saas
 pearblog_adsense_publisher_id   // AdSense ID
 pearblog_adsense_slot_content   // Ad slot ID
+pearblog_booking_affiliate_id   // Booking.com partner ID
+pearblog_saas_products          // JSON array of SaaS products
 ```
 
 **Extensibility Hooks:**
 ```php
 apply_filters( 'pearblog_affiliate_content', $content );
-apply_filters( 'pearblog_saas_cta_content', $content );
+apply_filters( 'pearblog_saas_cta_content', $content, $matched );
+apply_filters( 'pearblog_saas_products', $products );
 ```
 
 ---
@@ -650,7 +656,7 @@ mu-plugins/pearblog-engine/
     │   └── ClusterEngine.php         # Topic cluster SEO strategy
     │
     ├── Monetization/
-    │   └── MonetizationEngine.php    # AdSense/affiliate injection
+    │   └── MonetizationEngine.php    # AdSense/affiliate/SaaS CTA injection
     │
     ├── Keywords/
     │   ├── KeywordEngine.php         # AI keyword generation
@@ -660,12 +666,15 @@ mu-plugins/pearblog-engine/
     │   ├── TenantContext.php         # Multi-site context management
     │   └── SiteProfile.php           # Per-site configuration
     │
+    ├── API/
+    │   └── AutomationController.php  # REST API for external automation
+    │
     └── Admin/
         └── AdminPage.php             # WordPress admin settings UI
 ```
 
-**Total Files:** 24 PHP classes
-**Lines of Code:** ~6,000+ LOC
+**Total Files:** 25 PHP classes
+**Lines of Code:** ~6,500+ LOC
 **Architecture:** Clean, modular, PSR-4 compliant
 **Quality:** Production-ready with error handling
 

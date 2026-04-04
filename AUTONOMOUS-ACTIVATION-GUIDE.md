@@ -82,6 +82,7 @@ Sprawdź logi w: /wp-content/debug.log
 | Opcja | Opis | Wartość Domyślna |
 |-------|------|------------------|
 | `pearblog_openai_api_key` | Klucz API OpenAI | *wymagane* |
+| `pearblog_api_key` | Klucz API dla automatyzacji (GitHub Actions) | *opcjonalne* |
 | `pearblog_industry` | Branża/niche | `general` |
 | `pearblog_tone` | Ton pisania | `neutral` |
 | `pearblog_language` | Język contentu | `en` |
@@ -493,6 +494,37 @@ TOTAL: $57.82/miesiąc
 ---
 
 **🎉 System Gotowy! Autonomiczna Produkcja Włączona!**
+
+---
+
+## 🔌 GitHub Actions – External Automation API
+
+The PearBlog Engine exposes REST API endpoints that allow the external Python
+automation scripts (`automation_orchestrator.py`, `run_pipeline.py`) running in
+GitHub Actions to drive the WordPress-side pipeline remotely.
+
+### Endpoints
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| POST | `/wp-json/pearblog/v1/automation/create-content` | Queue topic + run pipeline immediately |
+| POST | `/wp-json/pearblog/v1/automation/process-content` | Trigger next pipeline cycle(s) |
+| GET  | `/wp-json/pearblog/v1/automation/status` | Queue length, next topic, profile info |
+
+### Setup
+
+1. Generate a strong API key (e.g. `openssl rand -hex 32`).
+2. In WordPress: **Settings → PearBlog Engine → Automation API Key** — paste the key.
+3. In GitHub: **Settings → Secrets → Actions** — add `API_KEY` with the same value.
+4. Add `SITE_URL` secret with your WordPress URL (e.g. `https://pearblog.pro`).
+5. Add `API_ENDPOINT` secret with `/wp-json/pearblog/v1/automation/process-content`.
+
+### Authentication
+
+All requests must include a `Authorization: Bearer <API_KEY>` header.
+Admin users authenticated via WordPress cookie/application-password are also accepted.
+
+---
 
 *PearBlog Engine - Autonomous Content Production with AI Image Generation*
 *Version 4.0 - Fully Autonomous Mode*

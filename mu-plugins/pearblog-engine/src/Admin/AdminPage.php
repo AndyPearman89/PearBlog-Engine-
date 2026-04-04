@@ -58,6 +58,12 @@ class AdminPage {
 		// Image generation settings.
 		register_setting( self::OPTION_GRP, 'pearblog_enable_image_generation', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
 		register_setting( self::OPTION_GRP, 'pearblog_image_style',             [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// SaaS CTA settings.
+		register_setting( self::OPTION_GRP, 'pearblog_saas_products', [ 'sanitize_callback' => [ $this, 'sanitize_saas_products' ] ] );
+
+		// Automation API settings.
+		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -142,6 +148,13 @@ class AdminPage {
 					<tr>
 						<th scope="row"><label for="pearblog_openai_api_key"><?php esc_html_e( 'OpenAI API Key', 'pearblog-engine' ); ?></label></th>
 						<td><input type="password" id="pearblog_openai_api_key" name="pearblog_openai_api_key" value="<?php echo esc_attr( get_option( 'pearblog_openai_api_key', '' ) ); ?>" class="regular-text" /></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_api_key"><?php esc_html_e( 'Automation API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_api_key" name="pearblog_api_key" value="<?php echo esc_attr( get_option( 'pearblog_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Bearer token for external automation (GitHub Actions). Set this as API_KEY secret in your repository.', 'pearblog-engine' ); ?></p>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="pearblog_adsense_publisher_id"><?php esc_html_e( 'AdSense Publisher ID', 'pearblog-engine' ); ?></label></th>
@@ -241,6 +254,20 @@ class AdminPage {
 								?>
 							</select>
 							<p class="description"><?php esc_html_e( 'Visual style for AI-generated images', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'SaaS CTA Monetisation (v3)', 'pearblog-engine' ); ?></h2>
+				<p class="description"><?php esc_html_e( 'Configure SaaS product recommendations. Articles are scanned for matching keywords and a CTA box is injected automatically. Set "Monetisation Strategy" above to "SaaS (v3)" to activate pipeline injection, or use the pearblog_saas_cta_content filter for manual control.', 'pearblog-engine' ); ?></p>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="pearblog_saas_products"><?php esc_html_e( 'SaaS Products (JSON)', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<textarea id="pearblog_saas_products" name="pearblog_saas_products" rows="10" class="large-text code"><?php echo esc_textarea( get_option( 'pearblog_saas_products', '[]' ) ); ?></textarea>
+							<p class="description">
+								<?php esc_html_e( 'JSON array of products. Each product: {"name":"…","url":"https://…","keywords":["kw1","kw2"],"description":"…","cta_text":"…"}', 'pearblog-engine' ); ?>
+							</p>
 						</td>
 					</tr>
 				</table>
@@ -360,6 +387,64 @@ class AdminPage {
 	 */
 	public function sanitize_checkbox( $value ): bool {
 		return (bool) $value;
+	}
+
+	/**
+	 * Sanitize the SaaS products JSON field.
+	 *
+	 * Validates JSON structure and sanitises each product entry.
+	 * Returns cleaned JSON string, or '[]' on invalid input.
+	 *
+	 * @param mixed $value Raw input value.
+	 * @return string Sanitised JSON string.
+	 */
+	public function sanitize_saas_products( $value ): string {
+		$value = (string) $value;
+
+		if ( '' === trim( $value ) ) {
+			return '[]';
+		}
+
+		$decoded = json_decode( $value, true );
+
+		if ( ! is_array( $decoded ) ) {
+			add_settings_error(
+				'pearblog_saas_products',
+				'invalid_json',
+				__( 'SaaS Products: Invalid JSON. Value was reset to empty.', 'pearblog-engine' )
+			);
+			return '[]';
+		}
+
+		$clean = [];
+		foreach ( $decoded as $product ) {
+			if ( ! is_array( $product ) ) {
+				continue;
+			}
+
+			$name = sanitize_text_field( $product['name'] ?? '' );
+			$url  = esc_url_raw( $product['url'] ?? '' );
+
+			if ( '' === $name || '' === $url ) {
+				continue;
+			}
+
+			$keywords = $product['keywords'] ?? [];
+			if ( is_string( $keywords ) ) {
+				$keywords = array_filter( array_map( 'trim', explode( ',', $keywords ) ) );
+			}
+			$keywords = array_values( array_map( 'sanitize_text_field', (array) $keywords ) );
+
+			$clean[] = [
+				'name'        => $name,
+				'url'         => $url,
+				'keywords'    => $keywords,
+				'description' => sanitize_text_field( $product['description'] ?? '' ),
+				'cta_text'    => sanitize_text_field( $product['cta_text'] ?? '' ),
+			];
+		}
+
+		return (string) wp_json_encode( $clean, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT );
 	}
 
 	private function redirect_with_notice( string $message, string $type = 'success' ): void {

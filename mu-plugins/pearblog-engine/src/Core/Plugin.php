@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Core;
 
+use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Admin\AdminPage;
 
@@ -38,5 +39,10 @@ class Plugin {
 	public function boot(): void {
 		( new CronManager() )->register();
 		( new AdminPage() )->register();
+
+		// REST API – automation endpoints for external scripts.
+		add_action( 'rest_api_init', static function (): void {
+			( new AutomationController() )->register_routes();
+		} );
 	}
 }
