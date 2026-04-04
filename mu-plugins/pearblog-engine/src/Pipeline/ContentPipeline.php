@@ -18,6 +18,7 @@ use PearBlogEngine\Content\PromptBuilder;
 use PearBlogEngine\Content\PromptBuilderFactory;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Monetization\MonetizationEngine;
+use PearBlogEngine\SEO\ProgrammaticSEO;
 use PearBlogEngine\SEO\SEOEngine;
 use PearBlogEngine\Tenant\TenantContext;
 
@@ -41,11 +42,15 @@ class ContentPipeline {
 	/** @var SEOEngine */
 	private SEOEngine $seo;
 
+	/** @var ProgrammaticSEO */
+	private ProgrammaticSEO $programmatic_seo;
+
 	public function __construct( TenantContext $context, ?AIClient $ai = null, ?ImageGenerator $image_generator = null ) {
-		$this->context         = $context;
-		$this->ai              = $ai ?? new AIClient();
-		$this->image_generator = $image_generator ?? new ImageGenerator();
-		$this->seo             = new SEOEngine();
+		$this->context           = $context;
+		$this->ai                = $ai ?? new AIClient();
+		$this->image_generator   = $image_generator ?? new ImageGenerator();
+		$this->seo               = new SEOEngine();
+		$this->programmatic_seo  = new ProgrammaticSEO();
 	}
 
 	/**
@@ -90,6 +95,17 @@ class ContentPipeline {
 
 		// Step 6 – Generate and attach featured image (AI-generated).
 		$this->generate_featured_image( $post_id, $seo_data['title'] ?: $topic );
+
+		// Step 6b – Auto-generate meta description if not provided by AI.
+		$existing_meta = get_post_meta( $post_id, 'pearblog_meta_description', true );
+		if ( empty( $existing_meta ) ) {
+			$auto_desc = $this->programmatic_seo->generate_meta_description( $final_content );
+			if ( '' !== $auto_desc ) {
+				update_post_meta( $post_id, 'pearblog_meta_description', $auto_desc );
+				update_post_meta( $post_id, '_yoast_wpseo_metadesc', $auto_desc );
+				update_post_meta( $post_id, 'rank_math_description', $auto_desc );
+			}
+		}
 
 		// Step 7 – Update post with final content and publish.
 		wp_update_post( [
