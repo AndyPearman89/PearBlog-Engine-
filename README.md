@@ -62,7 +62,6 @@ Enterprise-grade AI SEO content pipeline with specialized travel content builder
 - 💰 **Travel Monetization** - Natural accommodation recommendations with soft CTAs
 
 **See:** [`TRAVEL-CONTENT-ENGINE.md`](TRAVEL-CONTENT-ENGINE.md) for full documentation
-**Quick Ref:** [`BESKIDY-QUICK-REFERENCE.md`](BESKIDY-QUICK-REFERENCE.md) for quick access
 
 ### `/theme/pearblog-theme/` v2 PRO
 
