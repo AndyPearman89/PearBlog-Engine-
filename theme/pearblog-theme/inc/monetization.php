@@ -340,3 +340,161 @@ function pearblog_get_revenue_summary($type = 'all', $days_back = 30) {
         'types'  => $by_type,
     );
 }
+
+/**
+ * Extract location from content (title or post content)
+ *
+ * @param string $content Content to extract location from
+ * @return string|null Location or null if not found
+ */
+function pearblog_extract_location_from_content($content = '') {
+    if (empty($content)) {
+        return null;
+    }
+
+    // Common location patterns for Polish/European travel content
+    $location_patterns = array(
+        // Polish regions/cities
+        '/\b(Kraków|Krakow|Warszawa|Warsaw|Gdańsk|Gdansk|Poznań|Poznan|Wrocław|Wroclaw|Zakopane|Beskidy|Tatry|Bieszczady)\b/iu',
+        // European capitals
+        '/\b(Paris|London|Berlin|Rome|Madrid|Vienna|Prague|Amsterdam|Brussels|Budapest)\b/iu',
+        // Popular travel locations
+        '/\b(Barcelona|Venice|Florence|Milan|Lisbon|Athens|Dublin|Edinburgh|Stockholm|Copenhagen)\b/iu',
+    );
+
+    foreach ($location_patterns as $pattern) {
+        if (preg_match($pattern, $content, $matches)) {
+            return $matches[1];
+        }
+    }
+
+    // Try to get from custom taxonomy
+    $locations = wp_get_post_terms(get_the_ID(), 'location', array('fields' => 'names'));
+    if (!empty($locations) && !is_wp_error($locations)) {
+        return $locations[0];
+    }
+
+    return null;
+}
+
+/**
+ * Render affiliate box
+ *
+ * @param array $args Configuration arguments
+ */
+function pearblog_affiliate_box($args = array()) {
+    $defaults = array(
+        'position' => 'top',
+        'location' => null,
+        'fallback_enabled' => true,
+        'priority' => 'booking', // booking, airbnb, saas
+    );
+
+    $args = wp_parse_args($args, $defaults);
+
+    // Get affiliate configuration
+    $affiliate_enabled = get_option('pearblog_affiliate_enabled', true);
+    if (!$affiliate_enabled) {
+        return;
+    }
+
+    // Get location
+    $location = $args['location'];
+    if (empty($location)) {
+        $location = get_post_meta(get_the_ID(), 'pearblog_location', true);
+    }
+
+    // Fetch affiliate offers based on priority
+    $offers = array();
+    $priority = explode(',', $args['priority']);
+
+    foreach ($priority as $provider) {
+        $provider = trim($provider);
+
+        if ($provider === 'booking' && !empty($location)) {
+            $offers = pearblog_fetch_booking_offers($location);
+            if (!empty($offers)) {
+                break;
+            }
+        } elseif ($provider === 'airbnb' && !empty($location)) {
+            $offers = pearblog_fetch_airbnb_offers($location);
+            if (!empty($offers)) {
+                break;
+            }
+        } elseif ($provider === 'saas') {
+            // SaaS CTA handled by MonetizationEngine plugin
+            // This is fallback rendering
+            $offers = pearblog_get_saas_cta(get_the_ID());
+            if (!empty($offers)) {
+                break;
+            }
+        }
+    }
+
+    // Fallback to generic CTA if no offers
+    if (empty($offers) && $args['fallback_enabled']) {
+        get_template_part('template-parts/block', 'cta', array(
+            'position' => $args['position'],
+        ));
+        return;
+    }
+
+    // Render affiliate box
+    if (!empty($offers)) {
+        get_template_part('template-parts/block', 'affiliate', array(
+            'offers' => $offers,
+            'position' => $args['position'],
+            'location' => $location,
+        ));
+    }
+}
+
+/**
+ * Get SaaS CTA for post
+ *
+ * @param int $post_id Post ID
+ * @return array|null SaaS product CTA or null
+ */
+function pearblog_get_saas_cta($post_id = null) {
+    if (!$post_id) {
+        $post_id = get_the_ID();
+    }
+
+    // Get SaaS products from option
+    $saas_products = get_option('pearblog_saas_products', array());
+    if (empty($saas_products)) {
+        return null;
+    }
+
+    // Get post content for keyword matching
+    $content = get_post_field('post_content', $post_id);
+    $title = get_post_field('post_title', $post_id);
+    $full_text = strtolower($title . ' ' . $content);
+
+    // Find best matching product
+    $best_match = null;
+    $best_score = 0;
+
+    foreach ($saas_products as $product) {
+        if (empty($product['keywords'])) {
+            continue;
+        }
+
+        $score = 0;
+        $keywords = explode(',', $product['keywords']);
+
+        foreach ($keywords as $keyword) {
+            $keyword = trim(strtolower($keyword));
+            if (strpos($full_text, $keyword) !== false) {
+                $score++;
+            }
+        }
+
+        if ($score > $best_score) {
+            $best_score = $score;
+            $best_match = $product;
+        }
+    }
+
+    return $best_match;
+}

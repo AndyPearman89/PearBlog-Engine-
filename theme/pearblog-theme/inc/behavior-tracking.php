@@ -29,8 +29,9 @@ function pb_user_metrics($metrics = array()) {
 
     $table_name = $wpdb->prefix . 'pb_user_metrics';
 
-    // Check if table exists
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+    // Check if table exists (use esc_like for LIKE pattern)
+    $like_pattern = $wpdb->esc_like($table_name);
+    if ($wpdb->get_var($wpdb->prepare("SHOW TABLES LIKE %s", $like_pattern)) != $table_name) {
         pb_create_metrics_table();
     }
 

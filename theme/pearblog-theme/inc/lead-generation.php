@@ -60,7 +60,7 @@ function pearblog_register_lead_endpoints() {
     register_rest_route('pearblog/v1', '/leads', array(
         'methods' => 'POST',
         'callback' => 'pearblog_api_submit_lead',
-        'permission_callback' => '__return_true',
+        'permission_callback' => 'pearblog_lead_permission_check',
         'args' => array(
             'name' => array(
                 'required' => true,
@@ -117,6 +117,49 @@ function pearblog_register_lead_endpoints() {
     ));
 }
 add_action('rest_api_init', 'pearblog_register_lead_endpoints');
+
+/**
+ * Permission check for lead submission with rate limiting
+ *
+ * @param WP_REST_Request $request Request object
+ * @return bool|WP_Error True if allowed, WP_Error if rate limited
+ */
+function pearblog_lead_permission_check($request) {
+    // Check rate limiting
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    if (empty($ip)) {
+        return new WP_Error('no_ip', __('Unable to determine IP address', 'pearblog-theme'), array('status' => 403));
+    }
+
+    // Rate limit: 5 submissions per IP per hour
+    $rate_limit_key = 'pearblog_lead_rate_' . md5($ip);
+    $submissions = get_transient($rate_limit_key);
+
+    if ($submissions === false) {
+        $submissions = array();
+    }
+
+    // Clean old submissions (older than 1 hour)
+    $one_hour_ago = time() - HOUR_IN_SECONDS;
+    $submissions = array_filter($submissions, function($timestamp) use ($one_hour_ago) {
+        return $timestamp > $one_hour_ago;
+    });
+
+    // Check if limit exceeded
+    if (count($submissions) >= 5) {
+        return new WP_Error(
+            'rate_limit_exceeded',
+            __('Too many submissions. Please try again later.', 'pearblog-theme'),
+            array('status' => 429)
+        );
+    }
+
+    // Add current submission
+    $submissions[] = time();
+    set_transient($rate_limit_key, $submissions, HOUR_IN_SECONDS);
+
+    return true;
+}
 
 /**
  * API Callback: Submit a lead

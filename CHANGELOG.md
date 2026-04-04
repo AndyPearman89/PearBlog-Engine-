@@ -2,6 +2,33 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [5.0.0] — 2026-04-04
+
+### Added - Missing Theme Functions
+- **`pearblog_extract_location_from_content()`** — Extract location from article title/content using pattern matching for Polish/European travel destinations (monetization.php:344-378)
+- **`pearblog_affiliate_box()`** — Render affiliate monetization boxes with fallback support for Booking.com, Airbnb, and SaaS CTAs (monetization.php:380-450)
+- **`pearblog_get_saas_cta()`** — Match post content to SaaS products using keyword scoring algorithm (monetization.php:452-500)
+- **`pb_get_headline_variant()`** — A/B testing function that serves headline variants and tracks impressions with session-based consistency (ab-testing-metabox.php:197-258)
+- **`pb_track_ab_impression()`** and **`pb_track_ab_click()`** — Track A/B test metrics with daily and lifetime aggregates (ab-testing-metabox.php:260-312)
+- **`pb_get_ab_test_results()`** — Calculate A/B test results with CTR and automatic winner detection (ab-testing-metabox.php:314-352)
+- **`pb_check_ab_test_winner()`** — Auto-declare winner after 100+ impressions with 10% CTR difference threshold (ab-testing-metabox.php:354-387)
+
+### Added - Security Features
+- **Rate limiting for lead submissions** — `pearblog_lead_permission_check()` function limits submissions to 5 per IP per hour using WordPress transients (lead-generation.php:121-162)
+- **IP-based rate limiting** — Prevents spam and DoS attacks on public REST API endpoints
+
+### Fixed - Critical Security Vulnerabilities
+- **SQL injection in behavior-tracking.php** — Fixed table name interpolation using `$wpdb->prepare()` and `esc_like()` for SHOW TABLES query (behavior-tracking.php:32-36)
+- **Permission callback on lead endpoint** — Changed from `__return_true` to `pearblog_lead_permission_check` with rate limiting (lead-generation.php:63)
+
+### Changed
+- **Theme version** — Updated from 4.0.0 to 5.0.0 for major feature additions
+- **A/B testing integration** — Complete implementation with automatic winner detection and post title updates
+
+### Fixed - Theme Functionality
+- **Missing function calls** — All 6 undefined function calls in single.php now properly implemented
+- **A/B testing meta box** — Now fully functional with result tracking and winner selection
+
 ## [4.3.0] — 2026-04-04
 
 ### Added
