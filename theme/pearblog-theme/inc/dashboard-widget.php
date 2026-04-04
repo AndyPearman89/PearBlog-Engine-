@@ -64,6 +64,15 @@ function pearblog_dashboard_widget_render() {
 	) );
 	$velocity = count( $last_week );
 
+	// Affiliate stats.
+	$affiliate_stats = function_exists( 'pearblog_get_affiliate_stats' ) ? pearblog_get_affiliate_stats() : array( 'booking_clicks' => 0, 'airbnb_clicks' => 0, 'total_clicks' => 0 );
+
+	// Revenue summary (last 30 days).
+	$revenue = function_exists( 'pearblog_get_revenue_summary' ) ? pearblog_get_revenue_summary( 'all', 30 ) : array( 'total' => 0 );
+
+	// Performance score.
+	$perf_score = function_exists( 'pearblog_get_lighthouse_score' ) ? pearblog_get_lighthouse_score() : array( 'performance' => 0 );
+
 	?>
 	<style>
 		.pb-dashboard-grid {
@@ -127,6 +136,17 @@ function pearblog_dashboard_widget_render() {
 			flex: 1;
 			text-align: center;
 		}
+		.pb-dashboard-section-title {
+			margin: 16px 0 8px;
+			font-size: 12px;
+			text-transform: uppercase;
+			letter-spacing: 0.5px;
+			color: #646970;
+			border-bottom: 1px solid #f0f0f1;
+			padding-bottom: 4px;
+		}
+		.pb-dashboard-stat--green .pb-dashboard-stat-number { color: #00a32a; }
+		.pb-dashboard-stat--amber .pb-dashboard-stat-number { color: #dba617; }
 	</style>
 
 	<div class="pb-dashboard-grid">
@@ -153,6 +173,23 @@ function pearblog_dashboard_widget_render() {
 		<div class="pb-dashboard-stat">
 			<span class="pb-dashboard-stat-number"><?php echo esc_html( $queue_count ); ?></span>
 			<span class="pb-dashboard-stat-label"><?php esc_html_e( 'Queue', 'pearblog-theme' ); ?></span>
+		</div>
+	</div>
+
+	<!-- Monetization Row -->
+	<h5 class="pb-dashboard-section-title"><?php esc_html_e( 'Monetization (30 days)', 'pearblog-theme' ); ?></h5>
+	<div class="pb-dashboard-grid">
+		<div class="pb-dashboard-stat pb-dashboard-stat--green">
+			<span class="pb-dashboard-stat-number"><?php echo esc_html( number_format( $revenue['total'], 2 ) ); ?></span>
+			<span class="pb-dashboard-stat-label"><?php esc_html_e( 'Revenue', 'pearblog-theme' ); ?></span>
+		</div>
+		<div class="pb-dashboard-stat pb-dashboard-stat--amber">
+			<span class="pb-dashboard-stat-number"><?php echo esc_html( $affiliate_stats['total_clicks'] ); ?></span>
+			<span class="pb-dashboard-stat-label"><?php esc_html_e( 'Aff. Clicks', 'pearblog-theme' ); ?></span>
+		</div>
+		<div class="pb-dashboard-stat">
+			<span class="pb-dashboard-stat-number"><?php echo esc_html( $perf_score['performance'] ); ?></span>
+			<span class="pb-dashboard-stat-label"><?php esc_html_e( 'Perf. Score', 'pearblog-theme' ); ?></span>
 		</div>
 	</div>
 

@@ -170,20 +170,20 @@ Perfect for:
 
 ## Roadmap
 
-### v1.0 (Current)
+### v1.0 (Complete)
 - ✅ Core theme structure
 - ✅ All essential components
 - ✅ SEO optimization
 - ✅ Performance features
 - ✅ Multisite support
 
-### v2.0 (Planned)
-- UI PRO components
-- Admin dashboard
-- Custom widgets
-- Advanced customization panel
-- Gutenberg blocks
-- Page builder integration
+### v2.0 (Complete)
+- ✅ UI PRO components (Gutenberg blocks, widgets)
+- ✅ Admin dashboard widget
+- ✅ Custom widgets (Recent Posts, CTA, Social, About)
+- ✅ Advanced customization panel (Customizer)
+- ✅ Gutenberg blocks (Hero, FAQ, CTA, Related Posts, TOC, Ad Slot)
+- ✅ Page builder integration (Block Patterns)
 
 ## Tech Stack
 
@@ -424,12 +424,12 @@ update_option('pearblog_ai_recommendations', false);
 - Grid/list views
 - Video hero support
 
-### v2.1 (Planned)
-- Gutenberg blocks integration
-- Advanced customizer panel
-- More AI-powered features
-- A/B testing framework
-- Advanced analytics dashboard
+### v2.1 (Current)
+- ✅ Gutenberg blocks integration
+- ✅ Advanced customizer panel
+- ✅ A/B testing framework (headline testing with auto-winner)
+- ✅ Analytics dashboard (content performance + A/B results)
+- ✅ More AI-powered features (behavior tracking, dynamic content)
 
 ### v3.0 (Future)
 - Headless architecture (Next.js + API)
