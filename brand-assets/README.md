@@ -76,46 +76,19 @@ Complete logo system with multiple variations for different contexts.
 - **Variations:** Primary, Dark, Light, Icon, Wordmark, Monochrome
 - **Use cases:** Website header, print, presentations, watermarks
 
-[📖 Full Logo Specifications →](logo/README.md)
+See [PEARBLOG_ULTRA_PRO_BRAND_SYSTEM.md](PEARBLOG_ULTRA_PRO_BRAND_SYSTEM.md) for full specifications.
 
 ### 2. Favicons (`/favicon/`)
-Complete favicon package for all browsers and devices (16px-512px).
-- **Formats:** ICO, PNG, SVG
-- **Sizes:** 16, 32, 48, 64, 96, 128, 256, 512px
-- **Special:** Apple Touch Icon, MS Tiles, Safari Pinned Tab
-- **Use cases:** Browser tabs, bookmarks, mobile home screen
-
-[📖 Full Favicon Specifications →](favicon/README.md)
+Complete favicon package for all browsers and devices (16px–512px).
 
 ### 3. Social Media Assets (`/social/`)
-Optimized images for all major social platforms.
-- **OG Images:** 1200x630px (Facebook, LinkedIn)
-- **Twitter Cards:** 1200x600px
-- **Profile Images:** Platform-specific sizes
-- **Templates:** Instagram, Twitter, LinkedIn, YouTube
-- **Use cases:** Social sharing, profile images, marketing posts
-
-[📖 Full Social Media Specifications →](social/README.md)
+OG images (1200×630), Twitter cards (1200×600), profile images.
 
 ### 4. App Icons (`/app-icons/`)
-Native app icons for iOS and Android.
-- **iOS:** Complete icon set (20px-1024px) + App Store
-- **Android:** Adaptive icons + legacy icons + Play Store
-- **Formats:** PNG (optimized for each platform)
-- **Use cases:** Mobile apps, PWA, app stores
-
-[📖 Full App Icon Specifications →](app-icons/README.md)
+iOS (20px–1024px) and Android adaptive/legacy icons.
 
 ### 5. Animated & Special Effects (`/animated/`)
-Premium logo variations with effects and animations.
-- **Glow Effects:** Soft, standard, hard variations
-- **Neon Effects:** Cyberpunk style with multiple layers
-- **SVG Animations:** Gradient shifts, pulse effects
-- **Lottie Animations:** Intro, loading, success states
-- **3D Versions:** Isometric and perspective views
-- **Use cases:** Hero sections, premium features, special events
-
-[📖 Full Animation Specifications →](animated/README.md)
+Glow, neon, SVG animations, Lottie files.
 
 ## 🚀 Quick Start
 

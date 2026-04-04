@@ -62,7 +62,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: data/
-          key: automation-state-${{ github.ref_name }}-${{ github.run_id }}
+          key: automation-state-${{ github.ref_name }}-${{ hashFiles('data/**') }}
           restore-keys: |
             automation-state-${{ github.ref_name }}-
             automation-state-

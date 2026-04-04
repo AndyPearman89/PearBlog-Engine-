@@ -1,453 +1,142 @@
 # PearBlog Engine PRO
 
-**Enterprise Frontend Operating System (FOS) for AI SEO SaaS**
+**Autonomous AI content production system for WordPress.**
 
-> Not just a theme. A complete frontend operating system.
+📚 **[Documentation Index →](DOCUMENTATION-INDEX.md)** · 📋 **[Changelog →](CHANGELOG.md)**
 
-📚 **[Complete Documentation Index →](DOCUMENTATION-INDEX.md)**
+---
 
-## 💰 Is PearBlog Worth It?
+## What It Does
 
-**YES ✅** - When used as a systematic Traffic → Monetization Engine
+PearBlog Engine generates, optimizes, and publishes SEO articles autonomously — every hour via WP-Cron — with zero manual intervention.
 
-**Revenue Path:**
-- Months 1-3: 0-200 zł/month (foundation building)
-- Months 3-6: 500-3,000 zł/month (momentum)
-- Months 6-12: 3,000-15,000 zł/month (real business)
-- Multi-site: 10,000-50,000+ zł/month (target model)
+**Pipeline (7 steps, ~55 sec, $0.08/article):**
 
-**📚 Complete Business Documentation:**
-- **[Business Strategy Guide](BUSINESS-STRATEGY.md)** - Revenue thresholds, monetization roadmap, ROI analysis
-- **[Marketing Guide](MARKETING-GUIDE.md)** - SEO strategy, keyword research, traffic acquisition, 30-day plan
+```
+Topic Queue → PromptBuilder → GPT-4o-mini → SEO Engine
+  → MonetizationEngine → DALL-E 3 Image → Publish
+```
 
-> See detailed analysis in [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) for full breakdown of whether PearBlog is worth your investment.
-
-## 🚀 What's New in PearBlog.pro
-
-PearBlog has evolved from a theme into a **Frontend Operating System (FOS)** - an enterprise-grade platform for maximum UX, SEO, and monetization with multisite white-label support.
-
-### Major Upgrades
-
-- ✨ **Frontend Operating System Architecture** - Modular, scalable, enterprise-ready
-- 🌓 **Dark Mode** - Auto-detection + manual toggle with smooth transitions
-- 📑 **Table of Contents** - Auto-generated from H2/H3, sticky sidebar with progress
-- 💰 **Auto Ad Injection Engine** - Smart ad placement every X paragraphs
-- ⚡ **Performance Module** - Critical CSS inline, preloading, Gzip compression
-- 🎯 **Smart Monetization** - CTR tracking, affiliate automation, revenue analytics
-- 🎨 **Grid/List Views** - Flexible post layouts with view switcher
-- 🎬 **Video Hero** - Support for video backgrounds
-- 🤖 **AI Blocks** - Dynamic content sections and recommendations
-- 🎨 **Enhanced Design System** - Complete utility class library
-
-## Repository Contents
-
-### `/mu-plugins/pearblog-engine/` - AI Content Generation Engine
-
-Enterprise-grade AI SEO content pipeline with specialized travel content builders:
-
-**Content Generation:**
-- ✅ **PromptBuilder** - Generic SEO content for any industry
-- ✅ **TravelPromptBuilder** - Structured travel content with mandatory sections
-- ✅ **BeskidyPromptBuilder** - Enhanced Beskidy mountains content with weather + day planner
-- ✅ **MultiLanguageTravelBuilder** - True localization for PL/EN/DE markets (not translation)
-- ✅ **PromptBuilderFactory** - Automatic builder selection based on industry keywords
-
-**Features:**
-- 🗻 **Weather-Aware Content** - Seasonal recommendations, weather impact, what to bring
-- 📅 **AI Day Planner** - Morning/midday/evening itineraries with time estimates
-- 🔄 **Plan B Alternatives** - Indoor/backup options for bad weather
-- 🌍 **Multi-Language Localization** - Culturally adapted content (not just translated)
-- ✅ **Content Validator** - Ensures all mandatory sections and quality standards
-- 🎯 **Intent-Aware** - Adapts to informational, navigational, or transactional queries
-- 💰 **Travel Monetization** - Natural accommodation recommendations with soft CTAs
-
-**See:** [`TRAVEL-CONTENT-ENGINE.md`](TRAVEL-CONTENT-ENGINE.md) for full documentation
-
-### `/theme/pearblog-theme/` v2 PRO
-
-Production-ready Frontend Operating System featuring:
-
-**SEO & Performance:**
-- ✅ **Critical CSS Inline** - Instant above-the-fold rendering
-- ✅ **Auto-Generated TOC** - From H2/H3 headings with reading progress
-- ✅ **Semantic HTML** - Schema.org Article, FAQPage, BreadcrumbList
-- ✅ **Lazy Loading** - Images, iframes, videos, background images
-- ✅ **Core Web Vitals Optimized** - LCP, FID, CLS tracking
-
-**UX & Design:**
-- ✅ **Dark Mode** - System preference detection + manual toggle
-- ✅ **Grid/List Views** - Flexible post layouts with view persistence
-- ✅ **Video Hero** - Background video support with overlay
-- ✅ **Sticky TOC** - Sidebar navigation with active section highlighting
-- ✅ **Mobile-First** - Touch-friendly, responsive, fast
-
-**Monetization:**
-- ✅ **Auto Ad Injection** - Smart placement every X paragraphs
-- ✅ **Sticky Mobile Ads** - Bottom CTA with close button
-- ✅ **Affiliate Automation** - Auto-convert product links
-- ✅ **Smart CTA Placement** - Content analysis for optimal positioning
-- ✅ **Revenue Tracking** - Per-post monetization analytics
-
-**Enterprise & Multisite:**
-- ✅ **White-Label Ready** - Complete multisite branding system
-- ✅ **pb_get_site_config()** - Centralized configuration API
-- ✅ **Layout Variants** - Default, minimal, magazine styles
-- ✅ **Feature Toggles** - Per-site enable/disable controls
+---
 
 ## Quick Start
 
-### Installation
-
 ```bash
-# Copy theme to WordPress installation
-cp -r theme/pearblog-theme /path/to/wordpress/wp-content/themes/
+# 1. Copy plugin + theme into WordPress
+cp -r mu-plugins/pearblog-engine /path/to/wp-content/mu-plugins/
+cp -r theme/pearblog-theme       /path/to/wp-content/themes/
 
-# Or create a symlink for development
-ln -s $(pwd)/theme/pearblog-theme /path/to/wordpress/wp-content/themes/pearblog-theme
+# 2. Set API key (wp-config.php or WP Admin)
+define('PEARBLOG_OPENAI_API_KEY', 'sk-...');
+
+# 3. Add topics to queue → pipeline runs automatically every hour
 ```
 
-### Activation
+See **[SETUP.md](SETUP.md)** for GitHub Actions setup and **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** for full activation.
 
-1. Log in to WordPress Admin
-2. Navigate to **Appearance → Themes**
-3. Activate **PearBlog Theme**
+---
 
-## Features
+## Repository Structure
 
-### Page Types
-- **Homepage** - Hero + cards grid + CTA
-- **Single Post** - Full SEO layout with all components
-- **Category Pages** - Archive with category header
+```
+PearBlog-Engine/
+├── mu-plugins/pearblog-engine/          # Core WordPress MU-plugin
+│   ├── pearblog-engine.php              # Bootstrap (PSR-4 autoload)
+│   └── src/
+│       ├── Pipeline/ContentPipeline.php # 7-step autonomous flow
+│       ├── AI/AIClient.php              # GPT-4o-mini integration
+│       ├── AI/ImageGenerator.php        # DALL-E 3 featured images
+│       ├── Content/                     # 4 prompt builders + validator
+│       ├── SEO/SEOEngine.php            # Meta tags, Schema.org
+│       ├── Monetization/               # AdSense + SaaS CTA injection
+│       ├── Scheduler/CronManager.php   # WP-Cron + multisite
+│       ├── Admin/AdminPage.php         # WP Admin settings
+│       ├── API/AutomationController.php# REST API endpoints
+│       ├── Keywords/                   # Keyword clustering
+│       └── Tenant/                     # Multi-site context
+│
+├── theme/pearblog-theme/               # SEO-first WordPress theme
+│   ├── single.php                      # 12-element SEO layout
+│   ├── inc/                            # 16 modules (monetization, analytics, etc.)
+│   ├── template-parts/                 # Reusable blocks
+│   └── assets/                         # CSS + JS (AI personalization)
+│
+├── scripts/                            # Python automation (optional)
+│   ├── automation_orchestrator.py      # Full-cycle orchestration
+│   ├── keyword_engine.py              # Keyword research
+│   ├── scraping_engine.py             # SERP data extraction
+│   ├── serp_analyzer.py               # Competition analysis
+│   └── run_pipeline.py                # GitHub Actions runner
+│
+├── examples/                           # Usage examples
+├── brand-assets/                       # Brand guidelines
+├── SETUP.md                            # Installation guide
+├── BUSINESS-STRATEGY.md                # ROI & monetization strategy
+├── MARKETING-GUIDE.md                  # SEO & traffic acquisition
+├── TRAVEL-CONTENT-ENGINE.md            # Specialized travel builders
+├── PRODUCTION-ANALYSIS-FULL.md         # Complete operations manual
+└── CHANGELOG.md                        # Release history
+```
 
-### Components
-- Hero (dynamic header with gradient/image)
-- Card (article listing)
-- Related Posts (internal linking)
-- FAQ (with Schema.org markup)
-- Ads (monetization blocks)
+---
 
-### SEO Features
-- Breadcrumbs
-- Schema.org Article markup
-- Schema.org FAQPage markup
-- Meta descriptions
-- Semantic HTML structure
-- Internal linking
+## Content Generation Engines
 
-### Performance
-- Lazy loading images
-- Minimal JavaScript footprint
-- CSS variables for theming
-- No external dependencies
-- Core Web Vitals optimized
+| Builder | Use Case | Language |
+|---------|----------|----------|
+| `PromptBuilder` | Generic SEO content for any industry | configurable |
+| `TravelPromptBuilder` | Structured travel content with mandatory sections | configurable |
+| `BeskidyPromptBuilder` | Beskidy mountains — weather + day planner | PL |
+| `MultiLanguageTravelBuilder` | Culturally localized travel content | PL / EN / DE |
+
+Builder selection is automatic via `PromptBuilderFactory` (based on industry keywords). Override with the `pearblog_prompt_builder_class` filter.
+
+---
+
+## Theme Features
+
+- **SEO layout:** H1 → TL;DR → Ads → Affiliate → TOC → Content → FAQ → Related
+- **AI Personalization (v4):** Dynamic headlines, CTAs, and recommendations based on user context
+- **A/B Testing:** Automatic headline testing with daily winner detection
+- **Monetization:** Auto ad injection, affiliate priority (Booking → Airbnb → fallback), SaaS CTA
+- **Performance:** Lazy loading, Core Web Vitals, ~8 KB personalization JS
+- **Multisite:** Per-site branding, colours, feature toggles
+
+---
+
+## Key Metrics
+
+| Metric | Value |
+|--------|-------|
+| Cost per article (with image) | $0.08 |
+| Pipeline execution time | ~55 sec |
+| Articles / month (rate=1) | 720 |
+| Monthly cost (720 articles) | ~$58 |
+| Break-even traffic | ~5,000 visitors/mo |
+| Automation level | 100% |
+
+---
 
 ## Documentation
 
-Full documentation is available in [`/theme/pearblog-theme/README.md`](theme/pearblog-theme/README.md)
+| Document | What It Covers |
+|----------|----------------|
+| [SETUP.md](SETUP.md) | GitHub Actions & initial configuration |
+| [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) | Step-by-step autonomous launch (PL) |
+| [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) | Complete operations manual (PL) |
+| [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) | ROI, monetization, scaling |
+| [MARKETING-GUIDE.md](MARKETING-GUIDE.md) | SEO, traffic, affiliate strategy |
+| [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) | Specialised travel prompt builders |
+| [theme/pearblog-theme/README.md](theme/pearblog-theme/README.md) | Theme features & configuration |
 
-## Architecture
-
-```
-PearBlog Engine v1
-├── Components (Hero, Card, Related, FAQ, Ads)
-├── Design System (CSS Variables)
-├── SEO Layout (H1, Intro, TL;DR, Sections, FAQ, Related, CTA)
-├── Performance (Lazy Load, Minimal JS)
-├── Mobile First (Responsive)
-├── Monetization (AdSense, CTA, Affiliate)
-└── Multisite (Dynamic Branding)
-```
-
-## Use Cases
-
-Perfect for:
-- AI-powered content sites
-- SEO-focused blogs
-- SaaS marketing sites
-- Multisite networks
-- Affiliate marketing sites
-- Content monetization
-
-## Roadmap
-
-### v1.0 (Complete)
-- ✅ Core theme structure
-- ✅ All essential components
-- ✅ SEO optimization
-- ✅ Performance features
-- ✅ Multisite support
-
-### v2.0 (Complete)
-- ✅ UI PRO components (Gutenberg blocks, widgets)
-- ✅ Admin dashboard widget
-- ✅ Custom widgets (Recent Posts, CTA, Social, About)
-- ✅ Advanced customization panel (Customizer)
-- ✅ Gutenberg blocks (Hero, FAQ, CTA, Related Posts, TOC, Ad Slot)
-- ✅ Page builder integration (Block Patterns)
+---
 
 ## Tech Stack
 
-- **PHP** 7.4+
-- **WordPress** 5.9+
-- **CSS3** with CSS Variables
-- **Vanilla JavaScript** (no jQuery)
-- **HTML5** semantic markup
+- **PHP 7.4+** · WordPress 5.9+ · Vanilla JS · CSS Variables
+- **AI:** OpenAI GPT-4o-mini (content) + DALL-E 3 (images)
+- **Python 3.11** (optional automation scripts)
 
 ## License
 
 GNU General Public License v2 or later
-
-## Support
-
-For issues, questions, or feature requests, please open an issue in this repository.
-
----
-
-**Built for AI + SEO + SaaS**
-## 🏗️ Architecture
-
-```
-PearBlog v2 PRO - Frontend Operating System
-├── Core Modules
-│   ├── performance.php    - Critical CSS, preloading, optimization
-│   ├── monetization.php   - Auto ads, affiliate, CTR tracking
-│   ├── ui.php            - UI utilities and helpers
-│   ├── layout.php        - Layout rendering system
-│   └── components.php    - Component registration & Schema.org
-│
-├── Template Components
-│   ├── hero.php          - Video/image/gradient hero
-│   ├── card.php          - Article cards
-│   ├── grid.php          - Grid/list view system
-│   ├── block-toc.php     - Table of Contents
-│   ├── block-cta.php     - Dynamic CTA blocks
-│   ├── block-faq.php     - FAQ with Schema.org
-│   ├── block-related.php - Internal linking
-│   └── block-ads.php     - Monetization blocks
-│
-├── CSS Architecture
-│   ├── base.css          - Variables, reset, typography
-│   ├── components.css    - All component styles
-│   └── utilities.css     - 100+ utility classes
-│
-└── JavaScript Modules
-    ├── lazyload.js       - Advanced lazy loading
-    └── app.js            - Dark mode, TOC, FAQ, interactions
-```
-
-## 📦 What's Included
-
-### Page Templates
-- **index.php** - Homepage with hero, featured posts, grid
-- **single.php** - Full SEO layout with TOC integration
-- **category.php** - Category archive with cluster SEO
-
-### Components (Template Parts)
-- **Hero v2** - Gradient, image, or video backgrounds with CTA
-- **Card System** - Grid/list views with featured post support
-- **Grid** - Flexible layout with view switcher and filtering
-- **TOC** - Auto-generated from H2/H3 with sticky sidebar
-- **CTA Blocks** - Affiliate, lead capture, click variants
-- **FAQ** - Accordion with Schema.org markup
-- **Related Posts** - SEO-optimized internal linking
-- **Ads Engine** - Auto injection and sticky mobile ads
-
-### Modules (inc/)
-- **performance.php** - Critical CSS, preloading, Gzip, caching
-- **monetization.php** - Ad injection, affiliate automation, tracking
-- **ui.php** - Breadcrumbs, social share, pagination, reading time
-- **layout.php** - Header, footer, TL;DR, CTA rendering
-- **components.php** - Registration, Schema.org, shortcodes
-
-### Assets
-- **base.css** - Design system foundation
-- **components.css** - Complete component library
-- **utilities.css** - Utility-first helpers
-- **lazyload.js** - Intersection Observer lazy loading
-- **app.js** - All interactive features
-
-## 🎯 Key Features Deep Dive
-
-### Dark Mode System
-```php
-// Auto-detection + manual toggle
-localStorage preference + system preference
-Smooth transitions for all elements
-Complete variable system for dark theme
-Dark mode toggle button with icon switching
-```
-
-### Table of Contents (TOC)
-```php
-// Auto-generated from content
-Extracts H2 and H3 headings
-Adds IDs to headings automatically
-Sticky sidebar navigation
-Reading progress bar
-Active section highlighting on scroll
-Mobile collapsible version
-```
-
-### Auto Ad Injection
-```php
-// Smart placement engine
-Inject ads every X paragraphs (configurable)
-Multiple ad positions (top, middle, bottom)
-Scroll-depth tracking for optimization
-CTR zone detection
-Sticky mobile ads with close button
-```
-
-### Multisite Configuration
-```php
-// Centralized config system
-pb_get_site_config() - Single source of truth
-Per-site colors (primary/secondary/accent)
-Per-site logos (light/dark variants)
-Per-site hero styles
-Per-site layout variants
-Feature toggles per site
-AI feature flags
-```
-
-### Performance Optimization
-```php
-// Enterprise-grade performance
-Critical CSS inline for instant rendering
-DNS prefetch for external resources
-Resource preloading (images, fonts)
-Lazy loading (images, iframes, videos, backgrounds)
-Gzip compression
-Cache control headers
-Core Web Vitals tracking
-```
-
-## 🔧 Configuration
-
-### Multisite Branding
-```php
-// Set via WordPress options or pb_get_site_config()
-update_option('pearblog_primary_color', '#your-color');
-update_option('pearblog_secondary_color', '#your-color');
-update_option('pearblog_accent_color', '#your-color');
-update_option('pearblog_logo_url', 'https://your-site.com/logo.png');
-update_option('pearblog_logo_dark_url', 'https://your-site.com/logo-dark.png');
-```
-
-### Hero Configuration
-```php
-update_option('pearblog_hero_style', 'video'); // gradient, image, video
-update_option('pearblog_hero_title', 'Your Title');
-update_option('pearblog_hero_subtitle', 'Your subtitle');
-update_option('pearblog_hero_video', 'https://your-site.com/hero.mp4');
-update_option('pearblog_hero_cta_text', 'Get Started');
-update_option('pearblog_hero_cta_url', '/signup');
-```
-
-### Monetization Settings
-```php
-// AdSense
-update_option('pearblog_adsense_client', 'ca-pub-XXXXXXXXXXXXXXXX');
-update_option('pearblog_adsense_slot_content', 'XXXXXXXXXX');
-
-// Auto injection
-update_option('pearblog_auto_ad_injection', true);
-update_option('pearblog_ad_injection_paragraphs', 3); // Every 3 paragraphs
-
-// Affiliate automation
-update_option('pearblog_affiliate_rules', array(
-    array(
-        'domain' => 'amazon.com',
-        'affiliate_tag' => 'tag=your-tag-20'
-    )
-));
-```
-
-### Feature Toggles
-```php
-update_option('pearblog_dark_mode_enabled', true);
-update_option('pearblog_toc_enabled', true);
-update_option('pearblog_sticky_mobile_cta', true);
-update_option('pearblog_smart_cta_enabled', false);
-update_option('pearblog_ai_summaries', false);
-update_option('pearblog_ai_recommendations', false);
-```
-
-## 🎨 Design System
-
-### CSS Variables
-```css
-:root {
-  /* Colors */
-  --pb-primary: #2563eb;
-  --pb-secondary: #7c3aed;
-  --pb-accent: #f59e0b;
-  
-  /* Spacing */
-  --pb-space-xs to --pb-space-3xl
-  
-  /* Typography */
-  --pb-font-base, --pb-font-heading
-  
-  /* Effects */
-  --pb-radius, --pb-shadow, --pb-transition
-}
-```
-
-### Utility Classes
-```css
-/* Over 100 utility classes */
-.pb-mt-{size}, .pb-mb-{size}, .pb-p-{size}
-.pb-text-{align}, .pb-text-{size}, .pb-text-{color}
-.pb-flex, .pb-grid, .pb-justify-{value}, .pb-items-{value}
-.pb-bg-{color}, .pb-rounded-{size}, .pb-shadow-{size}
-.pb-hover-{effect}, .pb-transition, .pb-fade-in
-```
-
-## 📊 Performance Metrics
-
-- **Core Web Vitals Optimized** - LCP, FID, CLS tracking
-- **Critical CSS** - Above-the-fold instant rendering
-- **Lazy Loading** - All media types supported
-- **Minimal JavaScript** - ~15KB gzipped
-- **Lighthouse Ready** - 90+ scores achievable
-
-## 🔮 Roadmap
-
-### v2.0 (Current) ✅
-- Complete FOS architecture
-- Dark mode system
-- TOC with progress tracking
-- Auto ad injection
-- Performance module
-- Monetization engine
-- Grid/list views
-- Video hero support
-
-### v2.1 (Current)
-- ✅ Gutenberg blocks integration
-- ✅ Advanced customizer panel
-- ✅ A/B testing framework (headline testing with auto-winner)
-- ✅ Analytics dashboard (content performance + A/B results)
-- ✅ More AI-powered features (behavior tracking, dynamic content)
-
-### v3.0 (Future)
-- Headless architecture (Next.js + API)
-- Ultra SEO scaling
-- GraphQL API
-- Advanced caching layers
-- Multi-cloud support
-
-## 📄 License
-
-GNU General Public License v2 or later
-
-## 🤝 Support
-
-For issues, questions, or feature requests, please open an issue in this repository.
-
----
-
-**Frontend Operating System (FOS) - Built for AI + SEO + SaaS**
-
-*v2 PRO - The enterprise WordPress theme that's not just a theme.*
