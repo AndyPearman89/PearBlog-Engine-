@@ -382,7 +382,9 @@ public static function create( SiteProfile $profile ): PromptBuilder {
 **Implemented:**
 - ✅ AdSense auto-injection after first paragraph
 - ✅ Sticky mobile ad support
-- ✅ Filter hooks for affiliate plugins
+- ✅ Affiliate deep-link boxes (Booking.com)
+- ✅ SaaS CTA keyword-matched product recommendations (v3)
+- ✅ Filter hooks for affiliate and SaaS plugins
 - ✅ Revenue tracking metadata
 
 **Configuration:**
@@ -390,12 +392,15 @@ public static function create( SiteProfile $profile ): PromptBuilder {
 pearblog_monetization           // adsense|affiliate|saas
 pearblog_adsense_publisher_id   // AdSense ID
 pearblog_adsense_slot_content   // Ad slot ID
+pearblog_booking_affiliate_id   // Booking.com partner ID
+pearblog_saas_products          // JSON array of SaaS products
 ```
 
 **Extensibility Hooks:**
 ```php
 apply_filters( 'pearblog_affiliate_content', $content );
-apply_filters( 'pearblog_saas_cta_content', $content );
+apply_filters( 'pearblog_saas_cta_content', $content, $matched );
+apply_filters( 'pearblog_saas_products', $products );
 ```
 
 ---
@@ -650,7 +655,7 @@ mu-plugins/pearblog-engine/
     │   └── ClusterEngine.php         # Topic cluster SEO strategy
     │
     ├── Monetization/
-    │   └── MonetizationEngine.php    # AdSense/affiliate injection
+    │   └── MonetizationEngine.php    # AdSense/affiliate/SaaS CTA injection
     │
     ├── Keywords/
     │   ├── KeywordEngine.php         # AI keyword generation

@@ -4,7 +4,7 @@
  *
  * v1: Google AdSense ad units
  * v2: Affiliate links (Booking.com deep-link boxes)
- * v3: SaaS CTA (stub)
+ * v3: SaaS CTA (keyword-matched product recommendations)
  *
  * @package PearBlogEngine\Monetization
  */
@@ -20,8 +20,11 @@ use PearBlogEngine\Tenant\SiteProfile;
  */
 class MonetizationEngine {
 
-	/** Relative position (0–1) at which the second affiliate box is inserted. */
-	private const AFFILIATE_BOX_POSITION_RATIO = 0.66;
+	/** Relative position (0–1) at which the second box is inserted. */
+	private const BOX_POSITION_RATIO = 0.66;
+
+	/** @var SiteProfile */
+	private SiteProfile $profile;
 
 	public function __construct( SiteProfile $profile ) {
 		$this->profile = $profile;
@@ -114,7 +117,7 @@ class MonetizationEngine {
 		}
 
 		$box              = $this->build_affiliate_box( $affiliate_id, $location );
-		$content_with_box = '' !== $box ? $this->inject_affiliate_box( $content, $box ) : $content;
+		$content_with_box = '' !== $box ? $this->inject_box( $content, $box ) : $content;
 
 		/**
 		 * Filter: pearblog_affiliate_content
@@ -193,13 +196,15 @@ class MonetizationEngine {
 	}
 
 	/**
-	 * Inject the affiliate box after the first paragraph and at the ~66 % mark.
+	 * Inject a box after the first paragraph and at the ~66 % mark.
+	 *
+	 * Shared by both affiliate and SaaS CTA strategies.
 	 *
 	 * @param string $content Full article HTML.
-	 * @param string $box     Affiliate box HTML to inject.
+	 * @param string $box     Box HTML to inject.
 	 * @return string Modified content.
 	 */
-	private function inject_affiliate_box( string $content, string $box ): string {
+	private function inject_box( string $content, string $box ): string {
 		// Split on </p> boundaries to work paragraph by paragraph.
 		$paragraphs = preg_split( '/(?<=<\/p>)/u', $content, -1, PREG_SPLIT_NO_EMPTY );
 		if ( false === $paragraphs ) {
@@ -211,7 +216,7 @@ class MonetizationEngine {
 			return $content . "\n\n" . $box;
 		}
 
-		$mid_point = (int) round( $count * self::AFFILIATE_BOX_POSITION_RATIO );
+		$mid_point = (int) round( $count * self::BOX_POSITION_RATIO );
 		$result    = '';
 
 		foreach ( $paragraphs as $index => $paragraph ) {
@@ -228,16 +233,152 @@ class MonetizationEngine {
 	}
 
 	// -----------------------------------------------------------------------
-	// v3 – SaaS CTA (stub – to be implemented in v3 release)
+	// v3 – SaaS CTA
 	// -----------------------------------------------------------------------
 
+	/**
+	 * Inject SaaS product CTA boxes into content.
+	 *
+	 * Reads configured SaaS products from the `pearblog_saas_products` option,
+	 * matches product keywords against article content, and injects up to one
+	 * CTA box after the first paragraph and at the 66 % mark.
+	 *
+	 * When no products match (or none are configured), the filter
+	 * `pearblog_saas_cta_content` still fires so external plugins can add
+	 * their own injection.
+	 *
+	 * @param string $content Article content (HTML).
+	 * @return string Content with SaaS CTA boxes injected.
+	 */
 	private function apply_saas_cta( string $content ): string {
+		$products = $this->get_saas_products();
+		$matched  = $this->match_saas_products( $content, $products );
+
+		if ( ! empty( $matched ) ) {
+			$box     = $this->build_saas_cta_box( $matched[0] );
+			$content = $this->inject_box( $content, $box );
+		}
+
 		/**
 		 * Filter: pearblog_saas_cta_content
 		 * Allows SaaS CTA injection by a dedicated integration plugin.
 		 *
-		 * @param string $content Raw article content.
+		 * @param string $content  Content (possibly with CTA injected).
+		 * @param array  $matched  Matched product definitions.
 		 */
-		return (string) apply_filters( 'pearblog_saas_cta_content', $content );
+		return (string) apply_filters( 'pearblog_saas_cta_content', $content, $matched );
+	}
+
+	/**
+	 * Retrieve configured SaaS products.
+	 *
+	 * Each product is an associative array:
+	 *   - name        (string) Product display name.
+	 *   - url         (string) Affiliate/referral URL.
+	 *   - keywords    (string[]) Keywords that trigger this product's CTA.
+	 *   - description (string) Short value-proposition shown in the CTA box.
+	 *   - cta_text    (string) Button label (defaults to "Try {name} →").
+	 *
+	 * Products can be extended via the `pearblog_saas_products` filter.
+	 *
+	 * @return array<int, array{name: string, url: string, keywords: string[], description: string, cta_text: string}>
+	 */
+	private function get_saas_products(): array {
+		$raw = get_option( 'pearblog_saas_products', '[]' );
+
+		if ( is_string( $raw ) ) {
+			$products = json_decode( $raw, true );
+			if ( ! is_array( $products ) ) {
+				$products = [];
+			}
+		} else {
+			$products = is_array( $raw ) ? $raw : [];
+		}
+
+		/** @var array $products */
+		return (array) apply_filters( 'pearblog_saas_products', $products );
+	}
+
+	/**
+	 * Match SaaS products against article content using keyword scanning.
+	 *
+	 * Returns all matched products sorted by relevance (number of keyword hits
+	 * descending).
+	 *
+	 * @param string $content  Article HTML.
+	 * @param array  $products Products array from {@see get_saas_products()}.
+	 * @return array Matched products.
+	 */
+	private function match_saas_products( string $content, array $products ): array {
+		if ( empty( $products ) ) {
+			return [];
+		}
+
+		$text    = mb_strtolower( wp_strip_all_tags( $content ) );
+		$matches = [];
+
+		foreach ( $products as $product ) {
+			if ( empty( $product['keywords'] ) || empty( $product['name'] ) || empty( $product['url'] ) ) {
+				continue;
+			}
+
+			$keywords = is_array( $product['keywords'] ) ? $product['keywords'] : explode( ',', (string) $product['keywords'] );
+			$hits     = 0;
+
+			foreach ( $keywords as $kw ) {
+				$kw = trim( $kw );
+				if ( '' !== $kw && false !== mb_strpos( $text, mb_strtolower( $kw ) ) ) {
+					++$hits;
+				}
+			}
+
+			if ( $hits > 0 ) {
+				$product['_hits'] = $hits;
+				$matches[]        = $product;
+			}
+		}
+
+		// Sort by number of keyword hits (highest first).
+		usort( $matches, static fn( array $a, array $b ): int => $b['_hits'] <=> $a['_hits'] );
+
+		return $matches;
+	}
+
+	/**
+	 * Build a SaaS product CTA box.
+	 *
+	 * @param array $product Product definition.
+	 * @return string HTML for the CTA box.
+	 */
+	private function build_saas_cta_box( array $product ): string {
+		$name        = $product['name'] ?? '';
+		$url         = $product['url'] ?? '';
+		$description = $product['description'] ?? '';
+		$cta_text    = $product['cta_text'] ?? '';
+
+		if ( '' === $name || '' === $url ) {
+			return '';
+		}
+
+		if ( '' === $cta_text ) {
+			/* translators: %s: SaaS product name */
+			$cta_text = sprintf( __( 'Try %s →', 'pearblog-engine' ), $name );
+		}
+
+		$title = '' !== $description
+			? esc_html( $description )
+			/* translators: %s: SaaS product name */
+			: esc_html( sprintf( __( 'Recommended tool: %s', 'pearblog-engine' ), $name ) );
+
+		return sprintf(
+			'<div class="pearblog-saas-cta">' .
+			'<p class="pearblog-saas-cta__title">%s</p>' .
+			'<a class="pearblog-saas-cta__button" href="%s" target="_blank" rel="noopener sponsored" data-saas-product="%s">%s</a>' .
+			'</div>',
+			$title,
+			esc_url( $url ),
+			esc_attr( $name ),
+			esc_html( $cta_text )
+		);
 	}
 }
