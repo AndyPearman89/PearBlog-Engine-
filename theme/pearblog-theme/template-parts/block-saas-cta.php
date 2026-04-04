@@ -54,17 +54,19 @@ $box_classes = array(
 <!-- SaaS CTA Click Tracking -->
 <script>
 (function() {
-	document.querySelectorAll('[data-saas-product]').forEach(function(link) {
-		link.addEventListener('click', function() {
-			if (typeof gtag !== 'undefined') {
-				gtag('event', 'saas_cta_click', {
-					'event_category': 'monetization',
-					'event_label': this.dataset.saasProduct,
-					'saas_position': this.dataset.saasPosition,
-					'post_id': <?php echo (int) get_the_ID(); ?>
-				});
-			}
-		});
+	if (window._pbSaasCTATracked) return;
+	window._pbSaasCTATracked = true;
+	document.addEventListener('click', function(e) {
+		var link = e.target.closest('[data-saas-product]');
+		if (!link) return;
+		if (typeof gtag !== 'undefined') {
+			gtag('event', 'saas_cta_click', {
+				'event_category': 'monetization',
+				'event_label': link.dataset.saasProduct,
+				'saas_position': link.dataset.saasPosition,
+				'post_id': <?php echo (int) get_the_ID(); ?>
+			});
+		}
 	});
 })();
 </script>
