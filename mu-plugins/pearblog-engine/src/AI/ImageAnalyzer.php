@@ -367,7 +367,7 @@ class ImageAnalyzer {
 			'the', 'and', 'for', 'are', 'but', 'not', 'you', 'all', 'can', 'with', 'this', 'that', 'from', 'have',
 			'jak', 'nie', 'dla', 'czy', 'jest', 'ten', 'lub', 'oraz', 'ale', 'przy', 'przez', 'się', 'pod',
 			'was', 'will', 'been', 'has', 'had', 'would', 'could', 'should', 'also', 'more', 'about', 'into',
-			'jest', 'być', 'który', 'która', 'które', 'tego', 'tej', 'aby', 'już', 'może', 'można',
+			'być', 'który', 'która', 'które', 'tego', 'tej', 'aby', 'już', 'może', 'można',
 		];
 
 		$words = preg_split( '/[\s\-–—:,;.!?\(\)\[\]"\']+/', $text );

@@ -373,7 +373,8 @@ class ProgrammaticSEO {
 		}
 
 		$count   = mb_substr_count( $text, $keyword_lc );
-		$density = ( $count * mb_strlen( $keyword_lc ) ) / mb_strlen( $text ) * 100;
+		$kw_words = count( explode( ' ', $keyword_lc ) );
+		$density = ( $count * $kw_words / $word_count ) * 100;
 
 		// Optimal density: 1-3%.
 		if ( $density < 0.5 ) {
