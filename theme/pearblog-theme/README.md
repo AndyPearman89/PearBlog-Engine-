@@ -71,7 +71,6 @@ theme/pearblog-theme/
 │   │   └── analytics-admin.css      # Admin analytics styles
 │   └── js/
 │       ├── app.js                   # Main application JS
-│       ├── main.js                  # Minimal interactions
 │       ├── personalization.js       # AI personalization client
 │       ├── blocks-editor.js         # Gutenberg block editor
 │       ├── lazyload.js              # Image lazy loading

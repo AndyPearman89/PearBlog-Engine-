@@ -2,6 +2,21 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [5.1.0] — 2026-04-04
+
+### Removed — Dead Code
+- **`main.js`** — Deleted unused frontend JS file; all functionality (lazy loading, FAQ accordion, mobile menu, smooth scroll, Web Vitals) already present in `app.js` which is the only enqueued script.
+
+### Fixed — Dashboard Backend
+- **Missing email marketing settings registration** — `pearblog_esp_provider`, `pearblog_mailchimp_api_key`, `pearblog_mailchimp_list_id`, `pearblog_convertkit_api_key`, `pearblog_convertkit_form_id` were rendered in the admin form but never registered via `register_setting()`, preventing values from being saved (AdminPage.php).
+
+### Improved — Dashboard Widget
+- **Performance** — `wp_count_posts()` result is now stored in a variable instead of calling the function three times.
+- **Analytics link** — Added "Analytics" quick-action button linking to PB Analytics dashboard page.
+
+### Improved — Admin Settings Page
+- **Styling** — Added admin CSS for the Engine Settings page: max-width container, section borders, styled profile box and scrollable queue list for better usability.
+
 ## [5.0.0] — 2026-04-04
 
 ### Added - Missing Theme Functions

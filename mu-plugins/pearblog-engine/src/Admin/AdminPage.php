@@ -26,6 +26,7 @@ class AdminPage {
 	public function register(): void {
 		add_action( 'admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_styles' ] );
 		add_action( 'admin_post_pearblog_add_topics', [ $this, 'handle_add_topics' ] );
 		add_action( 'admin_post_pearblog_clear_queue', [ $this, 'handle_clear_queue' ] );
 	}
@@ -61,6 +62,13 @@ class AdminPage {
 
 		// SaaS CTA settings.
 		register_setting( self::OPTION_GRP, 'pearblog_saas_products', [ 'sanitize_callback' => [ $this, 'sanitize_saas_products' ] ] );
+
+		// Email marketing settings.
+		register_setting( self::OPTION_GRP, 'pearblog_esp_provider',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_api_key',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_list_id',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_form_id', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 
 		// Automation API settings.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
@@ -135,7 +143,7 @@ class AdminPage {
 		}
 
 		?>
-		<div class="wrap">
+		<div class="wrap pearblog-engine-wrap">
 			<h1><?php esc_html_e( 'PearBlog Engine', 'pearblog-engine' ); ?></h1>
 
 			<?php echo wp_kses_post( $notice ); ?>
@@ -331,7 +339,7 @@ class AdminPage {
 
 			<!-- Site profile summary -->
 			<h2><?php esc_html_e( 'Active Site Profile', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html( $context->profile->summary() ); ?></p>
+			<div class="pb-profile-box"><?php echo esc_html( $context->profile->summary() ); ?></div>
 
 			<hr />
 
@@ -348,12 +356,14 @@ class AdminPage {
 			</p>
 
 			<?php if ( $queue->count() > 0 ) : ?>
-				<ol>
-					<?php foreach ( $queue->all() as $topic ) : ?>
-						<li><?php echo esc_html( $topic ); ?></li>
-					<?php endforeach; ?>
-				</ol>
-				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+				<div class="pb-queue-list">
+					<ol>
+						<?php foreach ( $queue->all() as $topic ) : ?>
+							<li><?php echo esc_html( $topic ); ?></li>
+						<?php endforeach; ?>
+					</ol>
+				</div>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin-top: 12px;">
 					<input type="hidden" name="action" value="pearblog_clear_queue" />
 					<?php wp_nonce_field( 'pearblog_clear_queue' ); ?>
 					<?php submit_button( __( 'Clear Queue', 'pearblog-engine' ), 'delete', '', false ); ?>
@@ -373,6 +383,66 @@ class AdminPage {
 			</form>
 		</div>
 		<?php
+	}
+
+	// -----------------------------------------------------------------------
+	// Admin styles
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Enqueue admin styles for the settings page.
+	 *
+	 * @param string $hook Current admin page hook suffix.
+	 */
+	public function enqueue_admin_styles( string $hook ): void {
+		if ( 'settings_page_' . self::MENU_SLUG !== $hook ) {
+			return;
+		}
+
+		wp_add_inline_style( 'wp-admin', '
+			.pearblog-engine-wrap {
+				max-width: 900px;
+			}
+			.pearblog-engine-wrap .form-table th {
+				width: 220px;
+			}
+			.pearblog-engine-wrap h2 {
+				margin-top: 2em;
+				padding-bottom: 8px;
+				border-bottom: 1px solid #c3c4c7;
+			}
+			.pearblog-engine-wrap h2:first-of-type {
+				margin-top: 0;
+			}
+			.pb-profile-box {
+				background: #f0f6fc;
+				border: 1px solid #c3c4c7;
+				border-left: 4px solid #2563eb;
+				padding: 12px 16px;
+				border-radius: 4px;
+				font-size: 13px;
+				line-height: 1.6;
+			}
+			.pb-queue-list {
+				background: #fff;
+				border: 1px solid #c3c4c7;
+				border-radius: 4px;
+				padding: 12px 16px;
+				max-height: 300px;
+				overflow-y: auto;
+			}
+			.pb-queue-list ol {
+				margin: 0;
+				padding-left: 1.5em;
+			}
+			.pb-queue-list li {
+				padding: 4px 0;
+				border-bottom: 1px solid #f0f0f1;
+			}
+			.pb-queue-list li:last-child {
+				border-bottom: none;
+			}
+		' );
 	}
 
 	// -----------------------------------------------------------------------
