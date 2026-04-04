@@ -6,6 +6,10 @@
 
 ---
 
+![PearBlog Engine — Pipeline Overview](brand-assets/screenshots/pipeline-overview.svg)
+
+---
+
 ## What It Does
 
 PearBlog Engine generates, optimizes, and publishes SEO articles autonomously — every hour via WP-Cron — with zero manual intervention.
