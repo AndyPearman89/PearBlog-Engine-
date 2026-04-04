@@ -172,11 +172,11 @@ function pearblog_get_affiliate_offers($location = '') {
         $offers = array_merge($offers, $manual_offers);
     }
 
-    // Option 2: Get offers from Booking.com API (if configured)
+    // Option 2: Get offers from Booking.com (affiliate ID required; API key optional)
     $booking_api_key = get_option('pearblog_booking_api_key', '');
     $booking_affiliate_id = get_option('pearblog_booking_affiliate_id', '');
 
-    if (!empty($booking_api_key) && !empty($booking_affiliate_id)) {
+    if (!empty($booking_affiliate_id)) {
         $booking_offers = pearblog_fetch_booking_offers($location, $booking_api_key, $booking_affiliate_id);
         if (!empty($booking_offers)) {
             $offers = array_merge($offers, $booking_offers);
@@ -203,85 +203,105 @@ function pearblog_get_affiliate_offers($location = '') {
 }
 
 /**
- * Fetch offers from Booking.com API
+ * Fetch offers from Booking.com via deep links.
  *
- * Generates Booking.com deep links using affiliate ID.
- * Note: Booking.com API requires separate registration and approval.
+ * Booking.com affiliates use parameterised search URLs rather than a product
+ * API, so no API key is required — only the partner affiliate ID (aid).
+ * If a Booking.com Affiliate API key is also provided, this function can be
+ * extended to call their Demand API for live pricing data.
+ *
+ * @param string $location     Destination name (e.g. "Zakopane").
+ * @param string $api_key      Booking.com API key (optional – reserved for future Demand API use).
+ * @param string $affiliate_id Booking.com partner/affiliate ID (aid).
+ * @return array Array of offer arrays compatible with pearblog_get_affiliate_offers().
  */
 function pearblog_fetch_booking_offers($location, $api_key, $affiliate_id) {
-    // Generate deep link for Booking.com
-    // In production with API access, you would make an actual API call here
-
-    if (empty($affiliate_id)) {
+    if (empty($affiliate_id) || empty($location)) {
         return array();
     }
 
-    // Build deep link URL
-    $query_args = array(
-        'aid' => rawurlencode($affiliate_id),
-        'lang' => 'pl',
+    $search_url = add_query_arg(
+        array(
+            'aid'  => rawurlencode($affiliate_id),
+            'ss'   => rawurlencode($location),
+            'lang' => 'pl',
+        ),
+        'https://www.booking.com/searchresults.html'
     );
 
-    if (!empty($location)) {
-        $query_args['ss'] = rawurlencode($location);
-    }
-
-    $search_url = add_query_arg($query_args, 'https://www.booking.com/searchresults.html');
-
-    // Return standardized offer format
     return array(
         array(
             'source' => 'booking',
-            'name' => sprintf(__('Search accommodations in %s', 'pearblog-theme'), $location),
-            'url' => $search_url,
-            'cta' => __('Check Booking.com offers →', 'pearblog-theme'),
+            'name'   => sprintf(
+                /* translators: %s: destination name */
+                __('Noclegi w %s – Booking.com', 'pearblog-theme'),
+                $location
+            ),
+            'price'  => '',
+            'rating' => 0,
+            'url'    => $search_url,
+            'image'  => '',
         ),
     );
 }
 
 /**
- * Fetch offers from Airbnb
+ * Fetch offers from Airbnb via deep links.
  *
- * Generates Airbnb deep links with partner cookie attribution.
- * Note: Airbnb doesn't have a public API for affiliates, uses deep links.
+ * Airbnb does not expose a public affiliate product API.  Partners generate
+ * revenue through parameterised search URLs (deep links) that attribute the
+ * click to a specific affiliate ID.  The search URL is built from the
+ * location name and a configurable number of guests / check-in window.
+ *
+ * @param string $location     Destination name (e.g. "Zakopane").
+ * @param string $api_key      Unused – kept for signature parity with Booking helper.
+ * @param string $affiliate_id Airbnb affiliate / partner ID.
+ * @return array Array of offer arrays compatible with pearblog_get_affiliate_offers().
  */
 function pearblog_fetch_airbnb_offers($location, $api_key, $affiliate_id) {
-    // Airbnb uses deep links rather than API
-    // Partner cookie format: .pi80.pk{id}_
-
-    if (empty($affiliate_id)) {
+    if (empty($affiliate_id) || empty($location)) {
         return array();
     }
 
-    // Build Airbnb deep link with partner cookie
-    $partner_cookie = '.pi80.pk' . $affiliate_id . '_';
-    $base_url = 'https://www.airbnb.com/s/';
+    // Build an Airbnb search deep link.
+    // Airbnb partner links use a cookie-based attribution parameter (`c`).
+    // The format `.pi80.pk<PARTNER_ID>_` encodes: pi80 = programme identifier,
+    // pk = partner key.  See Airbnb Partner Centre documentation for details.
+    $checkin  = gmdate('Y-m-d', strtotime('+7 days'));
+    $checkout = gmdate('Y-m-d', strtotime('+9 days'));
 
-    if (!empty($location)) {
-        $search_url = $base_url . rawurlencode($location) . '/homes';
-        $search_url = add_query_arg('c', $partner_cookie, $search_url);
-    } else {
-        $search_url = add_query_arg('c', $partner_cookie, 'https://www.airbnb.com/');
-    }
+    $search_url = add_query_arg(
+        array(
+            'query'    => rawurlencode($location),
+            'checkin'  => $checkin,
+            'checkout' => $checkout,
+            'adults'   => 2,
+            'c'        => rawurlencode('.pi80.pk' . $affiliate_id . '_'),  // Airbnb partner cookie param
+        ),
+        'https://www.airbnb.com/s/' . rawurlencode($location) . '/homes'
+    );
 
     /**
-     * Filter: pearblog_airbnb_search_url
+     * Filter the Airbnb affiliate search URL before it is returned.
      *
-     * Allows customization of Airbnb search URL generation.
-     *
-     * @param string $search_url  Generated search URL with partner cookie.
-     * @param string $location    Location being searched.
-     * @param string $affiliate_id Airbnb affiliate/partner ID.
+     * @param string $search_url   Fully‐qualified Airbnb search URL.
+     * @param string $location     Location name.
+     * @param string $affiliate_id Partner ID.
      */
     $search_url = apply_filters('pearblog_airbnb_search_url', $search_url, $location, $affiliate_id);
 
-    // Return standardized offer format
     return array(
         array(
             'source' => 'airbnb',
-            'name' => sprintf(__('Find unique stays in %s', 'pearblog-theme'), $location),
-            'url' => $search_url,
-            'cta' => __('Browse Airbnb →', 'pearblog-theme'),
+            'name'   => sprintf(
+                /* translators: %s: destination name */
+                __('Noclegi w %s – Airbnb', 'pearblog-theme'),
+                $location
+            ),
+            'price'  => '',
+            'rating' => 0,
+            'url'    => $search_url,
+            'image'  => '',
         ),
     );
 }

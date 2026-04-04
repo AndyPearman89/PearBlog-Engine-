@@ -1,0 +1,111 @@
+name: PearBlog Run Roadmap
+
+on:
+  schedule:
+    # Run weekly on Monday at 3 AM UTC
+    - cron: '0 3 * * 1'
+  workflow_dispatch:
+    inputs:
+      keyword:
+        description: 'Base keyword to process (leave empty for default)'
+        required: false
+        default: ''
+      niche:
+        description: 'Content niche (travel, general, etc.)'
+        required: false
+        default: 'travel'
+      batch_mode:
+        description: 'Run batch mode with multiple keywords'
+        required: false
+        default: 'false'
+        type: choice
+        options:
+          - 'false'
+          - 'true'
+
+env:
+  PYTHON_VERSION: '3.11'
+
+permissions:
+  contents: write
+  actions: read
+
+jobs:
+  run-roadmap:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Cache Python dependencies
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('**/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Restore automation state
+        uses: actions/cache@v4
+        with:
+          path: data/
+          key: automation-state-${{ github.ref_name }}-${{ github.run_id }}
+          restore-keys: |
+            automation-state-${{ github.ref_name }}-
+            automation-state-
+
+      - name: Run roadmap automation cycle
+        env:
+          SITE_URL: ${{ secrets.SITE_URL }}
+          API_KEY: ${{ secrets.API_KEY }}
+          KEYWORD: ${{ github.event.inputs.keyword || '' }}
+          NICHE: ${{ github.event.inputs.niche || 'travel' }}
+          BATCH_MODE: ${{ github.event.inputs.batch_mode || 'false' }}
+        working-directory: scripts
+        run: |
+          python automation_orchestrator.py
+
+      - name: Upload roadmap logs and data
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roadmap-run-${{ github.run_number }}
+          path: |
+            logs/
+            data/
+          retention-days: 30
+
+      - name: Commit automation state
+        if: success()
+        run: |
+          git config --global user.name "PearBlog Bot"
+          git config --global user.email "bot@pearblog.dev"
+
+          git fetch origin ${{ github.ref_name }}
+          git rebase origin/${{ github.ref_name }} || git rebase --abort
+
+          if [[ -n $(git status --porcelain) ]]; then
+            git add data/ logs/
+            git commit -m "🗺️ Roadmap automation cycle - Run #${{ github.run_number }}"
+            git push
+          else
+            echo "No state changes to commit"
+          fi
+
+      - name: Notify on failure
+        if: failure()
+        run: |
+          echo "::error::Roadmap automation cycle failed. Check logs and data artifacts for details."

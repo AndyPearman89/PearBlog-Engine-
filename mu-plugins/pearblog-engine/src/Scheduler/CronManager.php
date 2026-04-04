@@ -105,7 +105,16 @@ class CronManager {
 	 * @param int $site_id WordPress blog ID.
 	 */
 	private function run_pipeline_for_site( int $site_id ): void {
+		$switched = false;
+
 		try {
+			// Switch blog context so wp_insert_post, update_post_meta, etc.
+			// operate on the correct site in multisite installations.
+			if ( is_multisite() && $site_id !== get_current_blog_id() ) {
+				switch_to_blog( $site_id );
+				$switched = true;
+			}
+
 			$context  = TenantContext::for_site( $site_id );
 			$pipeline = new ContentPipeline( $context );
 
@@ -125,6 +134,10 @@ class CronManager {
 				$site_id,
 				$e->getMessage()
 			) );
+		} finally {
+			if ( $switched ) {
+				restore_current_blog();
+			}
 		}
 	}
 }

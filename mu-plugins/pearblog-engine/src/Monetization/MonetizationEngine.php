@@ -3,7 +3,7 @@
  * Monetisation engine – injects monetisation markup into generated content.
  *
  * v1: Google AdSense ad units
- * v2: Affiliate links (stub)
+ * v2: Affiliate links (Booking.com deep-link boxes)
  * v3: SaaS CTA (stub)
  *
  * @package PearBlogEngine\Monetization
@@ -22,9 +22,6 @@ class MonetizationEngine {
 
 	/** Relative position (0–1) at which the second affiliate box is inserted. */
 	private const AFFILIATE_BOX_POSITION_RATIO = 0.66;
-
-	/** @var SiteProfile */
-	private SiteProfile $profile;
 
 	public function __construct( SiteProfile $profile ) {
 		$this->profile = $profile;

@@ -34,6 +34,14 @@ require_once PEARBLOG_DIR . '/inc/behavior-tracking.php';
 require_once PEARBLOG_DIR . '/inc/dynamic-content.php';
 require_once PEARBLOG_DIR . '/inc/ai-optimizer.php';
 
+// UI PRO Components
+require_once PEARBLOG_DIR . '/inc/widgets.php';
+require_once PEARBLOG_DIR . '/inc/customizer.php';
+require_once PEARBLOG_DIR . '/inc/gutenberg-blocks.php';
+require_once PEARBLOG_DIR . '/inc/dashboard-widget.php';
+require_once PEARBLOG_DIR . '/inc/ab-testing-metabox.php';
+require_once PEARBLOG_DIR . '/inc/analytics-page.php';
+
 /**
  * Theme setup
  */
@@ -50,6 +58,18 @@ function pearblog_setup() {
     ));
     add_theme_support('responsive-embeds');
     add_theme_support('automatic-feed-links');
+
+    // Block editor support
+    add_theme_support('editor-styles');
+    add_theme_support('wp-block-styles');
+    add_theme_support('align-wide');
+    add_theme_support('editor-color-palette', array(
+        array( 'name' => __('Primary', 'pearblog-theme'), 'slug' => 'primary', 'color' => '#2563eb' ),
+        array( 'name' => __('Secondary', 'pearblog-theme'), 'slug' => 'secondary', 'color' => '#7c3aed' ),
+        array( 'name' => __('Accent', 'pearblog-theme'), 'slug' => 'accent', 'color' => '#f59e0b' ),
+        array( 'name' => __('Dark', 'pearblog-theme'), 'slug' => 'dark', 'color' => '#111827' ),
+        array( 'name' => __('Light', 'pearblog-theme'), 'slug' => 'light', 'color' => '#f9fafb' ),
+    ));
 
     // Register navigation menus
     register_nav_menus(array(
@@ -102,6 +122,11 @@ function pearblog_enqueue_assets() {
 
     // Multisite branding + Dark mode - dynamic CSS
     wp_add_inline_style('pearblog-style', pearblog_get_dynamic_css());
+
+    // Customizer dynamic CSS
+    if (function_exists('pearblog_customizer_css')) {
+        wp_add_inline_style('pearblog-style', pearblog_customizer_css());
+    }
 
     // Critical CSS inline for performance
     if (function_exists('pearblog_inline_critical_css')) {
@@ -255,6 +280,16 @@ function pearblog_widgets_init() {
         'after_widget'  => '</div>',
         'before_title'  => '<h4 class="footer-widget-title">',
         'after_title'   => '</h4>',
+    ));
+
+    register_sidebar(array(
+        'name'          => __('After Post Content', 'pearblog-theme'),
+        'id'            => 'after-post',
+        'description'   => __('Widgets displayed after post content.', 'pearblog-theme'),
+        'before_widget' => '<div id="%1$s" class="after-post-widget %2$s">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h3 class="after-post-widget-title">',
+        'after_title'   => '</h3>',
     ));
 }
 add_action('widgets_init', 'pearblog_widgets_init');
