@@ -172,7 +172,7 @@ class AutomationController {
 			'priority'          => (int) ( $request->get_param( 'priority' ) ?? 5 ),
 			'serp_analysis'     => $request->get_param( 'serp_analysis' ) ?? [],
 		];
-		set_transient( 'pearblog_brief_' . md5( $topic ), $brief_data, DAY_IN_SECONDS );
+		set_transient( 'pearblog_brief_' . hash( 'sha256', $topic ), $brief_data, DAY_IN_SECONDS );
 
 		// Run the pipeline immediately.
 		$context  = TenantContext::for_site( $site_id );
@@ -227,7 +227,8 @@ class AutomationController {
 		$context  = TenantContext::for_site( $site_id );
 		$pipeline = new ContentPipeline( $context );
 
-		$articles_to_publish = max( 1, $context->profile->publish_rate );
+		$publish_rate        = $context->profile->publish_rate;
+		$articles_to_publish = ( $publish_rate > 0 ) ? $publish_rate : 1;
 		$results             = [];
 
 		for ( $i = 0; $i < $articles_to_publish; $i++ ) {
