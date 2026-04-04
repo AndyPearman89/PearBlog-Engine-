@@ -25,6 +25,7 @@ require_once PEARBLOG_DIR . '/inc/components.php';
 require_once PEARBLOG_DIR . '/inc/performance.php';
 require_once PEARBLOG_DIR . '/inc/monetization.php';
 require_once PEARBLOG_DIR . '/inc/affiliate-api.php';
+require_once PEARBLOG_DIR . '/inc/lead-generation.php';
 
 // AI Personalization Engine (v4)
 require_once PEARBLOG_DIR . '/inc/user-context.php';
