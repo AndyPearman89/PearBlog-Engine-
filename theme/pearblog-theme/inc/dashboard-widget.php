@@ -36,8 +36,8 @@ function pearblog_dashboard_widget_render() {
 	$published  = wp_count_posts()->publish;
 	$drafts     = wp_count_posts()->draft;
 	$scheduled  = wp_count_posts()->future;
-	$categories = wp_count_terms( 'category' );
-	$tags       = wp_count_terms( 'post_tag' );
+	$category_terms = get_terms( array( 'taxonomy' => 'category', 'hide_empty' => false, 'fields' => 'count' ) );
+	$categories     = is_wp_error( $category_terms ) ? 0 : (int) $category_terms;
 
 	// Get recent posts.
 	$recent_posts = get_posts( array(

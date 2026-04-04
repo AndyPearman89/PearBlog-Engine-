@@ -414,8 +414,8 @@ add_action( 'customize_preview_init', 'pearblog_customize_preview_js' );
 function pearblog_customizer_css() {
 	$css = '';
 
-	$font_family = get_option( 'pearblog_font_family', 'system' );
-	$font_map    = array(
+	$font_family_key = get_theme_mod( 'pearblog_font_family', 'system' );
+	$font_map        = array(
 		'system'       => '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
 		'inter'        => '"Inter", sans-serif',
 		'roboto'       => '"Roboto", sans-serif',
@@ -426,12 +426,12 @@ function pearblog_customizer_css() {
 		'merriweather' => '"Merriweather", serif',
 	);
 
-	$heading_font = get_option( 'pearblog_heading_font_family', 'system' );
-	$base_size    = get_option( 'pearblog_font_size_base', 16 );
-	$max_width    = get_option( 'pearblog_container_width', 1200 );
+	$heading_font_key = get_theme_mod( 'pearblog_heading_font_family', 'system' );
+	$base_size        = get_theme_mod( 'pearblog_font_size_base', 16 );
+	$max_width        = get_theme_mod( 'pearblog_container_width', 1200 );
 
-	$body_font    = $font_map[ $font_family ] ?? $font_map['system'];
-	$heading_font = $font_map[ $heading_font ] ?? $font_map['system'];
+	$body_font        = $font_map[ $font_family_key ] ?? $font_map['system'];
+	$heading_font     = $font_map[ $heading_font_key ] ?? $font_map['system'];
 
 	$css .= ':root {';
 	$css .= '--pb-font-body: ' . $body_font . ';';

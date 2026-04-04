@@ -73,7 +73,7 @@ class PearBlog_Recent_Posts_Widget extends WP_Widget {
 			if ( $show_thumb && has_post_thumbnail( $post ) ) {
 				echo '<div class="pb-recent-post-thumb">';
 				echo '<a href="' . esc_url( get_permalink( $post ) ) . '">';
-				echo get_the_post_thumbnail( $post, 'pearblog-thumbnail', array( 'loading' => 'lazy' ) );
+				echo wp_kses_post( get_the_post_thumbnail( $post, 'pearblog-thumbnail', array( 'loading' => 'lazy' ) ) );
 				echo '</a>';
 				echo '</div>';
 			}
