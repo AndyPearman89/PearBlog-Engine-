@@ -170,19 +170,83 @@ function pearblog_cache_headers() {
 add_action('send_headers', 'pearblog_cache_headers');
 
 /**
- * Get Lighthouse performance score (placeholder for future integration)
+ * Get Lighthouse / PageSpeed Insights scores.
+ *
+ * Queries the Google PageSpeed Insights API (v5) for the given URL.  Results
+ * are cached for 24 hours to avoid hitting the free-tier rate limit (25 000
+ * requests/day, but a single call returns all four categories).
+ *
+ * An API key stored in option `pearblog_pagespeed_api_key` is optional but
+ * strongly recommended for production use to avoid per-IP quota limits.
+ *
+ * @param string|null $url URL to analyse. Defaults to the site home page.
+ * @return array Associative array with keys: performance, seo, accessibility, best_practices (0-100 each).
  */
 function pearblog_get_lighthouse_score($url = null) {
     if (!$url) {
         $url = home_url('/');
     }
 
-    // This would integrate with PageSpeed Insights API
-    // For now, return a placeholder
-    return array(
-        'performance' => 0,
-        'seo' => 0,
-        'accessibility' => 0,
+    $default_scores = array(
+        'performance'    => 0,
+        'seo'            => 0,
+        'accessibility'  => 0,
         'best_practices' => 0,
     );
+
+    // Check cache first (24-hour TTL).
+    $cache_key = 'pb_lighthouse_' . md5($url);
+    $cached    = get_transient($cache_key);
+    if (false !== $cached && is_array($cached)) {
+        return $cached;
+    }
+
+    // Build API request.
+    $api_key  = get_option('pearblog_pagespeed_api_key', '');
+    $endpoint = add_query_arg(
+        array_filter(array(
+            'url'      => rawurlencode($url),
+            'category' => array('PERFORMANCE', 'SEO', 'ACCESSIBILITY', 'BEST_PRACTICES'),
+            'strategy' => 'mobile',
+            'key'      => $api_key ?: null,
+        )),
+        'https://www.googleapis.com/pagespeedonline/v5/runPagespeed'
+    );
+
+    // PageSpeed Insights accepts category as repeated param.
+    $endpoint = 'https://www.googleapis.com/pagespeedonline/v5/runPagespeed?url=' . rawurlencode($url)
+              . '&category=PERFORMANCE&category=SEO&category=ACCESSIBILITY&category=BEST_PRACTICES'
+              . '&strategy=mobile'
+              . ($api_key ? '&key=' . rawurlencode($api_key) : '');
+
+    $response = wp_remote_get($endpoint, array('timeout' => 60));
+
+    if (is_wp_error($response)) {
+        error_log('PearBlog: PageSpeed Insights API error – ' . $response->get_error_message());
+        return $default_scores;
+    }
+
+    $code = wp_remote_retrieve_response_code($response);
+    if (200 !== $code) {
+        error_log('PearBlog: PageSpeed Insights API returned HTTP ' . $code);
+        return $default_scores;
+    }
+
+    $body = json_decode(wp_remote_retrieve_body($response), true);
+    if (empty($body['lighthouseResult']['categories'])) {
+        return $default_scores;
+    }
+
+    $cats   = $body['lighthouseResult']['categories'];
+    $scores = array(
+        'performance'    => isset($cats['performance']['score'])    ? round($cats['performance']['score'] * 100)    : 0,
+        'seo'            => isset($cats['seo']['score'])            ? round($cats['seo']['score'] * 100)            : 0,
+        'accessibility'  => isset($cats['accessibility']['score'])  ? round($cats['accessibility']['score'] * 100)  : 0,
+        'best_practices' => isset($cats['best-practices']['score']) ? round($cats['best-practices']['score'] * 100) : 0,
+    );
+
+    // Cache for 24 hours.
+    set_transient($cache_key, $scores, DAY_IN_SECONDS);
+
+    return $scores;
 }

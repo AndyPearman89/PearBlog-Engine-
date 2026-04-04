@@ -266,20 +266,77 @@ if (get_option('pearblog_smart_cta_enabled', false)) {
 }
 
 /**
- * Revenue tracking (placeholder for analytics integration)
+ * Revenue tracking with per-post, per-type, and daily aggregate storage.
+ *
+ * Stores three kinds of data:
+ *   1. Per-post lifetime total  – `_pearblog_revenue_{type}` post meta.
+ *   2. Per-post daily total     – `_pearblog_revenue_{type}_{Y-m-d}` post meta.
+ *   3. Site-wide daily total    – `pearblog_revenue_{type}_{Y-m-d}` option.
+ *
+ * @param float  $amount Revenue amount to record.
+ * @param string $type   Revenue type: 'ad' | 'affiliate' | 'saas'.
  */
 function pearblog_track_revenue($amount, $type = 'ad') {
-    // This would integrate with analytics to track revenue
-    // Store in custom post meta or external service
-    $post_id = get_the_ID();
-
-    if (!$post_id) {
+    $amount = floatval($amount);
+    if ($amount <= 0) {
         return;
     }
 
-    $current_revenue = get_post_meta($post_id, '_pearblog_revenue_' . $type, true);
-    $current_revenue = floatval($current_revenue);
-    $new_revenue = $current_revenue + floatval($amount);
+    $type  = sanitize_key($type);
+    $today = gmdate('Y-m-d');
 
-    update_post_meta($post_id, '_pearblog_revenue_' . $type, $new_revenue);
+    // 1. Per-post lifetime total.
+    $post_id = get_the_ID();
+    if ($post_id) {
+        $lifetime_key = '_pearblog_revenue_' . $type;
+        $current      = floatval(get_post_meta($post_id, $lifetime_key, true));
+        update_post_meta($post_id, $lifetime_key, $current + $amount);
+
+        // 2. Per-post daily total.
+        $daily_key = '_pearblog_revenue_' . $type . '_' . $today;
+        $daily     = floatval(get_post_meta($post_id, $daily_key, true));
+        update_post_meta($post_id, $daily_key, $daily + $amount);
+    }
+
+    // 3. Site-wide daily aggregate (stored as option for fast queries).
+    $site_key = 'pearblog_revenue_' . $type . '_' . $today;
+    $site_val = floatval(get_option($site_key, 0));
+    update_option($site_key, $site_val + $amount, false);
+}
+
+/**
+ * Get aggregate revenue for a date range.
+ *
+ * @param string $type       Revenue type: 'ad' | 'affiliate' | 'saas' | 'all'.
+ * @param int    $days_back  Number of days to look back (default 30).
+ * @return array Associative array with 'total', 'daily' (date => amount), 'types' breakdown.
+ */
+function pearblog_get_revenue_summary($type = 'all', $days_back = 30) {
+    $types = ('all' === $type) ? array('ad', 'affiliate', 'saas') : array(sanitize_key($type));
+    $daily = array();
+    $by_type = array();
+
+    for ($i = 0; $i < $days_back; $i++) {
+        $date = gmdate('Y-m-d', strtotime("-{$i} days"));
+        $day_total = 0;
+
+        foreach ($types as $t) {
+            $amount     = floatval(get_option('pearblog_revenue_' . $t . '_' . $date, 0));
+            $day_total += $amount;
+            if (!isset($by_type[$t])) {
+                $by_type[$t] = 0;
+            }
+            $by_type[$t] += $amount;
+        }
+
+        $daily[$date] = round($day_total, 2);
+    }
+
+    $total = round(array_sum($by_type), 2);
+
+    return array(
+        'total'  => $total,
+        'daily'  => $daily,
+        'types'  => $by_type,
+    );
 }

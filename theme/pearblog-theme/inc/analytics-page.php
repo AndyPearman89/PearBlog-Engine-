@@ -207,6 +207,54 @@ function pearblog_analytics_get_category_distribution() {
 }
 
 /**
+ * Get revenue and affiliate summary for analytics.
+ *
+ * @return array Revenue and affiliate data.
+ */
+function pearblog_analytics_get_revenue_data() {
+	$revenue   = function_exists( 'pearblog_get_revenue_summary' ) ? pearblog_get_revenue_summary( 'all', 30 ) : array( 'total' => 0, 'daily' => array(), 'types' => array() );
+	$affiliate = function_exists( 'pearblog_get_affiliate_stats' ) ? pearblog_get_affiliate_stats() : array( 'booking_clicks' => 0, 'airbnb_clicks' => 0, 'total_clicks' => 0 );
+
+	return array(
+		'revenue'   => $revenue,
+		'affiliate' => $affiliate,
+	);
+}
+
+/**
+ * Get publishing trend data (posts per day for last 30 days).
+ *
+ * @return array Daily post counts keyed by date.
+ */
+function pearblog_analytics_get_publishing_trend() {
+	global $wpdb;
+
+	$rows = $wpdb->get_results(
+		"SELECT DATE(post_date) AS pub_date, COUNT(*) AS cnt
+		FROM {$wpdb->posts}
+		WHERE post_status = 'publish'
+		  AND post_type   = 'post'
+		  AND post_date   >= DATE_SUB(NOW(), INTERVAL 30 DAY)
+		GROUP BY pub_date
+		ORDER BY pub_date ASC",
+		ARRAY_A
+	);
+
+	$trend = array();
+	for ( $i = 29; $i >= 0; $i-- ) {
+		$date = gmdate( 'Y-m-d', strtotime( "-{$i} days" ) );
+		$trend[ $date ] = 0;
+	}
+	foreach ( $rows as $row ) {
+		if ( isset( $trend[ $row['pub_date'] ] ) ) {
+			$trend[ $row['pub_date'] ] = (int) $row['cnt'];
+		}
+	}
+
+	return $trend;
+}
+
+/**
  * Render the analytics admin page.
  */
 function pearblog_analytics_render_page() {
@@ -214,6 +262,11 @@ function pearblog_analytics_render_page() {
 	$top_posts  = pearblog_analytics_get_top_posts( 10 );
 	$ab_tests   = pearblog_analytics_get_ab_tests();
 	$categories = pearblog_analytics_get_category_distribution();
+	$rev_data   = pearblog_analytics_get_revenue_data();
+	$pub_trend  = pearblog_analytics_get_publishing_trend();
+
+	$revenue   = $rev_data['revenue'];
+	$affiliate = $rev_data['affiliate'];
 
 	?>
 	<div class="wrap pb-analytics-wrap">
@@ -247,6 +300,55 @@ function pearblog_analytics_render_page() {
 					<span class="pb-analytics-card-number"><?php echo esc_html( $summary['queue_remaining'] ); ?></span>
 					<span class="pb-analytics-card-label"><?php esc_html_e( 'Queue', 'pearblog-theme' ); ?></span>
 				</div>
+			</div>
+		</div>
+
+		<!-- Revenue & Affiliate Stats -->
+		<div class="pb-analytics-section">
+			<h2><?php esc_html_e( 'Revenue & Affiliate (Last 30 Days)', 'pearblog-theme' ); ?></h2>
+			<div class="pb-analytics-cards">
+				<div class="pb-analytics-card pb-analytics-card--green">
+					<span class="pb-analytics-card-number"><?php echo esc_html( number_format( $revenue['total'], 2 ) ); ?></span>
+					<span class="pb-analytics-card-label"><?php esc_html_e( 'Total Revenue', 'pearblog-theme' ); ?></span>
+				</div>
+				<div class="pb-analytics-card">
+					<span class="pb-analytics-card-number"><?php echo esc_html( number_format( (float) ( $revenue['types']['ad'] ?? 0 ), 2 ) ); ?></span>
+					<span class="pb-analytics-card-label"><?php esc_html_e( 'Ad Revenue', 'pearblog-theme' ); ?></span>
+				</div>
+				<div class="pb-analytics-card">
+					<span class="pb-analytics-card-number"><?php echo esc_html( number_format( (float) ( $revenue['types']['affiliate'] ?? 0 ), 2 ) ); ?></span>
+					<span class="pb-analytics-card-label"><?php esc_html_e( 'Affiliate Revenue', 'pearblog-theme' ); ?></span>
+				</div>
+				<div class="pb-analytics-card pb-analytics-card--amber">
+					<span class="pb-analytics-card-number"><?php echo esc_html( $affiliate['total_clicks'] ); ?></span>
+					<span class="pb-analytics-card-label"><?php esc_html_e( 'Total Aff. Clicks', 'pearblog-theme' ); ?></span>
+				</div>
+				<div class="pb-analytics-card">
+					<span class="pb-analytics-card-number"><?php echo esc_html( $affiliate['booking_clicks'] ); ?></span>
+					<span class="pb-analytics-card-label"><?php esc_html_e( 'Booking Clicks', 'pearblog-theme' ); ?></span>
+				</div>
+				<div class="pb-analytics-card">
+					<span class="pb-analytics-card-number"><?php echo esc_html( $affiliate['airbnb_clicks'] ); ?></span>
+					<span class="pb-analytics-card-label"><?php esc_html_e( 'Airbnb Clicks', 'pearblog-theme' ); ?></span>
+				</div>
+			</div>
+		</div>
+
+		<!-- Publishing Trend (30 days) -->
+		<div class="pb-analytics-section">
+			<h2><?php esc_html_e( 'Publishing Trend (Last 30 Days)', 'pearblog-theme' ); ?></h2>
+			<div class="pb-analytics-trend">
+				<?php
+				$max_posts = max( 1, max( $pub_trend ) );
+				foreach ( $pub_trend as $date => $count ) :
+					$pct = round( ( $count / $max_posts ) * 100 );
+					$label = gmdate( 'j', strtotime( $date ) );
+				?>
+					<div class="pb-analytics-trend-bar" title="<?php echo esc_attr( $date . ': ' . $count . ' ' . _n( 'post', 'posts', $count, 'pearblog-theme' ) ); ?>">
+						<div class="pb-analytics-trend-fill" style="height: <?php echo esc_attr( $pct ); ?>%;"></div>
+						<span class="pb-analytics-trend-label"><?php echo esc_html( $label ); ?></span>
+					</div>
+				<?php endforeach; ?>
 			</div>
 		</div>
 

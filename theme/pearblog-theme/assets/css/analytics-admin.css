@@ -173,6 +173,60 @@
 	padding: 20px;
 }
 
+/* Revenue card colors */
+.pb-analytics-card--green .pb-analytics-card-number {
+	color: #00a32a;
+}
+
+.pb-analytics-card--amber .pb-analytics-card-number {
+	color: #dba617;
+}
+
+/* Publishing trend bar chart */
+.pb-analytics-trend {
+	display: flex;
+	align-items: flex-end;
+	gap: 3px;
+	height: 120px;
+	padding-bottom: 20px;
+	position: relative;
+}
+
+.pb-analytics-trend-bar {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: flex-end;
+	height: 100%;
+	position: relative;
+	cursor: default;
+}
+
+.pb-analytics-trend-fill {
+	width: 100%;
+	min-height: 2px;
+	background: #2563eb;
+	border-radius: 2px 2px 0 0;
+	transition: height 0.3s ease;
+}
+
+.pb-analytics-trend-bar:hover .pb-analytics-trend-fill {
+	background: #1d4ed8;
+}
+
+.pb-analytics-trend-label {
+	position: absolute;
+	bottom: -18px;
+	font-size: 9px;
+	color: #a0a5aa;
+}
+
+.pb-analytics-trend-bar:nth-child(5n) .pb-analytics-trend-label {
+	color: #646970;
+	font-weight: 600;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
 	.pb-analytics-cards {
