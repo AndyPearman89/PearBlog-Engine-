@@ -1,0 +1,91 @@
+name: Deploy to WordPress Server
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mu-plugins/**'
+      - 'theme/**'
+  workflow_dispatch:
+    inputs:
+      force_deploy:
+        description: 'Force full deploy (skip changed-files check)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Deploy plugin & theme via SSH
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate required secrets
+        run: |
+          MISSING=()
+          [[ -z "${{ secrets.SSH_HOST }}" ]]          && MISSING+=("SSH_HOST")
+          [[ -z "${{ secrets.SSH_USER }}" ]]          && MISSING+=("SSH_USER")
+          [[ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]]   && MISSING+=("SSH_PRIVATE_KEY")
+          [[ -z "${{ secrets.WP_PATH }}" ]]           && MISSING+=("WP_PATH")
+          if [[ ${#MISSING[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${MISSING[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          echo "All required secrets are present."
+
+      - name: Set common variables
+        id: vars
+        run: |
+          SSH_PORT="${{ secrets.SSH_PORT }}"
+          echo "ssh_port=${SSH_PORT:-22}" >> "$GITHUB_OUTPUT"
+          FORCE="${{ github.event.inputs.force_deploy }}"
+          echo "force=${FORCE:-false}" >> "$GITHUB_OUTPUT"
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Add server to known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -p "${{ steps.vars.outputs.ssh_port }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+
+      - name: Deploy mu-plugin (pearblog-engine)
+        run: |
+          RSYNC_OPTS="-avz --delete"
+          # When force_deploy is false only changed paths trigger this job (push paths filter).
+          # The flag is available for manual runs to confirm intent; behaviour is identical
+          # since rsync always syncs the full tree — the flag documents operator intent.
+          rsync $RSYNC_OPTS \
+            -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
+            mu-plugins/pearblog-engine/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WP_PATH }}/wp-content/mu-plugins/pearblog-engine/"
+
+      - name: Deploy theme (pearblog-theme)
+        run: |
+          rsync -avz --delete \
+            -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
+            theme/pearblog-theme/ \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WP_PATH }}/wp-content/themes/pearblog-theme/"
+
+      - name: Flush WordPress object cache
+        continue-on-error: true
+        run: |
+          ssh -p "${{ steps.vars.outputs.ssh_port }}" \
+            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
+            "cd '${{ secrets.WP_PATH }}' && wp cache flush --allow-root 2>/dev/null || true"
+
+      - name: Deployment summary
+        run: |
+          echo "✅ Deploy complete"
+          echo "   Plugin:  wp-content/mu-plugins/pearblog-engine/"
+          echo "   Theme:   wp-content/themes/pearblog-theme/"
+          echo "   Server:  ${{ secrets.SSH_HOST }}"
