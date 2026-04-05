@@ -33,9 +33,10 @@ add_action( 'wp_dashboard_setup', 'pearblog_add_dashboard_widget' );
  * Render the dashboard widget content.
  */
 function pearblog_dashboard_widget_render() {
-	$published  = wp_count_posts()->publish;
-	$drafts     = wp_count_posts()->draft;
-	$scheduled  = wp_count_posts()->future;
+	$counts     = wp_count_posts();
+	$published  = $counts->publish;
+	$drafts     = $counts->draft;
+	$scheduled  = $counts->future;
 	$category_terms = get_terms( array( 'taxonomy' => 'category', 'hide_empty' => false, 'fields' => 'count' ) );
 	$categories     = is_wp_error( $category_terms ) ? 0 : (int) $category_terms;
 
@@ -212,6 +213,9 @@ function pearblog_dashboard_widget_render() {
 	<div class="pb-dashboard-actions">
 		<a href="<?php echo esc_url( admin_url( 'post-new.php' ) ); ?>" class="button button-primary">
 			<?php esc_html_e( 'New Post', 'pearblog-theme' ); ?>
+		</a>
+		<a href="<?php echo esc_url( admin_url( 'admin.php?page=pearblog-analytics' ) ); ?>" class="button">
+			<?php esc_html_e( 'Analytics', 'pearblog-theme' ); ?>
 		</a>
 		<a href="<?php echo esc_url( admin_url( 'options-general.php?page=pearblog-engine' ) ); ?>" class="button">
 			<?php esc_html_e( 'Engine Settings', 'pearblog-theme' ); ?>

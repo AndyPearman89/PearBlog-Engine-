@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'pearblog/engine',
-        'pretty_version' => 'dev-copilot/improve-project-features',
-        'version' => 'dev-copilot/improve-project-features',
-        'reference' => 'd686e110fd0cd42d767a7a76350afa67f9072a3a',
+        'pretty_version' => 'dev-main',
+        'version' => 'dev-main',
+        'reference' => '655168cd845e5f5a0bef66c6390d32ff4249bfde',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => true,
         ),
         'pearblog/engine' => array(
-            'pretty_version' => 'dev-copilot/improve-project-features',
-            'version' => 'dev-copilot/improve-project-features',
-            'reference' => 'd686e110fd0cd42d767a7a76350afa67f9072a3a',
+            'pretty_version' => 'dev-main',
+            'version' => 'dev-main',
+            'reference' => '655168cd845e5f5a0bef66c6390d32ff4249bfde',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
