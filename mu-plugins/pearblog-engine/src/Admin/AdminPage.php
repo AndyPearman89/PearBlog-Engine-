@@ -170,7 +170,7 @@ class AdminPage {
 		<div class="wrap pb-engine-wrap">
 			<h1 class="pb-page-title">
 				<?php esc_html_e( 'PearBlog Engine', 'pearblog-engine' ); ?>
-				<span class="pb-version-badge">v5.1</span>
+				<span class="pb-version-badge">v5.2</span>
 			</h1>
 
 			<?php echo wp_kses_post( $notice ); ?>

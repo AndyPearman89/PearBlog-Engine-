@@ -1,4 +1,4 @@
-# PearBlog Theme v4
+# PearBlog Theme v5.2
 
 **SEO-first WordPress theme with AI personalization, monetization, and multisite branding.**
 

@@ -38,11 +38,11 @@ $search_query = get_search_query();
                     <p class="pb-search-count">
                         <?php
                         global $wp_query;
-                        printf(
-                            /* translators: %d: number of results */
+                        echo esc_html( sprintf(
+                            /* translators: %d: number of search results */
                             _n( '%d result found.', '%d results found.', $wp_query->found_posts, 'pearblog-theme' ),
                             $wp_query->found_posts
-                        );
+                        ) );
                         ?>
                     </p>
 

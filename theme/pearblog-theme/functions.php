@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Theme constants
-define('PEARBLOG_VERSION', '4.0.0');
+define('PEARBLOG_VERSION', '5.2.0');
 define('PEARBLOG_DIR', get_template_directory());
 define('PEARBLOG_URI', get_template_directory_uri());
 define('PEARBLOG_IS_PRO', true);
