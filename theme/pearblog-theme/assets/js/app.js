@@ -1,8 +1,8 @@
 /**
- * PearBlog v2 PRO - Main App JavaScript
+ * PearBlog v5.2 – Main App JavaScript
  * Frontend Operating System (FOS)
  *
- * @version 2.0.0
+ * @version 5.2.0
  */
 
 (function() {
@@ -253,11 +253,12 @@
     }
 
     /**
-     * Track Core Web Vitals
+     * Track Core Web Vitals (development only)
      */
     function initWebVitals() {
+        // Only track on localhost/dev — avoids noise in production console logs.
         if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            return; // Only track in production
+            return;
         }
 
         if ('PerformanceObserver' in window) {
