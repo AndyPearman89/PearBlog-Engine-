@@ -92,7 +92,8 @@ class Plugin {
 	private function register_monitoring_hooks(): void {
 		// Track the last successful pipeline completion.
 		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ): void {
-			update_option( 'pearblog_last_pipeline_run', current_time( 'mysql' ) );
+			// Store as Unix timestamp for consistent numeric comparison in HealthController.
+			update_option( 'pearblog_last_pipeline_run', time() );
 		} );
 
 		// Alert on circuit-breaker state change (fires when circuit opens in AIClient).

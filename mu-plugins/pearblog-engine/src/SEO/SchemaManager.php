@@ -17,6 +17,8 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\SEO;
 
+use PearBlogEngine\SEO\InternalLinker;
+
 /**
  * Generates and outputs Schema.org JSON-LD for WordPress posts.
  */

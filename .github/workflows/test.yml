@@ -13,6 +13,8 @@ jobs:
   php-tests:
     name: PHPUnit (PHP ${{ matrix.php }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -52,6 +54,8 @@ jobs:
   python-tests:
     name: pytest (Python ${{ matrix.python }})
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     strategy:
       matrix:
@@ -90,6 +94,8 @@ jobs:
   php-lint:
     name: PHP Syntax Check
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
 
     steps:
       - name: Checkout
