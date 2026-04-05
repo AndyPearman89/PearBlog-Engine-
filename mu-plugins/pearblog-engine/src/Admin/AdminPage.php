@@ -35,6 +35,7 @@ class AdminPage {
 		add_action( 'admin_post_pearblog_generate_images', [ $this, 'handle_generate_images' ] );
 		add_action( 'admin_post_pearblog_run_seo_audit', [ $this, 'handle_seo_audit' ] );
 		add_action( 'admin_post_pearblog_fix_alt_texts', [ $this, 'handle_fix_alt_texts' ] );
+		add_action( 'admin_post_pearblog_run_pipeline', [ $this, 'handle_run_pipeline' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -128,8 +129,23 @@ class AdminPage {
 		// SaaS CTA settings.
 		register_setting( self::OPTION_GRP, 'pearblog_saas_products', [ 'sanitize_callback' => [ $this, 'sanitize_saas_products' ] ] );
 
+		// Autonomous mode.
+		register_setting( self::OPTION_GRP, 'pearblog_autonomous_mode', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+
 		// Automation API settings.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// Affiliate API settings.
+		register_setting( self::OPTION_GRP, 'pearblog_booking_api_key',      [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_airbnb_affiliate_id',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_airbnb_api_key',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// Email marketing settings.
+		register_setting( self::OPTION_GRP, 'pearblog_esp_provider',       [ 'sanitize_callback' => 'sanitize_key' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_api_key',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_list_id',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_form_id', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -307,6 +323,35 @@ class AdminPage {
 	// Page render
 	// -----------------------------------------------------------------------
 
+	/**
+	 * Trigger the content pipeline on demand.
+	 */
+	public function handle_run_pipeline(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+
+		check_admin_referer( 'pearblog_run_pipeline' );
+
+		$queue = new TopicQueue( get_current_blog_id() );
+
+		if ( $queue->count() === 0 ) {
+			$this->redirect_with_notice(
+				__( 'Queue is empty – add topics before running the pipeline.', 'pearblog-engine' ),
+				'warning'
+			);
+			return;
+		}
+
+		// Trigger the cron action immediately (runs synchronously in the current request).
+		do_action( 'pearblog_run_pipeline' );
+
+		$this->redirect_with_notice(
+			__( 'Pipeline triggered successfully.', 'pearblog-engine' ),
+			'success'
+		);
+	}
+
 	public function render_page(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
@@ -397,6 +442,16 @@ class AdminPage {
 						<?php settings_fields( self::OPTION_GRP ); ?>
 						<table class="form-table" role="presentation">
 						<tr>
+						<th scope="row"><label for="pearblog_autonomous_mode"><?php esc_html_e( 'Autonomous Mode', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" id="pearblog_autonomous_mode" name="pearblog_autonomous_mode" value="1" <?php checked( get_option( 'pearblog_autonomous_mode', true ) ); ?> />
+								<?php esc_html_e( 'Enable fully autonomous content pipeline (WP-Cron)', 'pearblog-engine' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When enabled, the pipeline runs automatically every hour and publishes articles from the topic queue without any manual intervention.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
 						<th scope="row"><label for="pearblog_openai_api_key"><?php esc_html_e( 'OpenAI API Key', 'pearblog-engine' ); ?></label></th>
 						<td><input type="password" id="pearblog_openai_api_key" name="pearblog_openai_api_key" value="<?php echo esc_attr( get_option( 'pearblog_openai_api_key', '' ) ); ?>" class="regular-text" /></td>
 					</tr>
@@ -416,6 +471,27 @@ class AdminPage {
 						<td>
 							<input type="text" id="pearblog_booking_affiliate_id" name="pearblog_booking_affiliate_id" value="<?php echo esc_attr( get_option( 'pearblog_booking_affiliate_id', '' ) ); ?>" class="regular-text" placeholder="1234567" />
 							<p class="description"><?php esc_html_e( 'Your Booking.com partner/affiliate ID (aid). Required for Phase 2 affiliate monetisation.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_booking_api_key"><?php esc_html_e( 'Booking.com API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_booking_api_key" name="pearblog_booking_api_key" value="<?php echo esc_attr( get_option( 'pearblog_booking_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Optional. Reserved for future Booking.com Demand API integration.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_airbnb_affiliate_id"><?php esc_html_e( 'Airbnb Affiliate ID', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="pearblog_airbnb_affiliate_id" name="pearblog_airbnb_affiliate_id" value="<?php echo esc_attr( get_option( 'pearblog_airbnb_affiliate_id', '' ) ); ?>" class="regular-text" placeholder="12345" />
+							<p class="description"><?php esc_html_e( 'Your Airbnb partner ID used to build deep-link search URLs.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_airbnb_api_key"><?php esc_html_e( 'Airbnb API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_airbnb_api_key" name="pearblog_airbnb_api_key" value="<?php echo esc_attr( get_option( 'pearblog_airbnb_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Optional. Reserved for future Airbnb Partner API integration.', 'pearblog-engine' ); ?></p>
 						</td>
 					</tr>
 					<tr>
@@ -893,6 +969,59 @@ class AdminPage {
 						</form>
 					</div>
 				<?php endif; ?>
+
+				<!-- Run pipeline -->
+				<div class="pb-admin-card">
+					<div class="pb-admin-card-header">
+						<span class="pb-admin-card-icon" aria-hidden="true">▶️</span>
+						<h2 class="pb-admin-card-title"><?php esc_html_e( 'Run Pipeline', 'pearblog-engine' ); ?></h2>
+					</div>
+					<?php
+					$autonomous_enabled = (bool) get_option( 'pearblog_autonomous_mode', true );
+					$next_scheduled     = wp_next_scheduled( 'pearblog_run_pipeline' );
+					?>
+					<table class="widefat fixed" style="max-width:500px; margin-bottom:12px;">
+						<tbody>
+							<tr>
+								<td><strong><?php esc_html_e( 'Mode', 'pearblog-engine' ); ?></strong></td>
+								<td>
+									<?php if ( $autonomous_enabled ) : ?>
+										<span style="color:#00a32a;">&#9679; <?php esc_html_e( 'Autonomous (enabled)', 'pearblog-engine' ); ?></span>
+									<?php else : ?>
+										<span style="color:#d63638;">&#9679; <?php esc_html_e( 'Manual (disabled)', 'pearblog-engine' ); ?></span>
+									<?php endif; ?>
+								</td>
+							</tr>
+							<tr>
+								<td><strong><?php esc_html_e( 'Next Scheduled Run', 'pearblog-engine' ); ?></strong></td>
+								<td>
+									<?php
+									if ( $next_scheduled ) {
+										echo esc_html( sprintf(
+											/* translators: %s: human-readable time difference */
+											__( 'In %s', 'pearblog-engine' ),
+											human_time_diff( time(), $next_scheduled )
+										) );
+										echo ' (' . esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next_scheduled ) ) . ')';
+									} else {
+										esc_html_e( 'Not scheduled', 'pearblog-engine' );
+									}
+									?>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pearblog_run_pipeline" />
+						<?php wp_nonce_field( 'pearblog_run_pipeline' ); ?>
+						<div class="pb-admin-actions">
+							<?php
+							$disabled_attrs = $queue->count() === 0 ? [ 'disabled' => 'disabled', 'title' => __( 'Add topics to the queue first', 'pearblog-engine' ) ] : [];
+							submit_button( __( 'Run Pipeline Now', 'pearblog-engine' ), 'primary', '', false, $disabled_attrs );
+							?>
+						</div>
+					</form>
+				</div>
 
 				<!-- Add topics -->
 				<div class="pb-admin-card">
