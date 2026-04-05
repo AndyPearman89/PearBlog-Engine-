@@ -1,0 +1,7 @@
+# Autopilot data files
+autopilot-metrics.json
+autopilot-state.json
+*.json
+
+# Keep directory
+!.gitignore
