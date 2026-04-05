@@ -3,7 +3,7 @@
         'name' => 'pearblog/engine',
         'pretty_version' => 'dev-copilot/improve-project-features',
         'version' => 'dev-copilot/improve-project-features',
-        'reference' => '4927f69a9360c5ad62885345b15471fbc4424ebd',
+        'reference' => 'd686e110fd0cd42d767a7a76350afa67f9072a3a',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'pearblog/engine' => array(
             'pretty_version' => 'dev-copilot/improve-project-features',
             'version' => 'dev-copilot/improve-project-features',
-            'reference' => '4927f69a9360c5ad62885345b15471fbc4424ebd',
+            'reference' => 'd686e110fd0cd42d767a7a76350afa67f9072a3a',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
