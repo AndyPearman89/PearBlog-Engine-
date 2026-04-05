@@ -1,0 +1,229 @@
+<?php
+/**
+ * PHPUnit bootstrap – sets up WordPress function stubs for unit testing.
+ *
+ * We test pure PHP logic without a full WordPress installation by stubbing
+ * the handful of WordPress functions used in the classes under test.
+ */
+
+declare(strict_types=1);
+
+// Stub WordPress global functions used in production code.
+// This file is intentionally kept minimal – only stub what is actually needed.
+
+if ( ! function_exists( 'get_option' ) ) {
+	function get_option( string $option, $default = false ) {
+		return $GLOBALS['_options'][ $option ] ?? $default;
+	}
+}
+
+if ( ! function_exists( 'update_option' ) ) {
+	function update_option( string $option, $value ): bool {
+		$GLOBALS['_options'][ $option ] = $value;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_option' ) ) {
+	function delete_option( string $option ): bool {
+		unset( $GLOBALS['_options'][ $option ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_blog_option' ) ) {
+	function get_blog_option( int $blog_id, string $option, $default = false ) {
+		return get_option( "{$blog_id}_{$option}", $default );
+	}
+}
+
+if ( ! function_exists( 'update_blog_option' ) ) {
+	function update_blog_option( int $blog_id, string $option, $value ): bool {
+		return update_option( "{$blog_id}_{$option}", $value );
+	}
+}
+
+if ( ! function_exists( 'get_current_blog_id' ) ) {
+	function get_current_blog_id(): int {
+		return 1;
+	}
+}
+
+if ( ! function_exists( 'get_post_meta' ) ) {
+	function get_post_meta( int $post_id, string $key, bool $single = false ) {
+		$meta = $GLOBALS['_post_meta'][ $post_id ][ $key ] ?? [];
+		return $single ? ( $meta[0] ?? '' ) : $meta;
+	}
+}
+
+if ( ! function_exists( 'update_post_meta' ) ) {
+	function update_post_meta( int $post_id, string $key, $value ): bool {
+		$GLOBALS['_post_meta'][ $post_id ][ $key ] = [ $value ];
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_transient' ) ) {
+	function get_transient( string $key ) {
+		return $GLOBALS['_transients'][ $key ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'set_transient' ) ) {
+	function set_transient( string $key, $value, int $expiration = 0 ): bool {
+		$GLOBALS['_transients'][ $key ] = $value;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'delete_transient' ) ) {
+	function delete_transient( string $key ): bool {
+		unset( $GLOBALS['_transients'][ $key ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'sanitize_title' ) ) {
+	function sanitize_title( string $title ): string {
+		return strtolower( trim( preg_replace( '/[^a-z0-9]+/i', '-', $title ), '-' ) );
+	}
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	function sanitize_text_field( string $str ): string {
+		return trim( strip_tags( $str ) );
+	}
+}
+
+if ( ! function_exists( 'esc_url_raw' ) ) {
+	function esc_url_raw( string $url ): string {
+		return filter_var( $url, FILTER_SANITIZE_URL ) ?: '';
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( string $str ): string {
+		return strip_tags( $str );
+	}
+}
+
+if ( ! function_exists( 'wp_json_encode' ) ) {
+	function wp_json_encode( $data, int $options = 0 ): string {
+		return (string) json_encode( $data, $options );
+	}
+}
+
+if ( ! function_exists( 'apply_filters' ) ) {
+	function apply_filters( string $hook, $value, ...$args ) {
+		return $value;
+	}
+}
+
+if ( ! function_exists( 'do_action' ) ) {
+	function do_action( string $hook, ...$args ): void {}
+}
+
+if ( ! function_exists( 'get_post' ) ) {
+	function get_post( $post = null ) {
+		return $GLOBALS['_posts'][ (int) $post ] ?? null;
+	}
+}
+
+if ( ! function_exists( 'get_posts' ) ) {
+	function get_posts( array $args = [] ): array {
+		$all  = $GLOBALS['_post_list'] ?? [];
+		$excl = array_map( 'intval', (array) ( $args['post__not_in'] ?? [] ) );
+		if ( ! empty( $excl ) ) {
+			$all = array_filter( $all, fn( $id ) => ! in_array( (int) $id, $excl, true ) );
+		}
+		return array_values( $all );
+	}
+}
+
+if ( ! function_exists( 'get_permalink' ) ) {
+	function get_permalink( $post_id = null ): string {
+		return 'https://example.com/post/' . (int) $post_id . '/';
+	}
+}
+
+if ( ! function_exists( 'get_the_title' ) ) {
+	function get_the_title( $post_id = null ): string {
+		$post = get_post( $post_id );
+		return $post ? $post->post_title : '';
+	}
+}
+
+if ( ! function_exists( 'current_time' ) ) {
+	function current_time( string $type ): string {
+		return gmdate( 'Y-m-d H:i:s' );
+	}
+}
+
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 86400 );
+}
+if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
+	define( 'HOUR_IN_SECONDS', 3600 );
+}
+if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
+	define( 'MINUTE_IN_SECONDS', 60 );
+}
+
+// Reset global test state before each test.
+$GLOBALS['_options']   = [];
+$GLOBALS['_post_meta'] = [];
+$GLOBALS['_transients'] = [];
+$GLOBALS['_posts']      = [];
+$GLOBALS['_post_list']  = [];
+
+// WordPress class stubs.
+if ( ! class_exists( 'WP_Post' ) ) {
+	class WP_Post {
+		public int    $ID           = 0;
+		public string $post_title   = '';
+		public string $post_content = '';
+		public string $post_status  = 'publish';
+		public int    $post_author  = 1;
+		public string $post_date    = '';
+
+		public function __construct( array $data = [] ) {
+			foreach ( $data as $key => $value ) {
+				if ( property_exists( $this, $key ) ) {
+					$this->$key = $value;
+				}
+			}
+		}
+	}
+}
+
+if ( ! class_exists( 'WP_Term' ) ) {
+	class WP_Term {
+		public int    $term_id = 0;
+		public string $name    = '';
+		public string $slug    = '';
+	}
+}
+
+if ( ! class_exists( 'WP_Query' ) ) {
+	class WP_Query {
+		public int $found_posts = 0;
+		public function __construct( array $args = [] ) {}
+	}
+}
+
+// PSR-4 autoloader for src/ classes.
+spl_autoload_register( function ( string $class ): void {
+	$prefix   = 'PearBlogEngine\\';
+	$base_dir = __DIR__ . '/../../src/';
+
+	if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+		return;
+	}
+
+	$relative = substr( $class, strlen( $prefix ) );
+	$file     = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
+
+	if ( file_exists( $file ) ) {
+		require $file;
+	}
+} );

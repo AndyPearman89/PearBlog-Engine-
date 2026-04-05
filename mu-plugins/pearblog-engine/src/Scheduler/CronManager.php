@@ -149,6 +149,17 @@ class CronManager {
 				$site_id,
 				$e->getMessage()
 			) );
+
+			/**
+			 * Action: pearblog_pipeline_cron_error
+			 *
+			 * Fired when the cron-based pipeline throws an exception.
+			 * Hooked by Plugin::boot() → AlertManager to send notifications.
+			 *
+			 * @param int    $site_id WordPress blog ID.
+			 * @param string $message Error message.
+			 */
+			do_action( 'pearblog_pipeline_cron_error', $site_id, $e->getMessage() );
 		} finally {
 			if ( $switched ) {
 				restore_current_blog();

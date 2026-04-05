@@ -1,0 +1,118 @@
+name: Tests
+
+on:
+  push:
+    branches: [ main, master, 'copilot/**' ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  # -----------------------------------------------------------------------
+  # PHP Unit Tests
+  # -----------------------------------------------------------------------
+  php-tests:
+    name: PHPUnit (PHP ${{ matrix.php }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        php: [ '8.1', '8.2', '8.3' ]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP ${{ matrix.php }}
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php }}
+          tools: composer:v2
+          coverage: xdebug
+
+      - name: Cache Composer dependencies
+        uses: actions/cache@v4
+        with:
+          path: mu-plugins/pearblog-engine/vendor
+          key: composer-${{ matrix.php }}-${{ hashFiles('mu-plugins/pearblog-engine/composer.json') }}
+          restore-keys: |
+            composer-${{ matrix.php }}-
+
+      - name: Install Composer dependencies
+        working-directory: mu-plugins/pearblog-engine
+        run: composer install --no-interaction --prefer-dist --optimize-autoloader
+
+      - name: Run PHPUnit
+        working-directory: mu-plugins/pearblog-engine
+        run: vendor/bin/phpunit --testdox
+
+  # -----------------------------------------------------------------------
+  # Python Tests
+  # -----------------------------------------------------------------------
+  python-tests:
+    name: pytest (Python ${{ matrix.python }})
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    strategy:
+      matrix:
+        python: [ '3.10', '3.11', '3.12' ]
+      fail-fast: false
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: pip-${{ matrix.python }}-${{ hashFiles('scripts/requirements*.txt', 'tests/python/requirements*.txt') }}
+          restore-keys: |
+            pip-${{ matrix.python }}-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f scripts/requirements.txt ]; then pip install -r scripts/requirements.txt; fi
+          pip install pytest pytest-mock
+
+      - name: Run pytest
+        run: pytest tests/python/ -v --tb=short
+
+  # -----------------------------------------------------------------------
+  # PHP Code Style (basic)
+  # -----------------------------------------------------------------------
+  php-lint:
+    name: PHP Syntax Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+
+      - name: Check PHP syntax
+        run: find mu-plugins/pearblog-engine/src -name '*.php' -exec php -l {} \; | grep -v 'No syntax errors' || true
+
+      - name: Verify no syntax errors
+        run: |
+          EXIT=0
+          for f in $(find mu-plugins/pearblog-engine/src -name '*.php'); do
+            php -l "$f" > /dev/null 2>&1 || { echo "SYNTAX ERROR: $f"; EXIT=1; }
+          done
+          exit $EXIT

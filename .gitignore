@@ -27,3 +27,6 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Test artifacts
+mu-plugins/pearblog-engine/.phpunit.result.cache
