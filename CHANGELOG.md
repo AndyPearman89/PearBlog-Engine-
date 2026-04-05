@@ -2,7 +2,17 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [5.2.0] — 2026-04-05
+## [5.3.0] — 2026-04-05
+
+### Fixed — Missing Affiliate Settings (Not Saveable via Admin UI)
+- **`pearblog_booking_api_key`** — read by `pearblog_fetch_booking_offers()` in `affiliate-api.php` but never registered with `register_setting()` and never exposed in the admin form. Values set programmatically via `update_option()` would be silently discarded on the next Settings save.
+- **`pearblog_airbnb_api_key`** — same issue as above for Airbnb.
+- **`pearblog_airbnb_affiliate_id`** — same issue; required to build Airbnb deep-link URLs.
+
+### Added — Affiliate Settings Admin UI Fields
+- Three new rows added to the Monetization tab: **Booking.com API Key**, **Airbnb Affiliate ID**, **Airbnb API Key**. All three use `password` or `text` inputs as appropriate and include inline description text. All render as password inputs where applicable to prevent shoulder-surfing.
+
+
 
 ### Fixed — Fatal PHP Errors (Duplicate Function Definitions)
 - **`pearblog_extract_location_from_content()`** — defined in both `affiliate-api.php` (old, keyword-list) and `monetization.php` (new, regex + taxonomy). Removed the old definition from `affiliate-api.php`; the richer version in `monetization.php` is now the sole implementation.

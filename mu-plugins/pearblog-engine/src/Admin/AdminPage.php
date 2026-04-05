@@ -50,6 +50,9 @@ class AdminPage {
 		register_setting( self::OPTION_GRP, 'pearblog_openai_api_key',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_adsense_publisher_id', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_booking_affiliate_id', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_booking_api_key',      [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_airbnb_affiliate_id',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_airbnb_api_key',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_industry',             [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_tone',                 [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_monetization',         [ 'sanitize_callback' => 'sanitize_text_field' ] );
@@ -212,6 +215,27 @@ class AdminPage {
 						<td>
 							<input type="text" id="pearblog_booking_affiliate_id" name="pearblog_booking_affiliate_id" value="<?php echo esc_attr( get_option( 'pearblog_booking_affiliate_id', '' ) ); ?>" class="regular-text" placeholder="1234567" />
 							<p class="description"><?php esc_html_e( 'Your Booking.com partner/affiliate ID (aid). Required for Phase 2 affiliate monetisation.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_booking_api_key"><?php esc_html_e( 'Booking.com API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_booking_api_key" name="pearblog_booking_api_key" value="<?php echo esc_attr( get_option( 'pearblog_booking_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Optional. Reserved for future Booking.com Demand API integration.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_airbnb_affiliate_id"><?php esc_html_e( 'Airbnb Affiliate ID', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="pearblog_airbnb_affiliate_id" name="pearblog_airbnb_affiliate_id" value="<?php echo esc_attr( get_option( 'pearblog_airbnb_affiliate_id', '' ) ); ?>" class="regular-text" placeholder="12345" />
+							<p class="description"><?php esc_html_e( 'Your Airbnb partner ID used to build deep-link search URLs.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_airbnb_api_key"><?php esc_html_e( 'Airbnb API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_airbnb_api_key" name="pearblog_airbnb_api_key" value="<?php echo esc_attr( get_option( 'pearblog_airbnb_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Optional. Reserved for future Airbnb Partner API integration.', 'pearblog-engine' ); ?></p>
 						</td>
 					</tr>
 					<tr>
