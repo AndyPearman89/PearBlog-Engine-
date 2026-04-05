@@ -2,7 +2,63 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [5.0.0] — 2026-04-04
+## [6.0.0] — 2026-04-05
+
+### Added — Sprint 1: Critical Stability
+
+- **AIClient: Exponential backoff & retry** — Retries up to 3× on HTTP 429 rate-limit responses with full-jitter exponential backoff (AI/AIClient.php)
+- **AIClient: Circuit breaker** — After 5 consecutive failures the client opens the circuit for 5 minutes, preventing cascading failures (AI/AIClient.php)
+- **AIClient: API cost tracking** — Accumulates estimated per-token spend in USD cents in `pearblog_ai_cost_cents` option (AI/AIClient.php)
+- **AlertManager** — Sends notifications to Slack, Discord, and/or email on pipeline errors, circuit-breaker events, and article publications (Monitoring/AlertManager.php)
+- **HealthController** — `GET /pearblog/v1/health` endpoint exposing API key status, OpenAI connectivity, circuit-breaker state, queue size, last run, and AI cost (Monitoring/HealthController.php)
+- **CronManager: alert hook** — Fires `pearblog_pipeline_cron_error` action on pipeline failure so AlertManager can dispatch notifications (Scheduler/CronManager.php)
+
+### Added — Sprint 2: SEO
+
+- **InternalLinker** — Keyword-cluster-based internal link injection: scans content for titles/keywords of published posts and inserts up to 5 contextual links (SEO/InternalLinker.php)
+- **InternalLinker: backfill** — `backfill()` method and `wp pearblog links backfill` CLI command to add internal links to all existing posts (SEO/InternalLinker.php)
+- **SchemaManager** — Auto-generates JSON-LD Schema.org blocks for every single post: Article, FAQPage (from H3 Q&A pairs), BreadcrumbList (SEO/SchemaManager.php)
+
+### Added — Sprint 3: Content Quality
+
+- **QualityScorer** — Scores published posts 0–100 on readability (Flesch), keyword density, heading structure, and word count; stores as post meta (Content/QualityScorer.php)
+- **ContentRefreshEngine** — Weekly cron job finds posts older than 90 days and AI-refreshes them; prioritises declining-traffic posts (Content/ContentRefreshEngine.php)
+- **ContentPipeline: duplicate check** — Before creating any draft, checks cosine similarity against all published posts; skips if similarity ≥ 80% (Pipeline/ContentPipeline.php)
+- **ContentPipeline: quality scoring** — Scores every newly published article immediately after publication (Pipeline/ContentPipeline.php)
+- **ContentPipeline: internal linking** — Applies InternalLinker after monetisation step (Pipeline/ContentPipeline.php)
+- **ContentPipeline: duplicate indexing** — Indexes TF vector of new posts for future duplicate checks (Pipeline/ContentPipeline.php)
+
+### Added — Sprint 4: Content Integrity
+
+- **DuplicateDetector** — TF-IDF cosine-similarity duplicate detection with configurable threshold (Content/DuplicateDetector.php)
+- **ContentCalendar** — Tools → Content Calendar admin page: schedule topics for specific dates; daily cron auto-pushes them to the queue (Admin/ContentCalendar.php)
+- **ContentCalendar REST API** — `GET/POST /pearblog/v1/calendar` and `DELETE /pearblog/v1/calendar/<date>` endpoints (Admin/ContentCalendar.php)
+
+### Added — Sprint 5: Distribution
+
+- **EmailDigest** — Weekly newsletter via Mailchimp Campaigns API, ConvertKit Broadcasts API, or wp_mail fallback (Email/EmailDigest.php)
+- **SocialPublisher** — Auto-posts to Twitter/X (OAuth 1.0a), Facebook Pages (Graph API), and LinkedIn (UGC Posts API) after each publication (Social/SocialPublisher.php)
+
+### Added — Sprint 6: DevOps
+
+- **WP-CLI commands** — Full `wp pearblog` command group: `generate`, `queue list/add/clear`, `stats`, `refresh`, `quality score`, `duplicate check`, `links backfill`, `circuit status/reset` (CLI/PearBlogCommand.php)
+- **WebhookManager** — Configurable outbound webhooks for events: `pearblog.article_published`, `pearblog.pipeline_error`, `pearblog.quality_scored`, `pearblog.content_refreshed`; signed with HMAC-SHA256; REST CRUD (Webhook/WebhookManager.php)
+
+### Added — Tests & CI
+
+- **PHPUnit test suite** — 52 tests, 81 assertions covering: AIClient (circuit breaker, cost), TopicQueue (FIFO, isolation), ContentValidator, DuplicateDetector, QualityScorer, SEOEngine, KeywordCluster (tests/php/Unit/)
+- **Bootstrap with WP stubs** — Comprehensive WordPress function/class stubs for testing without WordPress (tests/php/bootstrap.php)
+- **Composer + phpunit.xml** — PHPUnit 10.x test runner configuration (composer.json, phpunit.xml)
+- **pytest tests** — Python test modules for keyword_engine, serp_analyzer, automation_orchestrator (tests/python/)
+- **GitHub Actions `test.yml`** — CI workflow running PHPUnit (PHP 8.1/8.2/8.3), pytest (Python 3.10/3.11/3.12), and PHP syntax check on every PR (.github/workflows/test.yml)
+
+### Changed
+
+- **Plugin.php** — Boots all new sub-systems: SchemaManager, ContentRefreshEngine, ContentCalendar, EmailDigest, SocialPublisher, WebhookManager, WP-CLI commands, monitoring hooks
+- **AdminPage.php** — Added settings for: monitoring (Slack/Discord webhook, alert email), duplicate check toggle, social media channels and credentials, email digest address
+- **Plugin version** — 6.0.0
+
+
 
 ### Added - Missing Theme Functions
 - **`pearblog_extract_location_from_content()`** — Extract location from article title/content using pattern matching for Polish/European travel destinations (monetization.php:344-378)

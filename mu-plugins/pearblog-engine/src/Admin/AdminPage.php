@@ -64,6 +64,34 @@ class AdminPage {
 
 		// Automation API settings.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// Email marketing settings.
+		register_setting( self::OPTION_GRP, 'pearblog_esp_provider',         [ 'sanitize_callback' => 'sanitize_key' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_api_key',    [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_list_id',    [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_api_key',   [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_form_id',   [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_digest_email',         [ 'sanitize_callback' => 'sanitize_email' ] );
+
+		// Monitoring / alert settings.
+		register_setting( self::OPTION_GRP, 'pearblog_alert_slack_webhook',   [ 'sanitize_callback' => 'esc_url_raw' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_alert_discord_webhook', [ 'sanitize_callback' => 'esc_url_raw' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_alert_email',           [ 'sanitize_callback' => 'sanitize_email' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_alert_on_publish',      [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+
+		// Content quality / duplicate detection settings.
+		register_setting( self::OPTION_GRP, 'pearblog_duplicate_check_enabled', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+
+		// Social media settings.
+		register_setting( self::OPTION_GRP, 'pearblog_social_enabled_channels',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_twitter_api_key',        [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_twitter_api_secret',     [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_twitter_access_token',   [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_twitter_access_secret',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_facebook_page_token',    [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_facebook_page_id',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_linkedin_access_token',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_social_linkedin_author_urn',    [ 'sanitize_callback' => 'sanitize_text_field' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -321,6 +349,87 @@ class AdminPage {
 						<th scope="row"><label for="pearblog_convertkit_form_id"><?php esc_html_e( 'ConvertKit Form ID', 'pearblog-engine' ); ?></label></th>
 						<td>
 							<input type="text" id="pearblog_convertkit_form_id" name="pearblog_convertkit_form_id" value="<?php echo esc_attr( get_option( 'pearblog_convertkit_form_id', '' ) ); ?>" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_digest_email"><?php esc_html_e( 'Digest Fallback Email', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="email" id="pearblog_digest_email" name="pearblog_digest_email" value="<?php echo esc_attr( get_option( 'pearblog_digest_email', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Weekly digest will also be sent to this address via wp_mail.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Monitoring &amp; Alerts', 'pearblog-engine' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="pearblog_alert_slack_webhook"><?php esc_html_e( 'Slack Webhook URL', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="url" id="pearblog_alert_slack_webhook" name="pearblog_alert_slack_webhook" value="<?php echo esc_attr( get_option( 'pearblog_alert_slack_webhook', '' ) ); ?>" class="regular-text" placeholder="https://hooks.slack.com/services/…" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_alert_discord_webhook"><?php esc_html_e( 'Discord Webhook URL', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="url" id="pearblog_alert_discord_webhook" name="pearblog_alert_discord_webhook" value="<?php echo esc_attr( get_option( 'pearblog_alert_discord_webhook', '' ) ); ?>" class="regular-text" placeholder="https://discord.com/api/webhooks/…" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_alert_email"><?php esc_html_e( 'Alert Email', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="email" id="pearblog_alert_email" name="pearblog_alert_email" value="<?php echo esc_attr( get_option( 'pearblog_alert_email', '' ) ); ?>" class="regular-text" />
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Alert on Publish', 'pearblog-engine' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="pearblog_alert_on_publish" value="1" <?php checked( get_option( 'pearblog_alert_on_publish', false ) ); ?> />
+								<?php esc_html_e( 'Send info alert every time a new article is published', 'pearblog-engine' ); ?>
+							</label>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Duplicate Content Check', 'pearblog-engine' ); ?></th>
+						<td>
+							<label>
+								<input type="checkbox" name="pearblog_duplicate_check_enabled" value="1" <?php checked( get_option( 'pearblog_duplicate_check_enabled', true ) ); ?> />
+								<?php esc_html_e( 'Block publication of articles with >80% similarity to existing content', 'pearblog-engine' ); ?>
+							</label>
+						</td>
+					</tr>
+				</table>
+
+				<h2><?php esc_html_e( 'Social Media Auto-posting', 'pearblog-engine' ); ?></h2>
+				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="pearblog_social_enabled_channels"><?php esc_html_e( 'Enabled Channels', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="text" id="pearblog_social_enabled_channels" name="pearblog_social_enabled_channels" value="<?php echo esc_attr( get_option( 'pearblog_social_enabled_channels', '' ) ); ?>" class="regular-text" placeholder="twitter,facebook,linkedin" />
+							<p class="description"><?php esc_html_e( 'Comma-separated list: twitter, facebook, linkedin', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Twitter / X', 'pearblog-engine' ); ?></th>
+						<td>
+							<p><label><?php esc_html_e( 'API Key:', 'pearblog-engine' ); ?> <input type="password" name="pearblog_social_twitter_api_key" value="<?php echo esc_attr( get_option( 'pearblog_social_twitter_api_key', '' ) ); ?>" class="regular-text" /></label></p>
+							<p><label><?php esc_html_e( 'API Secret:', 'pearblog-engine' ); ?> <input type="password" name="pearblog_social_twitter_api_secret" value="<?php echo esc_attr( get_option( 'pearblog_social_twitter_api_secret', '' ) ); ?>" class="regular-text" /></label></p>
+							<p><label><?php esc_html_e( 'Access Token:', 'pearblog-engine' ); ?> <input type="password" name="pearblog_social_twitter_access_token" value="<?php echo esc_attr( get_option( 'pearblog_social_twitter_access_token', '' ) ); ?>" class="regular-text" /></label></p>
+							<p><label><?php esc_html_e( 'Access Secret:', 'pearblog-engine' ); ?> <input type="password" name="pearblog_social_twitter_access_secret" value="<?php echo esc_attr( get_option( 'pearblog_social_twitter_access_secret', '' ) ); ?>" class="regular-text" /></label></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'Facebook', 'pearblog-engine' ); ?></th>
+						<td>
+							<p><label><?php esc_html_e( 'Page Access Token:', 'pearblog-engine' ); ?> <input type="password" name="pearblog_social_facebook_page_token" value="<?php echo esc_attr( get_option( 'pearblog_social_facebook_page_token', '' ) ); ?>" class="regular-text" /></label></p>
+							<p><label><?php esc_html_e( 'Page ID:', 'pearblog-engine' ); ?> <input type="text" name="pearblog_social_facebook_page_id" value="<?php echo esc_attr( get_option( 'pearblog_social_facebook_page_id', '' ) ); ?>" class="regular-text" /></label></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><?php esc_html_e( 'LinkedIn', 'pearblog-engine' ); ?></th>
+						<td>
+							<p><label><?php esc_html_e( 'Access Token:', 'pearblog-engine' ); ?> <input type="password" name="pearblog_social_linkedin_access_token" value="<?php echo esc_attr( get_option( 'pearblog_social_linkedin_access_token', '' ) ); ?>" class="regular-text" /></label></p>
+							<p><label><?php esc_html_e( 'Author URN:', 'pearblog-engine' ); ?> <input type="text" name="pearblog_social_linkedin_author_urn" value="<?php echo esc_attr( get_option( 'pearblog_social_linkedin_author_urn', '' ) ); ?>" class="regular-text" placeholder="urn:li:person:xxxx" /></label></p>
 						</td>
 					</tr>
 				</table>
