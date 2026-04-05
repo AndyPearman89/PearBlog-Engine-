@@ -70,7 +70,7 @@ class AdminPage {
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 
 		// Email marketing settings.
-		register_setting( self::OPTION_GRP, 'pearblog_esp_provider',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_esp_provider',       [ 'sanitize_callback' => 'sanitize_key' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_api_key',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_list_id',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_convertkit_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
@@ -138,6 +138,7 @@ class AdminPage {
 				__( 'Queue is empty – add topics before running the pipeline.', 'pearblog-engine' ),
 				'warning'
 			);
+			return;
 		}
 
 		// Trigger the cron action immediately (runs synchronously in the current request).
