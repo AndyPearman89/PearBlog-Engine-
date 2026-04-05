@@ -1,6 +1,6 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress — **v5.1**
+> Autonomous AI content production for WordPress — **v6.1**
 
 ---
 
@@ -8,7 +8,8 @@
 
 1. **[README.md](README.md)** — Project overview and architecture
 2. **[SETUP.md](SETUP.md)** — Installation & configuration (5 min)
-3. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
+3. **[END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md)** — Complete development, testing & deployment guide
+4. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
 
 ---
 
@@ -17,6 +18,7 @@
 | Document | Language | Audience | Summary |
 |----------|----------|----------|---------|
 | [README.md](README.md) | EN | Everyone | Features, architecture, quick start |
+| [END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md) | EN | Dev / Ops | Complete workflow: development → testing → deployment |
 | [SETUP.md](SETUP.md) | EN | Ops / Dev | GitHub Secrets, Actions, first run |
 | [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) | PL | Ops | Step-by-step autonomous activation |
 | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) | PL | Ops / Dev | Complete production operations manual |
@@ -52,6 +54,9 @@
 | Goal | Start Here |
 |------|------------|
 | Get started quickly | [SETUP.md](SETUP.md) → [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) |
+| Understand the complete workflow | [END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md) |
+| Test my changes | [END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md) § Testing Strategy |
+| Deploy to production | [END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md) § Deployment Process |
 | Understand how it works | [README.md](README.md) → [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) |
 | Make money from this | [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) → [MARKETING-GUIDE.md](MARKETING-GUIDE.md) |
 | Understand the plugin architecture | [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) |
@@ -59,25 +64,28 @@
 | Create travel content | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) |
 | Scale to multiple sites | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 7 |
 | Optimize costs | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 9 |
-| Troubleshoot issues | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8 |
+| Troubleshoot issues | [END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md) § Troubleshooting |
 
 ---
 
-## 🔧 Architecture Overview — v5.1
+## 🔧 Architecture Overview — v6.1
 
 ```
-PearBlog Engine v5.1
+PearBlog Engine v6.1
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
-│   ├── src/Pipeline/               # 8-step autonomous content pipeline
+│   ├── src/Pipeline/               # 12-step autonomous content pipeline
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
-│   ├── src/Content/                # 4 prompt builders + validator + queue
-│   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO (Schema, OG, audit)
+│   ├── src/Content/                # 4 prompt builders + validator + queue + quality
+│   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO + InternalLinker + Schema
 │   ├── src/Monetization/           # AdSense + Affiliate + SaaS CTA injection
+│   ├── src/Monitoring/             # AlertManager + HealthController
 │   ├── src/Scheduler/              # WP-Cron management (multisite-safe)
 │   ├── src/Keywords/               # Keyword clustering value object
 │   ├── src/API/                    # REST automation endpoints
 │   ├── src/Admin/                  # Top-level WP admin menu (6 tabs) + DashboardWidget
 │   ├── src/Tenant/                 # Multi-site context
+│   ├── tests/php/Unit/             # 52 unit tests (no WordPress required)
+│   ├── tests/php/Integration/      # End-to-end integration tests
 │   └── assets/css/admin.css        # Admin panel styles
 │
 ├── theme/pearblog-theme/           # SEO-first WordPress theme v5.1
