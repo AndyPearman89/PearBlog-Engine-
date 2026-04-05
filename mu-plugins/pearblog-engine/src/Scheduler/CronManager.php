@@ -61,8 +61,23 @@ class CronManager {
 
 	/**
 	 * Schedule the pipeline event if it is not already scheduled.
+	 *
+	 * Scheduling is skipped when autonomous mode has been disabled by the
+	 * site administrator.  Any existing event is cleared in that case so
+	 * that a previously-scheduled run does not fire unexpectedly.
 	 */
 	public function maybe_schedule(): void {
+		$autonomous_enabled = (bool) get_option( 'pearblog_autonomous_mode', true );
+
+		if ( ! $autonomous_enabled ) {
+			// Unschedule any existing event so the pipeline truly stops.
+			$timestamp = wp_next_scheduled( self::HOOK );
+			if ( $timestamp ) {
+				wp_unschedule_event( $timestamp, self::HOOK );
+			}
+			return;
+		}
+
 		if ( ! wp_next_scheduled( self::HOOK ) ) {
 			wp_schedule_event( time(), self::SCHEDULE_SLUG, self::HOOK );
 		}

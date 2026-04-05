@@ -1279,3 +1279,225 @@ body.pb-dark-mode .pb-form-input {
     width: 100%;
   }
 }
+
+/* -----------------------------------------------------------------------
+   Page template
+   ----------------------------------------------------------------------- */
+.pb-page-header {
+  background: linear-gradient(135deg, var(--pb-primary) 0%, var(--pb-secondary) 100%);
+  color: white;
+  padding: var(--pb-space-3xl) 0;
+  margin-bottom: var(--pb-space-2xl);
+}
+
+.pb-page-title {
+  color: white;
+  margin-bottom: var(--pb-space-sm);
+}
+
+.pb-page-hero-image {
+  margin-bottom: var(--pb-space-2xl);
+}
+
+.pb-page-hero-img {
+  border-radius: var(--pb-radius-xl);
+  max-height: 500px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.pb-entry-content {
+  line-height: 1.8;
+  font-size: 1.0625rem;
+}
+
+.pb-entry-content h2, .pb-entry-content h3 {
+  margin-top: var(--pb-space-2xl);
+}
+
+/* -----------------------------------------------------------------------
+   Search results
+   ----------------------------------------------------------------------- */
+.pb-search-results-header {
+  background: var(--pb-bg-alt);
+  padding: var(--pb-space-2xl) 0;
+  margin-bottom: var(--pb-space-2xl);
+}
+
+.pb-search-title {
+  margin-bottom: var(--pb-space-md);
+}
+
+.pb-search-query {
+  color: var(--pb-primary);
+}
+
+.pb-search-count {
+  color: var(--pb-text-light);
+  margin-bottom: var(--pb-space-lg);
+}
+
+.pb-search-refine-form {
+  display: flex;
+  gap: var(--pb-space-sm);
+  max-width: 500px;
+}
+
+.pb-search-refine-input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--pb-border, #e5e7eb);
+  border-radius: var(--pb-radius-lg);
+  font-size: 0.9375rem;
+  color: var(--pb-text);
+  background: var(--pb-bg);
+}
+
+.pb-search-refine-input:focus {
+  outline: 2px solid var(--pb-primary);
+  outline-offset: 2px;
+}
+
+.pb-search-results-body {
+  padding-top: 0;
+}
+
+.pb-no-results {
+  text-align: center;
+  padding: var(--pb-space-3xl) 0;
+}
+
+.pb-no-results-icon {
+  font-size: 3rem;
+  margin-bottom: var(--pb-space-lg);
+}
+
+.pb-no-results h2 {
+  margin-bottom: var(--pb-space-md);
+}
+
+.pb-category-browser {
+  text-align: left;
+  max-width: 400px;
+  margin: var(--pb-space-2xl) auto 0;
+}
+
+.pb-category-browser h3 {
+  margin-bottom: var(--pb-space-md);
+}
+
+.pb-category-browser ul {
+  list-style: none;
+  padding: 0;
+  columns: 2;
+}
+
+.pb-category-browser li {
+  margin-bottom: var(--pb-space-sm);
+}
+
+.pb-category-browser a {
+  color: var(--pb-text);
+  transition: color 0.2s;
+}
+
+.pb-category-browser a:hover {
+  color: var(--pb-primary);
+}
+
+/* -----------------------------------------------------------------------
+   404 page
+   ----------------------------------------------------------------------- */
+.pb-404-hero {
+  background: linear-gradient(135deg, var(--pb-primary) 0%, var(--pb-secondary) 100%);
+  color: white;
+  padding: var(--pb-space-3xl) 0;
+  margin-bottom: var(--pb-space-3xl);
+  text-align: center;
+}
+
+.pb-404-code {
+  font-size: 6rem;
+  font-weight: 800;
+  line-height: 1;
+  opacity: 0.3;
+  margin-bottom: var(--pb-space-md);
+}
+
+.pb-404-title {
+  font-size: 2rem;
+  color: white;
+  margin-bottom: var(--pb-space-md);
+}
+
+.pb-404-desc {
+  color: rgba(255,255,255,0.85);
+  font-size: 1.1rem;
+  max-width: 480px;
+  margin: 0 auto var(--pb-space-xl);
+}
+
+.pb-404-actions {
+  display: flex;
+  gap: var(--pb-space-md);
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.pb-404-content {
+  padding-bottom: var(--pb-space-3xl);
+}
+
+.pb-404-search,
+.pb-404-popular,
+.pb-404-categories {
+  margin-bottom: var(--pb-space-3xl);
+}
+
+.pb-404-search h2,
+.pb-404-popular h2,
+.pb-404-categories h2 {
+  margin-bottom: var(--pb-space-lg);
+}
+
+.pb-404-cat-list {
+  list-style: none;
+  padding: 0;
+  columns: 2;
+  gap: var(--pb-space-md);
+}
+
+.pb-404-cat-list li {
+  margin-bottom: var(--pb-space-sm);
+}
+
+/* -----------------------------------------------------------------------
+   Button helpers
+   ----------------------------------------------------------------------- */
+.pb-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: var(--pb-radius-lg);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.pb-btn-primary {
+  background: var(--pb-primary);
+  color: white;
+}
+
+.pb-btn-primary:hover {
+  background: var(--pb-primary-hover);
+  color: white;
+}
+
+.pb-text-center {
+  text-align: center;
+}

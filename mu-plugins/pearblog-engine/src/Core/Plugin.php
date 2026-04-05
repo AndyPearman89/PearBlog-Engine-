@@ -15,8 +15,10 @@ use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\ContentCalendar;
+use PearBlogEngine\Admin\DashboardWidget;
 use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Email\EmailDigest;
+use PearBlogEngine\SEO\ProgrammaticSEO;
 use PearBlogEngine\SEO\SchemaManager;
 use PearBlogEngine\Social\SocialPublisher;
 use PearBlogEngine\Webhook\WebhookManager;
@@ -48,6 +50,8 @@ class Plugin {
 		// Core pipeline & admin.
 		( new CronManager() )->register();
 		( new AdminPage() )->register();
+		( new DashboardWidget() )->register();
+		( new ProgrammaticSEO() )->register();
 
 		// REST API – automation endpoints for external scripts.
 		add_action( 'rest_api_init', static function (): void {
