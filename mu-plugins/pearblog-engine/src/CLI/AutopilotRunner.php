@@ -290,9 +290,6 @@ class AutopilotRunner {
 		// Find the next uncompleted, non-failed task.
 		$remaining = array_values( array_diff( $state['tasks'], $state['completed'], $state['failed'] ) );
 
-		// Remove the current task from remaining (it was just completed).
-		$remaining = array_values( array_filter( $remaining, fn( string $id ): bool => $id !== $current ) );
-
 		if ( empty( $remaining ) ) {
 			$state['status']       = self::STATUS_IDLE;
 			$state['current_task'] = null;
