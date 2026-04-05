@@ -2,7 +2,21 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [5.1.0] — 2026-04-05
+## [5.2.0] — 2026-04-05
+
+### Fixed — Fatal PHP Errors (Duplicate Function Definitions)
+- **`pearblog_extract_location_from_content()`** — defined in both `affiliate-api.php` (old, keyword-list) and `monetization.php` (new, regex + taxonomy). Removed the old definition from `affiliate-api.php`; the richer version in `monetization.php` is now the sole implementation.
+- **`pearblog_affiliate_box()`** — defined in both `affiliate-api.php` (stub, no offer fetching) and `monetization.php` (full, fetches Booking/Airbnb/SaaS offers). Removed the stub from `affiliate-api.php`.
+- **`pb_get_headline_variant()`** — defined in both `ai-optimizer.php` (v4, DB-table-based) and `ab-testing-metabox.php` (v5, post-meta-based with winner detection). Removed the old definition from `ai-optimizer.php`.
+- **`pb_track_ab_impression()`** — same split as above; removed DB-based version from `ai-optimizer.php`.
+- **`pb_track_ab_click()`** — same split as above; removed DB-based version from `ai-optimizer.php`.
+- **`pb_get_ab_test_results()`** — same split as above; removed DB-based version from `ai-optimizer.php`.
+
+### Fixed — Argument Count Mismatch
+- **`pearblog_fetch_booking_offers()`** — previously required `$api_key` and `$affiliate_id` as mandatory positional args. The newer `pearblog_affiliate_box()` in `monetization.php` calls it with only `$location`. Both parameters now default to `''` and auto-fetch from `pearblog_booking_api_key` / `pearblog_booking_affiliate_id` options when omitted.
+- **`pearblog_fetch_airbnb_offers()`** — same fix: `$api_key` and `$affiliate_id` now default to `''` and auto-fetch from `pearblog_airbnb_api_key` / `pearblog_airbnb_affiliate_id` options.
+
+
 
 ### Added — Full Autonomous Mode
 - **`pearblog_autonomous_mode` setting** — New admin toggle that enables or disables the fully autonomous WP-Cron pipeline without touching code. Defaults to `true` (enabled) to preserve backwards compatibility.

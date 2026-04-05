@@ -215,7 +215,13 @@ function pearblog_get_affiliate_offers($location = '') {
  * @param string $affiliate_id Booking.com partner/affiliate ID (aid).
  * @return array Array of offer arrays compatible with pearblog_get_affiliate_offers().
  */
-function pearblog_fetch_booking_offers($location, $api_key, $affiliate_id) {
+function pearblog_fetch_booking_offers($location, $api_key = '', $affiliate_id = '') {
+    if ('' === $api_key) {
+        $api_key = (string) get_option('pearblog_booking_api_key', '');
+    }
+    if ('' === $affiliate_id) {
+        $affiliate_id = (string) get_option('pearblog_booking_affiliate_id', '');
+    }
     if (empty($affiliate_id) || empty($location)) {
         return array();
     }
@@ -258,7 +264,13 @@ function pearblog_fetch_booking_offers($location, $api_key, $affiliate_id) {
  * @param string $affiliate_id Airbnb affiliate / partner ID.
  * @return array Array of offer arrays compatible with pearblog_get_affiliate_offers().
  */
-function pearblog_fetch_airbnb_offers($location, $api_key, $affiliate_id) {
+function pearblog_fetch_airbnb_offers($location, $api_key = '', $affiliate_id = '') {
+    if ('' === $api_key) {
+        $api_key = (string) get_option('pearblog_airbnb_api_key', '');
+    }
+    if ('' === $affiliate_id) {
+        $affiliate_id = (string) get_option('pearblog_airbnb_affiliate_id', '');
+    }
     if (empty($affiliate_id) || empty($location)) {
         return array();
     }
@@ -307,40 +319,6 @@ function pearblog_fetch_airbnb_offers($location, $api_key, $affiliate_id) {
 }
 
 /**
- * Extract location from content
- *
- * Uses keyword matching to detect Polish locations in content.
- * Can be extended with AI/NLP for better extraction.
- */
-function pearblog_extract_location_from_content($content) {
-    // Common Polish location keywords
-    // Extended list for better coverage
-    $location_keywords = array(
-        'Babia Góra', 'Zakopane', 'Kraków', 'Warszawa', 'Gdańsk',
-        'Tatry', 'Karkonosze', 'Bieszczady', 'Mazury', 'Karpacz',
-        'Wrocław', 'Poznań', 'Łódź', 'Szczecin', 'Lublin',
-        'Białystok', 'Katowice', 'Rzeszów', 'Toruń', 'Bydgoszcz',
-    );
-
-    /**
-     * Filter: pearblog_location_keywords
-     *
-     * Allows extending the list of location keywords for detection.
-     *
-     * @param array $location_keywords Array of location names to search for.
-     */
-    $location_keywords = apply_filters('pearblog_location_keywords', $location_keywords);
-
-    foreach ($location_keywords as $keyword) {
-        if (stripos($content, $keyword) !== false) {
-            return $keyword;
-        }
-    }
-
-    return '';
-}
-
-/**
  * Helper function to add manual offers for a location
  *
  * Usage: pearblog_add_manual_offer('Babia Góra', array(...))
@@ -365,22 +343,6 @@ function pearblog_add_manual_offer($location, $offer_data) {
     delete_transient('pearblog_offers_' . md5($location));
 
     return true;
-}
-
-/**
- * Helper function to render affiliate box
- */
-function pearblog_affiliate_box($args = array()) {
-    $defaults = array(
-        'position' => 'middle',
-        'location' => '',
-        'offers' => array(),
-        'fallback_enabled' => true,
-    );
-
-    $args = wp_parse_args($args, $defaults);
-
-    get_template_part('template-parts/block-affiliate', null, $args);
 }
 
 /**
