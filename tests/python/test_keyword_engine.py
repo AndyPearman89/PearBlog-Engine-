@@ -5,11 +5,6 @@ Tests use mocking to avoid real HTTP calls.
 """
 
 import pytest
-import sys
-import os
-
-# Add scripts directory to path.
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), '../../scripts'))
 
 from unittest.mock import patch, MagicMock
 from keyword_engine import KeywordEngine, KeywordData

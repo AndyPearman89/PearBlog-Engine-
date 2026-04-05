@@ -45,6 +45,14 @@ class InternalLinker {
 			return $content;
 		}
 
+		$document = new \DOMDocument( '1.0', 'UTF-8' );
+		$previous = libxml_use_internal_errors( true );
+		$document->loadHTML(
+			'<?xml encoding="utf-8"?><div>' . $content . '</div>',
+			LIBXML_HTML_NOIMPLIED | LIBXML_HTML_NODEFDTD
+		);
+		libxml_use_internal_errors( $previous );
+
 		// Sort by keyword length descending so longer phrases are matched first.
 		uksort( $candidates, static fn( $a, $b ) => mb_strlen( $b ) - mb_strlen( $a ) );
 
@@ -61,22 +69,15 @@ class InternalLinker {
 				continue;
 			}
 
-			// Avoid inserting inside existing HTML tags / links.
-			$pattern = '/(?<!["\'>])(?<!<a[^>]*>)(\b' . preg_quote( $keyword, '/' ) . '\b)(?![^<]*<\/a>)/iu';
-
-			if ( ! preg_match( $pattern, $content ) ) {
-				continue;
+			if ( $this->insert_link( $document, $keyword, $candidate ) ) {
+				$linked_phrases[] = mb_strtolower( $keyword );
+				$links_added++;
 			}
+		}
 
-			$link    = sprintf(
-				'<a href="%s" title="%s">$1</a>',
-				esc_url( $candidate['url'] ),
-				esc_attr( $candidate['title'] )
-			);
-			$content = preg_replace( $pattern, $link, $content, 1 );
-
-			$linked_phrases[] = mb_strtolower( $keyword );
-			$links_added++;
+		$output = '';
+		foreach ( $document->documentElement->childNodes as $node ) {
+			$output .= $document->saveHTML( $node );
 		}
 
 		/**
@@ -86,7 +87,7 @@ class InternalLinker {
 		 * @param int    $post_id     Post being processed.
 		 * @param int    $links_added Number of links actually inserted.
 		 */
-		return (string) apply_filters( 'pearblog_internal_links_applied', $content, $post_id, $links_added );
+		return (string) apply_filters( 'pearblog_internal_links_applied', $output, $post_id, $links_added );
 	}
 
 	/**
@@ -179,5 +180,50 @@ class InternalLinker {
 		}
 
 		return $map;
+	}
+
+	/**
+	 * Insert the keyword as a hyperlink into the first text node outside anchors.
+	 *
+	 * @param \DOMDocument            $document  Parsed HTML document.
+	 * @param string                  $keyword   Keyword to link.
+	 * @param array{url: string, title: string} $candidate Link target.
+	 * @return bool True if a link was inserted.
+	 */
+	private function insert_link( \DOMDocument $document, string $keyword, array $candidate ): bool {
+		$xpath   = new \DOMXPath( $document );
+		$pattern = '/\b(' . preg_quote( $keyword, '/' ) . ')\b/iu';
+
+		foreach ( $xpath->query( '//text()[not(ancestor::a)]' ) as $text_node ) {
+			$text = $text_node->nodeValue;
+			$parts = preg_split( $pattern, $text, 2, PREG_SPLIT_DELIM_CAPTURE );
+
+			if ( ! is_array( $parts ) || count( $parts ) < 3 ) {
+				continue;
+			}
+
+			[ $before, $matched, $after ] = $parts;
+
+			$anchor = $document->createElement( 'a' );
+			$anchor->setAttribute( 'href', esc_url( $candidate['url'] ) );
+			$anchor->setAttribute( 'title', esc_attr( $candidate['title'] ) );
+			$anchor->appendChild( $document->createTextNode( $matched ) );
+
+			$fragment = $document->createDocumentFragment();
+			if ( '' !== $before ) {
+				$fragment->appendChild( $document->createTextNode( $before ) );
+			}
+			$fragment->appendChild( $anchor );
+			if ( '' !== $after ) {
+				$fragment->appendChild( $document->createTextNode( $after ) );
+			}
+
+			if ( $text_node->parentNode ) {
+				$text_node->parentNode->replaceChild( $fragment, $text_node );
+				return true;
+			}
+		}
+
+		return false;
 	}
 }

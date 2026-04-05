@@ -9,7 +9,7 @@
  *   pearblog.content_refreshed   – triggered after ContentRefreshEngine refreshes a post
  *
  * Webhook endpoints are stored in WordPress option `pearblog_webhooks` as a
- * JSON array of { url, events[], secret } objects.
+ * native PHP array of { url, events[], secret } objects.
  *
  * Payloads are signed with HMAC-SHA256 using the configured secret and sent
  * in the `X-PearBlog-Signature` header.

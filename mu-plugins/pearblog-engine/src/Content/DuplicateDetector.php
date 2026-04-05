@@ -2,7 +2,7 @@
 /**
  * Duplicate detector – blocks publication of articles too similar to existing content.
  *
- * Uses a bag-of-words TF-IDF cosine similarity comparison:
+ * Uses a bag-of-words TF cosine similarity comparison:
  *  1. Strip HTML and tokenise the candidate content.
  *  2. Build a TF vector for the candidate.
  *  3. Load TF vectors for all published posts (cached as post meta).
@@ -16,9 +16,7 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Content;
 
-/**
- * Detects near-duplicate article content using TF-IDF cosine similarity.
- */
+/** Detects near-duplicate article content using TF cosine similarity. */
 class DuplicateDetector {
 
 	/** Similarity threshold above which content is considered a duplicate. */
@@ -86,9 +84,6 @@ class DuplicateDetector {
 				$best_post_id    = $pid;
 			}
 
-			if ( $best_similarity >= $threshold ) {
-				break; // No need to keep scanning once we hit the threshold.
-			}
 		}
 
 		$is_dup = $best_similarity >= $threshold;

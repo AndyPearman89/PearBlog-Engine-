@@ -4,6 +4,9 @@
  *
  * Endpoint: GET /pearblog/v1/health
  *
+ * Access: requires `manage_options` or a shared secret provided via
+ * `X-PearBlog-Health-Secret` header or `health_secret` query param.
+ *
  * Returns a JSON object with status indicators for each sub-system:
  *  - api_key         – Whether the OpenAI key is configured.
  *  - openai          – Whether a lightweight test request succeeds (cached 5 min).
@@ -30,6 +33,7 @@ class HealthController {
 
 	private const NAMESPACE           = 'pearblog/v1';
 	private const OPENAI_CHECK_TRANSIENT = 'pb_health_openai_check';
+	private const HEALTH_SECRET_OPTION   = 'pearblog_health_secret';
 
 	/**
 	 * Register REST route (called via rest_api_init).
@@ -38,7 +42,7 @@ class HealthController {
 		register_rest_route( self::NAMESPACE, '/health', [
 			'methods'             => \WP_REST_Server::READABLE,
 			'callback'            => [ $this, 'get_health' ],
-			'permission_callback' => '__return_true', // Public read – no sensitive data exposed.
+			'permission_callback' => fn( \WP_REST_Request $request ) => $this->authorize_request( $request ),
 		] );
 	}
 
@@ -193,5 +197,28 @@ class HealthController {
 		] ) )->found_posts;
 
 		return $count;
+	}
+
+	/**
+	 * Require either an auth secret (header/query) or manage_options capability.
+	 *
+	 * @param \WP_REST_Request $request Request.
+	 * @return bool
+	 */
+	private function authorize_request( \WP_REST_Request $request ): bool {
+		$secret = (string) get_option( self::HEALTH_SECRET_OPTION, '' );
+
+		if ( '' !== $secret ) {
+			$provided = (string) $request->get_header( 'x-pearblog-health-secret' );
+			if ( '' === $provided ) {
+				$provided = (string) $request->get_param( 'health_secret' );
+			}
+
+			if ( '' !== $provided && hash_equals( $secret, $provided ) ) {
+				return true;
+			}
+		}
+
+		return current_user_can( 'manage_options' );
 	}
 }

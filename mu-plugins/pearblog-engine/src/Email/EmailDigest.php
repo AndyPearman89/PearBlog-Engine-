@@ -106,8 +106,17 @@ class EmailDigest {
 		}
 
 		// Extract datacenter from API key (format: key-us1).
-		$parts = explode( '-', $api_key );
-		$dc    = end( $parts );
+		$dash_pos = strrpos( $api_key, '-' );
+		if ( false === $dash_pos || strlen( $api_key ) - 1 === $dash_pos ) {
+			error_log( 'PearBlog EmailDigest: Invalid Mailchimp API key format; unable to derive datacenter suffix.' );
+			return false;
+		}
+
+		$dc = trim( substr( $api_key, $dash_pos + 1 ) );
+		if ( '' === $dc ) {
+			error_log( 'PearBlog EmailDigest: Invalid Mailchimp API key format; datacenter suffix is empty.' );
+			return false;
+		}
 
 		$endpoint = "https://{$dc}.api.mailchimp.com/3.0/campaigns";
 
