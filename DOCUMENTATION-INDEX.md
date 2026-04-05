@@ -1,6 +1,6 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress.
+> Autonomous AI content production for WordPress — **v5.1**
 
 ---
 
@@ -29,13 +29,13 @@
 
 | Document | Summary |
 |----------|---------|
-| [theme/pearblog-theme/README.md](theme/pearblog-theme/README.md) | Theme features, layout, customization |
+| [theme/pearblog-theme/README.md](theme/pearblog-theme/README.md) | Theme v5.1 features, layout, new templates, customization |
 
 ### Plugin & Scripts
 
 | Document | Summary |
 |----------|---------|
-| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin architecture, modules, options, filters, REST API |
+| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin v5.1 architecture, 8-step pipeline, all modules, REST API |
 | [scripts/README.md](scripts/README.md) | Python automation suite, environment variables, usage |
 
 ### Brand Assets
@@ -63,26 +63,35 @@
 
 ---
 
-## 🔧 Architecture Overview
+## 🔧 Architecture Overview — v5.1
 
 ```
-PearBlog Engine v4.3
+PearBlog Engine v5.1
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
-│   ├── src/Pipeline/               # 7-step autonomous content pipeline
-│   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 integration
-│   ├── src/Content/                # 4 prompt builders + validator + scorer
-│   ├── src/SEO/                    # SEO metadata engine
-│   ├── src/Monetization/           # AdSense + SaaS CTA injection
-│   ├── src/Scheduler/              # WP-Cron management
-│   ├── src/Keywords/               # Keyword clustering
+│   ├── src/Pipeline/               # 8-step autonomous content pipeline
+│   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
+│   ├── src/Content/                # 4 prompt builders + validator + queue
+│   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO (Schema, OG, audit)
+│   ├── src/Monetization/           # AdSense + Affiliate + SaaS CTA injection
+│   ├── src/Scheduler/              # WP-Cron management (multisite-safe)
+│   ├── src/Keywords/               # Keyword clustering value object
 │   ├── src/API/                    # REST automation endpoints
-│   ├── src/Admin/                  # WordPress admin page
-│   └── src/Tenant/                 # Multi-site context
+│   ├── src/Admin/                  # Top-level WP admin menu (6 tabs) + DashboardWidget
+│   ├── src/Tenant/                 # Multi-site context
+│   └── assets/css/admin.css        # Admin panel styles
 │
-├── theme/pearblog-theme/           # SEO-first WordPress theme
-│   ├── inc/                        # Monetization, analytics, lead gen, customizer
-│   ├── template-parts/             # Reusable blocks (affiliate, ads, FAQ, TOC, TL;DR)
-│   └── assets/                     # CSS + JS
+├── theme/pearblog-theme/           # SEO-first WordPress theme v5.1
+│   ├── index.php                   # Homepage with hero + card grid
+│   ├── single.php                  # 12-element SEO article layout
+│   ├── page.php                    # Static page template (NEW v5.1)
+│   ├── search.php                  # Search results (NEW v5.1)
+│   ├── 404.php                     # Error page (NEW v5.1)
+│   ├── category.php                # Category archive
+│   ├── inc/                        # 17 modules (monetization, analytics, layout, …)
+│   ├── template-parts/             # 13 reusable block templates
+│   └── assets/
+│       ├── css/                    # base, components, utilities
+│       └── js/                     # app.js, lazyload.js, personalization.js
 │
 └── scripts/                        # Python automation (optional)
     ├── automation_orchestrator.py   # Full-cycle orchestration
@@ -92,13 +101,20 @@ PearBlog Engine v4.3
     └── run_pipeline.py             # Pipeline execution via GitHub Actions
 ```
 
-### Pipeline Flow (Hourly via WP-Cron)
+### Pipeline Flow (Hourly via WP-Cron) — 8 Steps
 
 ```
-Topic Queue → PromptBuilder (Factory) → GPT-4o-mini → SEO Engine
-  → MonetizationEngine → DALL-E 3 Image → Publish
+Topic Queue
+  Step 1 → PromptBuilderFactory (selects builder by industry/niche)
+  Step 2 → GPT-4o-mini content generation
+  Step 3 → Draft post created (WordPress)
+  Step 4 → SEOEngine (title, meta, Schema.org, Open Graph)
+  Step 5 → MonetizationEngine (ad slots + affiliate + SaaS CTA)
+  Step 6 → ImageGenerator (DALL-E 3 featured image)
+  Step 6b→ ProgrammaticSEO auto-generates meta description fallback
+  Step 7 → Post published
 
-~55 sec / article • $0.08 / article (with image)
+~55 sec / article · $0.08 / article (with image)
 ```
 
 ---
@@ -125,7 +141,9 @@ Topic Queue → PromptBuilder (Factory) → GPT-4o-mini → SEO Engine
 | No images generated | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8.2 |
 | High API costs | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8.3 |
 | Low content quality | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8.4 |
+| Search panel not working | See `assets/js/app.js` → `initSearchPanel()` |
+| Dark mode not persisting | `localStorage` key `pb_dark_mode` — check browser storage |
 
 ---
 
-*PearBlog Engine v4.3 — Built for systematic content entrepreneurs*
+*PearBlog Engine v5.1 — Built for systematic content entrepreneurs*

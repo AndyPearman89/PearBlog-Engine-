@@ -2,8 +2,16 @@
 /**
  * Content pipeline – orchestrates the full content generation flow.
  *
- * Flow:
- *   Topic → Queue → Prompt → AI → SEO → Monetization → Publish
+ * Flow (8 steps):
+ *   1. Pop topic from TopicQueue
+ *   2. Build prompt via PromptBuilderFactory
+ *   3. Generate content via AIClient (GPT-4o-mini)
+ *   4. Create WordPress draft post
+ *   5. Apply SEO metadata via SEOEngine
+ *   6. Inject monetization via MonetizationEngine
+ *   6a. Generate featured image via ImageGenerator (DALL-E 3)
+ *   6b. Auto-generate meta description fallback via ProgrammaticSEO
+ *   7. Publish post
  *
  * @package PearBlogEngine\Pipeline
  */
