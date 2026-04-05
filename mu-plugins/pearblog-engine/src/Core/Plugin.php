@@ -12,6 +12,8 @@ namespace PearBlogEngine\Core;
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Admin\AdminPage;
+use PearBlogEngine\Admin\DashboardWidget;
+use PearBlogEngine\SEO\ProgrammaticSEO;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -39,6 +41,8 @@ class Plugin {
 	public function boot(): void {
 		( new CronManager() )->register();
 		( new AdminPage() )->register();
+		( new DashboardWidget() )->register();
+		( new ProgrammaticSEO() )->register();
 
 		// REST API – automation endpoints for external scripts.
 		add_action( 'rest_api_init', static function (): void {

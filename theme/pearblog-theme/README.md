@@ -1,12 +1,29 @@
-# PearBlog Theme v4
+# PearBlog Theme v5.1
 
-**SEO-first WordPress theme with AI personalization, monetization, and multisite branding.**
+**SEO-first WordPress theme with AI personalization, monetization, reading UX, and multisite branding.**
 
 ## Overview
 
-PearBlog Theme is a frontend system for AI-powered content sites. It combines an SEO-optimised static layout with a dynamic AI personalization layer that adapts to every visitor.
+PearBlog Theme is the frontend system for AI-powered content sites. It combines a server-rendered SEO layout with a dynamic AI personalization layer that adapts to every visitor.
 
-**Core principle:** Server-rendered content for search engines, progressive JavaScript UX for users — no SEO impact.
+**Core principle:** Static HTML for search engines, progressive JavaScript UX for humans — no SEO impact.
+
+---
+
+## What's New in v5.1
+
+| Feature | Description |
+|---------|-------------|
+| **Reading progress bar** | Sticky top indicator (`#pb-reading-progress-bar`) fills as user scrolls |
+| **Dark mode toggle** | Moon/sun button (`#pb-dark-mode-toggle`); persists via `localStorage`; respects `prefers-color-scheme` |
+| **Search panel** | Slide-down form (`#pb-search-panel`); triggered from header icon; Escape/outside-click to close |
+| **Sticky header** | `.pb-nav--sticky` class toggled on scroll; header shrinks with box-shadow |
+| **Google Fonts** | Poppins (display) + Inter (UI) loaded via `wp_enqueue_style` with `display=swap` |
+| **`page.php`** | Full static page template (breadcrumbs, hero, featured image, content, share) |
+| **`search.php`** | Search results with card grid, result count, refine form, "no results" + category browser |
+| **`404.php`** | Error page: 404 hero, search form, popular posts grid, category browser |
+| **Multi-column footer** | Brand column + 2 widget areas (`footer-1`, `footer-2`) + back-to-top button |
+| **CSS variables** | `--pb-font-display` (Poppins) + `--pb-font-ui` (Inter) + `--pb-header-height` |
 
 ---
 
@@ -36,14 +53,15 @@ The frontend adapts in real-time based on:
 - Affiliate priority: Booking.com → Airbnb → fallback CTA
 - SaaS CTA injection via keyword matching
 - Per-post revenue tracking (lifetime + daily)
-- Smart CTA placement at 60 % content depth
+- Smart CTA placement at 60% content depth
 
 ### Performance
 
-- Lazy loading images
+- Lazy loading images (`lazyload.js`)
 - Core Web Vitals optimised
 - ~8 KB gzipped personalization JS
 - Async data collection, cached user context
+- Google Fonts with `display=swap`
 
 ### Multisite
 
@@ -57,29 +75,31 @@ The frontend adapts in real-time based on:
 ```
 theme/pearblog-theme/
 ├── style.css                        # Theme metadata
-├── functions.php                    # Theme setup (v4.0.0)
-├── header.php / footer.php          # Layout frames
-├── index.php                        # Homepage
-├── single.php                       # Single post (SEO layout)
+├── functions.php                    # Theme setup v5.1.0
+├── index.php                        # Homepage (hero + card grid)
+├── single.php                       # Single post (SEO layout, 12 elements)
+├── page.php                         # Static page (NEW v5.1)
+├── search.php                       # Search results (NEW v5.1)
+├── 404.php                          # Error page (NEW v5.1)
 ├── category.php                     # Category archive
 ├── assets/
 │   ├── css/
-│   │   ├── base.css                 # Design system variables
-│   │   ├── components.css           # Component styles
+│   │   ├── base.css                 # Design system variables + sticky header + search panel
+│   │   ├── components.css           # Component styles (cards, hero, CTA, 404, search)
 │   │   ├── utilities.css            # Utility classes
 │   │   ├── blocks-editor.css        # Gutenberg editor styles
 │   │   └── analytics-admin.css      # Admin analytics styles
 │   └── js/
-│       ├── app.js                   # Main application JS
-│       ├── main.js                  # Minimal interactions
-│       ├── personalization.js       # AI personalization client
-│       ├── blocks-editor.js         # Gutenberg block editor
+│       ├── app.js                   # Main app: dark mode, sticky header, search panel,
+│       │                            #   reading progress, TOC, back-to-top, mobile menu
+│       ├── personalization.js       # AI personalization client (conditional)
 │       ├── lazyload.js              # Image lazy loading
 │       └── customizer-preview.js    # Live Customizer preview
 ├── inc/
-│   ├── ui.php                       # UI helpers
-│   ├── layout.php                   # Layout helpers
-│   ├── components.php               # Component registration
+│   ├── layout.php                   # Header (progress bar, dark mode, search, sticky nav)
+│   │                                # Footer (multi-column, back-to-top)
+│   ├── components.php               # Component registration + Schema.org helpers
+│   ├── ui.php                       # UI helpers (breadcrumbs, pagination, social share)
 │   ├── performance.php              # PageSpeed, caching
 │   ├── monetization.php             # Ad injection, revenue tracking
 │   ├── affiliate-api.php            # Booking/Airbnb affiliate API
@@ -104,6 +124,7 @@ theme/pearblog-theme/
 │   ├── block-saas-cta.php           # SaaS CTA blocks
 │   ├── block-faq.php                # FAQ accordion
 │   ├── block-toc.php                # Table of contents
+│   ├── block-tldr.php               # TL;DR summary block
 │   ├── block-related.php            # Related posts
 │   ├── form-email-subscribe.php     # Email subscribe form
 │   └── form-lead-capture.php        # Lead capture form
@@ -117,7 +138,23 @@ theme/pearblog-theme/
 
 1. Upload `pearblog-theme/` to `/wp-content/themes/`.
 2. Activate in **Appearance → Themes**.
-3. Configure options (colors, logo, AdSense, API keys) in the Customizer or via `update_option()`.
+3. Configure via **WP Admin → PearBlog Engine** (API keys, AdSense, Booking.com, image generation).
+
+---
+
+## JavaScript — `app.js` Functions
+
+| Function | Trigger | Description |
+|----------|---------|-------------|
+| `initDarkMode()` | Load | Applies saved `localStorage` preference or system preference; toggles `.pb-dark-mode` |
+| `initStickyHeader()` | Scroll | Adds `.pb-nav--sticky` after 60px scroll |
+| `initReadingProgress()` | Scroll | Updates `#pb-reading-progress` bar width 0–100% |
+| `initSearchPanel()` | Click | Opens/closes `#pb-search-panel`; autofocuses input |
+| `initMobileMenu()` | Click | Toggles `.pb-menu.active` on hamburger click |
+| `initTOC()` | Scroll | Highlights active TOC link; smooth-scrolls on click |
+| `initFAQ()` | Click | Accordion toggle on `.pb-faq-question` |
+| `initBackToTop()` | Click | Smooth-scrolls to top via `#pb-back-to-top` |
+| `initSmoothScroll()` | Click | Smooth-scrolls all `a[href^="#"]` links |
 
 ---
 
@@ -126,16 +163,15 @@ theme/pearblog-theme/
 ### Colors & Branding
 
 ```php
-update_option('pearblog_primary_color', '#your-color');
-update_option('pearblog_secondary_color', '#your-color');
+update_option('pearblog_primary_color', '#2563eb');
+update_option('pearblog_secondary_color', '#7c3aed');
 update_option('pearblog_logo_url', 'https://your-site.com/logo.png');
 ```
 
 ### AdSense
 
 ```php
-update_option('pearblog_ads_enabled', true);
-update_option('pearblog_adsense_client', 'ca-pub-XXXXXXXXXXXXXXXX');
+update_option('pearblog_adsense_publisher_id', 'ca-pub-XXXXXXXXXXXXXXXX');
 update_option('pearblog_auto_ad_injection', true);
 update_option('pearblog_ad_injection_paragraphs', 3);
 update_option('pearblog_sticky_mobile_cta', true);
@@ -149,6 +185,21 @@ update_option('pearblog_ab_testing', true);
 update_option('pearblog_smart_recommendations', true);
 update_option('pearblog_behavior_tracking', true);
 ```
+
+### Dark Mode / Search Panel
+
+Both are always active — no configuration needed. Dark mode respects `prefers-color-scheme` on first visit and stores user preference in `localStorage.pb_dark_mode`.
+
+---
+
+## Widget Areas
+
+| ID | Name | Location |
+|----|------|----------|
+| `sidebar-1` | Sidebar | Single post + page sidebar |
+| `footer-1` | Footer Column 1 | Footer grid column 2 |
+| `footer-2` | Footer Column 2 | Footer grid column 3 |
+| `after-post` | After Post Content | Below article content |
 
 ---
 
@@ -170,6 +221,16 @@ Created automatically on theme activation:
 - All data is anonymous — no PII stored
 - IP addresses hashed
 - Opt-out mechanisms available
+
+---
+
+## Typography
+
+| Role | Font | Variable |
+|------|------|----------|
+| Display / Headings | Poppins | `--pb-font-display` |
+| UI / Body | Inter | `--pb-font-ui` |
+| Code / Mono | JetBrains Mono | `--pb-font-mono` |
 
 ---
 
