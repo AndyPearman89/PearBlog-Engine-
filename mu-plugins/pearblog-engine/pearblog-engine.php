@@ -18,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'PEARBLOG_ENGINE_VERSION', '1.0.0' );
+define( 'PEARBLOG_ENGINE_VERSION', '6.0.0' );
 define( 'PEARBLOG_ENGINE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PEARBLOG_ENGINE_URL', plugin_dir_url( __FILE__ ) );
 

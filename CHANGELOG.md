@@ -2,6 +2,48 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [6.0.0] — 2026-04-05
+
+### Added — AIClient v6 (Resilient AI Layer)
+- **Exponential backoff with jitter** — Up to 3 retries for transient failures (5xx, 429 rate-limit, timeout). Base delay: 2 s × 2^attempt + random jitter.
+- **Circuit breaker** — After 5 consecutive failures the client refuses requests for 300 s (configurable). State stored in `pearblog_circuit_failures` and `pearblog_circuit_opened_at` options. Half-open probe after cooldown expires. Reset via `AIClient::reset_circuit()`.
+- **Cost tracking** — Cumulative token usage tracked in `pearblog_ai_cost_cents` option (GPT-4o-mini: $0.015¢/1K input, $0.06¢/1K output). Accessible via `AIClient::total_cost_cents()`.
+- **Filters** — `pearblog_ai_request_args` (customise HTTP args), `pearblog_ai_response` (post-process generated text).
+- **HTTP status codes** — Exception codes now carry the HTTP status (e.g. 429, 503) for smarter retry logic.
+
+### Added — ContentPipeline v6 (12-Step Flow)
+- **Step 3: Duplicate check** — Content fingerprinted using word trigrams; if Jaccard similarity ≥ 80 % with any of the last 200 posts, the article is skipped. Controlled via `pearblog_duplicate_check_enabled` option (default: true). Hook: `pearblog_pipeline_duplicate`.
+- **Step 7: Internal linker** — New `SEO\InternalLinker` scans 50 most recent published posts for keyword overlap with the new article; injects up to 5 contextual `<a>` tags (class `pearblog-internal-link`). Stores `_pearblog_internal_links_count` post meta. Hook: `pearblog_internal_links_added`.
+- **Step 9: Duplicate index** — Stores the content fingerprint for future duplicate checks (rolling window of 200).
+- **Step 10: Quality scoring** — Runs `ContentValidator` and computes a `ContentScore` (Length 0–40 + Structure 0–40 + Quality 0–20 = 0–100). Stores `_pearblog_quality_score` and `_pearblog_quality_issues` post meta.
+- **Step 11: Quality gate** — Articles scoring below `pearblog_min_quality_score` (default: 50) are saved as `draft` instead of `publish`.
+- **Pipeline timestamp** — `pearblog_last_pipeline_run` option updated at end of every run (fixes DashboardWidget "Last pipeline run: Never").
+- **AI image tracking** — Sets `_pearblog_ai_image = '1'` on the post when a featured image is generated (fixes DashboardWidget AI Images counter).
+
+### Added — Monitoring & Health
+- **`Monitoring\AlertManager`** — Dispatches operational alerts via Slack (Incoming Webhook), Discord (Webhook), and WordPress email. Registered in `Plugin::boot()`. Three convenience methods: `critical()`, `warning()`, `info()`. Settings: `pearblog_alert_slack_webhook`, `pearblog_alert_discord_webhook`, `pearblog_alert_email`. Hook: `pearblog_alert_sent`.
+- **`Monitoring\HealthController`** — REST endpoint `GET /pearblog/v1/health` returning JSON: queue status, pipeline timing, circuit breaker state, AI cost, system info, and issue list. Auth: WP admin or `X-PearBlog-Key` header. Returns HTTP 503 when circuit breaker is open.
+
+### Added — Admin Panel v6
+- **SEO tab** — New tab between AI Images and Monetization. Contains: Duplicate Check toggle, Min Quality Score input (0–100), Internal Linking description.
+- **Monitoring settings** — Added to Automation tab: Slack Webhook URL, Discord Webhook URL, Alert Email.
+- **Health endpoint** in REST API reference table (`GET /pearblog/v1/health`).
+- **Version badge** updated to v6.0.
+
+### Added — PHPUnit Test Suite
+- **`phpunit.xml`** — PHPUnit 10.5 configuration.
+- **`tests/php/bootstrap.php`** — WordPress function stubs (get_option, update_post_meta, wp_strip_all_tags, etc.) + PSR-4 autoloader. Tests run without full WP environment.
+- **`composer.json`** — Dev dependency on phpunit/phpunit ^10.5. Scripts: `composer test`, `composer test:unit`.
+- **4 test classes, 30 tests, 72 assertions:**
+  - `ContentScoreTest` (8 tests) — Perfect score, below/exact min, clamping, issues, summary format.
+  - `SEOEngineTest` (7 tests) — Meta extraction, HTML H1, missing meta/title, post meta storage, canonical URL.
+  - `ContentValidatorTest` (6 tests) — Valid content, missing meta/H1, short content, travel sections, AI cliché detection, report format.
+  - `TopicQueueTest` (9 tests) — Empty queue, push/pop, peek, clear, FIFO order, empty strings, re-indexing, site isolation.
+
+### Changed — Plugin Version
+- `PEARBLOG_ENGINE_VERSION` bumped to `6.0.0`.
+- Settings registrations now total **24**: 6 general + 2 image + 2 SEO + 4 monetization + 5 email + 2 automation + 3 monitoring.
+
 ## [5.2.0] — 2026-04-05
 
 ### Added — Admin Panel v5.2

@@ -23,7 +23,7 @@ class AdminPage {
 	private const OPTION_GRP = 'pearblog_settings';
 
 	/** @var list<string> Valid tab IDs. */
-	private const TABS = [ 'general', 'images', 'monetization', 'email', 'automation', 'queue' ];
+	private const TABS = [ 'general', 'images', 'seo', 'monetization', 'email', 'automation', 'queue' ];
 
 	/**
 	 * Attach WordPress admin hooks.
@@ -80,6 +80,15 @@ class AdminPage {
 
 		// Automation API key.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// SEO / Quality settings.
+		register_setting( self::OPTION_GRP, 'pearblog_duplicate_check_enabled', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+		register_setting( self::OPTION_GRP, 'pearblog_min_quality_score', [ 'sanitize_callback' => 'absint' ] );
+
+		// Monitoring / Alert settings.
+		register_setting( self::OPTION_GRP, 'pearblog_alert_slack_webhook',   [ 'sanitize_callback' => 'esc_url_raw' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_alert_discord_webhook', [ 'sanitize_callback' => 'esc_url_raw' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_alert_email',           [ 'sanitize_callback' => 'sanitize_email' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -160,6 +169,7 @@ class AdminPage {
 		$tab_labels = [
 			'general'      => __( 'General', 'pearblog-engine' ),
 			'images'       => __( 'AI Images', 'pearblog-engine' ),
+			'seo'          => __( 'SEO', 'pearblog-engine' ),
 			'monetization' => __( 'Monetization', 'pearblog-engine' ),
 			'email'        => __( 'Email', 'pearblog-engine' ),
 			'automation'   => __( 'Automation', 'pearblog-engine' ),
@@ -170,7 +180,7 @@ class AdminPage {
 		<div class="wrap pb-engine-wrap">
 			<h1 class="pb-page-title">
 				<?php esc_html_e( 'PearBlog Engine', 'pearblog-engine' ); ?>
-				<span class="pb-version-badge">v5.2</span>
+				<span class="pb-version-badge">v6.0</span>
 			</h1>
 
 			<?php echo wp_kses_post( $notice ); ?>
@@ -304,6 +314,43 @@ class AdminPage {
 							</td>
 						</tr>
 					</table>
+					<?php submit_button(); ?>
+				</div>
+
+				<!-- ═══ Tab: SEO ═════════════════════════════════════════════ -->
+				<div id="pb-tab-panel-seo"
+					 class="pb-tab-panel <?php echo 'seo' === $active_tab ? 'active' : ''; ?>"
+					 role="tabpanel">
+
+					<h3 class="pb-section-title"><?php esc_html_e( 'Duplicate Detection', 'pearblog-engine' ); ?></h3>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label for="pearblog_duplicate_check_enabled"><?php esc_html_e( 'Enable Duplicate Check', 'pearblog-engine' ); ?></label></th>
+							<td>
+								<label>
+									<input type="checkbox" id="pearblog_duplicate_check_enabled" name="pearblog_duplicate_check_enabled" value="1" <?php checked( (bool) get_option( 'pearblog_duplicate_check_enabled', true ) ); ?> />
+									<?php esc_html_e( 'Block articles with ≥80% similarity to existing content', 'pearblog-engine' ); ?>
+								</label>
+								<p class="description"><?php esc_html_e( 'Uses trigram fingerprinting to detect content overlap before publishing.', 'pearblog-engine' ); ?></p>
+							</td>
+						</tr>
+					</table>
+
+					<h3 class="pb-section-title"><?php esc_html_e( 'Quality Gate', 'pearblog-engine' ); ?></h3>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label for="pearblog_min_quality_score"><?php esc_html_e( 'Min Quality Score', 'pearblog-engine' ); ?></label></th>
+							<td>
+								<input type="number" id="pearblog_min_quality_score" name="pearblog_min_quality_score" value="<?php echo esc_attr( get_option( 'pearblog_min_quality_score', 50 ) ); ?>" min="0" max="100" class="small-text" />
+								<span>/100</span>
+								<p class="description"><?php esc_html_e( 'Articles scoring below this threshold are saved as draft instead of published. Score = Length (0–40) + Structure (0–40) + Quality (0–20).', 'pearblog-engine' ); ?></p>
+							</td>
+						</tr>
+					</table>
+
+					<h3 class="pb-section-title"><?php esc_html_e( 'Internal Linking', 'pearblog-engine' ); ?></h3>
+					<p class="description"><?php esc_html_e( 'The pipeline automatically injects up to 5 contextual internal links per article by scanning existing published posts for keyword overlap.', 'pearblog-engine' ); ?></p>
+
 					<?php submit_button(); ?>
 				</div>
 
@@ -456,7 +503,36 @@ class AdminPage {
 								<td>POST</td>
 								<td><?php esc_html_e( 'Trigger next pipeline cycle', 'pearblog-engine' ); ?></td>
 							</tr>
+							<tr>
+								<td><code>/pearblog/v1/health</code></td>
+								<td>GET</td>
+								<td><?php esc_html_e( 'System health: queue, pipeline, circuit breaker, AI cost', 'pearblog-engine' ); ?></td>
+							</tr>
 						</tbody>
+					</table>
+
+					<h3 class="pb-section-title"><?php esc_html_e( 'Monitoring & Alerts', 'pearblog-engine' ); ?></h3>
+					<table class="form-table" role="presentation">
+						<tr>
+							<th scope="row"><label for="pearblog_alert_slack_webhook"><?php esc_html_e( 'Slack Webhook URL', 'pearblog-engine' ); ?></label></th>
+							<td>
+								<input type="url" id="pearblog_alert_slack_webhook" name="pearblog_alert_slack_webhook" value="<?php echo esc_attr( get_option( 'pearblog_alert_slack_webhook', '' ) ); ?>" class="regular-text" placeholder="https://hooks.slack.com/services/…" />
+								<p class="description"><?php esc_html_e( 'Incoming webhook URL for pipeline alerts.', 'pearblog-engine' ); ?></p>
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="pearblog_alert_discord_webhook"><?php esc_html_e( 'Discord Webhook URL', 'pearblog-engine' ); ?></label></th>
+							<td>
+								<input type="url" id="pearblog_alert_discord_webhook" name="pearblog_alert_discord_webhook" value="<?php echo esc_attr( get_option( 'pearblog_alert_discord_webhook', '' ) ); ?>" class="regular-text" placeholder="https://discord.com/api/webhooks/…" />
+							</td>
+						</tr>
+						<tr>
+							<th scope="row"><label for="pearblog_alert_email"><?php esc_html_e( 'Alert Email', 'pearblog-engine' ); ?></label></th>
+							<td>
+								<input type="email" id="pearblog_alert_email" name="pearblog_alert_email" value="<?php echo esc_attr( get_option( 'pearblog_alert_email', '' ) ); ?>" class="regular-text" />
+								<p class="description"><?php esc_html_e( 'Email address for critical pipeline alerts.', 'pearblog-engine' ); ?></p>
+							</td>
+						</tr>
 					</table>
 
 					<?php submit_button(); ?>

@@ -27,3 +27,8 @@ ENV/
 # OS
 .DS_Store
 Thumbs.db
+
+# Composer
+mu-plugins/pearblog-engine/vendor/
+mu-plugins/pearblog-engine/composer.lock
+mu-plugins/pearblog-engine/.phpunit.cache/

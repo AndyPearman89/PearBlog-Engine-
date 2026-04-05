@@ -13,6 +13,8 @@ use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\DashboardWidget;
+use PearBlogEngine\Monitoring\AlertManager;
+use PearBlogEngine\Monitoring\HealthController;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -41,10 +43,12 @@ class Plugin {
 		( new CronManager() )->register();
 		( new AdminPage() )->register();
 		( new DashboardWidget() )->register();
+		( new AlertManager() )->register();
 
-		// REST API – automation endpoints for external scripts.
+		// REST API – automation + health endpoints for external scripts.
 		add_action( 'rest_api_init', static function (): void {
 			( new AutomationController() )->register_routes();
+			( new HealthController() )->register_routes();
 		} );
 	}
 }
