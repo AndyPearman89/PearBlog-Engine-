@@ -2,6 +2,22 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [6.1.0] — 2026-04-05
+
+### Added — Testing Infrastructure
+
+- **Integration test framework** — End-to-end pipeline validation tests in `tests/php/Integration/` (ContentPipelineIntegrationTest.php)
+- **ContentPipelineIntegrationTest** — Comprehensive test suite validating complete 12-step pipeline flow from topic queue to published post
+- **Integration test documentation** — README explaining WordPress test requirements and manual testing procedures (tests/php/Integration/README.md)
+- **phpunit.xml Integration suite** — Separate test suite configuration for integration tests requiring WordPress environment
+
+**Test Coverage**:
+- Complete pipeline execution (topic → prompt → AI → duplicate check → SEO → monetization → internal linking → image → publish → quality scoring)
+- Empty queue handling
+- Duplicate content detection and automatic skipping
+- Multiple topic sequential processing
+- Non-critical error handling (e.g., image generation failures)
+
 ## [6.0.0] — 2026-04-05
 
 ### Added — Sprint 1: Critical Stability
