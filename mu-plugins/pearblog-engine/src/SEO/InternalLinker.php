@@ -189,7 +189,12 @@ class InternalLinker {
 			return $content;
 		}
 
-		// Only replace inside <p> tags and not inside existing links or headings.
+		// Regex explanation:
+		//   (?<!<a[^>]*>)     — Negative lookbehind: not already inside <a> tag text.
+		//   (?<![\/\w])       — Not preceded by word char or / (avoids partial matches).
+		//   (keyword)         — Capture the keyword (case-insensitive via /iu flags).
+		//   (?![^<]*<\/a>)    — Negative lookahead: not already inside an anchor element.
+		//   (?![^<]*<\/h[1-6]>) — Negative lookahead: not inside a heading element.
 		$pattern = '/(?<!<a[^>]*>)(?<![\/\w])(' . preg_quote( $link_keyword, '/' ) . ')(?![^<]*<\/a>)(?![^<]*<\/h[1-6]>)/iu';
 
 		$link_html = sprintf(

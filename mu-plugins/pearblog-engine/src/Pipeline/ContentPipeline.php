@@ -383,7 +383,7 @@ class ContentPipeline {
 
 		// No AI clichés?
 		$validator  = new ContentValidator();
-		$validation = $validator->validate( $content );
+		$validation = $validator->validate( $content, 'generic' );
 		if ( empty( $validation['warnings'] ) ) {
 			$quality_score += 5;
 		} else {
