@@ -2,7 +2,20 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [5.0.0] — 2026-04-04
+## [5.1.0] — 2026-04-05
+
+### Added — Full Autonomous Mode
+- **`pearblog_autonomous_mode` setting** — New admin toggle that enables or disables the fully autonomous WP-Cron pipeline without touching code. Defaults to `true` (enabled) to preserve backwards compatibility.
+- **Pipeline Status dashboard** — The admin page now shows the current mode (Autonomous / Manual), next scheduled run time, and current queue count in a summary table.
+- **"Run Pipeline Now" button** — Administrators can trigger the content pipeline on-demand from the admin page without waiting for the next cron cycle. The button is disabled when the queue is empty.
+- **Manual pipeline action handler** (`handle_run_pipeline`) — registered as `admin_post_pearblog_run_pipeline` with nonce verification and capability check.
+
+### Fixed
+- **Email marketing settings not persisting** — `pearblog_esp_provider`, `pearblog_mailchimp_api_key`, `pearblog_mailchimp_list_id`, `pearblog_convertkit_api_key`, and `pearblog_convertkit_form_id` were rendered in the admin UI but never registered with `register_setting()`, so saving them had no effect. All five settings are now properly registered.
+
+### Changed
+- **CronManager::maybe_schedule()** — Now reads `pearblog_autonomous_mode`. When the mode is disabled the method unschedules any existing cron event instead of leaving it in place; when enabled it schedules as before.
+
 
 ### Added - Missing Theme Functions
 - **`pearblog_extract_location_from_content()`** — Extract location from article title/content using pattern matching for Polish/European travel destinations (monetization.php:344-378)

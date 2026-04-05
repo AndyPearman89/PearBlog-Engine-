@@ -28,6 +28,7 @@ class AdminPage {
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'admin_post_pearblog_add_topics', [ $this, 'handle_add_topics' ] );
 		add_action( 'admin_post_pearblog_clear_queue', [ $this, 'handle_clear_queue' ] );
+		add_action( 'admin_post_pearblog_run_pipeline', [ $this, 'handle_run_pipeline' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -62,8 +63,18 @@ class AdminPage {
 		// SaaS CTA settings.
 		register_setting( self::OPTION_GRP, 'pearblog_saas_products', [ 'sanitize_callback' => [ $this, 'sanitize_saas_products' ] ] );
 
+		// Autonomous mode.
+		register_setting( self::OPTION_GRP, 'pearblog_autonomous_mode', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+
 		// Automation API settings.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// Email marketing settings.
+		register_setting( self::OPTION_GRP, 'pearblog_esp_provider',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_api_key',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_mailchimp_list_id',  [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_convertkit_form_id', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -113,6 +124,31 @@ class AdminPage {
 		);
 	}
 
+	public function handle_run_pipeline(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+
+		check_admin_referer( 'pearblog_run_pipeline' );
+
+		$queue = new TopicQueue( get_current_blog_id() );
+
+		if ( $queue->count() === 0 ) {
+			$this->redirect_with_notice(
+				__( 'Queue is empty – add topics before running the pipeline.', 'pearblog-engine' ),
+				'warning'
+			);
+		}
+
+		// Trigger the cron action immediately (runs synchronously in the current request).
+		do_action( 'pearblog_run_pipeline' );
+
+		$this->redirect_with_notice(
+			__( 'Pipeline triggered successfully.', 'pearblog-engine' ),
+			'success'
+		);
+	}
+
 	// -----------------------------------------------------------------------
 	// Page render
 	// -----------------------------------------------------------------------
@@ -145,6 +181,16 @@ class AdminPage {
 			<form method="post" action="options.php">
 				<?php settings_fields( self::OPTION_GRP ); ?>
 				<table class="form-table" role="presentation">
+					<tr>
+						<th scope="row"><label for="pearblog_autonomous_mode"><?php esc_html_e( 'Autonomous Mode', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<label>
+								<input type="checkbox" id="pearblog_autonomous_mode" name="pearblog_autonomous_mode" value="1" <?php checked( get_option( 'pearblog_autonomous_mode', true ) ); ?> />
+								<?php esc_html_e( 'Enable fully autonomous content pipeline (WP-Cron)', 'pearblog-engine' ); ?>
+							</label>
+							<p class="description"><?php esc_html_e( 'When enabled, the pipeline runs automatically every hour and publishes articles from the topic queue without any manual intervention.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
 					<tr>
 						<th scope="row"><label for="pearblog_openai_api_key"><?php esc_html_e( 'OpenAI API Key', 'pearblog-engine' ); ?></label></th>
 						<td><input type="password" id="pearblog_openai_api_key" name="pearblog_openai_api_key" value="<?php echo esc_attr( get_option( 'pearblog_openai_api_key', '' ) ); ?>" class="regular-text" /></td>
@@ -326,6 +372,68 @@ class AdminPage {
 				</table>
 				<?php submit_button(); ?>
 			</form>
+
+			<hr />
+
+			<!-- Autonomous pipeline status -->
+			<h2><?php esc_html_e( 'Autonomous Pipeline Status', 'pearblog-engine' ); ?></h2>
+			<?php
+			$autonomous_enabled = (bool) get_option( 'pearblog_autonomous_mode', true );
+			$next_scheduled     = wp_next_scheduled( 'pearblog_run_pipeline' );
+			?>
+			<table class="widefat fixed" style="max-width:500px;">
+				<tbody>
+					<tr>
+						<td><strong><?php esc_html_e( 'Mode', 'pearblog-engine' ); ?></strong></td>
+						<td>
+							<?php if ( $autonomous_enabled ) : ?>
+								<span style="color:#00a32a;">&#9679; <?php esc_html_e( 'Autonomous (enabled)', 'pearblog-engine' ); ?></span>
+							<?php else : ?>
+								<span style="color:#d63638;">&#9679; <?php esc_html_e( 'Manual (disabled)', 'pearblog-engine' ); ?></span>
+							<?php endif; ?>
+						</td>
+					</tr>
+					<tr>
+						<td><strong><?php esc_html_e( 'Next Scheduled Run', 'pearblog-engine' ); ?></strong></td>
+						<td>
+							<?php
+							if ( $next_scheduled ) {
+								echo esc_html(
+									sprintf(
+										/* translators: %s: human-readable time difference */
+										__( 'In %s', 'pearblog-engine' ),
+										human_time_diff( time(), $next_scheduled )
+									)
+								);
+								echo ' (' . esc_html( wp_date( get_option( 'date_format' ) . ' ' . get_option( 'time_format' ), $next_scheduled ) ) . ')';
+							} else {
+								esc_html_e( 'Not scheduled', 'pearblog-engine' );
+							}
+							?>
+						</td>
+					</tr>
+					<tr>
+						<td><strong><?php esc_html_e( 'Topics in Queue', 'pearblog-engine' ); ?></strong></td>
+						<td><?php echo esc_html( (string) $queue->count() ); ?></td>
+					</tr>
+				</tbody>
+			</table>
+
+			<p>
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
+					<input type="hidden" name="action" value="pearblog_run_pipeline" />
+					<?php wp_nonce_field( 'pearblog_run_pipeline' ); ?>
+					<?php
+					submit_button(
+						__( 'Run Pipeline Now', 'pearblog-engine' ),
+						'primary',
+						'',
+						false,
+						$queue->count() === 0 ? [ 'disabled' => 'disabled', 'title' => __( 'Add topics to the queue first', 'pearblog-engine' ) ] : []
+					);
+					?>
+				</form>
+			</p>
 
 			<hr />
 
