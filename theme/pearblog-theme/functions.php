@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Theme constants
-define('PEARBLOG_VERSION', '5.2.0');
+define('PEARBLOG_VERSION', '5.1.0');
 define('PEARBLOG_DIR', get_template_directory());
 define('PEARBLOG_URI', get_template_directory_uri());
 define('PEARBLOG_IS_PRO', true);
@@ -88,14 +88,6 @@ add_action('after_setup_theme', 'pearblog_setup');
  * Enqueue scripts and styles - v2 PRO
  */
 function pearblog_enqueue_assets() {
-    // Google Fonts – brand typography (Poppins display, Inter UI).
-    wp_enqueue_style(
-        'pearblog-fonts',
-        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap',
-        [],
-        null
-    );
-
     // Main stylesheet
     wp_enqueue_style('pearblog-style', get_stylesheet_uri(), array(), PEARBLOG_VERSION);
 
@@ -118,6 +110,14 @@ function pearblog_enqueue_assets() {
     if (defined('PEARBLOG_AI_ENGINE') && PEARBLOG_AI_ENGINE) {
         wp_enqueue_script('pearblog-personalization', PEARBLOG_URI . '/assets/js/personalization.js', array('pearblog-app'), PEARBLOG_VERSION, true);
     }
+
+    // Google Fonts — Poppins (display) + Inter (UI)
+    wp_enqueue_style(
+        'pearblog-fonts',
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700;800&display=swap',
+        array(),
+        null
+    );
 
     // Pass PHP data to JavaScript
     wp_localize_script('pearblog-app', 'pearblogData', array(
@@ -283,7 +283,17 @@ function pearblog_widgets_init() {
     register_sidebar(array(
         'name'          => __('Footer', 'pearblog-theme'),
         'id'            => 'footer-1',
-        'description'   => __('Footer widgets.', 'pearblog-theme'),
+        'description'   => __('Footer widgets (column 1).', 'pearblog-theme'),
+        'before_widget' => '<div id="%1$s" class="footer-widget %2$s">',
+        'after_widget'  => '</div>',
+        'before_title'  => '<h4 class="footer-widget-title">',
+        'after_title'   => '</h4>',
+    ));
+
+    register_sidebar(array(
+        'name'          => __('Footer Column 2', 'pearblog-theme'),
+        'id'            => 'footer-2',
+        'description'   => __('Footer widgets (column 2).', 'pearblog-theme'),
         'before_widget' => '<div id="%1$s" class="footer-widget %2$s">',
         'after_widget'  => '</div>',
         'before_title'  => '<h4 class="footer-widget-title">',

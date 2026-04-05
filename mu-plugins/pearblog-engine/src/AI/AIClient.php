@@ -1,13 +1,16 @@
 <?php
 /**
- * AI client – sends prompts to OpenAI with retry logic and circuit breaker.
+ * AI client – sends prompts to OpenAI and returns generated content.
  *
- * v6 features:
- *   - Exponential backoff with jitter (MAX_RETRIES = 3)
- *   - Circuit breaker: after CIRCUIT_FAILURE_THRESHOLD consecutive failures
- *     the client refuses new requests for CIRCUIT_COOLDOWN_SECONDS seconds.
- *   - Cost tracking via the `pearblog_ai_cost_cents` option.
- *   - Pluggable via `pearblog_ai_request_args` and `pearblog_ai_response` filters.
+ * Features:
+ *  - Exponential backoff with jitter on rate-limit (429) responses.
+ *  - Circuit breaker: after N consecutive failures the client refuses
+ *    further calls for a configurable cooldown period.
+ *  - Per-article cost tracking stored in a WordPress option.
+ *
+ * The API key is read from the WordPress option `pearblog_openai_api_key`
+ * (set via the PearBlog admin page or wp-config.php constant
+ * PEARBLOG_OPENAI_API_KEY).
  *
  * @package PearBlogEngine\AI
  */
@@ -17,30 +20,35 @@ declare(strict_types=1);
 namespace PearBlogEngine\AI;
 
 /**
- * Resilient OpenAI Chat Completions API wrapper.
+ * Thin wrapper around the OpenAI Chat Completions API with resilience features.
  */
 class AIClient {
 
 	private const API_URL = 'https://api.openai.com/v1/chat/completions';
 	private const MODEL   = 'gpt-4o-mini';
 
-	/** Maximum retry attempts for transient failures. */
+	/** Maximum retry attempts on rate-limit (429) responses. */
 	private const MAX_RETRIES = 3;
 
-	/** Base delay in seconds for exponential backoff (actual delay includes jitter). */
-	private const RETRY_BASE_DELAY = 2;
+	/** Base delay in seconds for exponential backoff. */
+	private const BASE_DELAY_SECONDS = 2;
 
 	/** Number of consecutive failures before the circuit opens. */
 	private const CIRCUIT_FAILURE_THRESHOLD = 5;
 
-	/** Seconds to wait before the circuit half-opens (allows a single probe request). */
-	private const CIRCUIT_COOLDOWN_SECONDS = 300;
+	/** Seconds to keep the circuit open (cooldown period). */
+	private const CIRCUIT_COOLDOWN_SECONDS = 300; // 5 minutes
 
-	/** Approximate cost per 1 K input tokens (GPT-4o-mini) in cents. */
-	private const COST_PER_1K_INPUT  = 0.015; // $0.00015/token → 0.015¢ per 1 K
-	/** Approximate cost per 1 K output tokens (GPT-4o-mini) in cents. */
-	private const COST_PER_1K_OUTPUT = 0.060; // $0.0006/token  → 0.06¢ per 1 K
+	/** WordPress option key for circuit-breaker state. */
+	private const CB_STATE_OPTION = 'pearblog_ai_circuit_state';
 
+	/** WordPress option key for cumulative API cost tracking (USD cents). */
+	private const COST_OPTION = 'pearblog_ai_cost_cents';
+
+	// Approximate cost per 1 000 tokens for gpt-4o-mini (input + output avg).
+	private const COST_PER_1K_TOKENS_CENTS = 0.015; // $0.00015 / token = $0.15 / 1k
+
+	/** @var string */
 	private string $api_key;
 
 	public function __construct( string $api_key = '' ) {
@@ -52,20 +60,17 @@ class AIClient {
 		$this->api_key = $api_key;
 	}
 
-	// -----------------------------------------------------------------------
-	// Public API
-	// -----------------------------------------------------------------------
-
 	/**
 	 * Send a prompt and return the AI-generated text.
 	 *
-	 * Retries transient failures with exponential back-off.  Respects the
-	 * circuit breaker – throws immediately if the circuit is open.
+	 * Retries on 429 (rate limit) up to MAX_RETRIES times with exponential
+	 * backoff + jitter.  Respects the circuit breaker – throws immediately
+	 * when the circuit is open.
 	 *
-	 * @param string $prompt     The full prompt to send.
-	 * @param int    $max_tokens Maximum tokens in the response (default 2 048).
-	 * @return string            Generated content.
-	 * @throws \RuntimeException On permanent failures or open circuit.
+	 * @param string $prompt        The full prompt to send.
+	 * @param int    $max_tokens    Maximum tokens in the response (default 2 048).
+	 * @return string               Generated content, or empty string on failure.
+	 * @throws \RuntimeException    When the request fails, circuit is open, or API returns an error.
 	 */
 	public function generate( string $prompt, int $max_tokens = 2048 ): string {
 		if ( '' === $this->api_key ) {
@@ -77,57 +82,87 @@ class AIClient {
 		$last_exception = null;
 
 		for ( $attempt = 0; $attempt <= self::MAX_RETRIES; $attempt++ ) {
-			if ( $attempt > 0 ) {
-				$this->backoff_sleep( $attempt );
-			}
-
 			try {
 				$result = $this->do_request( $prompt, $max_tokens );
-
-				// Success → reset the failure counter.
 				$this->record_success();
-
 				return $result;
-			} catch ( \RuntimeException $e ) {
+			} catch ( RateLimitException $e ) {
 				$last_exception = $e;
-
-				// Only retry on transient (5xx / timeout) errors.
-				if ( ! $this->is_retryable( $e ) ) {
-					$this->record_failure();
-					throw $e;
+				if ( $attempt < self::MAX_RETRIES ) {
+					$this->backoff( $attempt );
+					continue;
 				}
+				// Exhausted retries – record failure and rethrow.
+				$this->record_failure();
+				throw new \RuntimeException(
+					'PearBlog Engine: OpenAI rate limit exceeded after ' . self::MAX_RETRIES . ' retries.',
+					429,
+					$e
+				);
+			} catch ( \Throwable $e ) {
+				$this->record_failure();
+				throw $e;
 			}
 		}
 
-		// All retries exhausted.
+		// Should not be reachable, but satisfies static analysis.
 		$this->record_failure();
-		throw $last_exception ?? new \RuntimeException( 'PearBlog Engine: AI request failed after retries.' );
-	}
-
-	/**
-	 * Reset the circuit breaker manually (e.g. via WP-CLI or admin action).
-	 */
-	public static function reset_circuit(): void {
-		delete_option( 'pearblog_circuit_failures' );
-		delete_option( 'pearblog_circuit_opened_at' );
-	}
-
-	/**
-	 * Return the cumulative AI cost tracked in cents.
-	 */
-	public static function total_cost_cents(): float {
-		return (float) get_option( 'pearblog_ai_cost_cents', 0 );
+		throw $last_exception ?? new \RuntimeException( 'PearBlog Engine: AI generation failed.' );
 	}
 
 	// -----------------------------------------------------------------------
-	// HTTP request
+	// Cost tracking
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Return total estimated API spend in USD cents since tracking began.
+	 *
+	 * @return float USD cents.
+	 */
+	public static function get_total_cost_cents(): float {
+		return (float) get_option( self::COST_OPTION, 0 );
+	}
+
+	/**
+	 * Reset the cumulative cost counter to zero.
+	 */
+	public static function reset_cost(): void {
+		update_option( self::COST_OPTION, 0 );
+	}
+
+	// -----------------------------------------------------------------------
+	// Circuit breaker helpers (public for testing / admin reset)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Return whether the circuit breaker is currently open (blocking calls).
+	 */
+	public static function is_circuit_open(): bool {
+		$state = self::get_circuit_state();
+		if ( $state['open'] && time() >= $state['retry_after'] ) {
+			// Cooldown elapsed – transition to half-open by resetting.
+			self::reset_circuit();
+			return false;
+		}
+		return $state['open'];
+	}
+
+	/**
+	 * Manually reset the circuit breaker (e.g. from an admin action).
+	 */
+	public static function reset_circuit(): void {
+		update_option( self::CB_STATE_OPTION, [ 'failures' => 0, 'open' => false, 'retry_after' => 0 ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// Private implementation
 	// -----------------------------------------------------------------------
 
 	/**
 	 * Perform a single HTTP request to the OpenAI API.
 	 *
-	 * @return string Generated text.
-	 * @throws \RuntimeException On HTTP or API error.
+	 * @throws RateLimitException  On HTTP 429.
+	 * @throws \RuntimeException   On any other error.
 	 */
 	private function do_request( string $prompt, int $max_tokens ): string {
 		$body = wp_json_encode( [
@@ -138,156 +173,121 @@ class AIClient {
 			'max_tokens' => $max_tokens,
 		] );
 
-		/**
-		 * Filter: pearblog_ai_request_args
-		 *
-		 * Customise the wp_remote_post arguments before the request is sent.
-		 *
-		 * @param array  $args   wp_remote_post args.
-		 * @param string $prompt The original prompt text.
-		 */
-		$args = apply_filters( 'pearblog_ai_request_args', [
-			'timeout' => 60,
-			'headers' => [
-				'Content-Type'  => 'application/json',
-				'Authorization' => 'Bearer ' . $this->api_key,
-			],
-			'body' => $body,
-		], $prompt );
-
-		$response = wp_remote_post( self::API_URL, $args );
+		$response = wp_remote_post(
+			self::API_URL,
+			[
+				'timeout' => 90,
+				'headers' => [
+					'Content-Type'  => 'application/json',
+					'Authorization' => 'Bearer ' . $this->api_key,
+				],
+				'body'    => $body,
+			]
+		);
 
 		if ( is_wp_error( $response ) ) {
 			throw new \RuntimeException(
-				'PearBlog Engine: HTTP request failed – ' . $response->get_error_message(),
-				0
+				'PearBlog Engine: HTTP request failed – ' . $response->get_error_message()
 			);
 		}
 
-		$status = wp_remote_retrieve_response_code( $response );
-		$data   = json_decode( wp_remote_retrieve_body( $response ), true );
+		$status = (int) wp_remote_retrieve_response_code( $response );
+		$raw    = wp_remote_retrieve_body( $response );
+		$data   = json_decode( $raw, true );
+
+		if ( 429 === $status ) {
+			throw new RateLimitException( 'OpenAI rate limit hit (429).' );
+		}
 
 		if ( 200 !== $status || ! is_array( $data ) ) {
-			$message = $data['error']['message'] ?? 'Unknown API error';
-			throw new \RuntimeException(
-				"PearBlog Engine: OpenAI API error ({$status}) – {$message}",
-				$status
-			);
+			$message = is_array( $data ) ? ( $data['error']['message'] ?? 'Unknown API error' ) : 'Unknown API error';
+			throw new \RuntimeException( "PearBlog Engine: OpenAI API error ({$status}) – {$message}" );
 		}
 
-		$text = trim( $data['choices'][0]['message']['content'] ?? '' );
+		$content = trim( $data['choices'][0]['message']['content'] ?? '' );
 
-		// Track cost.
-		$this->track_cost( $data );
-
-		/**
-		 * Filter: pearblog_ai_response
-		 *
-		 * Post-process the generated text before it is returned to callers.
-		 *
-		 * @param string $text   Generated text.
-		 * @param array  $data   Full API response data.
-		 * @param string $prompt Original prompt.
-		 */
-		return (string) apply_filters( 'pearblog_ai_response', $text, $data, $prompt );
-	}
-
-	// -----------------------------------------------------------------------
-	// Circuit breaker
-	// -----------------------------------------------------------------------
-
-	/**
-	 * @throws \RuntimeException If the circuit breaker is open.
-	 */
-	private function assert_circuit_closed(): void {
-		$failures  = (int) get_option( 'pearblog_circuit_failures', 0 );
-		$opened_at = (int) get_option( 'pearblog_circuit_opened_at', 0 );
-
-		if ( $failures < self::CIRCUIT_FAILURE_THRESHOLD ) {
-			return; // Closed.
+		// Track token usage and estimated cost.
+		$total_tokens = (int) ( $data['usage']['total_tokens'] ?? 0 );
+		if ( $total_tokens > 0 ) {
+			$cost_cents = ( $total_tokens / 1000 ) * self::COST_PER_1K_TOKENS_CENTS;
+			$existing   = (float) get_option( self::COST_OPTION, 0 );
+			update_option( self::COST_OPTION, $existing + $cost_cents );
 		}
 
-		$elapsed = time() - $opened_at;
-
-		if ( $elapsed < self::CIRCUIT_COOLDOWN_SECONDS ) {
-			throw new \RuntimeException( sprintf(
-				'PearBlog Engine: Circuit breaker OPEN — %d consecutive failures. Cooldown ends in %d s.',
-				$failures,
-				self::CIRCUIT_COOLDOWN_SECONDS - $elapsed
-			) );
-		}
-
-		// Half-open: cooldown expired → let one request through.
-	}
-
-	private function record_failure(): void {
-		$failures = (int) get_option( 'pearblog_circuit_failures', 0 ) + 1;
-		update_option( 'pearblog_circuit_failures', $failures, false );
-
-		if ( $failures >= self::CIRCUIT_FAILURE_THRESHOLD ) {
-			update_option( 'pearblog_circuit_opened_at', time(), false );
-
-			error_log( sprintf(
-				'PearBlog Engine: Circuit breaker OPENED after %d consecutive failures.',
-				$failures
-			) );
-		}
-	}
-
-	private function record_success(): void {
-		$failures = (int) get_option( 'pearblog_circuit_failures', 0 );
-		if ( $failures > 0 ) {
-			update_option( 'pearblog_circuit_failures', 0, false );
-			delete_option( 'pearblog_circuit_opened_at' );
-		}
-	}
-
-	// -----------------------------------------------------------------------
-	// Retry helpers
-	// -----------------------------------------------------------------------
-
-	/**
-	 * Determine whether the exception represents a transient error.
-	 */
-	private function is_retryable( \RuntimeException $e ): bool {
-		$code = $e->getCode();
-
-		// Retry on: 0 (timeout/connection error), 429 (rate-limit), 5xx.
-		return 0 === $code || 429 === $code || ( $code >= 500 && $code < 600 );
+		return $content;
 	}
 
 	/**
-	 * Sleep with exponential backoff + jitter.
+	 * Sleep using exponential backoff with full jitter.
+	 *
+	 * @param int $attempt Zero-based attempt index.
 	 */
-	private function backoff_sleep( int $attempt ): void {
-		$base  = self::RETRY_BASE_DELAY * ( 2 ** ( $attempt - 1 ) );
-		$delay = $base + random_int( 0, (int) ( $base * 0.5 ) );
+	private function backoff( int $attempt ): void {
+		$max_delay = self::BASE_DELAY_SECONDS * ( 2 ** $attempt );
+		$delay     = random_int( 1, max( 1, (int) $max_delay ) );
+		error_log( "PearBlog Engine: rate limited – retrying in {$delay}s (attempt " . ( $attempt + 1 ) . ').' );
 		sleep( $delay );
 	}
 
-	// -----------------------------------------------------------------------
-	// Cost tracking
-	// -----------------------------------------------------------------------
-
 	/**
-	 * Increment the cumulative cost option based on token usage in the
-	 * API response.
+	 * Throw if the circuit breaker is open.
 	 */
-	private function track_cost( array $data ): void {
-		$usage = $data['usage'] ?? null;
-		if ( ! is_array( $usage ) ) {
-			return;
-		}
-
-		$input_tokens  = (int) ( $usage['prompt_tokens']     ?? 0 );
-		$output_tokens = (int) ( $usage['completion_tokens'] ?? 0 );
-
-		$cost_cents = ( $input_tokens / 1000 ) * self::COST_PER_1K_INPUT
-		            + ( $output_tokens / 1000 ) * self::COST_PER_1K_OUTPUT;
-
-		if ( $cost_cents > 0 ) {
-			$current = (float) get_option( 'pearblog_ai_cost_cents', 0 );
-			update_option( 'pearblog_ai_cost_cents', $current + $cost_cents, false );
+	private function assert_circuit_closed(): void {
+		if ( self::is_circuit_open() ) {
+			$state = self::get_circuit_state();
+			$eta   = max( 0, $state['retry_after'] - time() );
+			throw new \RuntimeException(
+				"PearBlog Engine: AI circuit breaker is OPEN. Retry in {$eta}s."
+			);
 		}
 	}
+
+	/**
+	 * Record a successful API call (resets consecutive failure count).
+	 */
+	private function record_success(): void {
+		$state              = self::get_circuit_state();
+		$state['failures']  = 0;
+		$state['open']      = false;
+		$state['retry_after'] = 0;
+		update_option( self::CB_STATE_OPTION, $state );
+	}
+
+	/**
+	 * Record a failed API call.  Opens the circuit after too many failures.
+	 */
+	private function record_failure(): void {
+		$state = self::get_circuit_state();
+		$state['failures']++;
+
+		if ( $state['failures'] >= self::CIRCUIT_FAILURE_THRESHOLD ) {
+			$state['open']        = true;
+			$state['retry_after'] = time() + self::CIRCUIT_COOLDOWN_SECONDS;
+			error_log( sprintf(
+				'PearBlog Engine: AI circuit breaker OPENED after %d failures. Will retry at %s.',
+				$state['failures'],
+				gmdate( 'Y-m-d H:i:s', $state['retry_after'] )
+			) );
+		}
+
+		update_option( self::CB_STATE_OPTION, $state );
+	}
+
+	/**
+	 * Read circuit-breaker state from the database.
+	 *
+	 * @return array{failures: int, open: bool, retry_after: int}
+	 */
+	private static function get_circuit_state(): array {
+		$default = [ 'failures' => 0, 'open' => false, 'retry_after' => 0 ];
+		$stored  = get_option( self::CB_STATE_OPTION, $default );
+		return is_array( $stored ) ? array_merge( $default, $stored ) : $default;
+	}
 }
+
+/**
+ * Internal exception used to signal HTTP 429 rate-limit responses.
+ *
+ * @internal
+ */
+class RateLimitException extends \RuntimeException {}

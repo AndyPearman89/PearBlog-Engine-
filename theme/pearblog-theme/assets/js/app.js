@@ -1,8 +1,6 @@
 /**
- * PearBlog v5.2 – Main App JavaScript
+ * PearBlog v5.1 — Main App JavaScript
  * Frontend Operating System (FOS)
- *
- * @version 5.2.0
  */
 
 (function() {
@@ -24,27 +22,119 @@
         const savedMode = localStorage.getItem('pb_dark_mode');
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
-        // Set initial mode
-        if (savedMode === 'dark' || (!savedMode && prefersDark)) {
-            body.classList.add('pb-dark-mode');
+        function setDark(on) {
+            body.classList.toggle('pb-dark-mode', on);
+            if (toggleBtn) {
+                const icon = toggleBtn.querySelector('.pb-dark-icon');
+                if (icon) icon.textContent = on ? '☀️' : '🌙';
+                toggleBtn.setAttribute('aria-label', on ? 'Disable dark mode' : 'Enable dark mode');
+            }
         }
+
+        // Set initial mode
+        setDark(savedMode === 'dark' || (!savedMode && prefersDark));
 
         // Toggle handler
         if (toggleBtn) {
             toggleBtn.addEventListener('click', function() {
-                body.classList.toggle('pb-dark-mode');
-                const isDark = body.classList.contains('pb-dark-mode');
+                const isDark = !body.classList.contains('pb-dark-mode');
+                setDark(isDark);
                 localStorage.setItem('pb_dark_mode', isDark ? 'dark' : 'light');
-
-                // Update button icon
-                this.innerHTML = isDark ? '☀️' : '🌙';
             });
         }
 
         // Listen for system preference changes
         window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
             if (!localStorage.getItem('pb_dark_mode')) {
-                body.classList.toggle('pb-dark-mode', e.matches);
+                setDark(e.matches);
+            }
+        });
+    }
+
+    /**
+     * Sticky Header
+     */
+    function initStickyHeader() {
+        const header = document.getElementById('pb-header');
+        if (!header) return;
+
+        const threshold = 60;
+
+        function onScroll() {
+            header.classList.toggle('pb-nav--sticky', window.pageYOffset > threshold);
+        }
+
+        window.addEventListener('scroll', onScroll, { passive: true });
+        onScroll();
+    }
+
+    /**
+     * Reading Progress Bar
+     */
+    function initReadingProgress() {
+        const progressEl = document.getElementById('pb-reading-progress');
+        if (!progressEl) return;
+
+        function update() {
+            const windowHeight = window.innerHeight;
+            const documentHeight = document.documentElement.scrollHeight;
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const progress = Math.min((scrollTop / (documentHeight - windowHeight)) * 100, 100);
+            progressEl.style.width = progress + '%';
+
+            // Also update aria
+            const bar = document.getElementById('pb-reading-progress-bar');
+            if (bar) bar.setAttribute('aria-valuenow', Math.round(progress));
+        }
+
+        window.addEventListener('scroll', update, { passive: true });
+        update();
+    }
+
+    /**
+     * Search Panel
+     */
+    function initSearchPanel() {
+        const toggle = document.getElementById('pb-search-toggle');
+        const panel = document.getElementById('pb-search-panel');
+        const closeBtn = document.getElementById('pb-search-close');
+        const input = document.getElementById('pb-search-input');
+
+        if (!toggle || !panel) return;
+
+        function openPanel() {
+            panel.classList.add('is-open');
+            panel.setAttribute('aria-hidden', 'false');
+            toggle.setAttribute('aria-expanded', 'true');
+            if (input) {
+                setTimeout(() => input.focus(), 50);
+            }
+        }
+
+        function closePanel() {
+            panel.classList.remove('is-open');
+            panel.setAttribute('aria-hidden', 'true');
+            toggle.setAttribute('aria-expanded', 'false');
+            toggle.focus();
+        }
+
+        toggle.addEventListener('click', openPanel);
+
+        if (closeBtn) {
+            closeBtn.addEventListener('click', closePanel);
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && panel.classList.contains('is-open')) {
+                closePanel();
+            }
+        });
+
+        document.addEventListener('click', (e) => {
+            if (panel.classList.contains('is-open') &&
+                !panel.contains(e.target) &&
+                !toggle.contains(e.target)) {
+                closePanel();
             }
         });
     }
@@ -61,8 +151,8 @@
         menuToggle.addEventListener('click', function() {
             menu.classList.toggle('active');
             const isExpanded = menu.classList.contains('active');
-            this.setAttribute('aria-expanded', isExpanded);
-            body.classList.toggle('menu-open', isExpanded);
+            this.setAttribute('aria-expanded', String(isExpanded));
+            document.body.classList.toggle('menu-open', isExpanded);
         });
 
         // Close menu when clicking outside
@@ -111,7 +201,7 @@
 
                     // Toggle current item
                     item.classList.toggle('active', !isActive);
-                    this.setAttribute('aria-expanded', !isActive);
+                    this.setAttribute('aria-expanded', String(!isActive));
                 });
 
                 // Keyboard navigation
@@ -184,25 +274,7 @@
                     link.classList.add('active');
                 }
             });
-
-            // Update reading progress
-            updateReadingProgress();
-        });
-    }
-
-    /**
-     * Reading Progress Bar
-     */
-    function updateReadingProgress() {
-        const progressBar = document.getElementById('pb-reading-progress');
-        if (!progressBar) return;
-
-        const windowHeight = window.innerHeight;
-        const documentHeight = document.documentElement.scrollHeight;
-        const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-
-        const progress = (scrollTop / (documentHeight - windowHeight)) * 100;
-        progressBar.style.width = Math.min(progress, 100) + '%';
+        }, { passive: true });
     }
 
     /**
@@ -228,6 +300,18 @@
     }
 
     /**
+     * Back to Top Button
+     */
+    function initBackToTop() {
+        const btn = document.getElementById('pb-back-to-top');
+        if (!btn) return;
+
+        btn.addEventListener('click', () => {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    /**
      * Sticky Mobile CTA
      */
     function initStickyCTA() {
@@ -236,62 +320,45 @@
         const stickyCTA = document.getElementById('pb-sticky-mobile-ad');
         if (!stickyCTA) return;
 
-        // Show/hide based on scroll
-        let lastScroll = 0;
-
         window.addEventListener('scroll', function() {
-            const currentScroll = window.pageYOffset;
-
-            if (currentScroll > 300) {
-                stickyCTA.classList.add('visible');
-            } else {
-                stickyCTA.classList.remove('visible');
-            }
-
-            lastScroll = currentScroll;
-        });
+            stickyCTA.classList.toggle('visible', window.pageYOffset > 300);
+        }, { passive: true });
     }
 
     /**
      * Track Core Web Vitals (development only)
      */
     function initWebVitals() {
-        // Only track on localhost/dev — avoids noise in production console logs.
-        if (location.hostname !== 'localhost' && location.hostname !== '127.0.0.1') {
-            return;
-        }
+        if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+            if ('PerformanceObserver' in window) {
+                try {
+                    new PerformanceObserver((list) => {
+                        const entries = list.getEntries();
+                        const lastEntry = entries[entries.length - 1];
+                        console.log('LCP:', lastEntry.renderTime || lastEntry.loadTime);
+                    }).observe({ entryTypes: ['largest-contentful-paint'] });
+                } catch (e) {}
 
-        if ('PerformanceObserver' in window) {
-            // Largest Contentful Paint
-            try {
-                new PerformanceObserver((list) => {
-                    const entries = list.getEntries();
-                    const lastEntry = entries[entries.length - 1];
-                    console.log('LCP:', lastEntry.renderTime || lastEntry.loadTime);
-                }).observe({ entryTypes: ['largest-contentful-paint'] });
-            } catch (e) {}
+                try {
+                    new PerformanceObserver((list) => {
+                        list.getEntries().forEach(entry => {
+                            console.log('FID:', entry.processingStart - entry.startTime);
+                        });
+                    }).observe({ entryTypes: ['first-input'] });
+                } catch (e) {}
 
-            // First Input Delay
-            try {
-                new PerformanceObserver((list) => {
-                    list.getEntries().forEach(entry => {
-                        console.log('FID:', entry.processingStart - entry.startTime);
-                    });
-                }).observe({ entryTypes: ['first-input'] });
-            } catch (e) {}
-
-            // Cumulative Layout Shift
-            try {
-                let clsScore = 0;
-                new PerformanceObserver((list) => {
-                    for (const entry of list.getEntries()) {
-                        if (!entry.hadRecentInput) {
-                            clsScore += entry.value;
-                            console.log('CLS:', clsScore);
+                try {
+                    let clsScore = 0;
+                    new PerformanceObserver((list) => {
+                        for (const entry of list.getEntries()) {
+                            if (!entry.hadRecentInput) {
+                                clsScore += entry.value;
+                                console.log('CLS:', clsScore);
+                            }
                         }
-                    }
-                }).observe({ entryTypes: ['layout-shift'] });
-            } catch (e) {}
+                    }).observe({ entryTypes: ['layout-shift'] });
+                } catch (e) {}
+            }
         }
     }
 
@@ -300,10 +367,14 @@
      */
     function init() {
         initDarkMode();
+        initStickyHeader();
+        initReadingProgress();
+        initSearchPanel();
         initMobileMenu();
         initFAQ();
         initTOC();
         initSmoothScroll();
+        initBackToTop();
         initStickyCTA();
         initWebVitals();
     }
@@ -320,6 +391,7 @@
         init: init,
         darkMode: initDarkMode,
         toc: initTOC,
+        search: initSearchPanel,
     };
 
 })();

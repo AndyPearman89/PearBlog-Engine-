@@ -1,219 +1,528 @@
 /**
- * PearBlog Engine – Admin Panel Styles
- *
- * Scoped to .pb-engine-wrap; loaded only on the PearBlog Engine admin page.
- *
- * @package PearBlogEngine
- * @version 5.1.0
+ * PearBlog Engine — Admin Panel Styles v5.1
+ * Top-level menu with tabbed interface
  */
 
-/* ─── Page wrapper ─────────────────────────────────────────────────────────── */
-
-.pb-engine-wrap {
-	max-width: 960px;
+/* -----------------------------------------------------------------------
+   CSS Variables
+   ----------------------------------------------------------------------- */
+:root {
+  --pb-admin-primary: #2563eb;
+  --pb-admin-secondary: #7c3aed;
+  --pb-admin-success: #16a34a;
+  --pb-admin-warning: #d97706;
+  --pb-admin-danger: #dc2626;
+  --pb-admin-bg: #f0f2f5;
+  --pb-admin-card-bg: #ffffff;
+  --pb-admin-border: #e5e7eb;
+  --pb-admin-text: #1f2937;
+  --pb-admin-text-light: #6b7280;
+  --pb-admin-radius: 8px;
+  --pb-admin-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+  --pb-admin-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.pb-engine-wrap .pb-page-title {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	margin-bottom: 4px;
+/* -----------------------------------------------------------------------
+   Page Wrapper
+   ----------------------------------------------------------------------- */
+.pb-admin-wrap {
+  max-width: 1200px;
+  margin: 20px 0;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
-.pb-engine-wrap .pb-page-title .pb-version-badge {
-	display: inline-block;
-	background: #2563eb;
-	color: #fff;
-	font-size: 11px;
-	font-weight: 600;
-	padding: 2px 8px;
-	border-radius: 10px;
-	vertical-align: middle;
+/* -----------------------------------------------------------------------
+   Page Header
+   ----------------------------------------------------------------------- */
+.pb-admin-header {
+  background: linear-gradient(135deg, var(--pb-admin-primary) 0%, var(--pb-admin-secondary) 100%);
+  border-radius: var(--pb-admin-radius);
+  padding: 28px 32px;
+  margin-bottom: 24px;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
-/* ─── Tab navigation ────────────────────────────────────────────────────────── */
-
-.pb-engine-tabs {
-	display: flex;
-	gap: 0;
-	border-bottom: 1px solid #c3c4c7;
-	margin-bottom: 0;
-	flex-wrap: wrap;
+.pb-admin-header-icon {
+  font-size: 2.5rem;
+  line-height: 1;
 }
 
-.pb-engine-tabs .pb-tab-btn {
-	background: none;
-	border: 1px solid transparent;
-	border-bottom: none;
-	padding: 8px 16px;
-	font-size: 13px;
-	font-weight: 500;
-	color: #50575e;
-	cursor: pointer;
-	border-radius: 4px 4px 0 0;
-	position: relative;
-	bottom: -1px;
-	transition: color 0.15s, background 0.15s;
+.pb-admin-header-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  margin: 0;
+  color: white;
 }
 
-.pb-engine-tabs .pb-tab-btn:hover {
-	color: #2563eb;
-	background: #f0f6fc;
+.pb-admin-header-subtitle {
+  font-size: 0.875rem;
+  opacity: 0.85;
+  margin: 4px 0 0;
+  color: rgba(255,255,255,0.9);
 }
 
-.pb-engine-tabs .pb-tab-btn.active {
-	border-color: #c3c4c7;
-	border-bottom-color: #fff;
-	background: #fff;
-	color: #2563eb;
-	font-weight: 600;
+/* -----------------------------------------------------------------------
+   Status badges
+   ----------------------------------------------------------------------- */
+.pb-admin-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
 }
 
-/* ─── Tab panels ────────────────────────────────────────────────────────────── */
+.pb-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.2);
+  color: white;
+  backdrop-filter: blur(4px);
+}
 
+.pb-badge-success { background: rgba(22, 163, 74, 0.25); }
+.pb-badge-warning { background: rgba(217, 119, 6, 0.25); }
+.pb-badge-danger  { background: rgba(220, 38, 38, 0.25); }
+.pb-badge-info    { background: rgba(37, 99, 235, 0.25); }
+
+/* -----------------------------------------------------------------------
+   Tab Navigation
+   ----------------------------------------------------------------------- */
+.pb-admin-tabs {
+  display: flex;
+  gap: 2px;
+  background: var(--pb-admin-card-bg);
+  border: 1px solid var(--pb-admin-border);
+  border-radius: var(--pb-admin-radius);
+  padding: 4px;
+  margin-bottom: 24px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pb-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 18px;
+  border: none;
+  background: transparent;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pb-admin-text-light);
+  white-space: nowrap;
+  transition: all 0.15s ease;
+}
+
+.pb-tab-btn:hover {
+  background: var(--pb-admin-bg);
+  color: var(--pb-admin-text);
+}
+
+.pb-tab-btn.is-active {
+  background: var(--pb-admin-primary);
+  color: white;
+  box-shadow: var(--pb-admin-shadow);
+}
+
+.pb-tab-icon {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Tab panels */
 .pb-tab-panel {
-	display: none;
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-top: none;
-	padding: 24px;
-	border-radius: 0 0 6px 6px;
+  display: none;
 }
 
-.pb-tab-panel.active {
-	display: block;
+.pb-tab-panel.is-active {
+  display: block;
 }
 
-/* ─── Form table tweaks ─────────────────────────────────────────────────────── */
-
-.pb-engine-wrap .form-table th {
-	width: 220px;
-	padding-left: 0;
+/* -----------------------------------------------------------------------
+   Cards
+   ----------------------------------------------------------------------- */
+.pb-admin-card {
+  background: var(--pb-admin-card-bg);
+  border: 1px solid var(--pb-admin-border);
+  border-radius: var(--pb-admin-radius);
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: var(--pb-admin-shadow);
 }
 
-.pb-engine-wrap .form-table td {
-	padding-left: 0;
+.pb-admin-card-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--pb-admin-border);
 }
 
-.pb-engine-wrap h3.pb-section-title {
-	margin: 1.5em 0 0.5em;
-	padding-bottom: 6px;
-	border-bottom: 1px solid #f0f0f1;
-	font-size: 14px;
-	color: #1d2327;
+.pb-admin-card-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--pb-admin-text);
+  margin: 0;
 }
 
-/* ─── Profile box ───────────────────────────────────────────────────────────── */
-
-.pb-profile-box {
-	background: #f0f6fc;
-	border: 1px solid #c3c4c7;
-	border-left: 4px solid #2563eb;
-	padding: 12px 16px;
-	border-radius: 4px;
-	font-size: 13px;
-	line-height: 1.6;
+.pb-admin-card-icon {
+  font-size: 1.25rem;
+  line-height: 1;
 }
 
-/* ─── Queue list ────────────────────────────────────────────────────────────── */
+/* -----------------------------------------------------------------------
+   Stats Grid
+   ----------------------------------------------------------------------- */
+.pb-admin-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
 
+.pb-admin-stat {
+  background: var(--pb-admin-card-bg);
+  border: 1px solid var(--pb-admin-border);
+  border-radius: var(--pb-admin-radius);
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--pb-admin-shadow);
+}
+
+.pb-admin-stat-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--pb-admin-primary);
+  line-height: 1;
+  margin-bottom: 6px;
+}
+
+.pb-admin-stat-label {
+  font-size: 0.8rem;
+  color: var(--pb-admin-text-light);
+  font-weight: 500;
+}
+
+.pb-admin-stat.is-warning .pb-admin-stat-value { color: var(--pb-admin-warning); }
+.pb-admin-stat.is-danger  .pb-admin-stat-value { color: var(--pb-admin-danger); }
+.pb-admin-stat.is-success .pb-admin-stat-value { color: var(--pb-admin-success); }
+
+/* -----------------------------------------------------------------------
+   Issue List Table
+   ----------------------------------------------------------------------- */
+.pb-admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.pb-admin-table th {
+  text-align: left;
+  padding: 10px 12px;
+  background: var(--pb-admin-bg);
+  border-bottom: 2px solid var(--pb-admin-border);
+  font-weight: 600;
+  color: var(--pb-admin-text-light);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.pb-admin-table td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--pb-admin-border);
+  color: var(--pb-admin-text);
+  vertical-align: middle;
+}
+
+.pb-admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.pb-admin-table tr:hover td {
+  background: #f9fafb;
+}
+
+.pb-admin-table a {
+  color: var(--pb-admin-primary);
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.pb-admin-table a:hover {
+  text-decoration: underline;
+}
+
+/* Issue tags */
+.pb-issue-tag {
+  display: inline-block;
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  background: #fef3c7;
+  color: #92400e;
+  margin: 1px 2px;
+}
+
+.pb-issue-tag-danger {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* -----------------------------------------------------------------------
+   Image Thumbnails
+   ----------------------------------------------------------------------- */
+.pb-admin-thumb-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pb-admin-thumb {
+  width: 48px;
+  height: 48px;
+  object-fit: cover;
+  border-radius: 6px;
+  border: 1px solid var(--pb-admin-border);
+  background: var(--pb-admin-bg);
+}
+
+/* -----------------------------------------------------------------------
+   Form styles
+   ----------------------------------------------------------------------- */
+.pb-admin-form-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.pb-admin-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--pb-admin-text);
+}
+
+.pb-admin-input,
+.pb-admin-select,
+.pb-admin-textarea {
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--pb-admin-border);
+  border-radius: 6px;
+  font-size: 0.875rem;
+  color: var(--pb-admin-text);
+  background: var(--pb-admin-card-bg);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  box-sizing: border-box;
+}
+
+.pb-admin-input:focus,
+.pb-admin-select:focus,
+.pb-admin-textarea:focus {
+  outline: none;
+  border-color: var(--pb-admin-primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+}
+
+.pb-admin-textarea {
+  resize: vertical;
+  min-height: 120px;
+  font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+  font-size: 0.8rem;
+}
+
+.pb-admin-desc {
+  font-size: 0.8rem;
+  color: var(--pb-admin-text-light);
+  margin: 0;
+}
+
+/* -----------------------------------------------------------------------
+   Action buttons
+   ----------------------------------------------------------------------- */
+.pb-admin-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.pb-admin-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 18px;
+  border: none;
+  border-radius: 6px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.pb-admin-btn-primary {
+  background: var(--pb-admin-primary);
+  color: white;
+}
+
+.pb-admin-btn-primary:hover {
+  background: #1d4ed8;
+  color: white;
+}
+
+.pb-admin-btn-secondary {
+  background: var(--pb-admin-bg);
+  color: var(--pb-admin-text);
+  border: 1px solid var(--pb-admin-border);
+}
+
+.pb-admin-btn-secondary:hover {
+  background: var(--pb-admin-border);
+}
+
+.pb-admin-btn-danger {
+  background: #fef2f2;
+  color: var(--pb-admin-danger);
+  border: 1px solid #fecaca;
+}
+
+.pb-admin-btn-danger:hover {
+  background: var(--pb-admin-danger);
+  color: white;
+  border-color: var(--pb-admin-danger);
+}
+
+.pb-admin-btn-success {
+  background: #f0fdf4;
+  color: var(--pb-admin-success);
+  border: 1px solid #bbf7d0;
+}
+
+.pb-admin-btn-success:hover {
+  background: var(--pb-admin-success);
+  color: white;
+  border-color: var(--pb-admin-success);
+}
+
+/* -----------------------------------------------------------------------
+   Queue list
+   ----------------------------------------------------------------------- */
 .pb-queue-list {
-	background: #fff;
-	border: 1px solid #c3c4c7;
-	border-radius: 4px;
-	padding: 12px 16px;
-	max-height: 320px;
-	overflow-y: auto;
-	margin-bottom: 12px;
+  list-style: none;
+  padding: 0;
+  margin: 0 0 16px;
 }
 
-.pb-queue-list ol {
-	margin: 0;
-	padding-left: 1.5em;
+.pb-queue-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--pb-admin-border);
+  font-size: 0.875rem;
 }
 
-.pb-queue-list li {
-	padding: 4px 0;
-	border-bottom: 1px solid #f0f0f1;
-	font-size: 13px;
+.pb-queue-item:last-child {
+  border-bottom: none;
 }
 
-.pb-queue-list li:last-child {
-	border-bottom: none;
+.pb-queue-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--pb-admin-primary);
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
 }
 
-.pb-queue-count {
-	font-weight: 600;
-	color: #2563eb;
+/* -----------------------------------------------------------------------
+   Notices
+   ----------------------------------------------------------------------- */
+.pb-admin-notice {
+  padding: 12px 16px;
+  border-radius: var(--pb-admin-radius);
+  margin-bottom: 20px;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
 }
 
-/* ─── Status indicator ──────────────────────────────────────────────────────── */
-
-.pb-status-dot {
-	display: inline-block;
-	width: 8px;
-	height: 8px;
-	border-radius: 50%;
-	margin-right: 6px;
+.pb-admin-notice-success {
+  background: #f0fdf4;
+  border: 1px solid #bbf7d0;
+  color: #166534;
 }
 
-.pb-status-dot--green { background: #00a32a; }
-.pb-status-dot--amber { background: #dba617; }
-.pb-status-dot--red   { background: #d63638; }
-
-/* ─── Autonomous mode toggle ────────────────────────────────────────────────── */
-
-.pb-autonomous-toggle {
-	display: flex;
-	align-items: center;
-	gap: 8px;
+.pb-admin-notice-warning {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  color: #92400e;
 }
 
-.pb-autonomous-toggle input[type="checkbox"] {
-	width: 36px;
-	height: 20px;
-	-webkit-appearance: none;
-	appearance: none;
-	background: #c3c4c7;
-	border-radius: 10px;
-	position: relative;
-	cursor: pointer;
-	transition: background 0.2s;
+.pb-admin-notice-error {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #991b1b;
 }
 
-.pb-autonomous-toggle input[type="checkbox"]::after {
-	content: '';
-	position: absolute;
-	top: 2px;
-	left: 2px;
-	width: 16px;
-	height: 16px;
-	background: #fff;
-	border-radius: 50%;
-	transition: left 0.2s;
+/* -----------------------------------------------------------------------
+   Posts without image selection table
+   ----------------------------------------------------------------------- */
+.pb-posts-table-wrapper {
+  overflow-x: auto;
+  margin-top: 12px;
 }
 
-.pb-autonomous-toggle input[type="checkbox"]:checked {
-	background: #00a32a;
+.pb-admin-table input[type="checkbox"] {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
 }
 
-.pb-autonomous-toggle input[type="checkbox"]:checked::after {
-	left: 18px;
-}
-
-/* ─── Responsive ────────────────────────────────────────────────────────────── */
-
+/* -----------------------------------------------------------------------
+   Responsive
+   ----------------------------------------------------------------------- */
 @media (max-width: 782px) {
-	.pb-engine-tabs .pb-tab-btn {
-		padding: 6px 10px;
-		font-size: 12px;
-	}
+  .pb-admin-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
-	.pb-tab-panel {
-		padding: 16px;
-	}
+  .pb-admin-badges {
+    margin-left: 0;
+  }
 
-	.pb-engine-wrap .form-table th {
-		width: auto;
-	}
+  .pb-admin-tabs {
+    flex-wrap: nowrap;
+  }
+
+  .pb-tab-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+
+  .pb-admin-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }

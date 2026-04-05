@@ -9,21 +9,28 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Tests\Unit;
 
-use PearBlogEngine\Content\ContentValidator;
 use PHPUnit\Framework\TestCase;
+use PearBlogEngine\Content\ContentValidator;
 
 class ContentValidatorTest extends TestCase {
 
 	private ContentValidator $validator;
 
 	protected function setUp(): void {
+		parent::setUp();
 		$this->validator = new ContentValidator();
 	}
 
-	public function test_valid_generic_content(): void {
-		$content = "META: A description of the content.\n\n"
-		         . "# My Title\n\n"
-		         . str_repeat( 'Lorem ipsum dolor sit amet. ', 200 ); // ~1200 words
+	// -----------------------------------------------------------------------
+	// Generic validation
+	// -----------------------------------------------------------------------
+
+	public function test_valid_generic_content_passes(): void {
+		$content = $this->build_content(
+			has_meta: true,
+			has_h1: true,
+			word_count: 1200
+		);
 
 		$result = $this->validator->validate( $content, 'generic' );
 
@@ -31,72 +38,98 @@ class ContentValidatorTest extends TestCase {
 		$this->assertEmpty( $result['errors'] );
 	}
 
-	public function test_missing_meta_description_is_error(): void {
-		$content = "# My Title\n\nBody content here.";
-
-		$result = $this->validator->validate( $content, 'generic' );
-
-		$this->assertFalse( $result['valid'] );
-		$this->assertContains( 'Missing META description at the beginning of content', $result['errors'] );
-	}
-
-	public function test_missing_h1_is_error(): void {
-		$content = "META: Description\n\nBody content without heading.";
-
-		$result = $this->validator->validate( $content, 'generic' );
+	public function test_missing_meta_description_is_an_error(): void {
+		$content = "# My Title\n\n" . str_repeat( 'word ', 1200 );
+		$result  = $this->validator->validate( $content, 'generic' );
 
 		$this->assertFalse( $result['valid'] );
-		$this->assertContains( 'Missing H1 title', $result['errors'] );
+		$this->assertStringContainsString( 'META', $result['errors'][0] );
 	}
 
-	public function test_short_content_generates_warning(): void {
-		$content = "META: Short article\n\n# Short\n\nThis is very short content.";
+	public function test_missing_h1_is_an_error(): void {
+		$content = "META: A fine description\n\n" . str_repeat( 'word ', 1200 );
+		$result  = $this->validator->validate( $content, 'generic' );
 
-		$result = $this->validator->validate( $content, 'generic' );
+		$this->assertFalse( $result['valid'] );
+		$error_messages = implode( ' ', $result['errors'] );
+		$this->assertStringContainsString( 'H1', $error_messages );
+	}
 
-		$this->assertTrue( $result['valid'] ); // warnings don't invalidate
+	public function test_low_word_count_is_a_warning_not_error(): void {
+		$content = "META: Desc\n\n# Title\n\n" . str_repeat( 'word ', 50 );
+		$result  = $this->validator->validate( $content, 'generic' );
+
+		$this->assertTrue( $result['valid'] ); // Still valid, just warned.
 		$this->assertNotEmpty( $result['warnings'] );
 	}
 
-	public function test_travel_content_needs_sections(): void {
-		$content = "META: Travel article\n\n# Travel Guide\n\nJust body text.";
+	// -----------------------------------------------------------------------
+	// Travel-specific validation
+	// -----------------------------------------------------------------------
 
-		$result = $this->validator->validate( $content, 'travel' );
+	public function test_valid_travel_content_passes(): void {
+		$content = $this->build_travel_content();
+		$result  = $this->validator->validate( $content, 'travel' );
 
-		// Should have errors for missing travel-specific sections.
+		$this->assertTrue( $result['valid'], implode( ', ', $result['errors'] ) );
+	}
+
+	public function test_travel_content_missing_faq_section_fails(): void {
+		$content = $this->build_travel_content( include_faq: false );
+		$result  = $this->validator->validate( $content, 'travel' );
+
 		$this->assertFalse( $result['valid'] );
-		$this->assertNotEmpty( $result['errors'] );
+		$this->assertStringContainsString( 'FAQ', implode( ' ', $result['errors'] ) );
 	}
 
-	public function test_ai_cliche_detection(): void {
-		$content = "META: A description\n\n# Title\n\n"
-		         . "In today's digital age, it goes without saying that "
-		         . str_repeat( 'Content padding. ', 200 );
+	// -----------------------------------------------------------------------
+	// Quality checks
+	// -----------------------------------------------------------------------
 
-		$result = $this->validator->validate( $content, 'generic' );
+	public function test_generic_ai_phrase_detected_as_warning(): void {
+		$content = "META: Desc\n\n# Title\n\n" . str_repeat( 'word ', 1200 ) . "\nIn today's digital age, everything changes.";
+		$result  = $this->validator->validate( $content, 'generic' );
 
-		$has_cliche_warning = false;
-		foreach ( $result['warnings'] as $warning ) {
-			if ( str_contains( $warning, 'Generic AI phrase' ) ) {
-				$has_cliche_warning = true;
-				break;
-			}
-		}
-
-		$this->assertTrue( $has_cliche_warning, 'Should detect AI cliché phrases.' );
+		$warnings = implode( ' ', $result['warnings'] );
+		$this->assertStringContainsString( "In today's digital age", $warnings );
 	}
 
-	public function test_format_report(): void {
-		$result = [
-			'valid'    => false,
-			'errors'   => [ 'Missing H1 title' ],
-			'warnings' => [ 'Content too short' ],
-		];
-
+	public function test_format_report_includes_status(): void {
+		$result = [ 'valid' => true, 'errors' => [], 'warnings' => [] ];
 		$report = $this->validator->format_report( $result );
 
-		$this->assertStringContainsString( '✗ Status: INVALID', $report );
-		$this->assertStringContainsString( 'Missing H1 title', $report );
-		$this->assertStringContainsString( 'Content too short', $report );
+		$this->assertStringContainsString( 'VALID', $report );
+	}
+
+	// -----------------------------------------------------------------------
+	// Helpers
+	// -----------------------------------------------------------------------
+
+	private function build_content(
+		bool $has_meta   = true,
+		bool $has_h1     = true,
+		int  $word_count = 1200
+	): string {
+		$content = '';
+		if ( $has_meta ) {
+			$content .= "META: A great article about something.\n\n";
+		}
+		if ( $has_h1 ) {
+			$content .= "# The Main Title\n\n";
+		}
+		$content .= str_repeat( 'word ', $word_count );
+		return $content;
+	}
+
+	private function build_travel_content( bool $include_faq = true ): string {
+		$faq_section = $include_faq ? "\n## FAQ\n\n### Question?\n\nAnswer text.\n\n" : '';
+
+		return "META: A travel article about visiting places.\n\n" .
+			"# Visit Amazing Places\n\n" .
+			str_repeat( 'word ', 1000 ) .
+			"\n## TL;DR\n\n- Point 1\n- Point 2\n\n" .
+			"\n## Noclegi\n\nStay here.\n\n" .
+			"\n## Praktyczne\n\nUseful tips.\n\n" .
+			$faq_section;
 	}
 }

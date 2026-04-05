@@ -61,8 +61,23 @@ class CronManager {
 
 	/**
 	 * Schedule the pipeline event if it is not already scheduled.
+	 *
+	 * Scheduling is skipped when autonomous mode has been disabled by the
+	 * site administrator.  Any existing event is cleared in that case so
+	 * that a previously-scheduled run does not fire unexpectedly.
 	 */
 	public function maybe_schedule(): void {
+		$autonomous_enabled = (bool) get_option( 'pearblog_autonomous_mode', true );
+
+		if ( ! $autonomous_enabled ) {
+			// Unschedule any existing event so the pipeline truly stops.
+			$timestamp = wp_next_scheduled( self::HOOK );
+			if ( $timestamp ) {
+				wp_unschedule_event( $timestamp, self::HOOK );
+			}
+			return;
+		}
+
 		if ( ! wp_next_scheduled( self::HOOK ) ) {
 			wp_schedule_event( time(), self::SCHEDULE_SLUG, self::HOOK );
 		}
@@ -134,6 +149,17 @@ class CronManager {
 				$site_id,
 				$e->getMessage()
 			) );
+
+			/**
+			 * Action: pearblog_pipeline_cron_error
+			 *
+			 * Fired when the cron-based pipeline throws an exception.
+			 * Hooked by Plugin::boot() → AlertManager to send notifications.
+			 *
+			 * @param int    $site_id WordPress blog ID.
+			 * @param string $message Error message.
+			 */
+			do_action( 'pearblog_pipeline_cron_error', $site_id, $e->getMessage() );
 		} finally {
 			if ( $switched ) {
 				restore_current_blog();

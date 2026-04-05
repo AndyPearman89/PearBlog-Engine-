@@ -4,7 +4,7 @@
  * Plugin URI:  https://github.com/AndyPearman89/PearBlog-Engine-
  * Description: PearBlog SaaS Engine v1 – multisite content operating system.
  *              Automatic content generation, SEO optimisation and monetisation.
- * Version:     1.0.0
+ * Version:     6.0.0
  * Author:      Andy Pearman
  * License:     GPL-2.0-or-later
  * Text Domain: pearblog-engine

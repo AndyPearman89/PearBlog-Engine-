@@ -1,9 +1,13 @@
 <?php
 /**
- * Alert Manager – dispatches operational alerts via Slack, Discord, and email.
+ * Alert manager – sends notifications via Slack or Discord webhooks.
  *
- * Sends notifications when the pipeline fails, the circuit breaker opens,
- * the topic queue is empty, or on custom alert triggers.
+ * Configuration is stored in WordPress options:
+ *   pearblog_alert_slack_webhook   – Slack incoming-webhook URL
+ *   pearblog_alert_discord_webhook – Discord webhook URL
+ *   pearblog_alert_email           – Optional fallback e-mail address
+ *
+ * Severity levels: info, warning, error, critical
  *
  * @package PearBlogEngine\Monitoring
  */
@@ -13,198 +17,223 @@ declare(strict_types=1);
 namespace PearBlogEngine\Monitoring;
 
 /**
- * Dispatches alerts to configured channels.
+ * Dispatches structured alert messages to configured notification channels.
  */
 class AlertManager {
 
-	/** @var string[] Supported alert levels. */
-	private const LEVELS = [ 'info', 'warning', 'critical' ];
+	public const LEVEL_INFO     = 'info';
+	public const LEVEL_WARNING  = 'warning';
+	public const LEVEL_ERROR    = 'error';
+	public const LEVEL_CRITICAL = 'critical';
 
-	/**
-	 * Register pipeline failure hooks for automatic alerting.
-	 */
-	public function register(): void {
-		// Alert when pipeline completes (for daily digest).
-		add_action( 'pearblog_pipeline_completed', [ $this, 'on_pipeline_completed' ], 10, 3 );
+	/** Slack colour attachments mapped to severity level. */
+	private const SLACK_COLORS = [
+		self::LEVEL_INFO     => '#36a64f',
+		self::LEVEL_WARNING  => '#ffc107',
+		self::LEVEL_ERROR    => '#e53935',
+		self::LEVEL_CRITICAL => '#b71c1c',
+	];
+
+	/** Discord embed colours (decimal) mapped to severity level. */
+	private const DISCORD_COLORS = [
+		self::LEVEL_INFO     => 3779158,
+		self::LEVEL_WARNING  => 16750848,
+		self::LEVEL_ERROR    => 15019040,
+		self::LEVEL_CRITICAL => 12010260,
+	];
+
+	/** WordPress option key prefix for deduplication. */
+	private const DEDUP_TRANSIENT_PREFIX = 'pb_alert_dedup_';
+
+	/** @var string */
+	private string $slack_webhook;
+
+	/** @var string */
+	private string $discord_webhook;
+
+	/** @var string */
+	private string $alert_email;
+
+	public function __construct() {
+		$this->slack_webhook   = (string) get_option( 'pearblog_alert_slack_webhook', '' );
+		$this->discord_webhook = (string) get_option( 'pearblog_alert_discord_webhook', '' );
+		$this->alert_email     = (string) get_option( 'pearblog_alert_email', '' );
 	}
 
 	/**
 	 * Send an alert to all configured channels.
 	 *
-	 * @param string $level   Alert level: 'info', 'warning', or 'critical'.
-	 * @param string $title   Short summary line.
-	 * @param string $message Detailed message body.
-	 * @return bool True if at least one channel was notified.
+	 * @param string $title    Short title / headline for the alert.
+	 * @param string $message  Detailed alert body.
+	 * @param string $level    Severity: info, warning, error, critical.
+	 * @param array  $context  Optional key-value pairs added as fields.
+	 * @param bool   $dedup    When true, suppress duplicate alerts within 5 min.
 	 */
-	public function send( string $level, string $title, string $message ): bool {
-		if ( ! in_array( $level, self::LEVELS, true ) ) {
-			$level = 'info';
+	public function alert(
+		string $title,
+		string $message,
+		string $level = self::LEVEL_ERROR,
+		array $context = [],
+		bool $dedup = true
+	): void {
+		if ( $dedup && $this->is_duplicate( $title, $level ) ) {
+			return;
 		}
 
-		$sent = false;
+		$site_name = get_bloginfo( 'name' );
+		$site_url  = get_site_url();
 
-		// Slack.
-		$slack_webhook = (string) get_option( 'pearblog_alert_slack_webhook', '' );
-		if ( '' !== $slack_webhook ) {
-			$sent = $this->send_slack( $slack_webhook, $level, $title, $message ) || $sent;
+		$context = array_merge(
+			[
+				'Site'  => "{$site_name} ({$site_url})",
+				'Time'  => current_time( 'Y-m-d H:i:s T' ),
+				'Level' => strtoupper( $level ),
+			],
+			$context
+		);
+
+		if ( '' !== $this->slack_webhook ) {
+			$this->send_slack( $title, $message, $level, $context );
 		}
 
-		// Discord.
-		$discord_webhook = (string) get_option( 'pearblog_alert_discord_webhook', '' );
-		if ( '' !== $discord_webhook ) {
-			$sent = $this->send_discord( $discord_webhook, $level, $title, $message ) || $sent;
+		if ( '' !== $this->discord_webhook ) {
+			$this->send_discord( $title, $message, $level, $context );
 		}
 
-		// Email.
-		$email = (string) get_option( 'pearblog_alert_email', '' );
-		if ( '' !== $email ) {
-			$sent = $this->send_email( $email, $level, $title, $message ) || $sent;
+		if ( '' !== $this->alert_email ) {
+			$this->send_email( $title, $message, $level, $context );
 		}
 
-		/**
-		 * Action: pearblog_alert_sent
-		 *
-		 * Fires after an alert has been dispatched (or attempted).
-		 *
-		 * @param string $level   Alert level.
-		 * @param string $title   Alert title.
-		 * @param string $message Alert body.
-		 * @param bool   $sent    Whether at least one channel succeeded.
-		 */
-		do_action( 'pearblog_alert_sent', $level, $title, $message, $sent );
-
-		return $sent;
+		// Always log to PHP error_log as a baseline.
+		error_log( sprintf(
+			'PearBlog Alert [%s] %s: %s',
+			strtoupper( $level ),
+			$title,
+			$message
+		) );
 	}
 
 	/**
-	 * Convenience: send a critical alert.
+	 * Shorthand for pipeline/content error alerts.
 	 */
-	public function critical( string $title, string $message ): bool {
-		return $this->send( 'critical', $title, $message );
+	public function pipeline_error( string $message, array $context = [] ): void {
+		$this->alert( 'Pipeline Error', $message, self::LEVEL_ERROR, $context );
 	}
 
 	/**
-	 * Convenience: send a warning alert.
+	 * Shorthand for critical system alerts (circuit breaker open, etc.).
 	 */
-	public function warning( string $title, string $message ): bool {
-		return $this->send( 'warning', $title, $message );
+	public function critical( string $title, string $message, array $context = [] ): void {
+		$this->alert( $title, $message, self::LEVEL_CRITICAL, $context );
 	}
 
 	/**
-	 * Convenience: send an info alert.
+	 * Shorthand for informational alerts (new article published, etc.).
 	 */
-	public function info( string $title, string $message ): bool {
-		return $this->send( 'info', $title, $message );
-	}
-
-	/**
-	 * Hook callback: log pipeline completion.
-	 *
-	 * @param int    $post_id Post ID.
-	 * @param string $topic   Topic.
-	 * @param object $context Tenant context.
-	 */
-	public function on_pipeline_completed( int $post_id, string $topic, $context ): void {
-		// Only alert on first article of the day (avoid noise).
-		$today_count = (int) get_transient( 'pearblog_pipeline_today_count' );
-		$today_count++;
-		set_transient( 'pearblog_pipeline_today_count', $today_count, DAY_IN_SECONDS );
-
-		if ( 1 === $today_count ) {
-			$this->info(
-				'Pipeline Active',
-				sprintf( 'First article published today: "%s" (Post #%d)', $topic, $post_id )
-			);
-		}
+	public function info( string $title, string $message, array $context = [] ): void {
+		$this->alert( $title, $message, self::LEVEL_INFO, $context, false );
 	}
 
 	// -----------------------------------------------------------------------
 	// Channel implementations
 	// -----------------------------------------------------------------------
 
-	/**
-	 * Send alert via Slack Incoming Webhook.
-	 */
-	private function send_slack( string $webhook_url, string $level, string $title, string $message ): bool {
-		$emoji = match ( $level ) {
-			'critical' => '🚨',
-			'warning'  => '⚠️',
-			default    => 'ℹ️',
-		};
+	private function send_slack( string $title, string $message, string $level, array $context ): void {
+		$fields = [];
+		foreach ( $context as $key => $value ) {
+			$fields[] = [
+				'title' => $key,
+				'value' => (string) $value,
+				'short' => mb_strlen( (string) $value ) <= 40,
+			];
+		}
 
 		$payload = [
-			'text'   => sprintf( '%s *[%s] %s*', $emoji, strtoupper( $level ), $title ),
-			'blocks' => [
+			'attachments' => [
 				[
-					'type' => 'section',
-					'text' => [
-						'type' => 'mrkdwn',
-						'text' => sprintf( "%s *[%s] %s*\n%s", $emoji, strtoupper( $level ), $title, $message ),
-					],
+					'color'      => self::SLACK_COLORS[ $level ] ?? '#888888',
+					'title'      => $title,
+					'text'       => $message,
+					'fields'     => $fields,
+					'footer'     => 'PearBlog Engine',
+					'ts'         => time(),
+					'mrkdwn_in'  => [ 'text' ],
 				],
 			],
 		];
 
-		$response = wp_remote_post( $webhook_url, [
-			'timeout' => 10,
-			'headers' => [ 'Content-Type' => 'application/json' ],
-			'body'    => (string) wp_json_encode( $payload ),
-		] );
-
-		return ! is_wp_error( $response ) && 200 === wp_remote_retrieve_response_code( $response );
+		$this->post_json( $this->slack_webhook, $payload );
 	}
 
-	/**
-	 * Send alert via Discord Webhook.
-	 */
-	private function send_discord( string $webhook_url, string $level, string $title, string $message ): bool {
-		$color = match ( $level ) {
-			'critical' => 0xFF0000, // Red
-			'warning'  => 0xFFA500, // Orange
-			default    => 0x2563EB, // Blue
-		};
+	private function send_discord( string $title, string $message, string $level, array $context ): void {
+		$fields = [];
+		foreach ( $context as $key => $value ) {
+			$fields[] = [
+				'name'   => $key,
+				'value'  => (string) $value,
+				'inline' => mb_strlen( (string) $value ) <= 40,
+			];
+		}
 
 		$payload = [
 			'embeds' => [
 				[
-					'title'       => sprintf( '[%s] %s', strtoupper( $level ), $title ),
+					'title'       => $title,
 					'description' => $message,
-					'color'       => $color,
-					'timestamp'   => gmdate( 'c' ),
+					'color'       => self::DISCORD_COLORS[ $level ] ?? 8947848,
+					'fields'      => $fields,
 					'footer'      => [ 'text' => 'PearBlog Engine' ],
+					'timestamp'   => gmdate( 'c' ),
 				],
 			],
 		];
 
-		$response = wp_remote_post( $webhook_url, [
-			'timeout' => 10,
-			'headers' => [ 'Content-Type' => 'application/json' ],
-			'body'    => (string) wp_json_encode( $payload ),
+		$this->post_json( $this->discord_webhook, $payload );
+	}
+
+	private function send_email( string $title, string $message, string $level, array $context ): void {
+		$subject = sprintf( '[PearBlog %s] %s', strtoupper( $level ), $title );
+
+		$body  = $message . "\n\n";
+		foreach ( $context as $key => $value ) {
+			$body .= "{$key}: {$value}\n";
+		}
+
+		wp_mail(
+			$this->alert_email,
+			$subject,
+			$body,
+			[ 'Content-Type: text/plain; charset=UTF-8' ]
+		);
+	}
+
+	// -----------------------------------------------------------------------
+	// Helpers
+	// -----------------------------------------------------------------------
+
+	private function post_json( string $url, array $payload ): void {
+		$response = wp_remote_post( $url, [
+			'timeout'     => 5,
+			'headers'     => [ 'Content-Type' => 'application/json' ],
+			'body'        => wp_json_encode( $payload ),
+			'blocking'    => false, // Fire-and-forget.
 		] );
 
-		$status = wp_remote_retrieve_response_code( $response );
-
-		return ! is_wp_error( $response ) && $status >= 200 && $status < 300;
+		if ( is_wp_error( $response ) ) {
+			error_log( 'PearBlog AlertManager: webhook delivery failed – ' . $response->get_error_message() );
+		}
 	}
 
 	/**
-	 * Send alert via WordPress email.
+	 * Return true when an identical alert (same title + level) was already
+	 * sent within the last 5 minutes (deduplication window).
 	 */
-	private function send_email( string $to, string $level, string $title, string $message ): bool {
-		$subject = sprintf( '[PearBlog %s] %s', strtoupper( $level ), $title );
-
-		$body = sprintf(
-			"PearBlog Engine Alert\n" .
-			"Level: %s\n" .
-			"Time: %s\n\n" .
-			"%s\n\n" .
-			"--\nPearBlog Engine v6.0 · %s",
-			strtoupper( $level ),
-			current_time( 'mysql' ),
-			$message,
-			home_url()
-		);
-
-		return wp_mail( $to, $subject, $body );
+	private function is_duplicate( string $title, string $level ): bool {
+		$key = self::DEDUP_TRANSIENT_PREFIX . substr( md5( $title . $level ), 0, 16 );
+		if ( get_transient( $key ) !== false ) {
+			return true;
+		}
+		set_transient( $key, 1, 5 * MINUTE_IN_SECONDS );
+		return false;
 	}
 }

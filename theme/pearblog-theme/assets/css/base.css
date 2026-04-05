@@ -1,5 +1,6 @@
-/* PearBlog v5.2 - Base Styles
+/* PearBlog v5.1 — Base Styles
  * Core foundation styles and CSS variables
+ * Fonts: Poppins (display) · Inter (UI)
  */
 
 :root {
@@ -34,10 +35,12 @@
   --pb-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
   --pb-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
 
-  /* Typography */
-  --pb-font-base: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --pb-font-heading: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-  --pb-font-mono: 'Courier New', Courier, monospace;
+  /* Typography — Brand System */
+  --pb-font-display: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
+  --pb-font-ui: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --pb-font-base: var(--pb-font-ui);
+  --pb-font-heading: var(--pb-font-display);
+  --pb-font-mono: 'JetBrains Mono', 'Fira Code', 'Courier New', Courier, monospace;
 
   /* Spacing */
   --pb-space-xs: 0.25rem;
@@ -55,6 +58,11 @@
   /* Transitions */
   --pb-transition: all 0.2s ease;
   --pb-transition-slow: all 0.3s ease;
+
+  /* Header */
+  --pb-header-height: 64px;
+  --pb-header-height-scrolled: 52px;
+  --pb-progress-height: 3px;
 }
 
 /* Dark Mode Variables */
@@ -236,4 +244,360 @@ img {
   .pb-footer {
     display: none !important;
   }
+}
+
+/* -----------------------------------------------------------------------
+   Reading Progress Bar
+   ----------------------------------------------------------------------- */
+#pb-reading-progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--pb-progress-height);
+  background: rgba(0, 0, 0, 0.08);
+  z-index: 9999;
+  pointer-events: none;
+}
+
+#pb-reading-progress {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, var(--pb-primary), var(--pb-secondary));
+  transition: width 0.1s linear;
+  border-radius: 0 2px 2px 0;
+}
+
+/* -----------------------------------------------------------------------
+   Sticky Header
+   ----------------------------------------------------------------------- */
+.pb-nav {
+  position: sticky;
+  top: var(--pb-progress-height);
+  z-index: 1000;
+  background: var(--pb-bg);
+  border-bottom: 1px solid transparent;
+  transition: box-shadow 0.25s ease, border-color 0.25s ease, padding 0.25s ease;
+}
+
+.pb-nav--sticky {
+  box-shadow: var(--pb-shadow-md);
+  border-bottom-color: rgba(0, 0, 0, 0.08);
+}
+
+.pb-nav-container {
+  display: flex;
+  align-items: center;
+  gap: var(--pb-space-md);
+  min-height: var(--pb-header-height);
+  padding: var(--pb-space-sm) 0;
+  transition: min-height 0.25s ease;
+}
+
+.pb-nav--sticky .pb-nav-container {
+  min-height: var(--pb-header-height-scrolled);
+}
+
+/* Nav actions cluster */
+.pb-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--pb-space-sm);
+  margin-left: auto;
+}
+
+/* Icon buttons (search, dark mode) */
+.pb-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  border: none;
+  background: transparent;
+  color: var(--pb-text);
+  border-radius: var(--pb-radius);
+  cursor: pointer;
+  transition: background 0.2s ease, color 0.2s ease;
+}
+
+.pb-icon-btn:hover {
+  background: var(--pb-bg-alt);
+  color: var(--pb-primary);
+}
+
+/* Hamburger icon */
+.pb-hamburger {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  width: 20px;
+  height: 20px;
+}
+
+.pb-hamburger span {
+  display: block;
+  width: 100%;
+  height: 2px;
+  background: currentColor;
+  border-radius: 2px;
+  transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.pb-menu-toggle[aria-expanded="true"] .pb-hamburger span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.pb-menu-toggle[aria-expanded="true"] .pb-hamburger span:nth-child(2) {
+  opacity: 0;
+}
+
+.pb-menu-toggle[aria-expanded="true"] .pb-hamburger span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* -----------------------------------------------------------------------
+   Search Panel
+   ----------------------------------------------------------------------- */
+.pb-search-panel {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  background: var(--pb-bg);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: var(--pb-shadow-lg);
+  z-index: 1100;
+  padding: var(--pb-space-lg) 0;
+  transform: translateY(-100%);
+  transition: transform 0.25s ease;
+}
+
+.pb-search-panel.is-open {
+  transform: translateY(0);
+}
+
+.pb-search-panel .pb-container {
+  display: flex;
+  align-items: center;
+  gap: var(--pb-space-md);
+}
+
+.pb-search-form {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  gap: var(--pb-space-sm);
+  background: var(--pb-bg-alt);
+  border: 2px solid transparent;
+  border-radius: var(--pb-radius-lg);
+  padding: var(--pb-space-sm) var(--pb-space-md);
+  transition: border-color 0.2s ease;
+}
+
+.pb-search-form:focus-within {
+  border-color: var(--pb-primary);
+}
+
+.pb-search-input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-family: var(--pb-font-ui);
+  font-size: 1rem;
+  color: var(--pb-text);
+  outline: none;
+}
+
+.pb-search-input::placeholder {
+  color: var(--pb-text-light);
+}
+
+.pb-search-submit {
+  display: flex;
+  align-items: center;
+  border: none;
+  background: transparent;
+  color: var(--pb-text-light);
+  cursor: pointer;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.pb-search-submit:hover {
+  color: var(--pb-primary);
+}
+
+.pb-search-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: none;
+  background: var(--pb-bg-alt);
+  border-radius: var(--pb-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  color: var(--pb-text-light);
+  transition: background 0.2s, color 0.2s;
+  flex-shrink: 0;
+}
+
+.pb-search-close:hover {
+  background: var(--pb-primary);
+  color: white;
+}
+
+/* -----------------------------------------------------------------------
+   Improved Footer
+   ----------------------------------------------------------------------- */
+.pb-footer {
+  background: var(--pb-bg-dark);
+  color: var(--pb-text-white);
+  padding: var(--pb-space-3xl) 0 0;
+  margin-top: var(--pb-space-3xl);
+}
+
+.pb-footer-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--pb-space-2xl);
+  margin-bottom: var(--pb-space-2xl);
+}
+
+@media (min-width: 768px) {
+  .pb-footer-grid {
+    grid-template-columns: 2fr 1fr 1fr;
+  }
+}
+
+.pb-footer-brand .pb-footer-logo a {
+  color: var(--pb-text-white);
+  text-decoration: none;
+  font-family: var(--pb-font-display);
+  font-weight: 700;
+  font-size: 1.25rem;
+}
+
+.pb-footer-desc {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.9rem;
+  line-height: 1.7;
+  margin-top: var(--pb-space-md);
+}
+
+.pb-footer-widgets .footer-widget-title {
+  color: var(--pb-text-white);
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--pb-space-md);
+}
+
+.pb-footer-nav {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--pb-space-lg) 0;
+}
+
+.pb-footer-nav .pb-menu {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--pb-space-md);
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pb-footer-nav .pb-menu a {
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.875rem;
+  transition: color 0.2s;
+}
+
+.pb-footer-nav .pb-menu a:hover {
+  color: var(--pb-text-white);
+}
+
+.pb-footer-bottom {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: var(--pb-space-lg) 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pb-space-md);
+}
+
+.pb-footer-copyright {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
+.pb-footer-copyright a {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.pb-footer-copyright a:hover {
+  color: var(--pb-text-white);
+}
+
+.pb-footer-powered {
+  color: rgba(255, 255, 255, 0.35);
+  font-size: 0.8rem;
+}
+
+/* -----------------------------------------------------------------------
+   Back to Top Button
+   ----------------------------------------------------------------------- */
+.pb-back-to-top {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: transparent;
+  color: rgba(255, 255, 255, 0.6);
+  border-radius: var(--pb-radius);
+  cursor: pointer;
+  font-size: 1rem;
+  flex-shrink: 0;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.pb-back-to-top:hover {
+  background: var(--pb-primary);
+  border-color: var(--pb-primary);
+  color: white;
+}
+
+/* -----------------------------------------------------------------------
+   Dark Mode — enhanced
+   ----------------------------------------------------------------------- */
+body.pb-dark-mode {
+  --pb-bg: #111827;
+  --pb-bg-alt: #1f2937;
+  --pb-text: #f9fafb;
+  --pb-text-light: #d1d5db;
+  --pb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
+  --pb-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
+}
+
+body.pb-dark-mode .pb-nav {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+body.pb-dark-mode .pb-search-panel {
+  background: var(--pb-bg);
+  border-bottom-color: rgba(255, 255, 255, 0.1);
+}
+
+/* -----------------------------------------------------------------------
+   Page Body offset for sticky header + progress bar
+   ----------------------------------------------------------------------- */
+body {
+  padding-top: calc(var(--pb-progress-height));
 }
