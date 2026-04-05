@@ -998,6 +998,7 @@ class ComposerStaticInit7dfb16a5e586ee226791586d4f458d9f
         'PearBlogEngine\\Social\\SocialPublisher' => __DIR__ . '/../..' . '/src/Social/SocialPublisher.php',
         'PearBlogEngine\\Tenant\\SiteProfile' => __DIR__ . '/../..' . '/src/Tenant/SiteProfile.php',
         'PearBlogEngine\\Tenant\\TenantContext' => __DIR__ . '/../..' . '/src/Tenant/TenantContext.php',
+        'PearBlogEngine\\Tests\\Integration\\ContentPipelineIntegrationTest' => __DIR__ . '/../..' . '/tests/php/Integration/ContentPipelineIntegrationTest.php',
         'PearBlogEngine\\Tests\\Unit\\AIClientTest' => __DIR__ . '/../..' . '/tests/php/Unit/AIClientTest.php',
         'PearBlogEngine\\Tests\\Unit\\ContentScoreTest' => __DIR__ . '/../..' . '/tests/php/Unit/ContentScoreTest.php',
         'PearBlogEngine\\Tests\\Unit\\ContentValidatorTest' => __DIR__ . '/../..' . '/tests/php/Unit/ContentValidatorTest.php',
