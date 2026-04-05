@@ -66,6 +66,31 @@ All notable changes to PearBlog Engine are documented in this file.
 - **Missing function calls** — All 6 undefined function calls in single.php now properly implemented
 - **A/B testing meta box** — Now fully functional with result tracking and winner selection
 
+## [5.1.0] — 2026-04-04
+
+### Added — Frontend Expansion
+- **Reading progress bar** — Sticky top indicator fills as user scrolls through articles; wired to `#pb-reading-progress-bar`
+- **Dark mode toggle button** — Moon/sun icon in header nav; persists preference to `localStorage`; respects `prefers-color-scheme`
+- **Search panel** — Slide-down search form triggered by header search icon; closes on Escape or outside click
+- **Sticky header** — Header shrinks on scroll with box shadow; `.pb-nav--sticky` class toggled by JS
+- **Google Fonts** — Poppins (display) + Inter (UI) loaded via `wp_enqueue_style` with `display=swap`
+- **`page.php`** — Full static page template with hero area, sidebar support, reading progress
+- **`search.php`** — Search results template with query context, card grid, and "no results" state
+- **`404.php`** — Error page with hero, popular posts, and category browser
+- **Admin top-level menu** — PearBlog Engine now appears as a top-level menu item (with icon) instead of under Settings
+- **Admin tabbed interface** — Six tabs: General, AI Images, Programmatic SEO, Monetization, Email, Queue
+- **Admin CSS** — `mu-plugins/pearblog-engine/assets/css/admin.css` — fully styled admin panel with cards, badges, and status indicators
+- **Font CSS variables** — `--pb-font-display` (Poppins) and `--pb-font-ui` (Inter) added to `base.css`
+
+### Added — Programmatic SEO
+- **`ProgrammaticSEO.php`** — Schema.org JSON-LD (Article, BreadcrumbList, FAQPage), Open Graph, Twitter Cards, auto meta-description generation, keyword density analysis, bulk SEO audit, internal linking suggestions
+- **`ImageAnalyzer.php`** — Media library audit: missing featured images, missing alt texts, AI-generated image tracking, oversized image detection, keyword-based generation suggestions
+
+### Changed
+- **`ContentPipeline.php`** — Step 6b: auto-generates meta description fallback after AI content creation
+- **`Plugin.php`** — Boots `ProgrammaticSEO::register()` for front-end SEO output
+- **`AdminPage.php`** — Migrated from Settings submenu to top-level menu; tabbed navigation UI; admin CSS enqueue; SEO audit + Image Generator sections
+
 ## [4.3.0] — 2026-04-04
 
 ### Added
