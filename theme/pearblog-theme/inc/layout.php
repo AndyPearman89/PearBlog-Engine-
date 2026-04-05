@@ -26,20 +26,50 @@ function pearblog_render_header() {
     <body <?php body_class(); ?> data-post-id="<?php echo esc_attr(get_the_ID()); ?>">
     <?php wp_body_open(); ?>
 
-    <header class="pb-nav">
+    <!-- Reading progress bar -->
+    <div id="pb-reading-progress-bar" aria-hidden="true"></div>
+
+    <!-- Search panel (hidden by default, toggled via JS) -->
+    <div id="pb-search-panel" class="pb-search-panel" role="search" aria-label="<?php esc_attr_e('Site Search', 'pearblog-theme'); ?>" hidden>
+        <div class="pb-search-panel-inner">
+            <?php get_search_form(); ?>
+            <button class="pb-search-close" id="pb-search-close" aria-label="<?php esc_attr_e('Close search', 'pearblog-theme'); ?>">✕</button>
+        </div>
+    </div>
+
+    <header id="pb-header" class="pb-nav pb-nav--sticky" role="banner">
         <div class="pb-container">
             <nav class="pb-nav-container" role="navigation" aria-label="<?php esc_attr_e('Main Navigation', 'pearblog-theme'); ?>">
                 <div class="pb-logo">
-                    <a href="<?php echo esc_url(home_url('/')); ?>" rel="home">
+                    <a href="<?php echo esc_url(home_url('/')); ?>" rel="home" aria-label="<?php echo esc_attr(get_bloginfo('name')); ?>">
                         <?php echo pearblog_get_logo(); ?>
                     </a>
                 </div>
 
-                <button class="pb-menu-toggle" aria-expanded="false" aria-controls="primary-menu" aria-label="<?php esc_attr_e('Toggle Menu', 'pearblog-theme'); ?>">
-                    ☰
-                </button>
-
                 <?php pearblog_render_nav_menu('primary'); ?>
+
+                <div class="pb-nav-actions">
+                    <!-- Search toggle -->
+                    <button class="pb-search-toggle" id="pb-search-toggle"
+                            aria-label="<?php esc_attr_e('Open search', 'pearblog-theme'); ?>"
+                            aria-expanded="false"
+                            aria-controls="pb-search-panel">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    </button>
+
+                    <!-- Dark mode toggle -->
+                    <button class="pb-dark-mode-toggle" id="pb-dark-mode-toggle"
+                            aria-label="<?php esc_attr_e('Toggle dark mode', 'pearblog-theme'); ?>"
+                            aria-pressed="false">
+                        <svg class="pb-icon-sun" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+                        <svg class="pb-icon-moon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+                    </button>
+
+                    <!-- Mobile menu toggle -->
+                    <button class="pb-menu-toggle" aria-expanded="false" aria-controls="primary-menu" aria-label="<?php esc_attr_e('Toggle Menu', 'pearblog-theme'); ?>">
+                        <span class="pb-hamburger" aria-hidden="true"></span>
+                    </button>
+                </div>
             </nav>
         </div>
     </header>

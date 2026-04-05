@@ -88,6 +88,14 @@ add_action('after_setup_theme', 'pearblog_setup');
  * Enqueue scripts and styles - v2 PRO
  */
 function pearblog_enqueue_assets() {
+    // Google Fonts – brand typography (Poppins display, Inter UI).
+    wp_enqueue_style(
+        'pearblog-fonts',
+        'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@600;700&display=swap',
+        [],
+        null
+    );
+
     // Main stylesheet
     wp_enqueue_style('pearblog-style', get_stylesheet_uri(), array(), PEARBLOG_VERSION);
 

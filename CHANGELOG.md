@@ -2,6 +2,37 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [5.2.0] — 2026-04-05
+
+### Added — Admin Panel v5.2
+- **Tab-based top-level Admin Menu** — `AdminPage` now registers via `add_menu_page()` (top-level, icon `dashicons-rest-api`, position 25) with 6 tabs: **General, AI Images, Monetization, Email, Automation, Queue**. Tab state persists in the URL (`?tab=`) and is switchable without page reload via inline JS.
+- **Autonomous Mode setting** — New checkbox setting `pearblog_autonomous_mode` controls whether the cron manager publishes automatically from the queue.
+- **Admin CSS file** — `assets/css/admin.css` (v5.1.0) loaded via `wp_enqueue_style` on the Engine page only (replaces inline `wp_add_inline_style`).
+- **REST API reference table** — Automation tab shows the three `/pearblog/v1/automation/` endpoints with method and description.
+
+### Fixed — Admin Panel
+- **`esp_provider` sanitize callback** changed from `sanitize_text_field` to `sanitize_key` (correct for enum-type select values).
+- **Redirect URL** for queue form actions now points to `admin.php` (top-level menu) instead of `options-general.php` (Settings submenu).
+- **`enqueue_admin_assets` hook suffix** corrected from `settings_page_pearblog-engine` to `toplevel_page_pearblog-engine`.
+
+### Added — Engine Dashboard Widget
+- **`DashboardWidget`** class (`src/Admin/DashboardWidget.php`) registered in `Plugin::boot()`. Shows 4 KPIs in a 2×2 grid: Queue size, Posts Published Today (green), AI Images count, Missing Alt Texts (color-coded: green/amber/red). Footer displays last pipeline run time and a link to the Engine settings page.
+
+### Added — Frontend Header v5.1
+- **Sticky header** — `#pb-header` with class `pb-nav--sticky` (CSS: `position: sticky; top: 0; z-index: 1000`).
+- **Reading progress bar** — `#pb-reading-progress-bar` fixed at top of viewport, driven by `app.js` scroll handler.
+- **Search panel** — `#pb-search-panel` overlay with `get_search_form()`, toggled via `#pb-search-toggle` button; dismiss via ✕ button or Escape key.
+- **Dark mode toggle** — `#pb-dark-mode-toggle` icon button (sun/moon SVG icons) in the nav actions area.
+- **Google Fonts** — `pearblog-fonts` stylesheet (`Poppins:600;700` + `Inter:400;500;600`) enqueued in `pearblog_enqueue_assets()`.
+
+### Added — Missing Theme Templates
+- **`page.php`** — Static page template with sidebar support, `wp_link_pages()` for paginated pages.
+- **search.php** — Search results page with result count, card grid, pagination, and empty-state with search form.
+- **`404.php`** — Not-found page with large 404 code, search form, and recent posts fallback list.
+
+### Added — CSS Components
+- `#pb-reading-progress-bar`, `#pb-header.pb-nav--sticky`, `.pb-nav-actions`, `.pb-search-toggle`, `.pb-dark-mode-toggle`, `#pb-search-panel`, `.pb-error-code` styles added to `components.css`.
+
 ## [5.1.0] — 2026-04-04
 
 ### Removed — Dead Code
