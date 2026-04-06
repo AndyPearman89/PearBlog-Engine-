@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'pearblog/engine',
-        'pretty_version' => 'dev-copilot/start-autopilot-enterprise',
-        'version' => 'dev-copilot/start-autopilot-enterprise',
-        'reference' => 'cbe5c0a7e2f0410fdca8e298c557492b6e940e72',
+        'pretty_version' => 'dev-claude/run-build-command',
+        'version' => 'dev-claude/run-build-command',
+        'reference' => 'c16e62fea2e62d6ba020e707da53272bd2e6053f',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => true,
         ),
         'pearblog/engine' => array(
-            'pretty_version' => 'dev-copilot/start-autopilot-enterprise',
-            'version' => 'dev-copilot/start-autopilot-enterprise',
-            'reference' => 'cbe5c0a7e2f0410fdca8e298c557492b6e940e72',
+            'pretty_version' => 'dev-claude/run-build-command',
+            'version' => 'dev-claude/run-build-command',
+            'reference' => 'c16e62fea2e62d6ba020e707da53272bd2e6053f',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
