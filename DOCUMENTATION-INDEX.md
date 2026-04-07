@@ -1,6 +1,6 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress — **v6.1**
+> Autonomous AI content production for WordPress — **v6.0**
 
 ---
 
@@ -26,6 +26,8 @@
 | [MARKETING-GUIDE.md](MARKETING-GUIDE.md) | EN | Marketing | SEO, traffic, affiliate strategy |
 | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) | EN | Dev | Specialized travel prompt builders |
 | [CHANGELOG.md](CHANGELOG.md) | EN | Everyone | Release history |
+| [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) | EN | Dev / Ops | 23-task autonomous execution plan (Phase 1-7) |
+| [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | EN | Everyone | Visual roadmap, milestones, timeline v6.0→v7.0 |
 
 ### Theme Documentation
 
@@ -64,14 +66,16 @@
 | Create travel content | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) |
 | Scale to multiple sites | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 7 |
 | Optimize costs | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 9 |
-| Troubleshoot issues | [END-TO-END-WORKFLOW.md](END-TO-END-WORKFLOW.md) § Troubleshooting |
+| Troubleshoot issues | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8 |
+| See enterprise roadmap | [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) |
+| Run autopilot tasks | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) |
 
 ---
 
-## 🔧 Architecture Overview — v6.1
+## 🔧 Architecture Overview — v6.0
 
 ```
-PearBlog Engine v6.1
+PearBlog Engine v6.0
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
 │   ├── src/Pipeline/               # 12-step autonomous content pipeline
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
@@ -154,4 +158,4 @@ Topic Queue
 
 ---
 
-*PearBlog Engine v5.1 — Built for systematic content entrepreneurs*
+*PearBlog Engine v6.0 — Enterprise-ready autonomous content system*
