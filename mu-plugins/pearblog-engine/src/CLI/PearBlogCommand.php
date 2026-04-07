@@ -13,6 +13,11 @@
  *   wp pearblog duplicate check <post_id>
  *   wp pearblog links backfill [--batch=<n>]
  *   wp pearblog circuit reset
+ *   wp pearblog autopilot start [--mode=<mode>] [--tasks=<tasks>]
+ *   wp pearblog autopilot status
+ *   wp pearblog autopilot pause
+ *   wp pearblog autopilot resume
+ *   wp pearblog autopilot next
  *
  * @package PearBlogEngine\CLI
  */
@@ -22,6 +27,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\CLI;
 
 use PearBlogEngine\AI\AIClient;
+use PearBlogEngine\CLI\AutopilotRunner;
 use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Content\DuplicateDetector;
 use PearBlogEngine\Content\QualityScorer;
@@ -330,5 +336,106 @@ class PearBlogCommand {
 			default:
 				\WP_CLI::error( "Unknown subcommand: {$sub}. Use status or reset." );
 		}
+	}
+
+	/**
+	 * Manage the enterprise autopilot system.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   start   Start the autopilot task runner.
+	 *   status  Display current autopilot status and progress.
+	 *   pause   Pause the running autopilot.
+	 *   resume  Resume a paused autopilot.
+	 *   next    Force-advance to the next task.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--mode=<mode>]
+	 * : Autopilot mode. Accepts 'enterprise' or 'standard'. Default: enterprise.
+	 *
+	 * [--tasks=<tasks>]
+	 * : Tasks to execute. 'all' for every task, or comma-separated IDs (e.g. '1.1,1.2'). Default: all.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog autopilot start --mode=enterprise --tasks=all
+	 *   wp pearblog autopilot status
+	 *   wp pearblog autopilot pause
+	 *   wp pearblog autopilot resume
+	 *   wp pearblog autopilot next
+	 *
+	 * @subcommand autopilot
+	 */
+	public function autopilot( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? 'status';
+
+		switch ( $sub ) {
+			case 'start':
+				$mode  = $assoc_args['mode']  ?? 'enterprise';
+				$tasks = $assoc_args['tasks'] ?? 'all';
+
+				$result = AutopilotRunner::start( $mode, $tasks );
+
+				if ( $result['success'] ) {
+					\WP_CLI::success( $result['message'] );
+					$this->display_autopilot_status();
+				} else {
+					\WP_CLI::error( $result['message'] );
+				}
+				break;
+
+			case 'status':
+				$this->display_autopilot_status();
+				break;
+
+			case 'pause':
+				$result = AutopilotRunner::pause();
+				if ( $result['success'] ) {
+					\WP_CLI::success( $result['message'] );
+				} else {
+					\WP_CLI::error( $result['message'] );
+				}
+				break;
+
+			case 'resume':
+				$result = AutopilotRunner::resume();
+				if ( $result['success'] ) {
+					\WP_CLI::success( $result['message'] );
+				} else {
+					\WP_CLI::error( $result['message'] );
+				}
+				break;
+
+			case 'next':
+				$result = AutopilotRunner::next();
+				if ( $result['success'] ) {
+					\WP_CLI::success( $result['message'] );
+					$this->display_autopilot_status();
+				} else {
+					\WP_CLI::error( $result['message'] );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use start, status, pause, resume, or next." );
+		}
+	}
+
+	/**
+	 * Print a formatted autopilot status table to the CLI.
+	 */
+	private function display_autopilot_status(): void {
+		$summary = AutopilotRunner::get_status_summary();
+
+		\WP_CLI::log( '=== PearBlog Autopilot ===' );
+		\WP_CLI::log( 'Status        : ' . strtoupper( $summary['status'] ) );
+		\WP_CLI::log( 'Mode          : ' . ( $summary['mode'] ?: '—' ) );
+		\WP_CLI::log( 'Current task  : ' . ( $summary['current_task'] ? "{$summary['current_task']} – {$summary['current_task_name']}" : '—' ) );
+		\WP_CLI::log( sprintf( 'Progress      : %d / %d (%.1f%%)', $summary['completed'] + $summary['failed'], $summary['total'], $summary['progress_pct'] ) );
+		\WP_CLI::log( 'Completed     : ' . $summary['completed'] );
+		\WP_CLI::log( 'Failed        : ' . $summary['failed'] );
+		\WP_CLI::log( 'Remaining     : ' . $summary['remaining'] );
+		\WP_CLI::log( 'Started at    : ' . ( $summary['start_time'] ?? '—' ) );
 	}
 }
