@@ -961,6 +961,7 @@ return array(
     'PearBlogEngine\\Social\\SocialPublisher' => $baseDir . '/src/Social/SocialPublisher.php',
     'PearBlogEngine\\Tenant\\SiteProfile' => $baseDir . '/src/Tenant/SiteProfile.php',
     'PearBlogEngine\\Tenant\\TenantContext' => $baseDir . '/src/Tenant/TenantContext.php',
+    'PearBlogEngine\\Tests\\Integration\\ContentPipelineIntegrationTest' => $baseDir . '/tests/php/Integration/ContentPipelineIntegrationTest.php',
     'PearBlogEngine\\Tests\\Unit\\AIClientTest' => $baseDir . '/tests/php/Unit/AIClientTest.php',
     'PearBlogEngine\\Tests\\Unit\\AutopilotRunnerTest' => $baseDir . '/tests/php/Unit/AutopilotRunnerTest.php',
     'PearBlogEngine\\Tests\\Unit\\ContentScoreTest' => $baseDir . '/tests/php/Unit/ContentScoreTest.php',
