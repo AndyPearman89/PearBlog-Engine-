@@ -19,6 +19,7 @@
 | [README.md](README.md) | EN | Everyone | Features, architecture, quick start |
 | [SETUP.md](SETUP.md) | EN | Ops / Dev | GitHub Secrets, Actions, first run |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | EN | Ops / Dev | Full production deployment guide (Apache/Nginx, SSL, Git, FTP, WP-CLI, 4 hosting providers) |
+| [DATABASE-MIGRATIONS.md](DATABASE-MIGRATIONS.md) | EN | Ops / Dev | Full schema reference, upgrade SQL scripts v4→v5→v6, rollback procedures, compatibility matrix |
 | [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) | PL | Ops | Step-by-step autonomous activation |
 | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) | PL | Ops / Dev | Complete production operations manual |
 | [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) | PL / EN | Business | ROI, monetization, scaling |
@@ -64,7 +65,7 @@
 | Create travel content | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) |
 | Scale to multiple sites | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 7 |
 | Optimize costs | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 9 |
-| Troubleshoot issues | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8 |
+| Troubleshoot issues | [DEPLOYMENT.md](DEPLOYMENT.md#10-troubleshooting) · [DATABASE-MIGRATIONS.md](DATABASE-MIGRATIONS.md#10-troubleshooting) |
 | See enterprise roadmap | [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) |
 | Run autopilot tasks | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) |
 | Verify production readiness | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) |
