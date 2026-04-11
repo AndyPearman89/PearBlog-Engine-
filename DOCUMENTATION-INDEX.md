@@ -25,6 +25,7 @@
 | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) | EN | Dev | Specialized travel prompt builders |
 | [CHANGELOG.md](CHANGELOG.md) | EN | Everyone | Release history |
 | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) | EN | Dev / Ops | 23-task autonomous execution plan (Phase 1-7) |
+| [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | EN | Ops | Standalone pre-launch & weekly/monthly/quarterly operations checklists |
 | [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | EN | Everyone | Visual roadmap, milestones, timeline v6.0→v7.0 |
 
 ### Theme Documentation
@@ -64,6 +65,7 @@
 | Troubleshoot issues | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 8 |
 | See enterprise roadmap | [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) |
 | Run autopilot tasks | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) |
+| Verify production readiness | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) |
 
 ---
 
