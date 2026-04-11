@@ -20,6 +20,7 @@
 | [SETUP.md](SETUP.md) | EN | Ops / Dev | GitHub Secrets, Actions, first run |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | EN | Ops / Dev | Full production deployment guide (Apache/Nginx, SSL, Git, FTP, WP-CLI, 4 hosting providers) |
 | [DATABASE-MIGRATIONS.md](DATABASE-MIGRATIONS.md) | EN | Ops / Dev | Full schema reference, upgrade SQL scripts v4→v5→v6, rollback procedures, compatibility matrix |
+| [DISASTER-RECOVERY.md](DISASTER-RECOVERY.md) | EN | Ops / DevOps | Disaster recovery plan: RTO/RPO targets, backup automation, 8 disaster scenarios, restore procedures |
 | [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) | PL | Ops | Step-by-step autonomous activation |
 | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) | PL | Ops / Dev | Complete production operations manual |
 | [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) | PL / EN | Business | ROI, monetization, scaling |
