@@ -3,7 +3,7 @@
         'name' => 'pearblog/engine',
         'pretty_version' => 'dev-copilot/enterprise-autopilot-task-list',
         'version' => 'dev-copilot/enterprise-autopilot-task-list',
-        'reference' => '7b00a201d073b1174dbfb78493ad74e911b94db0',
+        'reference' => '374e4de8d392937e105c82fac47be0751bd28eca',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -31,7 +31,7 @@
         'pearblog/engine' => array(
             'pretty_version' => 'dev-copilot/enterprise-autopilot-task-list',
             'version' => 'dev-copilot/enterprise-autopilot-task-list',
-            'reference' => '7b00a201d073b1174dbfb78493ad74e911b94db0',
+            'reference' => '374e4de8d392937e105c82fac47be0751bd28eca',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),
