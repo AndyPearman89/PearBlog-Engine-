@@ -2,6 +2,17 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.1.0] — 2026-04-12
+
+### Added — v7.1 A/B Testing Framework
+
+- **ABTestEngine** (`src/Testing/ABTestEngine.php`) — split-test two prompt variants (modifier A vs modifier B) for the same topic; winner elected automatically after 7 days by highest average quality score.
+- **Balanced variant selection** — round-robin assignment keeps runs per variant equal; ties default to variant A.
+- **Automatic hook integration** — registers on `pearblog_prompt` filter to append the variant's modifier, and on `pearblog_pipeline_completed` to record quality scores; no changes required to `ContentPipeline`.
+- **Daily auto-promotion cron** — `pearblog_abtest_promote` hook calls `promote_mature_tests()` each day; requires at least 2 articles per variant before electing a winner.
+- **`wp pearblog abtest` CLI commands** — `create`, `list`, `status`, `promote`, `delete` subcommands for full command-line management.
+- **34 new PHPUnit tests** in `tests/php/Unit/ABTestEngineTest.php` covering CRUD, variant selection, score recording, promotion, hook callbacks, and edge cases.
+
 ## [6.0.2] — 2026-04-12
 
 ### Added — v7.1 Monitoring Dashboard UI

@@ -18,6 +18,11 @@
  *   wp pearblog autopilot pause
  *   wp pearblog autopilot resume
  *   wp pearblog autopilot next
+ *   wp pearblog abtest create --topic=<topic> --modifier-a=<mod> --modifier-b=<mod>
+ *   wp pearblog abtest list
+ *   wp pearblog abtest status <test_id>
+ *   wp pearblog abtest promote <test_id>
+ *   wp pearblog abtest delete <test_id>
  *
  * @package PearBlogEngine\CLI
  */
@@ -29,6 +34,7 @@ namespace PearBlogEngine\CLI;
 use PearBlogEngine\AI\AIClient;
 use PearBlogEngine\CLI\AutopilotRunner;
 use PearBlogEngine\Content\ContentRefreshEngine;
+use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Content\DuplicateDetector;
 use PearBlogEngine\Content\QualityScorer;
 use PearBlogEngine\Content\TopicQueue;
@@ -419,6 +425,144 @@ class PearBlogCommand {
 
 			default:
 				\WP_CLI::error( "Unknown subcommand: {$sub}. Use start, status, pause, resume, or next." );
+		}
+	}
+
+	/**
+	 * Manage prompt A/B tests.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   create   Create a new A/B test.
+	 *   list     List all tests and their current state.
+	 *   status   Show details for a specific test.
+	 *   promote  Force-promote the winner of a specific test.
+	 *   delete   Delete a test.
+	 *
+	 * ## OPTIONS (create)
+	 *
+	 * --topic=<topic>
+	 * : The topic to test (must match the queue topic exactly).
+	 *
+	 * --modifier-a=<modifier>
+	 * : Additional prompt instructions for variant A.
+	 *
+	 * --modifier-b=<modifier>
+	 * : Additional prompt instructions for variant B.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog abtest create --topic="Best Hiking Gear" --modifier-a="Focus on beginners." --modifier-b="Focus on experts."
+	 *   wp pearblog abtest list
+	 *   wp pearblog abtest status ab_a1b2c3d4
+	 *   wp pearblog abtest promote ab_a1b2c3d4
+	 *   wp pearblog abtest delete ab_a1b2c3d4
+	 *
+	 * @subcommand abtest
+	 */
+	public function abtest( array $args, array $assoc_args ): void {
+		$sub    = $args[0] ?? 'list';
+		$engine = new ABTestEngine();
+
+		switch ( $sub ) {
+			case 'create':
+				$topic      = $assoc_args['topic']      ?? '';
+				$modifier_a = $assoc_args['modifier-a'] ?? '';
+				$modifier_b = $assoc_args['modifier-b'] ?? '';
+
+				if ( '' === $topic || '' === $modifier_a || '' === $modifier_b ) {
+					\WP_CLI::error( 'Usage: wp pearblog abtest create --topic=<topic> --modifier-a=<mod> --modifier-b=<mod>' );
+					return;
+				}
+
+				$id = $engine->create_test( $topic, $modifier_a, $modifier_b );
+				\WP_CLI::success( "Created A/B test ID: {$id}" );
+				\WP_CLI::log( "Topic      : {$topic}" );
+				\WP_CLI::log( "Modifier A : {$modifier_a}" );
+				\WP_CLI::log( "Modifier B : {$modifier_b}" );
+				break;
+
+			case 'list':
+				$tests = $engine->list_tests();
+				if ( empty( $tests ) ) {
+					\WP_CLI::log( 'No A/B tests found.' );
+					return;
+				}
+
+				foreach ( $tests as $test ) {
+					$winner  = $test['winner'] ?? 'pending';
+					$runs_a  = $test['variants']['a']['runs'];
+					$runs_b  = $test['variants']['b']['runs'];
+					$avg_a   = $engine->get_average_score( $test['id'], 'a' );
+					$avg_b   = $engine->get_average_score( $test['id'], 'b' );
+					\WP_CLI::log( sprintf(
+						'[%s] %s | winner: %s | A: %d runs / avg %.1f | B: %d runs / avg %.1f',
+						$test['id'],
+						$test['topic'],
+						$winner,
+						$runs_a,
+						$avg_a,
+						$runs_b,
+						$avg_b
+					) );
+				}
+				break;
+
+			case 'status':
+				$test_id = $args[1] ?? '';
+				if ( '' === $test_id ) {
+					\WP_CLI::error( 'Usage: wp pearblog abtest status <test_id>' );
+					return;
+				}
+
+				$test = $engine->get_test( $test_id );
+				if ( ! $test ) {
+					\WP_CLI::error( "Test not found: {$test_id}" );
+					return;
+				}
+
+				\WP_CLI::log( "=== A/B Test: {$test['id']} ===" );
+				\WP_CLI::log( "Topic       : {$test['topic']}" );
+				\WP_CLI::log( "Created     : " . gmdate( 'Y-m-d H:i:s', $test['created_at'] ) );
+				\WP_CLI::log( "Winner      : " . ( $test['winner'] ?? 'pending' ) );
+				\WP_CLI::log( "Modifier A  : {$test['modifier_a']}" );
+				\WP_CLI::log( "Modifier B  : {$test['modifier_b']}" );
+				\WP_CLI::log( "Variant A   : {$test['variants']['a']['runs']} runs, avg score " . number_format( $engine->get_average_score( $test_id, 'a' ), 1 ) );
+				\WP_CLI::log( "Variant B   : {$test['variants']['b']['runs']} runs, avg score " . number_format( $engine->get_average_score( $test_id, 'b' ), 1 ) );
+				break;
+
+			case 'promote':
+				$test_id = $args[1] ?? '';
+				if ( '' === $test_id ) {
+					\WP_CLI::error( 'Usage: wp pearblog abtest promote <test_id>' );
+					return;
+				}
+
+				$winner = $engine->promote_winner( $test_id );
+				if ( null === $winner ) {
+					\WP_CLI::warning( "Not enough data to elect a winner for test {$test_id} (min " . ABTestEngine::MIN_ARTICLES_PER_VARIANT . " articles per variant required)." );
+					return;
+				}
+
+				\WP_CLI::success( "Winner for test {$test_id}: variant {$winner} (modifier: " . $engine->get_winning_modifier( $test_id ) . ')' );
+				break;
+
+			case 'delete':
+				$test_id = $args[1] ?? '';
+				if ( '' === $test_id ) {
+					\WP_CLI::error( 'Usage: wp pearblog abtest delete <test_id>' );
+					return;
+				}
+
+				if ( $engine->delete_test( $test_id ) ) {
+					\WP_CLI::success( "Deleted test {$test_id}." );
+				} else {
+					\WP_CLI::error( "Test not found: {$test_id}" );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use create, list, status, promote, or delete." );
 		}
 	}
 

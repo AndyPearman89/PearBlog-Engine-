@@ -82,11 +82,11 @@ These are the next-generation features planned for the first post-launch release
 - Content performance ranking (views × quality score)
 - Admin tab: "Analytics" with interactive charts
 
-### A/B Testing Framework
-- Split-test two prompt templates for the same topic
-- Track which variant achieves higher quality score / traffic
-- Auto-promote winning variant after 7 days
-- New class: `src/Testing/ABTestEngine.php`
+### A/B Testing Framework ✅ Done — v7.1.0
+- ~~Split-test two prompt templates for the same topic~~ ✅ `modifier_a` / `modifier_b` appended to the `pearblog_prompt` filter
+- ~~Track which variant achieves higher quality score~~ ✅ Scores recorded via `pearblog_pipeline_completed` action
+- ~~Auto-promote winning variant after 7 days~~ ✅ Daily cron + `promote_mature_tests()`
+- ~~New class: `src/Testing/ABTestEngine.php`~~ ✅
 
 ### Monitoring Dashboard UI (Real-Time) ✅ Done — v6.0.2
 - ~~Add "Monitoring" tab to the admin panel~~ ✅ Tab already existed; now fully populated
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v6.0 complete, v7.0 launch sprint active; P2 rate-limit headers + P3 ESCALATION_LEVELS resolved*
+*Last updated: 2026-04-12 — v7.1.0 A/B Testing Framework complete; v7.1 Analytics Dashboard and GraphQL API pending*
