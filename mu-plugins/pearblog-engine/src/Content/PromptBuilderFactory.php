@@ -50,8 +50,49 @@ class PromptBuilderFactory {
 			return new TravelPromptBuilder( $profile );
 		}
 
+		// Check for e-commerce / shopping content.
+		if ( self::matches_keywords( $industry, [ 'ecommerce', 'e-commerce', 'shop', 'shopping', 'product', 'review', 'amazon', 'dropship' ] ) ) {
+			return new EcommercePromptBuilder( $profile );
+		}
+
+		// Check for technology / software content.
+		if ( self::matches_keywords( $industry, [ 'tech', 'technology', 'software', 'developer', 'coding', 'programming', 'saas', 'ai', 'gadget' ] ) ) {
+			return new TechPromptBuilder( $profile );
+		}
+
+		// Check for health / wellness content.
+		if ( self::matches_keywords( $industry, [ 'health', 'wellness', 'fitness', 'medical', 'nutrition', 'diet', 'exercise', 'mental health' ] ) ) {
+			return new HealthPromptBuilder( $profile );
+		}
+
+		// Check for personal finance / investing content.
+		if ( self::matches_keywords( $industry, [ 'finance', 'investing', 'money', 'budget', 'crypto', 'stock', 'financial', 'retirement' ] ) ) {
+			return new FinancePromptBuilder( $profile );
+		}
+
+		// Check for food / recipe content.
+		if ( self::matches_keywords( $industry, [ 'food', 'recipe', 'cooking', 'baking', 'culinary', 'restaurant', 'cuisine', 'meal' ] ) ) {
+			return new FoodPromptBuilder( $profile );
+		}
+
 		// Default to generic prompt builder.
 		return new PromptBuilder( $profile );
+	}
+
+	/**
+	 * Generic keyword matching helper.
+	 *
+	 * @param string   $industry Industry string.
+	 * @param string[] $keywords Keywords to match against.
+	 * @return bool
+	 */
+	private static function matches_keywords( string $industry, array $keywords ): bool {
+		foreach ( $keywords as $keyword ) {
+			if ( stripos( $industry, $keyword ) !== false ) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	/**

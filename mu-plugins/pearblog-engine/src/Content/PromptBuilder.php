@@ -17,7 +17,7 @@ use PearBlogEngine\Tenant\SiteProfile;
 class PromptBuilder {
 
 	/** @var SiteProfile */
-	private SiteProfile $profile;
+	protected SiteProfile $profile;
 
 	public function __construct( SiteProfile $profile ) {
 		$this->profile = $profile;
@@ -65,10 +65,17 @@ class PromptBuilder {
 	}
 
 	// -----------------------------------------------------------------------
-	// Private helpers
+	// Protected helpers (available to sub-classes)
 	// -----------------------------------------------------------------------
 
-	private function monetisation_instructions(): string {
+	/**
+	 * Return the active site profile.
+	 */
+	protected function get_profile(): SiteProfile {
+		return $this->profile;
+	}
+
+	protected function monetisation_instructions(): string {
 		return match ( $this->profile->monetization ) {
 			'affiliate' => "- Naturally recommend relevant products or services with a brief review sentence.\n",
 			'saas'      => "- Highlight software solutions that solve the reader's problem.\n",

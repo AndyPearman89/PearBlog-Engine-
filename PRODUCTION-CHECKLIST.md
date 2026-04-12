@@ -9,7 +9,7 @@
 
 ### □ Infrastructure
 
-- [ ] Server meets requirements (PHP 7.4+, MySQL 5.7+)
+- [ ] Server meets requirements (PHP 8.0+, MySQL 5.7+)
 - [ ] WordPress installed and updated
 - [ ] SSL certificate active (HTTPS)
 - [ ] Backup system configured

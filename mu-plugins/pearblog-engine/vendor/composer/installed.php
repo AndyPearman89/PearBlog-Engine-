@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'pearblog/engine',
-        'pretty_version' => 'dev-copilot/enterprise-autopilot-task-list',
-        'version' => 'dev-copilot/enterprise-autopilot-task-list',
-        'reference' => '766a8d6de453b628ae5bd9dfeff861d421226d7b',
+        'pretty_version' => 'dev-copilot/update-documentation-and-visualization',
+        'version' => 'dev-copilot/update-documentation-and-visualization',
+        'reference' => 'b0d659bb335194177019170cabf7da7558a47798',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => true,
         ),
         'pearblog/engine' => array(
-            'pretty_version' => 'dev-copilot/enterprise-autopilot-task-list',
-            'version' => 'dev-copilot/enterprise-autopilot-task-list',
-            'reference' => '766a8d6de453b628ae5bd9dfeff861d421226d7b',
+            'pretty_version' => 'dev-copilot/update-documentation-and-visualization',
+            'version' => 'dev-copilot/update-documentation-and-visualization',
+            'reference' => 'b0d659bb335194177019170cabf7da7558a47798',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

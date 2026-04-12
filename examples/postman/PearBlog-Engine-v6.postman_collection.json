@@ -1,0 +1,404 @@
+{
+  "info": {
+    "_postman_id": "pearblog-engine-v6",
+    "name": "PearBlog Engine v6",
+    "description": "Complete REST API collection for PearBlog Engine v6.0.\n\nAll requests authenticate via **Bearer token** (set `{{api_key}}` in the Environment).\n\nBase URL: `{{base_url}}/wp-json/pearblog/v1`\n\n**Environment variables required:**\n- `base_url` — e.g. `https://yourdomain.com`\n- `api_key` — value of the `pearblog_api_key` WordPress option",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "version": "6.0.0"
+  },
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://yourdomain.com",
+      "description": "Your WordPress site URL (no trailing slash)"
+    },
+    {
+      "key": "api_key",
+      "value": "",
+      "description": "PearBlog Engine API key (Admin → General → API Key)"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{api_key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Health",
+      "description": "System health check. Returns status of API key, circuit breaker, queue, cron, and AI connectivity.",
+      "item": [
+        {
+          "name": "GET Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/health",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "health"]
+            },
+            "description": "Returns the overall health of the PearBlog Engine installation.\n\nChecks: API key configured, circuit breaker state, queue length, next cron run, OpenAI connectivity, articles published today."
+          },
+          "response": [
+            {
+              "name": "200 OK — Healthy",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"status\": \"ok\",\n  \"checks\": {\n    \"api_key\": { \"status\": \"ok\", \"detail\": \"configured\" },\n    \"circuit_breaker\": { \"status\": \"ok\", \"detail\": \"closed\" },\n    \"queue\": { \"status\": \"ok\", \"detail\": \"5 topics\" },\n    \"cron\": { \"status\": \"ok\", \"detail\": \"next run in 3600s\" },\n    \"openai\": { \"status\": \"ok\", \"detail\": \"reachable\" }\n  },\n  \"articles_today\": 3,\n  \"timestamp\": \"2026-04-12 21:00:00\"\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Automation",
+      "description": "Drive the content pipeline remotely. Used by automation scripts (automation_orchestrator.py, run_pipeline.py) and GitHub Actions.",
+      "item": [
+        {
+          "name": "GET Automation Status",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/automation/status",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "automation", "status"]
+            },
+            "description": "Returns queue length, next topic, site profile (industry/tone/language/publish_rate), and cron schedule."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"site_id\": 1,\n  \"queue_length\": 5,\n  \"next_topic\": \"Best WordPress SEO Plugins 2026\",\n  \"profile\": {\n    \"industry\": \"Technology\",\n    \"tone\": \"Professional\",\n    \"monetization\": \"adsense\",\n    \"publish_rate\": 3,\n    \"language\": \"en\"\n  },\n  \"cron_scheduled\": true,\n  \"timestamp\": \"2026-04-12 21:00:00\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Create Content",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"best wordpress seo plugins\",\n  \"title\": \"Best WordPress SEO Plugins in 2026\",\n  \"headings\": [\n    \"Why SEO Plugins Matter\",\n    \"Top 5 SEO Plugins Compared\",\n    \"How to Choose the Right Plugin\"\n  ],\n  \"target_word_count\": 2000,\n  \"keywords\": [\"wordpress seo\", \"yoast alternative\", \"rank math\"],\n  \"priority\": 8,\n  \"serp_analysis\": {\n    \"top_competitor_word_count\": 2200,\n    \"missing_topics\": [\"schema markup\", \"Core Web Vitals\"]\n  }\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/automation/create-content",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "automation", "create-content"]
+            },
+            "description": "Queues a topic and immediately runs the content pipeline.\n\n**All body fields are optional** — at least one of `keyword` or `title` should be supplied.\n\nReturns the new post ID, permalink, and pipeline status on success."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"Content created and published.\",\n  \"post_id\": 42,\n  \"topic\": \"Best WordPress SEO Plugins in 2026\",\n  \"status\": \"publish\",\n  \"url\": \"https://yourdomain.com/best-wordpress-seo-plugins-2026/\"\n}"
+            },
+            {
+              "name": "400 Missing Topic",
+              "status": "Bad Request",
+              "code": 400,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"code\": \"missing_topic\",\n  \"message\": \"A keyword or title is required.\",\n  \"data\": { \"status\": 400 }\n}"
+            }
+          ]
+        },
+        {
+          "name": "POST Process Content (next in queue)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"process_content\",\n  \"seo_enabled\": true\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/automation/process-content",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "automation", "process-content"]
+            },
+            "description": "Triggers the next pipeline cycle — pops topics from the queue according to the site's `publish_rate` setting and publishes them.\n\nUsed by `run_pipeline.py` and the `content-pipeline.yml` GitHub Action."
+          },
+          "response": [
+            {
+              "name": "200 OK — Articles processed",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"3 article(s) processed.\",\n  \"articles\": [\n    { \"post_id\": 43, \"topic\": \"WordPress Caching Guide\", \"status\": \"publish\" },\n    { \"post_id\": 44, \"topic\": \"PHP 8.3 Features\", \"status\": \"publish\" },\n    { \"post_id\": 45, \"topic\": \"Docker for WordPress\", \"status\": \"publish\" }\n  ]\n}"
+            },
+            {
+              "name": "200 OK — Queue empty",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"success\": true,\n  \"message\": \"No topics in queue – nothing to process.\",\n  \"articles\": []\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Performance",
+      "description": "Access real-time performance metrics collected by PerformanceDashboard.",
+      "item": [
+        {
+          "name": "GET Performance Metrics",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/performance",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "performance"]
+            },
+            "description": "Returns aggregated performance metrics: pipeline runs, AI latency, cost totals, cache hit rate, and more."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"pipeline_runs\": 142,\n  \"pipeline_failures\": 3,\n  \"success_rate\": 97.9,\n  \"avg_ai_latency_ms\": 1842,\n  \"total_cost_cents\": 1124,\n  \"cache_hit_rate\": 0.68,\n  \"articles_published\": 139\n}"
+            }
+          ]
+        },
+        {
+          "name": "GET Export Metrics (JSON)",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/performance/export",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "performance", "export"]
+            },
+            "description": "Downloads the full performance dataset as JSON — suitable for import into dashboards or BI tools."
+          },
+          "response": []
+        },
+        {
+          "name": "PUT Reset Performance Counters",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/performance/reset",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "performance", "reset"]
+            },
+            "description": "Resets all performance counters back to zero. Use with caution — this is irreversible."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"success\": true, \"message\": \"Performance counters reset.\" }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "description": "Register outbound webhooks. PearBlog Engine POSTs JSON payloads to your URLs on pipeline events (publish, fail, circuit_open).",
+      "item": [
+        {
+          "name": "GET List Webhooks",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/webhooks",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "webhooks"]
+            },
+            "description": "Returns all registered webhook subscriptions for this site."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  {\n    \"id\": \"a1b2c3d4\",\n    \"url\": \"https://hooks.slack.com/services/T00/B00/xxx\",\n    \"events\": [\"publish\", \"fail\"],\n    \"created_at\": \"2026-04-10T12:00:00Z\"\n  }\n]"
+            }
+          ]
+        },
+        {
+          "name": "POST Register Webhook",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"url\": \"https://your-server.com/webhook-receiver\",\n  \"events\": [\"publish\", \"fail\", \"circuit_open\"],\n  \"secret\": \"my-webhook-secret\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/webhooks",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "webhooks"]
+            },
+            "description": "Register a new outbound webhook subscription.\n\n**Required:** `url` (string), `events` (array of event names)\n**Optional:** `secret` (string) — used to sign payloads with HMAC-SHA256 in the `X-PearBlog-Signature` header.\n\n**Supported events:** `publish`, `fail`, `circuit_open`, `quality_low`, `queue_empty`"
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{\n  \"id\": \"a1b2c3d4\",\n  \"url\": \"https://your-server.com/webhook-receiver\",\n  \"events\": [\"publish\", \"fail\", \"circuit_open\"],\n  \"created_at\": \"2026-04-12T21:00:00Z\"\n}"
+            }
+          ]
+        },
+        {
+          "name": "DELETE Webhook",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/webhooks/{{webhook_id}}",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "webhooks", "{{webhook_id}}"],
+              "variable": [
+                {
+                  "key": "webhook_id",
+                  "value": "a1b2c3d4",
+                  "description": "The 8-character hex ID returned by the POST /webhooks endpoint"
+                }
+              ]
+            },
+            "description": "Delete a webhook subscription by its 8-character ID."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"deleted\": true, \"id\": \"a1b2c3d4\" }"
+            },
+            {
+              "name": "404 Not Found",
+              "status": "Not Found",
+              "code": 404,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"code\": \"not_found\", \"message\": \"Webhook not found.\", \"data\": { \"status\": 404 } }"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Content Calendar",
+      "description": "Manage the content publishing schedule. The calendar stores scheduled topic dates independently of the WordPress post scheduler.",
+      "item": [
+        {
+          "name": "GET Calendar Entries",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/calendar",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "calendar"]
+            },
+            "description": "Returns all upcoming calendar entries (date → topic mappings)."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "[\n  { \"date\": \"2026-04-13\", \"topic\": \"WordPress Caching Guide\" },\n  { \"date\": \"2026-04-14\", \"topic\": \"PHP 8.3 Features\" }\n]"
+            }
+          ]
+        },
+        {
+          "name": "POST Schedule Topic",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"date\": \"2026-04-20\",\n  \"topic\": \"Docker for WordPress Developers\"\n}",
+              "options": { "raw": { "language": "json" } }
+            },
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/calendar",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "calendar"]
+            },
+            "description": "Add a topic to the content calendar for a specific date. The pipeline will automatically pick it up when cron runs on that date."
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "status": "Created",
+              "code": 201,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"date\": \"2026-04-20\", \"topic\": \"Docker for WordPress Developers\" }"
+            }
+          ]
+        },
+        {
+          "name": "DELETE Calendar Entry",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/wp-json/pearblog/v1/calendar/{{date}}",
+              "host": ["{{base_url}}"],
+              "path": ["wp-json", "pearblog", "v1", "calendar", "{{date}}"],
+              "variable": [
+                {
+                  "key": "date",
+                  "value": "2026-04-20",
+                  "description": "Date in YYYY-MM-DD format"
+                }
+              ]
+            },
+            "description": "Remove a scheduled entry from the content calendar."
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "status": "OK",
+              "code": 200,
+              "header": [{ "key": "Content-Type", "value": "application/json" }],
+              "body": "{ \"deleted\": true, \"date\": \"2026-04-20\" }"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
