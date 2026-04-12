@@ -109,7 +109,7 @@ class AutopilotRunnerTest extends TestCase {
 
 		$state = AutopilotRunner::get_state();
 		$this->assertNotNull( $state['start_time'] );
-		$this->assertRegExp( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $state['start_time'] );
+		$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z$/', $state['start_time'] );
 	}
 
 	// -----------------------------------------------------------------------
