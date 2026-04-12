@@ -6,15 +6,30 @@
 
 ---
 
+## Screenshots & Diagrams
+
+| Diagram | Preview |
+|---------|---------|
+| [Pipeline Overview](brand-assets/screenshots/pipeline-overview.svg) | 12-step autonomous content pipeline with metrics |
+| [System Architecture](brand-assets/screenshots/architecture.svg) | All 16 modules, external integrations, WordPress core |
+| [Admin Panel — General](brand-assets/screenshots/admin-panel.svg) | WP Admin tabbed settings UI mockup |
+| [Queue Manager](brand-assets/screenshots/queue-manager.svg) | Topic queue, pipeline trigger, add-topics form |
+| [Monitoring Dashboard](brand-assets/screenshots/monitoring-dashboard.svg) | Metric cards, alert history table, action buttons |
+
+![Pipeline Overview](brand-assets/screenshots/pipeline-overview.svg)
+
+---
+
 ## What It Does
 
 PearBlog Engine generates, optimizes, and publishes SEO articles autonomously — every hour via WP-Cron — with zero manual intervention.
 
-**Pipeline (8 steps, ~55 sec, $0.08/article):**
+**Pipeline (12 steps, ~55 sec, $0.08/article):**
 
 ```
-Topic Queue → PromptBuilder → GPT-4o-mini → SEO Engine
-  → Programmatic SEO → MonetizationEngine → DALL-E 3 Image → Publish
+Topic Queue → PromptBuilder → GPT-4o-mini → DuplicateCheck → Draft
+  → SEOEngine → MonetizationEngine → InternalLinker → DALL-E 3
+  → DuplicateIndex → Publish → QualityScore + Alert
 ```
 
 ---

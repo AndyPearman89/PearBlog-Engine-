@@ -1,0 +1,143 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="wpBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#f0f0f1"/>
+      <stop offset="100%" style="stop-color:#e5e5e5"/>
+    </linearGradient>
+    <filter id="sh">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Browser chrome -->
+  <rect width="1100" height="720" rx="10" fill="#e8e8e8"/>
+  <rect x="0" y="0" width="1100" height="38" rx="10" fill="#d8d8d8"/>
+  <rect x="0" y="26" width="1100" height="12" fill="#d8d8d8"/>
+  <circle cx="22" cy="19" r="6" fill="#fc605b"/>
+  <circle cx="42" cy="19" r="6" fill="#fdbc40"/>
+  <circle cx="62" cy="19" r="6" fill="#34c84a"/>
+  <rect x="140" y="8" width="600" height="22" rx="4" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="440" y="23" text-anchor="middle" fill="#666" font-size="11">wordpress.local/wp-admin/admin.php?page=pearblog-engine</text>
+
+  <!-- WP Admin sidebar -->
+  <rect x="0" y="38" width="180" height="682" fill="#23282d"/>
+  <!-- Sidebar menu items -->
+  <text x="20" y="75" fill="#eee" font-size="13" font-weight="700">🍐 PearBlog Engine</text>
+  <rect x="0" y="82" width="180" height="1" fill="#444"/>
+  <text x="30" y="105" fill="#ccc" font-size="11">⚙️  Settings</text>
+  <text x="30" y="127" fill="#999" font-size="11">🗺️  Dashboard</text>
+  <text x="30" y="149" fill="#999" font-size="11">📝  Posts</text>
+  <text x="30" y="171" fill="#999" font-size="11">🖼️  Media</text>
+  <rect x="0" y="180" width="180" height="1" fill="#333"/>
+  <text x="30" y="200" fill="#999" font-size="10">📌 Pages</text>
+  <text x="30" y="220" fill="#999" font-size="10">💬 Comments</text>
+  <text x="30" y="240" fill="#999" font-size="10">🎨 Appearance</text>
+  <text x="30" y="260" fill="#999" font-size="10">🔌 Plugins</text>
+  <text x="30" y="280" fill="#999" font-size="10">👤 Users</text>
+  <text x="30" y="300" fill="#999" font-size="10">🛠️  Tools</text>
+  <text x="30" y="320" fill="#999" font-size="10">⚙️  Settings</text>
+
+  <!-- Main content area -->
+  <rect x="180" y="38" width="920" height="682" fill="#f0f0f1"/>
+
+  <!-- WP Admin top bar -->
+  <rect x="180" y="38" width="920" height="36" fill="#23282d"/>
+  <text x="195" y="61" fill="#fff" font-size="12">PearBlog Engine  ·  WordPress</text>
+  <text x="1070" y="61" fill="#bbb" font-size="11" text-anchor="end">admin  👤</text>
+
+  <!-- Page header card -->
+  <rect x="195" y="85" width="890" height="72" rx="8" fill="#fff" filter="url(#sh)"/>
+  <!-- PearBlog header icon + title -->
+  <text x="218" y="120" fill="#1d2327" font-size="28">🍐</text>
+  <text x="258" y="112" fill="#1d2327" font-size="20" font-weight="700">PearBlog Engine</text>
+  <text x="258" y="132" fill="#666" font-size="11">Autonomous AI content production system</text>
+  <!-- Status badges -->
+  <rect x="860" y="100" width="80" height="22" rx="11" fill="#00a32a"/>
+  <text x="900" y="115" text-anchor="middle" fill="#fff" font-size="10" font-weight="600">✓ OpenAI</text>
+  <rect x="948" y="100" width="50" height="22" rx="11" fill="#1d2327" stroke="#444" stroke-width="1"/>
+  <text x="973" y="115" text-anchor="middle" fill="#bbb" font-size="9">v6.0.2</text>
+  <rect x="1005" y="100" width="70" height="22" rx="11" fill="#b45309"/>
+  <text x="1040" y="115" text-anchor="middle" fill="#fff" font-size="9">5 in queue</text>
+
+  <!-- ── Tab navigation ── -->
+  <rect x="195" y="168" width="890" height="42" rx="8" fill="#fff" filter="url(#sh)"/>
+  <!-- Active tab: General -->
+  <rect x="205" y="172" width="80" height="34" rx="6" fill="#f0f0f1"/>
+  <text x="245" y="192" text-anchor="middle" fill="#1d2327" font-size="12" font-weight="700">⚙️ General</text>
+  <!-- Other tabs -->
+  <text x="315" y="192" fill="#666" font-size="11">🖼️ AI Images</text>
+  <text x="415" y="192" fill="#666" font-size="11">📈 SEO</text>
+  <text x="495" y="192" fill="#666" font-size="11">💰 Monetization</text>
+  <text x="620" y="192" fill="#666" font-size="11">✉️ Email</text>
+  <text x="690" y="192" fill="#666" font-size="11">📋 Queue</text>
+  <text x="765" y="192" fill="#666" font-size="11">🤖 Automation</text>
+  <text x="870" y="192" fill="#666" font-size="11">📊 Monitoring</text>
+
+  <!-- ── General Tab content ── -->
+
+  <!-- Settings card -->
+  <rect x="195" y="222" width="890" height="390" rx="8" fill="#fff" filter="url(#sh)"/>
+  <!-- card header -->
+  <rect x="195" y="222" width="890" height="44" rx="8" fill="#fff"/>
+  <rect x="195" y="250" width="890" height="16" fill="#fff"/>
+  <text x="222" y="248" fill="#1d2327" font-size="13" font-weight="700">⚙️  General Settings</text>
+  <line x1="205" y1="266" x2="1075" y2="266" stroke="#ddd" stroke-width="1"/>
+
+  <!-- Form table rows -->
+  <!-- Autonomous Mode -->
+  <text x="230" y="293" fill="#3c4146" font-size="12" font-weight="600">Autonomous Mode</text>
+  <rect x="460" y="280" width="16" height="16" rx="3" fill="#00a32a"/>
+  <text x="460" y="292" fill="#fff" font-size="12" text-anchor="middle">✓</text>
+  <text x="482" y="292" fill="#666" font-size="11">Enable fully autonomous content pipeline (WP-Cron)</text>
+  <text x="482" y="308" fill="#999" font-size="10">When enabled, the pipeline runs automatically every hour and publishes articles from the topic queue.</text>
+
+  <line x1="210" y1="322" x2="1070" y2="322" stroke="#f0f0f1" stroke-width="1"/>
+
+  <!-- OpenAI API Key -->
+  <text x="230" y="344" fill="#3c4146" font-size="12" font-weight="600">OpenAI API Key</text>
+  <rect x="460" y="332" width="400" height="26" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="474" y="349" fill="#666" font-size="11">••••••••••••••••••••••••••••••••••••••••</text>
+
+  <line x1="210" y1="367" x2="1070" y2="367" stroke="#f0f0f1" stroke-width="1"/>
+
+  <!-- Automation API Key -->
+  <text x="230" y="388" fill="#3c4146" font-size="12" font-weight="600">Automation API Key</text>
+  <rect x="460" y="376" width="400" height="26" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="474" y="393" fill="#666" font-size="11">••••••••••••••••••••••••</text>
+  <text x="474" y="412" fill="#999" font-size="10">Used for external automation (GitHub Actions). Set as API_KEY secret in your repository.</text>
+
+  <line x1="210" y1="422" x2="1070" y2="422" stroke="#f0f0f1" stroke-width="1"/>
+
+  <!-- Industry/Niche -->
+  <text x="230" y="443" fill="#3c4146" font-size="12" font-weight="600">Industry / Niche</text>
+  <rect x="460" y="431" width="200" height="26" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="474" y="448" fill="#1d2327" font-size="11">travel</text>
+
+  <line x1="210" y1="467" x2="1070" y2="467" stroke="#f0f0f1" stroke-width="1"/>
+
+  <!-- Writing Tone -->
+  <text x="230" y="488" fill="#3c4146" font-size="12" font-weight="600">Writing Tone</text>
+  <rect x="460" y="476" width="160" height="26" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="474" y="493" fill="#1d2327" font-size="11">conversational  ▾</text>
+
+  <line x1="210" y1="512" x2="1070" y2="512" stroke="#f0f0f1" stroke-width="1"/>
+
+  <!-- Publish Rate -->
+  <text x="230" y="533" fill="#3c4146" font-size="12" font-weight="600">Publish Rate (articles/cycle)</text>
+  <rect x="460" y="521" width="80" height="26" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="474" y="538" fill="#1d2327" font-size="11">1</text>
+
+  <line x1="210" y1="557" x2="1070" y2="557" stroke="#f0f0f1" stroke-width="1"/>
+
+  <!-- Language -->
+  <text x="230" y="578" fill="#3c4146" font-size="12" font-weight="600">Language (ISO 639-1)</text>
+  <rect x="460" y="566" width="80" height="26" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="474" y="583" fill="#1d2327" font-size="11">en</text>
+
+  <!-- Save button -->
+  <rect x="460" y="597" width="130" height="32" rx="4" fill="#00a32a"/>
+  <text x="525" y="617" text-anchor="middle" fill="#fff" font-size="13" font-weight="600">Save Changes</text>
+
+  <!-- Bottom bar info -->
+  <text x="490" y="690" text-anchor="middle" fill="#8c8f94" font-size="10">PearBlog Engine v6.0.2 · PHP 8.2 · WP 6.5 · 238 tests passing</text>
+</svg>

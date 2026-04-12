@@ -1,0 +1,238 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 800" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#161b22"/>
+    </linearGradient>
+    <linearGradient id="coreGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f6feb"/>
+      <stop offset="100%" style="stop-color:#1158c7"/>
+    </linearGradient>
+    <linearGradient id="greenGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#238636"/>
+      <stop offset="100%" style="stop-color:#1a7f37"/>
+    </linearGradient>
+    <linearGradient id="purpleGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8957e5"/>
+      <stop offset="100%" style="stop-color:#6e40c9"/>
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#d29922"/>
+      <stop offset="100%" style="stop-color:#bb8009"/>
+    </linearGradient>
+    <linearGradient id="redGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#da3633"/>
+      <stop offset="100%" style="stop-color:#b62324"/>
+    </linearGradient>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#58a6ff"/>
+    </marker>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="5" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1100" height="800" rx="14" fill="url(#bgGrad)"/>
+
+  <!-- Title -->
+  <text x="550" y="44" text-anchor="middle" fill="#f0f6fc" font-size="22" font-weight="700">🍐 PearBlog Engine v6.0 — System Architecture</text>
+  <text x="550" y="68" text-anchor="middle" fill="#8b949e" font-size="13">WordPress MU-Plugin · PSR-4 autoloaded · 16 namespaced modules · 238 PHPUnit tests</text>
+
+  <!-- ═══ EXTERNAL SERVICES (top) ═══ -->
+  <text x="550" y="100" text-anchor="middle" fill="#8b949e" font-size="11" font-weight="600">EXTERNAL SERVICES</text>
+  <line x1="80" y1="108" x2="470" y2="108" stroke="#30363d" stroke-width="1" stroke-dasharray="4,4"/>
+  <line x1="630" y1="108" x2="1020" y2="108" stroke="#30363d" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- OpenAI -->
+  <g filter="url(#shadow)">
+    <rect x="80" y="115" width="130" height="56" rx="8" fill="#21262d" stroke="#8957e5" stroke-width="1.5"/>
+    <text x="145" y="138" text-anchor="middle" fill="#d2a8ff" font-size="20">🤖</text>
+    <text x="145" y="156" text-anchor="middle" fill="#d2a8ff" font-size="11" font-weight="600">OpenAI</text>
+    <text x="145" y="168" text-anchor="middle" fill="#8b949e" font-size="9">GPT-4o-mini · DALL-E 3</text>
+  </g>
+
+  <!-- Slack/Discord -->
+  <g filter="url(#shadow)">
+    <rect x="240" y="115" width="130" height="56" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+    <text x="305" y="138" text-anchor="middle" fill="#79c0ff" font-size="20">📣</text>
+    <text x="305" y="156" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="600">Slack / Discord</text>
+    <text x="305" y="168" text-anchor="middle" fill="#8b949e" font-size="9">Webhook alerts</text>
+  </g>
+
+  <!-- ESP -->
+  <g filter="url(#shadow)">
+    <rect x="400" y="115" width="130" height="56" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+    <text x="465" y="138" text-anchor="middle" fill="#79c0ff" font-size="20">✉️</text>
+    <text x="465" y="156" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="600">ESP (Email)</text>
+    <text x="465" y="168" text-anchor="middle" fill="#8b949e" font-size="9">Mailchimp · ConvertKit</text>
+  </g>
+
+  <!-- Social -->
+  <g filter="url(#shadow)">
+    <rect x="560" y="115" width="130" height="56" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+    <text x="625" y="138" text-anchor="middle" fill="#79c0ff" font-size="20">📱</text>
+    <text x="625" y="156" text-anchor="middle" fill="#79c0ff" font-size="11" font-weight="600">Social Media</text>
+    <text x="625" y="168" text-anchor="middle" fill="#8b949e" font-size="9">Twitter · FB · LinkedIn</text>
+  </g>
+
+  <!-- PagerDuty -->
+  <g filter="url(#shadow)">
+    <rect x="720" y="115" width="130" height="56" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+    <text x="785" y="138" text-anchor="middle" fill="#ffa657" font-size="20">🚨</text>
+    <text x="785" y="156" text-anchor="middle" fill="#ffa657" font-size="11" font-weight="600">PagerDuty</text>
+    <text x="785" y="168" text-anchor="middle" fill="#8b949e" font-size="9">P0 escalations</text>
+  </g>
+
+  <!-- GitHub Actions -->
+  <g filter="url(#shadow)">
+    <rect x="880" y="115" width="140" height="56" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1.5"/>
+    <text x="950" y="138" text-anchor="middle" fill="#f0f6fc" font-size="20">⚙️</text>
+    <text x="950" y="156" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="600">GitHub Actions</text>
+    <text x="950" y="168" text-anchor="middle" fill="#8b949e" font-size="9">CI · Automation webhook</text>
+  </g>
+
+  <!-- Connector lines from external down -->
+  <line x1="145" y1="171" x2="145" y2="210" stroke="#8957e5" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="305" y1="171" x2="305" y2="210" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="465" y1="171" x2="465" y2="210" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="625" y1="171" x2="625" y2="210" stroke="#58a6ff" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="785" y1="171" x2="785" y2="210" stroke="#ffa657" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+  <line x1="950" y1="171" x2="950" y2="210" stroke="#8b949e" stroke-width="1.5" stroke-dasharray="4,3" marker-end="url(#arr)"/>
+
+  <!-- ═══ CORE PLUGIN BOX ═══ -->
+  <rect x="70" y="210" width="960" height="440" rx="12" fill="#161b22" stroke="#58a6ff" stroke-width="2"/>
+  <text x="550" y="232" text-anchor="middle" fill="#58a6ff" font-size="12" font-weight="700">PearBlog Engine MU-Plugin  (mu-plugins/pearblog-engine/src/)</text>
+
+  <!-- ── Central: ContentPipeline ── -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="248" width="340" height="72" rx="10" fill="url(#coreGrad)"/>
+    <text x="550" y="272" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">⚡ ContentPipeline</text>
+    <text x="550" y="291" text-anchor="middle" fill="#a5d6ff" font-size="10">12-step orchestrator · Hourly WP-Cron · ~55 sec/article</text>
+    <text x="550" y="308" text-anchor="middle" fill="#a5d6ff" font-size="9">Topic→AI→DupCheck→Draft→SEO→$→Link→Image→DupIdx→Publish→QualityScore</text>
+  </g>
+
+  <!-- Arrows from pipeline outward -->
+  <line x1="380" y1="284" x2="328" y2="284" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="720" y1="284" x2="772" y2="284" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arr)"/>
+  <line x1="550" y1="320" x2="550" y2="360" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- ── Left column ── -->
+
+  <!-- AIClient -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="248" width="230" height="70" rx="8" fill="url(#purpleGrad)"/>
+    <text x="205" y="272" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">🤖 AI/AIClient</text>
+    <text x="205" y="290" text-anchor="middle" fill="#d2a8ff" font-size="9">GPT-4o-mini · Retry · Circuit Breaker</text>
+    <text x="205" y="306" text-anchor="middle" fill="#d2a8ff" font-size="9">Cost tracking · pearblog_ai_cost_cents</text>
+  </g>
+  <line x1="320" y1="283" x2="335" y2="283" stroke="#8957e5" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- ImageGenerator -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="334" width="230" height="60" rx="8" fill="url(#purpleGrad)"/>
+    <text x="205" y="358" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">🎨 AI/ImageGenerator</text>
+    <text x="205" y="376" text-anchor="middle" fill="#d2a8ff" font-size="9">DALL-E 3 featured images · Media library</text>
+  </g>
+
+  <!-- Content modules -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="410" width="230" height="70" rx="8" fill="url(#greenGrad)"/>
+    <text x="205" y="434" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">📝 Content/</text>
+    <text x="205" y="452" text-anchor="middle" fill="#adf5b5" font-size="9">TopicQueue · DuplicateDetector</text>
+    <text x="205" y="468" text-anchor="middle" fill="#adf5b5" font-size="9">ContentValidator · QualityScorer · RefreshEngine</text>
+  </g>
+
+  <!-- PromptBuilderFactory -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="496" width="230" height="60" rx="8" fill="url(#greenGrad)"/>
+    <text x="205" y="520" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">🔧 Content/PromptBuilderFactory</text>
+    <text x="205" y="538" text-anchor="middle" fill="#adf5b5" font-size="9">7 industry builders · Travel · Tech · Finance…</text>
+  </g>
+
+  <!-- Keywords + Cache -->
+  <g filter="url(#shadow)">
+    <rect x="90" y="572" width="230" height="60" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="205" y="596" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">🔑 Keywords/ · 🗄️ Cache/</text>
+    <text x="205" y="614" text-anchor="middle" fill="#8b949e" font-size="9">KeywordCluster · ContentCache (transient)</text>
+  </g>
+
+  <!-- ── Right column ── -->
+
+  <!-- Monitoring -->
+  <g filter="url(#shadow)">
+    <rect x="780" y="248" width="230" height="70" rx="8" fill="url(#redGrad)"/>
+    <text x="895" y="272" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">📊 Monitoring/</text>
+    <text x="895" y="290" text-anchor="middle" fill="#ffa198" font-size="9">AlertManager · HealthController</text>
+    <text x="895" y="306" text-anchor="middle" fill="#ffa198" font-size="9">PerformanceDashboard · Logger</text>
+  </g>
+  <line x1="765" y1="283" x2="775" y2="283" stroke="#da3633" stroke-width="1.5" stroke-dasharray="4,3"/>
+
+  <!-- API + Webhook -->
+  <g filter="url(#shadow)">
+    <rect x="780" y="334" width="230" height="60" rx="8" fill="url(#coreGrad)"/>
+    <text x="895" y="358" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">🌐 API/</text>
+    <text x="895" y="376" text-anchor="middle" fill="#a5d6ff" font-size="9">AutomationController · WebhookManager · RateLimiter</text>
+  </g>
+
+  <!-- SEO -->
+  <g filter="url(#shadow)">
+    <rect x="780" y="410" width="230" height="70" rx="8" fill="url(#greenGrad)"/>
+    <text x="895" y="434" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">🔍 SEO/</text>
+    <text x="895" y="452" text-anchor="middle" fill="#adf5b5" font-size="9">SEOEngine · ProgrammaticSEO · SchemaManager</text>
+    <text x="895" y="468" text-anchor="middle" fill="#adf5b5" font-size="9">InternalLinker · Yoast/RankMath compat</text>
+  </g>
+
+  <!-- Admin + CLI -->
+  <g filter="url(#shadow)">
+    <rect x="780" y="496" width="230" height="60" rx="8" fill="url(#goldGrad)"/>
+    <text x="895" y="520" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">⚙️ Admin/ · 💻 CLI/</text>
+    <text x="895" y="538" text-anchor="middle" fill="#ffd33d" font-size="9">AdminPage · DashboardWidget · PearBlogCommand</text>
+  </g>
+
+  <!-- Social + Email + Scheduler -->
+  <g filter="url(#shadow)">
+    <rect x="780" y="572" width="230" height="60" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="895" y="596" text-anchor="middle" fill="#f0f6fc" font-size="12" font-weight="700">📱 Social/ · ✉️ Email/ · ⏰ Scheduler/</text>
+    <text x="895" y="614" text-anchor="middle" fill="#8b949e" font-size="9">SocialPublisher · EmailDigest · CronManager</text>
+  </g>
+
+  <!-- ── Center bottom: Monetization + Tenant ── -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="360" width="340" height="60" rx="8" fill="url(#goldGrad)"/>
+    <text x="550" y="384" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">💰 Monetization/ · 🏢 Tenant/</text>
+    <text x="550" y="402" text-anchor="middle" fill="#ffd33d" font-size="9">MonetizationEngine · AdSense · Affiliate · SaaS CTA · TenantContext</text>
+  </g>
+
+  <!-- Center bottom 2: Tests -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="440" width="340" height="56" rx="8" fill="#21262d" stroke="#7ee787" stroke-width="1.5"/>
+    <text x="550" y="465" text-anchor="middle" fill="#7ee787" font-size="12" font-weight="700">🧪 tests/php/Unit/ + Integration/</text>
+    <text x="550" y="483" text-anchor="middle" fill="#8b949e" font-size="9">238 tests · 489 assertions · PHPUnit · GitHub Actions CI</text>
+  </g>
+
+  <!-- Center bottom 3: Theme -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="514" width="340" height="56" rx="8" fill="#21262d" stroke="#79c0ff" stroke-width="1.5"/>
+    <text x="550" y="539" text-anchor="middle" fill="#79c0ff" font-size="12" font-weight="700">🎨 theme/pearblog-theme/ v5.2</text>
+    <text x="550" y="557" text-anchor="middle" fill="#8b949e" font-size="9">SEO-first layout · Dark mode · Reading progress · 6 templates</text>
+  </g>
+
+  <!-- Center bottom 4: Scripts + Clients -->
+  <g filter="url(#shadow)">
+    <rect x="380" y="588" width="340" height="50" rx="8" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="550" y="610" text-anchor="middle" fill="#f0f6fc" font-size="11" font-weight="700">🐍 scripts/ · JS/Python clients/ · 📦 examples/</text>
+    <text x="550" y="628" text-anchor="middle" fill="#8b949e" font-size="9">automation_orchestrator.py · pearblog-client.js · Postman collection</text>
+  </g>
+
+  <!-- ═══ WORDPRESS CORE (bottom) ═══ -->
+  <rect x="70" y="660" width="960" height="52" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <text x="550" y="682" text-anchor="middle" fill="#8b949e" font-size="13" font-weight="700">WordPress Core (PSR-4 Autoload · WP-Cron · REST API · MySQL · wp_options · post_meta)</text>
+  <text x="550" y="700" text-anchor="middle" fill="#6e7681" font-size="10">PHP 8.1+ · WordPress 6.0+ · Required: OpenAI API key</text>
+
+  <!-- Arrows center → wordpress -->
+  <line x1="550" y1="643" x2="550" y2="655" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Version -->
+  <text x="550" y="787" text-anchor="middle" fill="#6e7681" font-size="10">PearBlog Engine v6.0.2 · Architecture Diagram · 2026-04-12</text>
+</svg>

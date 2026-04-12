@@ -1,193 +1,245 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 520" font-family="Segoe UI, Arial, sans-serif">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 980 640" font-family="Segoe UI, Arial, sans-serif">
   <defs>
     <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#0d1117;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#161b22;stop-opacity:1"/>
+      <stop offset="0%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#161b22"/>
     </linearGradient>
     <linearGradient id="stepGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#238636;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#1a7f37;stop-opacity:1"/>
+      <stop offset="0%" style="stop-color:#238636"/>
+      <stop offset="100%" style="stop-color:#1a7f37"/>
     </linearGradient>
     <linearGradient id="aiGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#8957e5;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#6e40c9;stop-opacity:1"/>
+      <stop offset="0%" style="stop-color:#8957e5"/>
+      <stop offset="100%" style="stop-color:#6e40c9"/>
+    </linearGradient>
+    <linearGradient id="seoGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#1f6feb"/>
+      <stop offset="100%" style="stop-color:#1158c7"/>
     </linearGradient>
     <linearGradient id="moneyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#d29922;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#bb8009;stop-opacity:1"/>
+      <stop offset="0%" style="stop-color:#d29922"/>
+      <stop offset="100%" style="stop-color:#bb8009"/>
     </linearGradient>
-    <linearGradient id="publishGrad" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" style="stop-color:#1f6feb;stop-opacity:1"/>
-      <stop offset="100%" style="stop-color:#1158c7;stop-opacity:1"/>
+    <linearGradient id="pubGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#da3633"/>
+      <stop offset="100%" style="stop-color:#b62324"/>
     </linearGradient>
-    <marker id="arrowhead" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
-      <polygon points="0 0, 8 3, 0 6" fill="#30363d"/>
+    <marker id="arr" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <polygon points="0 0,8 3,0 6" fill="#58a6ff"/>
     </marker>
-    <filter id="shadow" x="-5%" y="-5%" width="115%" height="120%">
-      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.5"/>
+    </filter>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
     </filter>
   </defs>
 
   <!-- Background -->
-  <rect width="900" height="520" rx="12" fill="url(#bgGrad)"/>
+  <rect width="980" height="640" rx="14" fill="url(#bgGrad)"/>
 
   <!-- Title -->
-  <text x="450" y="42" text-anchor="middle" fill="#f0f6fc" font-size="22" font-weight="700">🍐 PearBlog Engine — Autonomous Content Pipeline</text>
-  <text x="450" y="66" text-anchor="middle" fill="#8b949e" font-size="13">7 steps · ~55 sec · $0.08 per article · 100% automated via WP-Cron</text>
+  <text x="490" y="44" text-anchor="middle" fill="#f0f6fc" font-size="22" font-weight="700">🍐 PearBlog Engine v6.0 — Autonomous Content Pipeline</text>
+  <text x="490" y="68" text-anchor="middle" fill="#8b949e" font-size="13">12 steps · ~55 sec · $0.08 per article · 100% automated via WP-Cron · 238 tests passing</text>
+
+  <!-- ═══════════════════ ROW 1 (Steps 1-6, left→right) ═══════════════════ -->
 
   <!-- Step 1: Topic Queue -->
   <g filter="url(#shadow)">
-    <rect x="30" y="100" width="110" height="90" rx="10" fill="url(#stepGrad)"/>
-    <text x="85" y="128" text-anchor="middle" fill="#fff" font-size="22">📋</text>
-    <text x="85" y="150" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">Topic Queue</text>
-    <text x="85" y="168" text-anchor="middle" fill="#adf5b5" font-size="9">Step 1</text>
+    <rect x="28" y="95" width="120" height="88" rx="10" fill="url(#stepGrad)"/>
+    <text x="88" y="122" text-anchor="middle" fill="#fff" font-size="21">📋</text>
+    <text x="88" y="143" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Topic Queue</text>
+    <text x="88" y="159" text-anchor="middle" fill="#adf5b5" font-size="9">Step 01</text>
+    <text x="88" y="173" text-anchor="middle" fill="#adf5b5" font-size="8">WP option ring-buffer</text>
   </g>
+  <line x1="148" y1="139" x2="166" y2="139" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Arrow 1→2 -->
-  <line x1="140" y1="145" x2="162" y2="145" stroke="#30363d" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <!-- Step 2: PromptBuilder -->
+  <!-- Step 2: PromptBuilderFactory -->
   <g filter="url(#shadow)">
-    <rect x="162" y="100" width="110" height="90" rx="10" fill="url(#stepGrad)"/>
-    <text x="217" y="128" text-anchor="middle" fill="#fff" font-size="22">🔧</text>
-    <text x="217" y="150" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">PromptBuilder</text>
-    <text x="217" y="168" text-anchor="middle" fill="#adf5b5" font-size="9">Step 2 · Factory</text>
+    <rect x="166" y="95" width="120" height="88" rx="10" fill="url(#stepGrad)"/>
+    <text x="226" y="122" text-anchor="middle" fill="#fff" font-size="21">🔧</text>
+    <text x="226" y="143" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">PromptBuilder</text>
+    <text x="226" y="159" text-anchor="middle" fill="#adf5b5" font-size="9">Step 02 · Factory</text>
+    <text x="226" y="173" text-anchor="middle" fill="#adf5b5" font-size="8">7 industry builders</text>
   </g>
-
-  <!-- Arrow 2→3 -->
-  <line x1="272" y1="145" x2="294" y2="145" stroke="#30363d" stroke-width="2" marker-end="url(#arrowhead)"/>
+  <line x1="286" y1="139" x2="304" y2="139" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
   <!-- Step 3: GPT-4o-mini -->
   <g filter="url(#shadow)">
-    <rect x="294" y="100" width="110" height="90" rx="10" fill="url(#aiGrad)"/>
-    <text x="349" y="128" text-anchor="middle" fill="#fff" font-size="22">🤖</text>
-    <text x="349" y="150" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">GPT-4o-mini</text>
-    <text x="349" y="168" text-anchor="middle" fill="#d2a8ff" font-size="9">Step 3 · AI Content</text>
+    <rect x="304" y="95" width="120" height="88" rx="10" fill="url(#aiGrad)"/>
+    <text x="364" y="122" text-anchor="middle" fill="#fff" font-size="21">🤖</text>
+    <text x="364" y="143" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">GPT-4o-mini</text>
+    <text x="364" y="159" text-anchor="middle" fill="#d2a8ff" font-size="9">Step 03 · AI Content</text>
+    <text x="364" y="173" text-anchor="middle" fill="#d2a8ff" font-size="8">Retry · circuit breaker</text>
   </g>
+  <line x1="424" y1="139" x2="442" y2="139" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Arrow 3→4 -->
-  <line x1="404" y1="145" x2="426" y2="145" stroke="#30363d" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <!-- Step 4: SEO Engine -->
+  <!-- Step 4: DuplicateDetector -->
   <g filter="url(#shadow)">
-    <rect x="426" y="100" width="110" height="90" rx="10" fill="url(#stepGrad)"/>
-    <text x="481" y="128" text-anchor="middle" fill="#fff" font-size="22">🔍</text>
-    <text x="481" y="150" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">SEO Engine</text>
-    <text x="481" y="168" text-anchor="middle" fill="#adf5b5" font-size="9">Step 4 · Schema.org</text>
+    <rect x="442" y="95" width="120" height="88" rx="10" fill="url(#stepGrad)"/>
+    <text x="502" y="122" text-anchor="middle" fill="#fff" font-size="21">🔎</text>
+    <text x="502" y="143" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Duplicate Check</text>
+    <text x="502" y="159" text-anchor="middle" fill="#adf5b5" font-size="9">Step 04 · TF-IDF</text>
+    <text x="502" y="173" text-anchor="middle" fill="#adf5b5" font-size="8">Blocks if sim ≥ 80%</text>
   </g>
+  <line x1="562" y1="139" x2="580" y2="139" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Arrow 4→5 -->
-  <line x1="536" y1="145" x2="558" y2="145" stroke="#30363d" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <!-- Step 5: Monetization -->
+  <!-- Step 5: Draft -->
   <g filter="url(#shadow)">
-    <rect x="558" y="100" width="110" height="90" rx="10" fill="url(#moneyGrad)"/>
-    <text x="613" y="128" text-anchor="middle" fill="#fff" font-size="22">💰</text>
-    <text x="613" y="150" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">Monetization</text>
-    <text x="613" y="168" text-anchor="middle" fill="#ffd33d" font-size="9">Step 5 · Ads + SaaS</text>
+    <rect x="580" y="95" width="120" height="88" rx="10" fill="url(#seoGrad)"/>
+    <text x="640" y="122" text-anchor="middle" fill="#fff" font-size="21">📝</text>
+    <text x="640" y="143" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Draft Post</text>
+    <text x="640" y="159" text-anchor="middle" fill="#a5d6ff" font-size="9">Step 05 · WordPress</text>
+    <text x="640" y="173" text-anchor="middle" fill="#a5d6ff" font-size="8">wp_insert_post()</text>
   </g>
+  <line x1="700" y1="139" x2="718" y2="139" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Arrow 5→6 -->
-  <line x1="668" y1="145" x2="690" y2="145" stroke="#30363d" stroke-width="2" marker-end="url(#arrowhead)"/>
-
-  <!-- Step 6: DALL-E 3 -->
+  <!-- Step 6: SEOEngine -->
   <g filter="url(#shadow)">
-    <rect x="690" y="100" width="110" height="90" rx="10" fill="url(#aiGrad)"/>
-    <text x="745" y="128" text-anchor="middle" fill="#fff" font-size="22">🎨</text>
-    <text x="745" y="150" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">DALL-E 3</text>
-    <text x="745" y="168" text-anchor="middle" fill="#d2a8ff" font-size="9">Step 6 · Image</text>
+    <rect x="718" y="95" width="120" height="88" rx="10" fill="url(#seoGrad)"/>
+    <text x="778" y="122" text-anchor="middle" fill="#fff" font-size="21">🔍</text>
+    <text x="778" y="143" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">SEO Engine</text>
+    <text x="778" y="159" text-anchor="middle" fill="#a5d6ff" font-size="9">Step 06 · Schema.org</text>
+    <text x="778" y="173" text-anchor="middle" fill="#a5d6ff" font-size="8">OG · meta description</text>
   </g>
 
-  <!-- Arrow 6→7 (curves down) -->
-  <path d="M 800 145 Q 850 145 850 240 Q 850 280 800 280" fill="none" stroke="#30363d" stroke-width="2"/>
+  <!-- Bend right→down at end of row 1 -->
+  <path d="M 838 139 Q 870 139 870 220 Q 870 260 838 260" fill="none" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Step 7: Publish -->
+  <!-- ═══════════════════ ROW 2 (Steps 7-12, right→left) ═══════════════════ -->
+
+  <!-- Step 7: Monetization -->
   <g filter="url(#shadow)">
-    <rect x="690" y="230" width="110" height="90" rx="10" fill="url(#publishGrad)"/>
-    <text x="745" y="258" text-anchor="middle" fill="#fff" font-size="22">🚀</text>
-    <text x="745" y="280" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">Publish</text>
-    <text x="745" y="298" text-anchor="middle" fill="#a5d6ff" font-size="9">Step 7 · WordPress</text>
+    <rect x="718" y="216" width="120" height="88" rx="10" fill="url(#moneyGrad)"/>
+    <text x="778" y="243" text-anchor="middle" fill="#fff" font-size="21">💰</text>
+    <text x="778" y="264" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Monetization</text>
+    <text x="778" y="280" text-anchor="middle" fill="#ffd33d" font-size="9">Step 07 · AdSense</text>
+    <text x="778" y="294" text-anchor="middle" fill="#ffd33d" font-size="8">Affiliate · SaaS CTA</text>
   </g>
+  <line x1="718" y1="260" x2="700" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)" transform="rotate(180 709 260)"/>
 
-  <!-- Bottom panels -->
-
-  <!-- Modules panel -->
+  <!-- Step 8: InternalLinker -->
   <g filter="url(#shadow)">
-    <rect x="30" y="240" width="310" height="250" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
-    <text x="185" y="268" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📦 Core Modules</text>
-
-    <text x="50" y="295" fill="#7ee787" font-size="11">ContentPipeline</text>
-    <text x="210" y="295" fill="#8b949e" font-size="10">7-step orchestrator</text>
-
-    <text x="50" y="318" fill="#7ee787" font-size="11">AIClient</text>
-    <text x="210" y="318" fill="#8b949e" font-size="10">GPT-4o-mini integration</text>
-
-    <text x="50" y="341" fill="#7ee787" font-size="11">SEOEngine</text>
-    <text x="210" y="341" fill="#8b949e" font-size="10">Meta + Schema.org</text>
-
-    <text x="50" y="364" fill="#7ee787" font-size="11">MonetizationEngine</text>
-    <text x="210" y="364" fill="#8b949e" font-size="10">AdSense + SaaS CTA</text>
-
-    <text x="50" y="387" fill="#7ee787" font-size="11">CronManager</text>
-    <text x="210" y="387" fill="#8b949e" font-size="10">WP-Cron + multisite</text>
-
-    <text x="50" y="410" fill="#7ee787" font-size="11">PromptBuilderFactory</text>
-    <text x="210" y="410" fill="#8b949e" font-size="10">4 specialized builders</text>
-
-    <text x="50" y="433" fill="#7ee787" font-size="11">ImageGenerator</text>
-    <text x="210" y="433" fill="#8b949e" font-size="10">DALL-E 3 featured images</text>
-
-    <text x="50" y="456" fill="#7ee787" font-size="11">AutomationController</text>
-    <text x="210" y="456" fill="#8b949e" font-size="10">REST API endpoints</text>
-
-    <text x="50" y="479" fill="#7ee787" font-size="11">AdminPage</text>
-    <text x="210" y="479" fill="#8b949e" font-size="10">WP Admin settings UI</text>
+    <rect x="580" y="216" width="120" height="88" rx="10" fill="url(#stepGrad)"/>
+    <text x="640" y="243" text-anchor="middle" fill="#fff" font-size="21">🔗</text>
+    <text x="640" y="264" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">InternalLinker</text>
+    <text x="640" y="280" text-anchor="middle" fill="#adf5b5" font-size="9">Step 08</text>
+    <text x="640" y="294" text-anchor="middle" fill="#adf5b5" font-size="8">Up to 5 links injected</text>
   </g>
+  <line x1="580" y1="260" x2="562" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)" transform="rotate(180 571 260)"/>
 
-  <!-- Theme panel -->
+  <!-- Step 9: ImageGenerator -->
   <g filter="url(#shadow)">
-    <rect x="360" y="240" width="200" height="250" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
-    <text x="460" y="268" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🎨 Theme Features</text>
-
-    <text x="380" y="296" fill="#79c0ff" font-size="11">• SEO-first layout</text>
-    <text x="380" y="319" fill="#79c0ff" font-size="11">• AI personalisation</text>
-    <text x="380" y="342" fill="#79c0ff" font-size="11">• A/B headline testing</text>
-    <text x="380" y="365" fill="#79c0ff" font-size="11">• Auto ad injection</text>
-    <text x="380" y="388" fill="#79c0ff" font-size="11">• Affiliate priority</text>
-    <text x="380" y="411" fill="#79c0ff" font-size="11">• Core Web Vitals</text>
-    <text x="380" y="434" fill="#79c0ff" font-size="11">• Lazy loading</text>
-    <text x="380" y="457" fill="#79c0ff" font-size="11">• Multisite branding</text>
-    <text x="380" y="480" fill="#79c0ff" font-size="11">• 12 template parts</text>
+    <rect x="442" y="216" width="120" height="88" rx="10" fill="url(#aiGrad)"/>
+    <text x="502" y="243" text-anchor="middle" fill="#fff" font-size="21">🎨</text>
+    <text x="502" y="264" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">DALL-E 3</text>
+    <text x="502" y="280" text-anchor="middle" fill="#d2a8ff" font-size="9">Step 09 · Image</text>
+    <text x="502" y="294" text-anchor="middle" fill="#d2a8ff" font-size="8">Featured image gen</text>
   </g>
+  <line x1="442" y1="260" x2="424" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)" transform="rotate(180 433 260)"/>
 
-  <!-- Metrics panel -->
+  <!-- Step 10: DuplicateIndex -->
   <g filter="url(#shadow)">
-    <rect x="580" y="340" width="290" height="150" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
-    <text x="725" y="368" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📊 Key Metrics</text>
+    <rect x="304" y="216" width="120" height="88" rx="10" fill="url(#stepGrad)"/>
+    <text x="364" y="243" text-anchor="middle" fill="#fff" font-size="21">🗂️</text>
+    <text x="364" y="264" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Dup. Index</text>
+    <text x="364" y="280" text-anchor="middle" fill="#adf5b5" font-size="9">Step 10 · Update</text>
+    <text x="364" y="294" text-anchor="middle" fill="#adf5b5" font-size="8">TF-IDF vector store</text>
+  </g>
+  <line x1="304" y1="260" x2="286" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)" transform="rotate(180 295 260)"/>
 
-    <text x="600" y="395" fill="#ffa657" font-size="11">Cost / article</text>
-    <text x="820" y="395" fill="#f0f6fc" font-size="11" text-anchor="end">$0.08</text>
+  <!-- Step 11: Publish -->
+  <g filter="url(#shadow)">
+    <rect x="166" y="216" width="120" height="88" rx="10" fill="url(#pubGrad)"/>
+    <text x="226" y="243" text-anchor="middle" fill="#fff" font-size="21">🚀</text>
+    <text x="226" y="264" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Publish</text>
+    <text x="226" y="280" text-anchor="middle" fill="#ffa198" font-size="9">Step 11 · WordPress</text>
+    <text x="226" y="294" text-anchor="middle" fill="#ffa198" font-size="8">wp_update_post()</text>
+  </g>
+  <line x1="166" y1="260" x2="148" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)" transform="rotate(180 157 260)"/>
 
-    <text x="600" y="418" fill="#ffa657" font-size="11">Pipeline time</text>
-    <text x="820" y="418" fill="#f0f6fc" font-size="11" text-anchor="end">~55 sec</text>
-
-    <text x="600" y="441" fill="#ffa657" font-size="11">Articles / month</text>
-    <text x="820" y="441" fill="#f0f6fc" font-size="11" text-anchor="end">720</text>
-
-    <text x="600" y="464" fill="#ffa657" font-size="11">Automation level</text>
-    <text x="820" y="464" fill="#f0f6fc" font-size="11" text-anchor="end">100%</text>
-
-    <text x="600" y="487" fill="#ffa657" font-size="11">Monthly cost</text>
-    <text x="820" y="487" fill="#f0f6fc" font-size="11" text-anchor="end">~$58</text>
+  <!-- Step 12: QualityScorer + AlertManager -->
+  <g filter="url(#shadow)">
+    <rect x="28" y="216" width="120" height="88" rx="10" fill="url(#moneyGrad)"/>
+    <text x="88" y="243" text-anchor="middle" fill="#fff" font-size="21">⭐</text>
+    <text x="88" y="264" text-anchor="middle" fill="#fff" font-size="11" font-weight="700">Quality + Alert</text>
+    <text x="88" y="280" text-anchor="middle" fill="#ffd33d" font-size="9">Step 12</text>
+    <text x="88" y="294" text-anchor="middle" fill="#ffd33d" font-size="8">Score · Slack · Discord</text>
   </g>
 
-  <!-- Separator lines in metrics -->
-  <line x1="600" y1="403" x2="850" y2="403" stroke="#30363d" stroke-width="0.5"/>
-  <line x1="600" y1="426" x2="850" y2="426" stroke="#30363d" stroke-width="0.5"/>
-  <line x1="600" y1="449" x2="850" y2="449" stroke="#30363d" stroke-width="0.5"/>
-  <line x1="600" y1="472" x2="850" y2="472" stroke="#30363d" stroke-width="0.5"/>
+  <!-- Arrows for row-2 (drawn as lines; already have arrow markers) -->
+  <line x1="718" y1="260" x2="702" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="580" y1="260" x2="564" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="442" y1="260" x2="426" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="304" y1="260" x2="288" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
+  <line x1="166" y1="260" x2="150" y2="260" stroke="#58a6ff" stroke-width="2" marker-end="url(#arr)"/>
 
-  <!-- Version badge -->
-  <rect x="750" y="500" width="120" height="16" rx="4" fill="#30363d"/>
-  <text x="810" y="512" text-anchor="middle" fill="#8b949e" font-size="9">PearBlog Engine v4.3</text>
+  <!-- ═══════════════════ BOTTOM INFO CARDS ═══════════════════ -->
+
+  <!-- Metrics card -->
+  <g filter="url(#shadow)">
+    <rect x="28" y="330" width="220" height="185" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="138" y="355" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📊 Key Metrics</text>
+    <line x1="40" y1="363" x2="236" y2="363" stroke="#30363d" stroke-width="0.8"/>
+    <text x="44" y="383" fill="#ffa657" font-size="11">Cost / article (with image)</text>  <text x="234" y="383" fill="#f0f6fc" font-size="11" text-anchor="end">$0.08</text>
+    <text x="44" y="404" fill="#ffa657" font-size="11">Cost / article (text only)</text>   <text x="234" y="404" fill="#f0f6fc" font-size="11" text-anchor="end">$0.0003</text>
+    <text x="44" y="425" fill="#ffa657" font-size="11">Pipeline execution time</text>      <text x="234" y="425" fill="#f0f6fc" font-size="11" text-anchor="end">~55 sec</text>
+    <text x="44" y="446" fill="#ffa657" font-size="11">Articles / month (rate=1)</text>     <text x="234" y="446" fill="#f0f6fc" font-size="11" text-anchor="end">720</text>
+    <text x="44" y="467" fill="#ffa657" font-size="11">Monthly cost (720 + images)</text>  <text x="234" y="467" fill="#f0f6fc" font-size="11" text-anchor="end">~$58</text>
+    <text x="44" y="488" fill="#ffa657" font-size="11">Unit tests passing</text>           <text x="234" y="488" fill="#7ee787" font-size="11" text-anchor="end">238 / 489 assertions</text>
+    <text x="44" y="509" fill="#ffa657" font-size="11">Automation level</text>             <text x="234" y="509" fill="#7ee787" font-size="11" text-anchor="end">100%</text>
+  </g>
+
+  <!-- Modules card -->
+  <g filter="url(#shadow)">
+    <rect x="268" y="330" width="240" height="185" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="388" y="355" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">📦 Core Modules (src/)</text>
+    <line x1="280" y1="363" x2="496" y2="363" stroke="#30363d" stroke-width="0.8"/>
+    <text x="284" y="383" fill="#7ee787" font-size="10">Pipeline/ContentPipeline.php</text>
+    <text x="284" y="400" fill="#7ee787" font-size="10">AI/ — AIClient · ImageGenerator</text>
+    <text x="284" y="417" fill="#7ee787" font-size="10">Content/ — DuplicateDetector · Queue</text>
+    <text x="284" y="434" fill="#7ee787" font-size="10">SEO/ — SEOEngine · SchemaManager</text>
+    <text x="284" y="451" fill="#7ee787" font-size="10">Monitoring/ — AlertManager · Perf.</text>
+    <text x="284" y="468" fill="#7ee787" font-size="10">Scheduler/ — CronManager</text>
+    <text x="284" y="485" fill="#7ee787" font-size="10">API/ — AutomationController</text>
+    <text x="284" y="502" fill="#7ee787" font-size="10">CLI/ — PearBlogCommand (WP-CLI)</text>
+    <text x="284" y="519" fill="#7ee787" font-size="10">Admin/ — AdminPage · Dashboard</text>
+  </g>
+
+  <!-- Integrations card -->
+  <g filter="url(#shadow)">
+    <rect x="528" y="330" width="200" height="185" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="628" y="355" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🔌 Integrations</text>
+    <line x1="540" y1="363" x2="716" y2="363" stroke="#30363d" stroke-width="0.8"/>
+    <text x="544" y="383" fill="#79c0ff" font-size="10">OpenAI GPT-4o-mini (content)</text>
+    <text x="544" y="400" fill="#79c0ff" font-size="10">OpenAI DALL-E 3 (images)</text>
+    <text x="544" y="417" fill="#79c0ff" font-size="10">WordPress REST API</text>
+    <text x="544" y="434" fill="#79c0ff" font-size="10">WP-Cron (scheduler)</text>
+    <text x="544" y="451" fill="#79c0ff" font-size="10">Slack / Discord webhooks</text>
+    <text x="544" y="468" fill="#79c0ff" font-size="10">Mailchimp / ConvertKit ESP</text>
+    <text x="544" y="485" fill="#79c0ff" font-size="10">Twitter/X · Facebook · LinkedIn</text>
+    <text x="544" y="502" fill="#79c0ff" font-size="10">Yoast SEO / Rank Math</text>
+    <text x="544" y="519" fill="#79c0ff" font-size="10">PagerDuty (P0 alerts)</text>
+  </g>
+
+  <!-- REST endpoints card -->
+  <g filter="url(#shadow)">
+    <rect x="748" y="330" width="204" height="185" rx="10" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+    <text x="850" y="355" text-anchor="middle" fill="#f0f6fc" font-size="13" font-weight="700">🌐 REST Endpoints</text>
+    <line x1="760" y1="363" x2="940" y2="363" stroke="#30363d" stroke-width="0.8"/>
+    <text x="764" y="383" fill="#f78166" font-size="10">POST /pearblog/v1/generate</text>
+    <text x="764" y="400" fill="#f78166" font-size="10">GET  /pearblog/v1/queue</text>
+    <text x="764" y="417" fill="#f78166" font-size="10">POST /pearblog/v1/queue</text>
+    <text x="764" y="434" fill="#f78166" font-size="10">GET  /pearblog/v1/stats</text>
+    <text x="764" y="451" fill="#f78166" font-size="10">GET  /pearblog/v1/health</text>
+    <text x="764" y="468" fill="#f78166" font-size="10">GET  /pearblog/v1/performance</text>
+    <text x="764" y="485" fill="#f78166" font-size="10">POST /pearblog/v1/webhooks</text>
+    <text x="764" y="502" fill="#f78166" font-size="10">GET  /pearblog/v1/calendar</text>
+    <text x="764" y="519" fill="#f78166" font-size="10">Auth: Bearer &lt;api_key&gt;</text>
+  </g>
+
+  <!-- Version / footer -->
+  <rect x="748" y="526" width="204" height="22" rx="5" fill="#21262d" stroke="#30363d" stroke-width="1"/>
+  <text x="850" y="541" text-anchor="middle" fill="#8b949e" font-size="10">PearBlog Engine v6.0.2 · 2026-04-12</text>
 </svg>

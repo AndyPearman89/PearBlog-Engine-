@@ -91,14 +91,20 @@
 | [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin v6.0 architecture, 12-step pipeline, all modules, REST API |
 | [scripts/README.md](scripts/README.md) | Python automation suite, environment variables, usage |
 
-### Brand Assets
+### Brand Assets & Visuals
 
-| Document | Summary |
-|----------|---------|
-| [brand-assets/README.md](brand-assets/README.md) | Brand asset index |
+| File | Description |
+|------|-------------|
+| [brand-assets/screenshots/pipeline-overview.svg](brand-assets/screenshots/pipeline-overview.svg) | 12-step pipeline diagram (v6.0) with metrics, modules, REST endpoints |
+| [brand-assets/screenshots/architecture.svg](brand-assets/screenshots/architecture.svg) | Full system architecture — all 16 modules + external integrations |
+| [brand-assets/screenshots/admin-panel.svg](brand-assets/screenshots/admin-panel.svg) | Admin panel General tab UI mockup |
+| [brand-assets/screenshots/queue-manager.svg](brand-assets/screenshots/queue-manager.svg) | Queue Manager tab mockup |
+| [brand-assets/screenshots/monitoring-dashboard.svg](brand-assets/screenshots/monitoring-dashboard.svg) | Monitoring tab — metric cards + alert history |
 | [brand-assets/PEARBLOG_ULTRA_PRO_BRAND_SYSTEM.md](brand-assets/PEARBLOG_ULTRA_PRO_BRAND_SYSTEM.md) | Brand identity guidelines |
+| [brand-assets/README.md](brand-assets/README.md) | Brand asset index |
 
 ---
+
 
 ## 🎯 I Want To…
 
