@@ -586,6 +586,7 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 			$this->status = $status;
 		}
 		public function header( string $name, string $value, bool $replace = true ): void {
+			// $replace matches the real WP_REST_Response::header() signature; always replace in the stub.
 			$this->headers[ $name ] = $value;
 		}
 		public function get_headers(): array { return $this->headers; }

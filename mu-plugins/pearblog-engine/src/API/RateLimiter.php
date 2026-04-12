@@ -108,7 +108,10 @@ class RateLimiter {
 			return 'bearer_' . substr( md5( substr( $auth, 7 ) ), 0, 16 );
 		}
 
-		$ip = (string) ( $_SERVER['REMOTE_ADDR'] ?? '0.0.0.0' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
+		// Fall back to IP address.  When REMOTE_ADDR is absent (e.g. CLI),
+		// use a constant sentinel so that CLI-invoked requests share one
+		// bucket rather than each getting an anonymous unlimited quota.
+		$ip = (string) ( $_SERVER['REMOTE_ADDR'] ?? 'cli' ); // phpcs:ignore WordPress.Security.ValidatedSanitizedInput
 		return 'ip_' . $ip;
 	}
 
