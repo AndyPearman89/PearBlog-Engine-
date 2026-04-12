@@ -109,29 +109,29 @@ These are the next-generation features planned for the first post-launch release
 - ~~Support Google Gemini Pro via the same interface~~ ✅ `GeminiProvider` (Gemini 1.5 Pro + Flash)
 - ~~Factory pattern: `AIProviderFactory::make('anthropic'|'openai'|'gemini')`~~ ✅ `AIProviderFactory` with full metadata API
 
-### Advanced Prompt Engineering
-- Dynamic few-shot examples pulled from top-performing past articles
-- Persona builder: configure author voice/style
+### Advanced Prompt Engineering ✅ Done — v7.3.0
+- ~~Dynamic few-shot examples pulled from top-performing past articles~~ ✅ `FewShotEngine.php` — configurable score threshold + excerpt length
+- ~~Persona builder: configure author voice/style~~ ✅ `PersonaBuilder.php` — named personas with name/bio/style/tone/vocabulary
 - Competitive gap analysis: scrape SERPs and inject missing topics into prompt
 
 ---
 
 ## 🗺️ v7.3 Enterprise Features (2026-08-01)
 
-### White-Label Options
-- Custom plugin slug, admin menu name, and branding
-- Remove all "PearBlog" references from front-end output via settings
-- Add a "Branding" tab to the admin page
+### White-Label Options ✅ Done — v7.3.0
+- ~~Custom plugin slug, admin menu name, and branding~~ ✅ `WhiteLabelManager.php` — brand name, menu label, logo URL, accent colour
+- ~~Remove all "PearBlog" references from front-end output via settings~~ ✅ All labels override-able via WP options
+- ~~Add a "Branding" tab to the admin page~~ ✅ Settings registered under `pearblog_branding` settings group
 
-### Advanced Permissions
-- Role-based access control for pipeline trigger/pause
-- Per-site API key scoping in multi-site networks
-- Audit log of all WP-CLI and admin actions
+### Advanced Permissions ✅ Done — v7.3.0
+- ~~Role-based access control for pipeline trigger/pause~~ ✅ `PermissionManager.php` — configurable per-action role lists
+- ~~Per-site API key scoping in multi-site networks~~ ✅ Stored per blog_id via existing `get_blog_option()` pattern
+- ~~Audit log of all WP-CLI and admin actions~~ ✅ Ring-buffer audit log (500 entries) with actor, action, timestamp
 
-### SLA Management
-- Configurable per-site SLA targets (uptime, response time)
-- Auto-page on SLA breach via PagerDuty (already integrated in AlertManager)
-- Monthly SLA report generated and emailed automatically
+### SLA Management ✅ Done — v7.3.0
+- ~~Configurable per-site SLA targets (uptime, response time)~~ ✅ `SLAManager.php` — uptime %, pipeline success %, API response ms, cost per article
+- ~~Auto-page on SLA breach via PagerDuty (already integrated in AlertManager)~~ ✅ `pearblog_sla_breached` action fired on breach (AlertManager hooks in)
+- ~~Monthly SLA report generated and emailed automatically~~ ✅ Monthly cron + `generate_monthly_report()` + e-mail dispatch
 
 ---
 
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v7.2.1 Multi-Model Support complete (OpenAI, Anthropic, Gemini); Advanced Prompt Engineering pending*
+*Last updated: 2026-04-12 — v7.3.0 Enterprise Features complete (FewShotEngine, PersonaBuilder, WhiteLabelManager, PermissionManager, SLAManager); Competitive Gap Analysis pending*

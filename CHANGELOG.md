@@ -2,6 +2,39 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.3.0] — 2026-04-12
+
+### Added — v7.3 Enterprise Features
+
+#### Advanced Prompt Engineering (v7.2 completion)
+
+- **`FewShotEngine`** (`src/Content/FewShotEngine.php`) — pulls top-scoring published articles (score ≥ `pearblog_fewshot_min_score`, default 70) and injects their excerpts into the AI prompt as style examples; configurable via `pearblog_fewshot_enabled`, `pearblog_fewshot_max_posts`, `pearblog_fewshot_excerpt_len`.
+- **`PersonaBuilder`** (`src/Content/PersonaBuilder.php`) — manages named author personas (name, bio, writing style, tone, vocabulary preferences/avoidances); the active persona is appended to every AI prompt; CRUD API: `save_persona()`, `get_persona()`, `delete_persona()`, `set_active()`, `enrich_prompt()`.
+
+#### White-Label Manager
+
+- **`WhiteLabelManager`** (`src/Admin/WhiteLabelManager.php`) — full white-label branding override: custom brand name, admin menu label, logo URL, accent hex colour, support URL, and optional admin footer suppression; all settings registered under the `pearblog_branding` settings group; accent CSS injected via `admin_head`.
+
+#### Advanced Permissions & Audit Log
+
+- **`PermissionManager`** (`src/API/PermissionManager.php`) — role-based access control for pipeline trigger, pause, and settings actions; configurable per-action role lists stored as JSON options; ring-buffer audit log (500 entries max) with actor, action, context, success flag, and timestamp; `log()`, `get_audit_log()`, `clear_audit_log()`, `role_can()`, `set_allowed_roles()`.
+
+#### SLA Management
+
+- **`SLAManager`** (`src/Monitoring/SLAManager.php`) — configurable per-site SLA targets for uptime %, pipeline success %, API response time (ms), and cost per article (cents); hourly evaluation cron (`pearblog_sla_check`) fires `pearblog_sla_breached` action on any breach; monthly report cron (`pearblog_sla_report`) stores a 12-month history and optionally e-mails the report to `pearblog_sla_report_email`; `evaluate()`, `generate_monthly_report()`, `get_history()`, `set_targets()`.
+
+### Tests
+
+- **71 new PHPUnit tests** across 5 new test classes:
+  - `FewShotEngineTest` (11 tests)
+  - `PersonaBuilderTest` (19 tests)
+  - `WhiteLabelManagerTest` (21 tests)
+  - `PermissionManagerTest` (17 tests)
+  - `SLAManagerTest` (17 tests) — including e-mail dispatch verification and history persistence.
+- **394 tests / 827 assertions** — all passing.
+
+---
+
 ## [7.2.1] — 2026-04-12
 
 ### Added — v7.2 Multi-Model Support

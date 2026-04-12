@@ -143,19 +143,19 @@ PearBlog Engine v6.0
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
 │   ├── src/Pipeline/               # 12-step autonomous content pipeline
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
-│   ├── src/Content/                # 7 prompt builders + validator + queue + RefreshEngine
+│   ├── src/Content/                # 9 prompt builders + validator + queue + RefreshEngine + FewShotEngine + PersonaBuilder
 │   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO (Schema, OG, audit)
 │   ├── src/Monetization/           # AdSense + Affiliate + SaaS CTA injection
 │   ├── src/Scheduler/              # WP-Cron management (multisite-safe)
 │   ├── src/Keywords/               # Keyword clustering value object
 │   ├── src/Cache/                  # ContentCache (transient-based + stats)
-│   ├── src/API/                    # REST automation endpoints + WebhookManager
-│   ├── src/Admin/                  # Top-level WP admin menu + DashboardWidget + OnboardingWizard + ContentCalendar
-│   ├── src/Monitoring/             # AlertManager + HealthController + PerformanceDashboard + Logger
+│   ├── src/API/                    # REST automation endpoints + WebhookManager + PermissionManager
+│   ├── src/Admin/                  # Top-level WP admin menu + DashboardWidget + OnboardingWizard + ContentCalendar + WhiteLabelManager
+│   ├── src/Monitoring/             # AlertManager + HealthController + PerformanceDashboard + Logger + SLAManager
 │   ├── src/Social/                 # SocialPublisher + EmailDigest
 │   ├── src/CLI/                    # PearBlogCommand + AutopilotRunner (26 tasks, 7 phases)
 │   ├── src/Tenant/                 # Multi-site context
-│   ├── tests/php/Unit/             # 19 unit test classes (207 tests)
+│   ├── tests/php/Unit/             # 29 unit test classes (394 tests · 827 assertions)
 │   ├── tests/php/Integration/      # ContentPipelineIntegrationTest
 │   └── assets/css/admin.css        # Admin panel styles
 │
@@ -218,8 +218,8 @@ Topic Queue
 | Monthly cost (720 articles + images) | ~$58 |
 | Break-even traffic | ~5,000 visitors/month |
 | Pipeline execution time (avg) | ~55 seconds |
-| Unit tests | 207 tests · 423 assertions |
-| PHPUnit test classes | 19 unit + 1 integration |
+| Unit tests | 394 tests · 827 assertions |
+| PHPUnit test classes | 29 unit + 1 integration |
 | Automation level | 100% |
 
 ---
