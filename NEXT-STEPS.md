@@ -104,10 +104,10 @@ These are the next-generation features planned for the first post-launch release
 - ~~Add a model selector dropdown in Admin → General → AI Settings~~ ✅ `pearblog_ai_model` option + select row in General tab
 - ~~Update cost-per-token calculations for new models~~ ✅ Per-model input/output cost rates + `estimate_cost_cents()`
 
-### Multi-Model Support
-- Support Anthropic Claude 3 via a swappable `AIProviderInterface`
-- Support Google Gemini Pro via the same interface
-- Factory pattern: `AIProviderFactory::make('anthropic'|'openai'|'gemini')`
+### Multi-Model Support ✅ Done — v7.2.1
+- ~~Support Anthropic Claude 3 via a swappable `AIProviderInterface`~~ ✅ `AnthropicProvider` (Claude 3.5 Sonnet + Claude 3 Haiku)
+- ~~Support Google Gemini Pro via the same interface~~ ✅ `GeminiProvider` (Gemini 1.5 Pro + Flash)
+- ~~Factory pattern: `AIProviderFactory::make('anthropic'|'openai'|'gemini')`~~ ✅ `AIProviderFactory` with full metadata API
 
 ### Advanced Prompt Engineering
 - Dynamic few-shot examples pulled from top-performing past articles
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v7.2.0 GPT-4o / multi-model support complete; v7.1 Analytics Dashboard + GraphQL API pending*
+*Last updated: 2026-04-12 — v7.2.1 Multi-Model Support complete (OpenAI, Anthropic, Gemini); Advanced Prompt Engineering pending*

@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\Admin;
 
 use PearBlogEngine\AI\AIClient;
+use PearBlogEngine\AI\AIProviderFactory;
 use PearBlogEngine\AI\ImageAnalyzer;
 use PearBlogEngine\AI\ImageGenerator;
 use PearBlogEngine\Content\TopicQueue;
@@ -115,6 +116,41 @@ class AdminPage {
 				}
 			});'
 		);
+
+		// AI provider / model switcher – show the correct model options and API
+		// key row for the selected provider.
+		wp_add_inline_script(
+			'jquery',
+			'document.addEventListener("DOMContentLoaded", function() {
+				var providerSel = document.getElementById("pearblog_ai_provider");
+				var modelSel    = document.getElementById("pearblog_ai_model");
+				if (!providerSel || !modelSel) return;
+
+				function syncProvider() {
+					var active = providerSel.value;
+
+					// Show/hide provider-specific API key rows.
+					var anthropicRow = document.getElementById("pb-row-anthropic-key");
+					var geminiRow    = document.getElementById("pb-row-gemini-key");
+					if (anthropicRow) anthropicRow.style.display = (active === "anthropic") ? "" : "none";
+					if (geminiRow)    geminiRow.style.display    = (active === "gemini")    ? "" : "none";
+
+					// Filter model options to show only those from the active provider.
+					var opts    = modelSel.options;
+					var matched = false;
+					for (var i = 0; i < opts.length; i++) {
+						var show = (opts[i].getAttribute("data-provider") === active);
+						opts[i].style.display = show ? "" : "none";
+						if (show && !matched) {
+							modelSel.value = opts[i].value;
+							matched = true;
+						}
+					}
+				}
+
+				providerSel.addEventListener("change", syncProvider);
+			});'
+		);
 	}
 
 	public function register_settings(): void {
@@ -139,7 +175,12 @@ class AdminPage {
 		register_setting( self::OPTION_GRP, 'pearblog_autonomous_mode', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
 
 		// AI model selection.
-		register_setting( self::OPTION_GRP, 'pearblog_ai_model', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_ai_model',    [ 'sanitize_callback' => 'sanitize_text_field' ] );
+
+		// AI provider selection and provider-specific API keys.
+		register_setting( self::OPTION_GRP, 'pearblog_ai_provider',       [ 'sanitize_callback' => 'sanitize_key' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_anthropic_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
+		register_setting( self::OPTION_GRP, 'pearblog_gemini_api_key',    [ 'sanitize_callback' => 'sanitize_text_field' ] );
 
 		// Automation API settings.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
@@ -561,22 +602,60 @@ class AdminPage {
 						<td><input type="password" id="pearblog_openai_api_key" name="pearblog_openai_api_key" value="<?php echo esc_attr( get_option( 'pearblog_openai_api_key', '' ) ); ?>" class="regular-text" /></td>
 					</tr>
 					<tr>
-						<th scope="row"><label for="pearblog_ai_model"><?php esc_html_e( 'AI Model', 'pearblog-engine' ); ?></label></th>
+						<th scope="row"><label for="pearblog_ai_provider"><?php esc_html_e( 'AI Provider', 'pearblog-engine' ); ?></label></th>
 						<td>
-							<select id="pearblog_ai_model" name="pearblog_ai_model">
+							<select id="pearblog_ai_provider" name="pearblog_ai_provider">
 								<?php
-								$current_model = AIClient::get_model();
-								foreach ( AIClient::get_available_models() as $slug => $meta ) {
+								$current_provider = AIProviderFactory::get_active_provider_slug();
+								foreach ( AIProviderFactory::get_all_providers() as $slug => $label ) {
 									printf(
 										'<option value="%s" %s>%s</option>',
 										esc_attr( $slug ),
-										selected( $current_model, $slug, false ),
-										esc_html( $meta['label'] )
+										selected( $current_provider, $slug, false ),
+										esc_html( $label )
 									);
 								}
 								?>
 							</select>
-							<p class="description"><?php esc_html_e( 'Choose the OpenAI model used for content generation. Higher-quality models cost more per article.', 'pearblog-engine' ); ?></p>
+							<p class="description"><?php esc_html_e( 'Choose which AI service generates your content. Each provider requires its own API key below.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr id="pb-row-anthropic-key" <?php echo 'anthropic' !== AIProviderFactory::get_active_provider_slug() ? 'style="display:none"' : ''; ?>>
+						<th scope="row"><label for="pearblog_anthropic_api_key"><?php esc_html_e( 'Anthropic API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_anthropic_api_key" name="pearblog_anthropic_api_key" value="<?php echo esc_attr( get_option( 'pearblog_anthropic_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Required for Anthropic Claude models. Get your key at console.anthropic.com.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr id="pb-row-gemini-key" <?php echo 'gemini' !== AIProviderFactory::get_active_provider_slug() ? 'style="display:none"' : ''; ?>>
+						<th scope="row"><label for="pearblog_gemini_api_key"><?php esc_html_e( 'Google Gemini API Key', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<input type="password" id="pearblog_gemini_api_key" name="pearblog_gemini_api_key" value="<?php echo esc_attr( get_option( 'pearblog_gemini_api_key', '' ) ); ?>" class="regular-text" />
+							<p class="description"><?php esc_html_e( 'Required for Google Gemini models. Get your key at aistudio.google.com.', 'pearblog-engine' ); ?></p>
+						</td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_ai_model"><?php esc_html_e( 'AI Model', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<select id="pearblog_ai_model" name="pearblog_ai_model">
+								<?php
+								$current_provider = AIProviderFactory::get_active_provider_slug();
+								$current_model    = AIClient::get_model();
+								foreach ( AIProviderFactory::get_all_models() as $provider_slug => $provider_models ) {
+									foreach ( $provider_models as $model_slug => $meta ) {
+										printf(
+											'<option value="%s" data-provider="%s" %s %s>%s</option>',
+											esc_attr( $model_slug ),
+											esc_attr( $provider_slug ),
+											selected( $current_model, $model_slug, false ),
+											$provider_slug !== $current_provider ? 'style="display:none"' : '',
+											esc_html( $meta['label'] )
+										);
+									}
+								}
+								?>
+							</select>
+							<p class="description"><?php esc_html_e( 'Model used for content generation. Options update when the provider changes.', 'pearblog-engine' ); ?></p>
 						</td>
 					</tr>
 					<tr>

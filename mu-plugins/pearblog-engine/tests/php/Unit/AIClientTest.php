@@ -86,15 +86,18 @@ class AIClientTest extends TestCase {
 		$this->expectException( \RuntimeException::class );
 		$this->expectExceptionMessageMatches( '/API key is not configured/i' );
 
-		$client = new AIClient( '' );
+		// Inject an OpenAIProvider with an empty key so the check fires immediately.
+		$provider = new \PearBlogEngine\AI\OpenAIProvider( '' );
+		$client   = new AIClient( '', '', $provider );
 		$client->generate( 'test prompt' );
 	}
 
 	// -----------------------------------------------------------------------
-	// Model selection — get_model() / get_available_models()
+	// Model selection — get_model() / get_available_models() (OpenAI default)
 	// -----------------------------------------------------------------------
 
 	public function test_default_model_is_gpt4o_mini_when_option_not_set(): void {
+		// Default provider is OpenAI; default model is gpt-4o-mini.
 		$this->assertSame( AIClient::DEFAULT_MODEL, AIClient::get_model() );
 	}
 
@@ -108,7 +111,7 @@ class AIClientTest extends TestCase {
 		$this->assertSame( AIClient::DEFAULT_MODEL, AIClient::get_model() );
 	}
 
-	public function test_get_available_models_returns_all_four_models(): void {
+	public function test_get_available_models_returns_openai_models_by_default(): void {
 		$models = AIClient::get_available_models();
 
 		$this->assertArrayHasKey( 'gpt-4o',        $models );
@@ -116,6 +119,18 @@ class AIClientTest extends TestCase {
 		$this->assertArrayHasKey( 'gpt-4-turbo',   $models );
 		$this->assertArrayHasKey( 'gpt-3.5-turbo', $models );
 		$this->assertCount( 4, $models );
+	}
+
+	public function test_get_available_models_returns_anthropic_models_when_provider_set(): void {
+		update_option( \PearBlogEngine\AI\AIProviderFactory::PROVIDER_OPTION, 'anthropic' );
+		$models = AIClient::get_available_models();
+		$this->assertArrayHasKey( 'claude-3-5-sonnet-20241022', $models );
+	}
+
+	public function test_get_available_models_returns_gemini_models_when_provider_set(): void {
+		update_option( \PearBlogEngine\AI\AIProviderFactory::PROVIDER_OPTION, 'gemini' );
+		$models = AIClient::get_available_models();
+		$this->assertArrayHasKey( 'gemini-1.5-pro', $models );
 	}
 
 	public function test_each_model_has_required_keys(): void {
@@ -162,6 +177,8 @@ class AIClientTest extends TestCase {
 	}
 
 	public function test_estimate_cost_cents_uses_active_model_when_no_slug_given(): void {
+		// Both models must be from OpenAI (active provider) for this comparison.
+		update_option( \PearBlogEngine\AI\AIProviderFactory::PROVIDER_OPTION, 'openai' );
 		update_option( AIClient::MODEL_OPTION, 'gpt-4o-mini' );
 		$cost_mini = AIClient::estimate_cost_cents( 1000 );
 
@@ -178,14 +195,35 @@ class AIClientTest extends TestCase {
 	}
 
 	// -----------------------------------------------------------------------
-	// Constructor model injection
+	// Constructor — provider injection
 	// -----------------------------------------------------------------------
 
 	public function test_constructor_accepts_model_override(): void {
-		// Ensure the constructor records the overridden model.
-		// We can't call generate() without a real API key, but we verify the
-		// object is constructed without error.
 		$client = new AIClient( 'sk-test', 'gpt-4o' );
 		$this->assertInstanceOf( AIClient::class, $client );
+	}
+
+	public function test_constructor_accepts_provider_injection(): void {
+		$provider = new \PearBlogEngine\AI\OpenAIProvider( 'sk-test', 'gpt-4o' );
+		$client   = new AIClient( '', '', $provider );
+		$this->assertInstanceOf( AIClient::class, $client );
+	}
+
+	public function test_generate_uses_injected_provider(): void {
+		// Stub provider returns controlled content without HTTP.
+		$stub = new class implements \PearBlogEngine\AI\AIProviderInterface {
+			public function complete( string $prompt, int $max_tokens ): array {
+				return [ 'content' => 'stub output', 'prompt_tokens' => 10, 'completion_tokens' => 20 ];
+			}
+			public static function get_slug(): string          { return 'stub'; }
+			public static function get_label(): string         { return 'Stub'; }
+			public static function get_api_key_option(): string { return 'pearblog_stub_api_key'; }
+			public static function get_models(): array         { return []; }
+			public static function get_default_model(): string { return ''; }
+		};
+
+		$client = new AIClient( '', '', $stub );
+		$result = $client->generate( 'hello' );
+		$this->assertSame( 'stub output', $result );
 	}
 }
