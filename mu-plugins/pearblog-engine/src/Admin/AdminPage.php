@@ -446,6 +446,7 @@ class AdminPage {
 	}
 
 	public function render_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
 			return;
 		}
 
