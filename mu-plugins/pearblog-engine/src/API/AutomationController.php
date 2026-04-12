@@ -21,6 +21,7 @@ namespace PearBlogEngine\API;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Pipeline\ContentPipeline;
 use PearBlogEngine\Tenant\TenantContext;
+use PearBlogEngine\API\RateLimiter;
 
 /**
  * Registers and handles the automation REST API routes.
@@ -141,6 +142,14 @@ class AutomationController {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function create_content( \WP_REST_Request $request ) {
+		$limiter   = new RateLimiter();
+		$client_id = $limiter->get_client_id( $request );
+		$rate      = $limiter->check( $client_id, 'create_content', RateLimiter::LIMIT_PIPELINE );
+
+		if ( ! $rate['allowed'] ) {
+			return $limiter->too_many_requests( $rate );
+		}
+
 		$keyword  = (string) $request->get_param( 'keyword' );
 		$title    = (string) $request->get_param( 'title' );
 		$topic    = '' !== $title ? $title : $keyword;
@@ -189,7 +198,7 @@ class AutomationController {
 				);
 			}
 
-			return new \WP_REST_Response( [
+			$response = new \WP_REST_Response( [
 				'success' => true,
 				'message' => __( 'Content created and published.', 'pearblog-engine' ),
 				'post_id' => $result['post_id'],
@@ -197,6 +206,8 @@ class AutomationController {
 				'status'  => $result['status'],
 				'url'     => get_permalink( $result['post_id'] ),
 			], 201 );
+			$limiter->add_headers( $response, $rate );
+			return $response;
 
 		} catch ( \Throwable $e ) {
 			error_log( 'PearBlog Engine API: create-content failed – ' . $e->getMessage() );
@@ -223,6 +234,14 @@ class AutomationController {
 	 * @return \WP_REST_Response|\WP_Error
 	 */
 	public function process_content( \WP_REST_Request $request ) {
+		$limiter   = new RateLimiter();
+		$client_id = $limiter->get_client_id( $request );
+		$rate      = $limiter->check( $client_id, 'process_content', RateLimiter::LIMIT_WRITE );
+
+		if ( ! $rate['allowed'] ) {
+			return $limiter->too_many_requests( $rate );
+		}
+
 		$site_id  = get_current_blog_id();
 		$context  = TenantContext::for_site( $site_id );
 		$pipeline = new ContentPipeline( $context );
@@ -249,14 +268,16 @@ class AutomationController {
 		}
 
 		if ( empty( $results ) ) {
-			return new \WP_REST_Response( [
+			$response = new \WP_REST_Response( [
 				'success'  => true,
 				'message'  => __( 'No topics in queue – nothing to process.', 'pearblog-engine' ),
 				'articles' => [],
 			], 200 );
+			$limiter->add_headers( $response, $rate );
+			return $response;
 		}
 
-		return new \WP_REST_Response( [
+		$response = new \WP_REST_Response( [
 			'success'  => true,
 			'message'  => sprintf(
 				/* translators: %d: number of articles processed */
@@ -265,6 +286,8 @@ class AutomationController {
 			),
 			'articles' => $results,
 		], 200 );
+		$limiter->add_headers( $response, $rate );
+		return $response;
 	}
 
 	// -----------------------------------------------------------------------
@@ -277,14 +300,22 @@ class AutomationController {
 	 * Returns queue length, next topic, last pipeline result, and site profile.
 	 *
 	 * @param \WP_REST_Request $request Incoming request.
-	 * @return \WP_REST_Response
+	 * @return \WP_REST_Response|\WP_Error
 	 */
-	public function get_status( \WP_REST_Request $request ): \WP_REST_Response {
+	public function get_status( \WP_REST_Request $request ) {
+		$limiter   = new RateLimiter();
+		$client_id = $limiter->get_client_id( $request );
+		$rate      = $limiter->check( $client_id, 'get_status', RateLimiter::LIMIT_READ );
+
+		if ( ! $rate['allowed'] ) {
+			return $limiter->too_many_requests( $rate );
+		}
+
 		$site_id = get_current_blog_id();
 		$queue   = new TopicQueue( $site_id );
 		$context = TenantContext::for_site( $site_id );
 
-		return new \WP_REST_Response( [
+		$response = new \WP_REST_Response( [
 			'site_id'       => $site_id,
 			'queue_length'  => $queue->count(),
 			'next_topic'    => $queue->peek(),
@@ -298,6 +329,8 @@ class AutomationController {
 			'cron_scheduled' => (bool) wp_next_scheduled( 'pearblog_run_pipeline' ),
 			'timestamp'      => current_time( 'mysql' ),
 		], 200 );
+		$limiter->add_headers( $response, $rate );
+		return $response;
 	}
 
 	// -----------------------------------------------------------------------

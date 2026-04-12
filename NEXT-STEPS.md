@@ -144,8 +144,8 @@ These are known issues to resolve in the first patch releases:
 | `pearblog_booking_api_key` not registered with `register_setting()` | Fixed ✅ (registered at AdminPage.php:139) | Done |
 | AutopilotRunner test used `assertMatchesRegularExpression` (PHPUnit 8.5 compat) | Fixed ✅ | Done |
 | Postman collection JSON referenced in API docs but not committed | Fixed ✅ `examples/postman/PearBlog-Engine-v6.postman_collection.json` | Done |
-| `ESCALATION_LEVELS` constant defined but not used in AlertManager | `src/Monitoring/AlertManager.php` | P3 |
-| No rate-limit headers actually set on REST responses (only documented) | `src/API/` | P2 |
+| `ESCALATION_LEVELS` constant defined but not used in AlertManager | Fixed ✅ `src/Monitoring/AlertManager.php` — enforces min severity per priority | Done |
+| No rate-limit headers actually set on REST responses (only documented) | Fixed ✅ `src/API/RateLimiter.php` + `AutomationController.php` — 429 + X-RateLimit-* headers | Done |
 
 ---
 
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v6.0 complete, v7.0 launch sprint active*
+*Last updated: 2026-04-12 — v6.0 complete, v7.0 launch sprint active; P2 rate-limit headers + P3 ESCALATION_LEVELS resolved*
