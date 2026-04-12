@@ -9,6 +9,7 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Admin;
 
+use PearBlogEngine\AI\AIClient;
 use PearBlogEngine\AI\ImageAnalyzer;
 use PearBlogEngine\AI\ImageGenerator;
 use PearBlogEngine\Content\TopicQueue;
@@ -136,6 +137,9 @@ class AdminPage {
 
 		// Autonomous mode.
 		register_setting( self::OPTION_GRP, 'pearblog_autonomous_mode', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+
+		// AI model selection.
+		register_setting( self::OPTION_GRP, 'pearblog_ai_model', [ 'sanitize_callback' => 'sanitize_text_field' ] );
 
 		// Automation API settings.
 		register_setting( self::OPTION_GRP, 'pearblog_api_key', [ 'sanitize_callback' => 'sanitize_text_field' ] );
@@ -555,6 +559,25 @@ class AdminPage {
 					<tr>
 						<th scope="row"><label for="pearblog_openai_api_key"><?php esc_html_e( 'OpenAI API Key', 'pearblog-engine' ); ?></label></th>
 						<td><input type="password" id="pearblog_openai_api_key" name="pearblog_openai_api_key" value="<?php echo esc_attr( get_option( 'pearblog_openai_api_key', '' ) ); ?>" class="regular-text" /></td>
+					</tr>
+					<tr>
+						<th scope="row"><label for="pearblog_ai_model"><?php esc_html_e( 'AI Model', 'pearblog-engine' ); ?></label></th>
+						<td>
+							<select id="pearblog_ai_model" name="pearblog_ai_model">
+								<?php
+								$current_model = AIClient::get_model();
+								foreach ( AIClient::get_available_models() as $slug => $meta ) {
+									printf(
+										'<option value="%s" %s>%s</option>',
+										esc_attr( $slug ),
+										selected( $current_model, $slug, false ),
+										esc_html( $meta['label'] )
+									);
+								}
+								?>
+							</select>
+							<p class="description"><?php esc_html_e( 'Choose the OpenAI model used for content generation. Higher-quality models cost more per article.', 'pearblog-engine' ); ?></p>
+						</td>
 					</tr>
 					<tr>
 						<th scope="row"><label for="pearblog_api_key"><?php esc_html_e( 'Automation API Key', 'pearblog-engine' ); ?></label></th>

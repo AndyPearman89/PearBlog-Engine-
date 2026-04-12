@@ -3,6 +3,8 @@
  * AI client – sends prompts to OpenAI and returns generated content.
  *
  * Features:
+ *  - Configurable model (gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo).
+ *    Active model is stored in the `pearblog_ai_model` option.
  *  - Exponential backoff with jitter on rate-limit (429) responses.
  *  - Circuit breaker: after N consecutive failures the client refuses
  *    further calls for a configurable cooldown period.
@@ -25,7 +27,59 @@ namespace PearBlogEngine\AI;
 class AIClient {
 
 	private const API_URL = 'https://api.openai.com/v1/chat/completions';
-	private const MODEL   = 'gpt-4o-mini';
+
+	/**
+	 * Fallback model used when the option is not set or is invalid.
+	 */
+	public const DEFAULT_MODEL = 'gpt-4o-mini';
+
+	/**
+	 * Option key that stores the currently selected model slug.
+	 */
+	public const MODEL_OPTION = 'pearblog_ai_model';
+
+	/**
+	 * Supported models with metadata.
+	 *
+	 * cost_per_1k_input_cents  – estimated USD cents per 1 000 input tokens.
+	 * cost_per_1k_output_cents – estimated USD cents per 1 000 output tokens.
+	 * max_tokens               – maximum supported output tokens.
+	 * label                    – human-readable label for the admin UI.
+	 *
+	 * Pricing sources (as of 2026-04-12, subject to change):
+	 *  gpt-4o        : $2.50/$10.00 per 1M tokens → 0.025/0.100 cents per 1k
+	 *  gpt-4o-mini   : $0.15/$0.60  per 1M tokens → 0.0015/0.006 cents per 1k
+	 *  gpt-4-turbo   : $10/$30      per 1M tokens → 0.1/0.3 cents per 1k
+	 *  gpt-3.5-turbo : $0.50/$1.50  per 1M tokens → 0.005/0.015 cents per 1k
+	 *
+	 * @var array<string, array{label: string, max_tokens: int, cost_per_1k_input_cents: float, cost_per_1k_output_cents: float}>
+	 */
+	public const MODELS = [
+		'gpt-4o' => [
+			'label'                    => 'GPT-4o (best quality)',
+			'max_tokens'               => 4096,
+			'cost_per_1k_input_cents'  => 0.025,
+			'cost_per_1k_output_cents' => 0.100,
+		],
+		'gpt-4o-mini' => [
+			'label'                    => 'GPT-4o mini (fast & cheap)',
+			'max_tokens'               => 4096,
+			'cost_per_1k_input_cents'  => 0.0015,
+			'cost_per_1k_output_cents' => 0.006,
+		],
+		'gpt-4-turbo' => [
+			'label'                    => 'GPT-4 Turbo (high quality)',
+			'max_tokens'               => 4096,
+			'cost_per_1k_input_cents'  => 0.100,
+			'cost_per_1k_output_cents' => 0.300,
+		],
+		'gpt-3.5-turbo' => [
+			'label'                    => 'GPT-3.5 Turbo (lowest cost)',
+			'max_tokens'               => 4096,
+			'cost_per_1k_input_cents'  => 0.005,
+			'cost_per_1k_output_cents' => 0.015,
+		],
+	];
 
 	/** Maximum retry attempts on rate-limit (429) responses. */
 	private const MAX_RETRIES = 3;
@@ -45,19 +99,66 @@ class AIClient {
 	/** WordPress option key for cumulative API cost tracking (USD cents). */
 	private const COST_OPTION = 'pearblog_ai_cost_cents';
 
-	// Approximate cost per 1 000 tokens for gpt-4o-mini (input + output avg).
-	private const COST_PER_1K_TOKENS_CENTS = 0.015; // $0.00015 / token = $0.15 / 1k
-
 	/** @var string */
 	private string $api_key;
 
-	public function __construct( string $api_key = '' ) {
+	/** @var string The resolved model slug for this instance. */
+	private string $model;
+
+	public function __construct( string $api_key = '', string $model = '' ) {
 		if ( '' === $api_key ) {
 			$api_key = defined( 'PEARBLOG_OPENAI_API_KEY' )
 				? PEARBLOG_OPENAI_API_KEY
 				: (string) get_option( 'pearblog_openai_api_key', '' );
 		}
 		$this->api_key = $api_key;
+		$this->model   = '' !== $model ? $model : self::get_model();
+	}
+
+	// -----------------------------------------------------------------------
+	// Model helpers (static, usable without an instance)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Return the currently active model slug (reads the WP option, falls back
+	 * to DEFAULT_MODEL if unset or invalid).
+	 */
+	public static function get_model(): string {
+		$stored = (string) get_option( self::MODEL_OPTION, self::DEFAULT_MODEL );
+		return isset( self::MODELS[ $stored ] ) ? $stored : self::DEFAULT_MODEL;
+	}
+
+	/**
+	 * Return the full metadata map for every supported model.
+	 *
+	 * @return array<string, array{label: string, max_tokens: int, cost_per_1k_input_cents: float, cost_per_1k_output_cents: float}>
+	 */
+	public static function get_available_models(): array {
+		return self::MODELS;
+	}
+
+	/**
+	 * Calculate estimated cost in USD cents for a given number of tokens.
+	 *
+	 * Uses the configured model's blended average (input + output split assumed
+	 * 40 % input / 60 % output, matching typical chat-completion patterns).
+	 *
+	 * @param int    $total_tokens Total tokens (input + output combined).
+	 * @param string $model        Model slug; defaults to the active model.
+	 * @return float               Estimated cost in USD cents.
+	 */
+	public static function estimate_cost_cents( int $total_tokens, string $model = '' ): float {
+		if ( '' === $model || ! isset( self::MODELS[ $model ] ) ) {
+			$model = self::get_model();
+		}
+
+		$meta       = self::MODELS[ $model ];
+		$input_rate  = $meta['cost_per_1k_input_cents'];
+		$output_rate = $meta['cost_per_1k_output_cents'];
+
+		// Blended: 40 % input, 60 % output.
+		$blended_rate = ( $input_rate * 0.4 ) + ( $output_rate * 0.6 );
+		return ( $total_tokens / 1000.0 ) * $blended_rate;
 	}
 
 	/**
@@ -166,7 +267,7 @@ class AIClient {
 	 */
 	private function do_request( string $prompt, int $max_tokens ): string {
 		$body = wp_json_encode( [
-			'model'      => self::MODEL,
+			'model'      => $this->model,
 			'messages'   => [
 				[ 'role' => 'user', 'content' => $prompt ],
 			],
@@ -206,10 +307,15 @@ class AIClient {
 
 		$content = trim( $data['choices'][0]['message']['content'] ?? '' );
 
-		// Track token usage and estimated cost.
-		$total_tokens = (int) ( $data['usage']['total_tokens'] ?? 0 );
+		// Track token usage using per-model cost rates.
+		$prompt_tokens     = (int) ( $data['usage']['prompt_tokens']     ?? 0 );
+		$completion_tokens = (int) ( $data['usage']['completion_tokens'] ?? 0 );
+		$total_tokens      = (int) ( $data['usage']['total_tokens']      ?? ( $prompt_tokens + $completion_tokens ) );
+
 		if ( $total_tokens > 0 ) {
-			$cost_cents = ( $total_tokens / 1000 ) * self::COST_PER_1K_TOKENS_CENTS;
+			$meta       = self::MODELS[ $this->model ] ?? self::MODELS[ self::DEFAULT_MODEL ];
+			$cost_cents = ( $prompt_tokens / 1000.0 ) * $meta['cost_per_1k_input_cents']
+			            + ( $completion_tokens / 1000.0 ) * $meta['cost_per_1k_output_cents'];
 			$existing   = (float) get_option( self::COST_OPTION, 0 );
 			update_option( self::COST_OPTION, $existing + $cost_cents );
 		}
@@ -291,3 +397,4 @@ class AIClient {
  * @internal
  */
 class RateLimitException extends \RuntimeException {}
+

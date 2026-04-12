@@ -99,10 +99,10 @@ These are the next-generation features planned for the first post-launch release
 
 ## 🗺️ v7.2 AI Enhancements (2026-07-01)
 
-### GPT-4o Support
-- Update `AIClient.php` model options to include `gpt-4o`
-- Add a model selector dropdown in Admin → General → AI Settings
-- Update cost-per-token calculations for new models
+### GPT-4o Support ✅ Done — v7.2.0
+- ~~Update `AIClient.php` model options to include `gpt-4o`~~ ✅ `MODELS` constant with gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo
+- ~~Add a model selector dropdown in Admin → General → AI Settings~~ ✅ `pearblog_ai_model` option + select row in General tab
+- ~~Update cost-per-token calculations for new models~~ ✅ Per-model input/output cost rates + `estimate_cost_cents()`
 
 ### Multi-Model Support
 - Support Anthropic Claude 3 via a swappable `AIProviderInterface`
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v7.1.0 A/B Testing Framework complete; v7.1 Analytics Dashboard and GraphQL API pending*
+*Last updated: 2026-04-12 — v7.2.0 GPT-4o / multi-model support complete; v7.1 Analytics Dashboard + GraphQL API pending*

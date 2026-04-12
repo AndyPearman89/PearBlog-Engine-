@@ -2,7 +2,20 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [7.1.0] — 2026-04-12
+## [7.2.0] — 2026-04-12
+
+### Added — v7.2 GPT-4o / Multi-Model Support
+
+- **Configurable AI model** — `pearblog_ai_model` option selects the active OpenAI model; supported values: `gpt-4o`, `gpt-4o-mini` (default), `gpt-4-turbo`, `gpt-3.5-turbo`.
+- **`AIClient::MODELS` constant** — full metadata map per model: human label, max tokens, input/output cost rates (per 1k tokens in USD cents).
+- **`AIClient::get_model()`** — reads `pearblog_ai_model` option; falls back to `gpt-4o-mini` if unset or invalid slug.
+- **`AIClient::get_available_models()`** — returns the full models map; used by the admin dropdown.
+- **`AIClient::estimate_cost_cents()`** — calculates blended cost estimate for a given token count and model (40 % input / 60 % output ratio).
+- **Accurate per-model billing** — `do_request()` now splits `prompt_tokens` and `completion_tokens` and applies the correct input/output rate per model instead of the former flat average.
+- **Admin model selector** — new row in Admin → General → AI Settings lets site admins change the model from the UI; setting registered via `register_setting()`.
+- **13 new PHPUnit tests** in `AIClientTest` covering model selection, fallback, available-model list, cost estimation accuracy, and constructor injection.
+
+
 
 ### Added — v7.1 A/B Testing Framework
 
