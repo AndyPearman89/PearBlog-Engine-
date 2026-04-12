@@ -2,7 +2,7 @@
 
 **Autonomous AI content production system for WordPress — v6.0**
 
-📚 **[Documentation Index →](DOCUMENTATION-INDEX.md)** · 📋 **[Changelog →](CHANGELOG.md)** · ⚙️ **[Setup →](SETUP.md)** · 🗺️ **[Roadmap →](ROADMAP-VISUAL.md)** · 🤖 **[Autopilot →](ENTERPRISE-AUTOPILOT-TASKLIST.md)**
+📚 **[Documentation Index →](DOCUMENTATION-INDEX.md)** · 📋 **[Changelog →](CHANGELOG.md)** · ⚙️ **[Setup →](SETUP.md)** · 🗺️ **[Roadmap →](ROADMAP-VISUAL.md)** · 📊 **[Progress →](PROGRESS-VISUALIZATION.md)** · 🤖 **[Autopilot →](ENTERPRISE-AUTOPILOT-TASKLIST.md)**
 
 ---
 
@@ -181,6 +181,9 @@ Top-level **PearBlog Engine** menu in WordPress admin with tabbed sections:
 | Document | What It Covers |
 |----------|----------------|
 | [SETUP.md](SETUP.md) | GitHub Actions & initial configuration |
+| [DEPLOYMENT.md](DEPLOYMENT.md) | Production deployment guide (EN) — Apache/Nginx, SSL, Git, CI/CD, 4 hosting providers |
+| [DEPLOYMENT-PL.md](DEPLOYMENT-PL.md) | Przewodnik wdrożenia produkcyjnego (PL) |
+| [PROGRESS-VISUALIZATION.md](PROGRESS-VISUALIZATION.md) | Bilingual progress visualization — milestones, timeline, metrics (PL + EN) |
 | [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) | Step-by-step autonomous launch (PL) |
 | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) | Complete operations manual (PL) |
 | [BUSINESS-STRATEGY.md](BUSINESS-STRATEGY.md) | ROI, monetization, scaling |
