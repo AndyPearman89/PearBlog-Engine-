@@ -1,0 +1,216 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 720" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0d1117"/>
+      <stop offset="100%" style="stop-color:#161b22"/>
+    </linearGradient>
+    <filter id="sh">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Page background -->
+  <rect width="1100" height="720" rx="10" fill="#f0f0f1"/>
+
+  <!-- Browser chrome -->
+  <rect x="0" y="0" width="1100" height="34" rx="10" fill="#d5d5d5"/>
+  <rect x="0" y="22" width="1100" height="12" fill="#d5d5d5"/>
+  <circle cx="20" cy="17" r="5" fill="#fc605b"/>
+  <circle cx="38" cy="17" r="5" fill="#fdbc40"/>
+  <circle cx="56" cy="17" r="5" fill="#34c84a"/>
+  <rect x="130" y="6" width="540" height="20" rx="3" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="400" y="20" text-anchor="middle" fill="#777" font-size="10">wordpress.local/wp-admin/admin.php?page=pearblog-engine&amp;tab=monitoring</text>
+
+  <!-- WP Admin sidebar -->
+  <rect x="0" y="34" width="160" height="686" fill="#23282d"/>
+  <text x="16" y="68" fill="#eee" font-size="12" font-weight="700">🍐 PearBlog Engine</text>
+  <rect x="0" y="76" width="160" height="1" fill="#444"/>
+  <text x="24" y="96" fill="#ccc" font-size="10">⚙️ Settings</text>
+  <text x="24" y="114" fill="#777" font-size="10">📝 Posts</text>
+  <text x="24" y="132" fill="#777" font-size="10">🖼️ Media</text>
+
+  <!-- Main content -->
+  <rect x="160" y="34" width="940" height="686" fill="#f0f0f1"/>
+
+  <!-- WP top bar -->
+  <rect x="160" y="34" width="940" height="32" fill="#23282d"/>
+  <text x="175" y="54" fill="#bbb" font-size="11">PearBlog Engine  ·  Monitoring</text>
+  <text x="1080" y="54" fill="#bbb" font-size="10" text-anchor="end">admin 👤</text>
+
+  <!-- Page header -->
+  <rect x="173" y="76" width="914" height="56" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="198" y="98" fill="#1d2327" font-size="22">🍐</text>
+  <text x="228" y="94" fill="#1d2327" font-size="18" font-weight="700">PearBlog Engine</text>
+  <text x="228" y="112" fill="#666" font-size="10">Autonomous AI content production system</text>
+  <rect x="830" y="86" width="72" height="20" rx="10" fill="#00a32a"/>
+  <text x="866" y="100" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">✓ OpenAI</text>
+  <rect x="910" y="86" width="44" height="20" rx="10" fill="#1d2327" stroke="#444" stroke-width="1"/>
+  <text x="932" y="100" text-anchor="middle" fill="#bbb" font-size="8">v6.0.2</text>
+  <rect x="962" y="86" width="116" height="20" rx="10" fill="#b45309"/>
+  <text x="1020" y="100" text-anchor="middle" fill="#fff" font-size="8">3 in queue</text>
+
+  <!-- Tab nav -->
+  <rect x="173" y="142" width="914" height="36" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="192" y="165" fill="#666" font-size="10">⚙️ General</text>
+  <text x="266" y="165" fill="#666" font-size="10">🖼️ AI Images</text>
+  <text x="350" y="165" fill="#666" font-size="10">📈 SEO</text>
+  <text x="406" y="165" fill="#666" font-size="10">💰 Monetization</text>
+  <text x="506" y="165" fill="#666" font-size="10">✉️ Email</text>
+  <text x="564" y="165" fill="#666" font-size="10">📋 Queue</text>
+  <text x="624" y="165" fill="#666" font-size="10">🤖 Automation</text>
+  <!-- Active: Monitoring -->
+  <rect x="714" y="146" width="92" height="28" rx="5" fill="#f0f0f1"/>
+  <text x="760" y="165" text-anchor="middle" fill="#1d2327" font-size="10" font-weight="700">📊 Monitoring</text>
+
+  <!-- ═══ METRIC CARDS GRID ═══ -->
+  <!-- Row of 6 metric cards -->
+
+  <!-- Card 1: Total Runs -->
+  <rect x="173" y="190" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="246" y="220" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">1,247</text>
+  <text x="246" y="240" text-anchor="middle" fill="#666" font-size="10">Total Pipeline Runs</text>
+
+  <!-- Card 2: Articles Last 24h -->
+  <rect x="327" y="190" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="400" y="220" text-anchor="middle" fill="#00a32a" font-size="22" font-weight="700">24</text>
+  <text x="400" y="240" text-anchor="middle" fill="#666" font-size="10">Articles Last 24h</text>
+
+  <!-- Card 3: Avg Duration -->
+  <rect x="481" y="190" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="554" y="220" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">54.3 s</text>
+  <text x="554" y="240" text-anchor="middle" fill="#666" font-size="10">Avg Duration (24h)</text>
+
+  <!-- Card 4: Error Rate -->
+  <rect x="635" y="190" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="708" y="220" text-anchor="middle" fill="#00a32a" font-size="22" font-weight="700">0.8 %</text>
+  <text x="708" y="240" text-anchor="middle" fill="#666" font-size="10">Error Rate</text>
+
+  <!-- Card 5: Memory peak -->
+  <rect x="789" y="190" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="862" y="220" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">48 MB</text>
+  <text x="862" y="240" text-anchor="middle" fill="#666" font-size="10">Memory (peak)</text>
+
+  <!-- Card 6: AI Cost -->
+  <rect x="943" y="190" width="144" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="1015" y="220" text-anchor="middle" fill="#b45309" font-size="22" font-weight="700">$99.76</text>
+  <text x="1015" y="240" text-anchor="middle" fill="#666" font-size="10">AI Cost (total)</text>
+
+  <!-- Row 2: more metrics -->
+  <rect x="173" y="268" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="246" y="298" text-anchor="middle" fill="#00a32a" font-size="22" font-weight="700">5</text>
+  <text x="246" y="318" text-anchor="middle" fill="#666" font-size="10">Queue Size</text>
+
+  <rect x="327" y="268" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="400" y="298" text-anchor="middle" fill="#00a32a" font-size="22" font-weight="700">closed</text>
+  <text x="400" y="318" text-anchor="middle" fill="#666" font-size="10">Circuit Breaker</text>
+
+  <rect x="481" y="268" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="554" y="298" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">3</text>
+  <text x="554" y="318" text-anchor="middle" fill="#666" font-size="10">Articles Today</text>
+
+  <rect x="635" y="268" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="708" y="298" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">8.2.18</text>
+  <text x="708" y="318" text-anchor="middle" fill="#666" font-size="10">PHP Version</text>
+
+  <rect x="789" y="268" width="146" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="862" y="298" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">6.5.3</text>
+  <text x="862" y="318" text-anchor="middle" fill="#666" font-size="10">WP Version</text>
+
+  <rect x="943" y="268" width="144" height="70" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="1015" y="298" text-anchor="middle" fill="#1d2327" font-size="22" font-weight="700">34,812</text>
+  <text x="1015" y="318" text-anchor="middle" fill="#666" font-size="10">DB Queries</text>
+
+  <!-- ═══ ACTION BUTTONS CARD ═══ -->
+  <rect x="173" y="348" width="914" height="54" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="193" y="370" fill="#1d2327" font-size="12" font-weight="700">🔧  Actions</text>
+  <line x1="183" y1="378" x2="1077" y2="378" stroke="#eee" stroke-width="1"/>
+  <!-- Buttons -->
+  <rect x="193" y="385" width="194" height="28" rx="5" fill="#d63638"/>
+  <text x="290" y="403" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🗑️  Reset Performance Metrics</text>
+  <rect x="397" y="385" width="164" height="28" rx="5" fill="#d63638"/>
+  <text x="479" y="403" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🗑️  Clear Alert History</text>
+  <rect x="571" y="385" width="120" height="28" rx="5" fill="#2271b1"/>
+  <text x="631" y="403" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">📥  Export CSV</text>
+
+  <!-- ═══ ALERT HISTORY TABLE ═══ -->
+  <rect x="173" y="412" width="914" height="230" rx="7" fill="#fff" filter="url(#sh)"/>
+  <text x="193" y="434" fill="#1d2327" font-size="12" font-weight="700">🔔  Alert History</text>
+  <!-- Filter links -->
+  <rect x="193" y="440" width="30" height="18" rx="3" fill="#1d2327"/>
+  <text x="208" y="453" text-anchor="middle" fill="#fff" font-size="9">All</text>
+  <rect x="231" y="440" width="32" height="18" rx="3" fill="#f0f0f1"/>
+  <text x="247" y="453" text-anchor="middle" fill="#666" font-size="9">Info</text>
+  <rect x="271" y="440" width="50" height="18" rx="3" fill="#f0f0f1"/>
+  <text x="296" y="453" text-anchor="middle" fill="#666" font-size="9">Warning</text>
+  <rect x="329" y="440" width="40" height="18" rx="3" fill="#f0f0f1"/>
+  <text x="349" y="453" text-anchor="middle" fill="#666" font-size="9">Error</text>
+  <rect x="377" y="440" width="50" height="18" rx="3" fill="#f0f0f1"/>
+  <text x="402" y="453" text-anchor="middle" fill="#666" font-size="9">Critical</text>
+
+  <line x1="183" y1="465" x2="1077" y2="465" stroke="#eee" stroke-width="1"/>
+
+  <!-- Table header -->
+  <rect x="173" y="465" width="914" height="24" fill="#f6f8fa"/>
+  <text x="193" y="481" fill="#57606a" font-size="10" font-weight="600">Time</text>
+  <text x="310" y="481" fill="#57606a" font-size="10" font-weight="600">Level</text>
+  <text x="390" y="481" fill="#57606a" font-size="10" font-weight="600">Pri</text>
+  <text x="430" y="481" fill="#57606a" font-size="10" font-weight="600">Title</text>
+  <text x="640" y="481" fill="#57606a" font-size="10" font-weight="600">Message</text>
+
+  <!-- Row 1 – Warning -->
+  <rect x="173" y="489" width="914" height="28" fill="#fff"/>
+  <text x="193" y="507" fill="#666" font-size="10">2026-04-12 21:45:02</text>
+  <rect x="302" y="494" width="58" height="16" rx="3" fill="#ffc107"/>
+  <text x="331" y="506" text-anchor="middle" fill="#333" font-size="9" font-weight="700">WARNING</text>
+  <text x="390" y="507" fill="#666" font-size="10">P2</text>
+  <text x="430" y="507" fill="#1d2327" font-size="10" font-weight="600">Pipeline Slow</text>
+  <text x="640" y="507" fill="#666" font-size="10">Pipeline took 128 s (threshold: 120 s)</text>
+
+  <!-- Row 2 – Info -->
+  <rect x="173" y="517" width="914" height="28" fill="#f6f8fa"/>
+  <text x="193" y="535" fill="#666" font-size="10">2026-04-12 21:30:11</text>
+  <rect x="302" y="522" width="40" height="16" rx="3" fill="#36a64f"/>
+  <text x="322" y="534" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">INFO</text>
+  <text x="390" y="535" fill="#666" font-size="10">P3</text>
+  <text x="430" y="535" fill="#1d2327" font-size="10" font-weight="600">Article Published</text>
+  <text x="640" y="535" fill="#666" font-size="10">Post #3841 "Top Hiking Trails in Tatry" published</text>
+
+  <!-- Row 3 – Info -->
+  <rect x="173" y="545" width="914" height="28" fill="#fff"/>
+  <text x="193" y="563" fill="#666" font-size="10">2026-04-12 20:30:08</text>
+  <rect x="302" y="550" width="40" height="16" rx="3" fill="#36a64f"/>
+  <text x="322" y="562" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">INFO</text>
+  <text x="390" y="563" fill="#666" font-size="10">P3</text>
+  <text x="430" y="563" fill="#1d2327" font-size="10" font-weight="600">Article Published</text>
+  <text x="640" y="563" fill="#666" font-size="10">Post #3840 "Best Restaurants in Kraków" published</text>
+
+  <!-- Row 4 – Error -->
+  <rect x="173" y="573" width="914" height="28" fill="#fff5f5"/>
+  <text x="193" y="591" fill="#666" font-size="10">2026-04-12 19:05:55</text>
+  <rect x="302" y="578" width="40" height="16" rx="3" fill="#e53935"/>
+  <text x="322" y="590" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">ERROR</text>
+  <text x="390" y="591" fill="#666" font-size="10">P1</text>
+  <text x="430" y="591" fill="#1d2327" font-size="10" font-weight="600">Pipeline Error</text>
+  <text x="640" y="591" fill="#666" font-size="10">OpenAI API timeout after 3 retries — circuit breaker triggered</text>
+
+  <!-- Row 5 – Info -->
+  <rect x="173" y="601" width="914" height="28" fill="#f6f8fa"/>
+  <text x="193" y="619" fill="#666" font-size="10">2026-04-12 18:30:03</text>
+  <rect x="302" y="606" width="40" height="16" rx="3" fill="#36a64f"/>
+  <text x="322" y="618" text-anchor="middle" fill="#fff" font-size="9" font-weight="700">INFO</text>
+  <text x="390" y="619" fill="#666" font-size="10">P3</text>
+  <text x="430" y="619" fill="#1d2327" font-size="10" font-weight="600">Article Published</text>
+  <text x="640" y="619" fill="#666" font-size="10">Post #3839 "Winter in Zakopane — Complete Guide" published</text>
+
+  <!-- Row 6 – Warning -->
+  <rect x="173" y="629" width="914" height="28" fill="#fff"/>
+  <text x="193" y="647" fill="#666" font-size="10">2026-04-12 17:15:44</text>
+  <rect x="302" y="634" width="58" height="16" rx="3" fill="#ffc107"/>
+  <text x="331" y="646" text-anchor="middle" fill="#333" font-size="9" font-weight="700">WARNING</text>
+  <text x="390" y="647" fill="#666" font-size="10">P2</text>
+  <text x="430" y="647" fill="#1d2327" font-size="10" font-weight="600">High Article Cost</text>
+  <text x="640" y="647" fill="#666" font-size="10">Article cost $0.16 (threshold: $0.15)</text>
+
+  <!-- Footer note -->
+  <text x="640" y="710" text-anchor="middle" fill="#8c8f94" font-size="9">PearBlog Engine v6.0.2 · Monitoring Dashboard</text>
+</svg>

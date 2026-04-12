@@ -320,6 +320,37 @@ class PerformanceDashboard {
 		return new \WP_REST_Response( [ 'status' => 'ok', 'message' => 'Metrics reset.' ], 200 );
 	}
 
+	/**
+	 * Return performance run records formatted as CSV rows (header row first).
+	 *
+	 * Useful for both the admin CSV download and unit-testing the export logic
+	 * without having to capture raw HTTP output.
+	 *
+	 * @param int $limit Maximum run records to include (newest first, default 200).
+	 * @return array<int, array<int, string>>
+	 */
+	public function get_csv_rows( int $limit = 200 ): array {
+		$rows = [
+			[ 'timestamp', 'type', 'post_id', 'topic', 'duration_s', 'memory_mb', 'cost_cents', 'db_queries', 'message' ],
+		];
+
+		foreach ( $this->get_recent_runs( $limit ) as $run ) {
+			$rows[] = [
+				gmdate( 'c', (int) $run['ts'] ),
+				(string) ( $run['type']        ?? '' ),
+				(string) ( $run['post_id']     ?? '' ),
+				(string) ( $run['topic']       ?? '' ),
+				(string) ( $run['duration']    ?? '' ),
+				(string) ( $run['memory_mb']   ?? '' ),
+				(string) ( $run['cost_cents']  ?? '' ),
+				(string) ( $run['db_queries']  ?? '' ),
+				(string) ( $run['message']     ?? '' ),
+			];
+		}
+
+		return $rows;
+	}
+
 	// ------------------------------------------------------------------
 	// Admin UI rendering (called from AdminPage tab)
 	// ------------------------------------------------------------------

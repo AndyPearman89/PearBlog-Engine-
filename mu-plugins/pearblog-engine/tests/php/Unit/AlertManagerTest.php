@@ -176,8 +176,49 @@ class AlertManagerTest extends TestCase {
 	}
 
 	// -----------------------------------------------------------------------
-	// Alert history
+	// ESCALATION_LEVELS enforcement
 	// -----------------------------------------------------------------------
+
+	public function test_p0_priority_escalates_info_to_critical(): void {
+		$manager = new AlertManager();
+		// Send an info-level alert with P0 priority — it must be recorded as critical.
+		$manager->alert( 'P0 Test', 'body', AlertManager::LEVEL_INFO, [], false, AlertManager::PRIORITY_P0 );
+
+		$history = $manager->get_history();
+		$this->assertNotEmpty( $history );
+		$entry = end( $history );
+		$this->assertSame( AlertManager::LEVEL_CRITICAL, $entry['level'] );
+	}
+
+	public function test_p1_priority_escalates_warning_to_error(): void {
+		$manager = new AlertManager();
+		$manager->alert( 'P1 Test', 'body', AlertManager::LEVEL_WARNING, [], false, AlertManager::PRIORITY_P1 );
+
+		$history = $manager->get_history();
+		$entry   = end( $history );
+		$this->assertSame( AlertManager::LEVEL_ERROR, $entry['level'] );
+	}
+
+	public function test_higher_provided_level_is_not_downgraded(): void {
+		$manager = new AlertManager();
+		// P3 minimum is info, but we provide critical — must stay critical.
+		$manager->alert( 'P3 Critical Test', 'body', AlertManager::LEVEL_CRITICAL, [], false, AlertManager::PRIORITY_P3 );
+
+		$history = $manager->get_history();
+		$entry   = end( $history );
+		$this->assertSame( AlertManager::LEVEL_CRITICAL, $entry['level'] );
+	}
+
+	public function test_p2_warning_level_is_unchanged(): void {
+		$manager = new AlertManager();
+		// P2 minimum is warning; providing warning should remain warning.
+		$manager->alert( 'P2 Test', 'body', AlertManager::LEVEL_WARNING, [], false, AlertManager::PRIORITY_P2 );
+
+		$history = $manager->get_history();
+		$entry   = end( $history );
+		$this->assertSame( AlertManager::LEVEL_WARNING, $entry['level'] );
+	}
+
 
 	public function test_alert_is_recorded_in_history(): void {
 		$manager = new AlertManager();

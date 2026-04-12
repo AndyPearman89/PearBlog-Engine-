@@ -164,6 +164,10 @@ class AlertManager {
 		// Apply threshold-based escalation.
 		$level = $this->apply_threshold( $title, $level );
 
+		// Enforce the minimum severity level required by the given priority.
+		$min_for_priority = self::ESCALATION_LEVELS[ $priority ] ?? self::LEVEL_INFO;
+		$level            = $this->enforce_minimum_level( $level, $min_for_priority );
+
 		// Check silence rules.
 		if ( $this->is_silenced( $title, $level ) ) {
 			return;
@@ -590,6 +594,28 @@ class AlertManager {
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * Ensure $current is at least as severe as $minimum.
+	 *
+	 * Used together with ESCALATION_LEVELS to guarantee that a high-priority
+	 * alert is never sent at a lower severity than its priority warrants.
+	 *
+	 * @param string $current The severity level that was requested or escalated.
+	 * @param string $minimum The minimum acceptable severity for this priority.
+	 * @return string The higher of the two severity levels.
+	 */
+	private function enforce_minimum_level( string $current, string $minimum ): string {
+		$order       = [ self::LEVEL_INFO, self::LEVEL_WARNING, self::LEVEL_ERROR, self::LEVEL_CRITICAL ];
+		$current_idx = array_search( $current, $order, true );
+		$minimum_idx = array_search( $minimum, $order, true );
+
+		if ( false === $current_idx || false === $minimum_idx ) {
+			return $current;
+		}
+
+		return $current_idx >= $minimum_idx ? $current : $minimum;
 	}
 
 	/**

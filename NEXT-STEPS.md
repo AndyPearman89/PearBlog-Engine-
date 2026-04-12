@@ -88,12 +88,12 @@ These are the next-generation features planned for the first post-launch release
 - Auto-promote winning variant after 7 days
 - New class: `src/Testing/ABTestEngine.php`
 
-### Monitoring Dashboard UI (Real-Time)
-- Add "Monitoring" tab to the admin panel
-- Display PerformanceDashboard metrics in live Chart.js graphs
-- Alert history view with filter by level/date
-- Cost tracking visualization (daily/weekly/monthly)
-- Export metrics to CSV/JSON
+### Monitoring Dashboard UI (Real-Time) ✅ Done — v6.0.2
+- ~~Add "Monitoring" tab to the admin panel~~ ✅ Tab already existed; now fully populated
+- ~~Display PerformanceDashboard metrics in live Chart.js graphs~~ → Static tables (Chart.js deferred to v7.2 post-launch)
+- ~~Alert history view with filter by level/date~~ ✅ Level filter + history table added
+- ~~Cost tracking visualization (daily/weekly/monthly)~~ ✅ Daily table + summary card already render cost data
+- ~~Export metrics to CSV/JSON~~ ✅ CSV download button + existing JSON REST endpoint
 
 ---
 
@@ -144,8 +144,8 @@ These are known issues to resolve in the first patch releases:
 | `pearblog_booking_api_key` not registered with `register_setting()` | Fixed ✅ (registered at AdminPage.php:139) | Done |
 | AutopilotRunner test used `assertMatchesRegularExpression` (PHPUnit 8.5 compat) | Fixed ✅ | Done |
 | Postman collection JSON referenced in API docs but not committed | Fixed ✅ `examples/postman/PearBlog-Engine-v6.postman_collection.json` | Done |
-| `ESCALATION_LEVELS` constant defined but not used in AlertManager | `src/Monitoring/AlertManager.php` | P3 |
-| No rate-limit headers actually set on REST responses (only documented) | `src/API/` | P2 |
+| `ESCALATION_LEVELS` constant defined but not used in AlertManager | Fixed ✅ `src/Monitoring/AlertManager.php` — enforces min severity per priority | Done |
+| No rate-limit headers actually set on REST responses (only documented) | Fixed ✅ `src/API/RateLimiter.php` + `AutomationController.php` — 429 + X-RateLimit-* headers | Done |
 
 ---
 
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v6.0 complete, v7.0 launch sprint active*
+*Last updated: 2026-04-12 — v6.0 complete, v7.0 launch sprint active; P2 rate-limit headers + P3 ESCALATION_LEVELS resolved*

@@ -1,0 +1,118 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1100 680" font-family="Segoe UI, Arial, sans-serif">
+  <defs>
+    <filter id="sh">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#000" flood-opacity="0.12"/>
+    </filter>
+  </defs>
+
+  <!-- Page background / browser frame -->
+  <rect width="1100" height="680" rx="10" fill="#e8e8e8"/>
+  <rect x="0" y="0" width="1100" height="34" rx="10" fill="#d5d5d5"/>
+  <rect x="0" y="22" width="1100" height="12" fill="#d5d5d5"/>
+  <circle cx="20" cy="17" r="5" fill="#fc605b"/>
+  <circle cx="38" cy="17" r="5" fill="#fdbc40"/>
+  <circle cx="56" cy="17" r="5" fill="#34c84a"/>
+  <rect x="130" y="6" width="520" height="20" rx="3" fill="#fff" stroke="#bbb" stroke-width="1"/>
+  <text x="390" y="20" text-anchor="middle" fill="#777" font-size="10">wordpress.local/wp-admin/admin.php?page=pearblog-engine&amp;tab=queue</text>
+
+  <!-- WP Admin sidebar -->
+  <rect x="0" y="34" width="160" height="646" fill="#23282d"/>
+  <text x="16" y="65" fill="#eee" font-size="12" font-weight="700">🍐 PearBlog Engine</text>
+  <rect x="0" y="72" width="160" height="1" fill="#444"/>
+  <text x="24" y="92" fill="#ccc" font-size="10">⚙️  Settings</text>
+  <text x="24" y="110" fill="#777" font-size="10">📝  Posts</text>
+  <text x="24" y="128" fill="#777" font-size="10">🖼️  Media</text>
+
+  <!-- Main content -->
+  <rect x="160" y="34" width="940" height="646" fill="#f0f0f1"/>
+
+  <!-- WP top bar -->
+  <rect x="160" y="34" width="940" height="32" fill="#23282d"/>
+  <text x="175" y="54" fill="#bbb" font-size="11">PearBlog Engine  ·  Topic Queue</text>
+
+  <!-- Page header -->
+  <rect x="173" y="76" width="914" height="54" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="198" y="98" fill="#1d2327" font-size="22">🍐</text>
+  <text x="228" y="94" fill="#1d2327" font-size="17" font-weight="700">PearBlog Engine</text>
+  <text x="228" y="112" fill="#666" font-size="10">Autonomous AI content production system</text>
+  <rect x="820" y="86" width="72" height="20" rx="10" fill="#00a32a"/>
+  <text x="856" y="100" text-anchor="middle" fill="#fff" font-size="9" font-weight="600">✓ OpenAI</text>
+  <rect x="900" y="86" width="44" height="20" rx="10" fill="#1d2327" stroke="#444" stroke-width="1"/>
+  <text x="922" y="100" text-anchor="middle" fill="#bbb" font-size="8">v6.0.2</text>
+  <rect x="952" y="86" width="126" height="20" rx="10" fill="#2271b1"/>
+  <text x="1015" y="100" text-anchor="middle" fill="#fff" font-size="8">7 in queue</text>
+
+  <!-- Tab nav -->
+  <rect x="173" y="140" width="914" height="36" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="192" y="163" fill="#666" font-size="10">⚙️ General</text>
+  <text x="266" y="163" fill="#666" font-size="10">🖼️ AI Images</text>
+  <text x="350" y="163" fill="#666" font-size="10">📈 SEO</text>
+  <text x="406" y="163" fill="#666" font-size="10">💰 Monetization</text>
+  <text x="506" y="163" fill="#666" font-size="10">✉️ Email</text>
+  <!-- Active: Queue -->
+  <rect x="556" y="144" width="64" height="28" rx="5" fill="#f0f0f1"/>
+  <text x="588" y="163" text-anchor="middle" fill="#1d2327" font-size="10" font-weight="700">📋 Queue</text>
+  <text x="640" y="163" fill="#666" font-size="10">🤖 Automation</text>
+  <text x="728" y="163" fill="#666" font-size="10">📊 Monitoring</text>
+
+  <!-- ── Site Profile card ── -->
+  <rect x="173" y="188" width="914" height="60" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="193" y="210" fill="#1d2327" font-size="12" font-weight="700">🏢  Active Site Profile</text>
+  <line x1="183" y1="218" x2="1077" y2="218" stroke="#eee" stroke-width="1"/>
+  <text x="193" y="237" fill="#666" font-size="11">Industry: travel · Tone: conversational · Language: en · Publish rate: 1 article/cycle · Monetization: affiliate</text>
+
+  <!-- ── Queue Stats ── -->
+  <rect x="173" y="258" width="130" height="64" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="238" y="290" text-anchor="middle" fill="#1d2327" font-size="28" font-weight="700">7</text>
+  <text x="238" y="313" text-anchor="middle" fill="#666" font-size="10">Topics in Queue</text>
+
+  <!-- ── Queue list card ── -->
+  <rect x="173" y="332" width="540" height="240" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="193" y="354" fill="#1d2327" font-size="12" font-weight="700">📋  Current Queue</text>
+  <line x1="183" y1="362" x2="703" y2="362" stroke="#eee" stroke-width="1"/>
+
+  <!-- Queue items -->
+  <text x="200" y="383" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">1.</tspan>  Best hiking trails in Tatry</text>
+  <text x="200" y="404" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">2.</tspan>  Weather in Zakopane in winter</text>
+  <text x="200" y="425" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">3.</tspan>  Top restaurants in Kraków old town</text>
+  <text x="200" y="446" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">4.</tspan>  Budget travel Poland itinerary 7 days</text>
+  <text x="200" y="467" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">5.</tspan>  Skiing in Zakopane — complete guide</text>
+  <text x="200" y="488" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">6.</tspan>  Wieliczka Salt Mine tour tips</text>
+  <text x="200" y="509" fill="#1d2327" font-size="11"><tspan fill="#666" font-size="10">7.</tspan>  Tatra National Park wildlife guide</text>
+
+  <line x1="183" y1="520" x2="703" y2="520" stroke="#eee" stroke-width="1"/>
+  <rect x="193" y="530" width="110" height="28" rx="4" fill="#d63638"/>
+  <text x="248" y="548" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">🗑️ Clear Queue</text>
+
+  <!-- ── Run Pipeline card ── -->
+  <rect x="730" y="332" width="357" height="150" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="750" y="354" fill="#1d2327" font-size="12" font-weight="700">▶️  Run Pipeline</text>
+  <line x1="740" y1="362" x2="1077" y2="362" stroke="#eee" stroke-width="1"/>
+
+  <text x="750" y="383" fill="#666" font-size="11" font-weight="600">Mode</text>
+  <text x="900" y="383" fill="#00a32a" font-size="11">● Autonomous (enabled)</text>
+
+  <text x="750" y="405" fill="#666" font-size="11" font-weight="600">Next Scheduled Run</text>
+  <text x="900" y="405" fill="#666" font-size="11">In 42 minutes</text>
+  <text x="900" y="418" fill="#999" font-size="9">(2026-04-12 22:42:00)</text>
+
+  <line x1="740" y1="428" x2="1077" y2="428" stroke="#eee" stroke-width="1"/>
+  <rect x="750" y="438" width="148" height="32" rx="4" fill="#2271b1"/>
+  <text x="824" y="458" text-anchor="middle" fill="#fff" font-size="12" font-weight="600">Run Pipeline Now</text>
+
+  <!-- ── Add Topics card ── -->
+  <rect x="730" y="494" width="357" height="178" rx="8" fill="#fff" filter="url(#sh)"/>
+  <text x="750" y="516" fill="#1d2327" font-size="12" font-weight="700">➕  Add Topics to Queue</text>
+  <line x1="740" y1="524" x2="1077" y2="524" stroke="#eee" stroke-width="1"/>
+  <text x="750" y="543" fill="#3c4146" font-size="11">Topics (one per line)</text>
+  <rect x="750" y="551" width="320" height="80" rx="4" fill="#f6f7f7" stroke="#8c8f94" stroke-width="1"/>
+  <text x="762" y="570" fill="#999" font-size="10">Best waterfalls in Slovakia</text>
+  <text x="762" y="586" fill="#999" font-size="10">Budapest day trip from Kraków</text>
+  <text x="762" y="602" fill="#999" font-size="10">Morskie Oko lake trail guide</text>
+  <text x="762" y="622" fill="#aaa" font-size="9">← placeholder text</text>
+  <rect x="750" y="642" width="130" height="28" rx="4" fill="#00a32a"/>
+  <text x="815" y="660" text-anchor="middle" fill="#fff" font-size="11" font-weight="600">➕ Add to Queue</text>
+
+  <!-- footer -->
+  <text x="550" y="668" text-anchor="middle" fill="#8c8f94" font-size="9">PearBlog Engine v6.0.2 · Topic Queue Manager</text>
+</svg>

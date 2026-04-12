@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'pearblog/engine',
-        'pretty_version' => 'dev-copilot/update-documentation-and-visualization',
-        'version' => 'dev-copilot/update-documentation-and-visualization',
-        'reference' => 'b0d659bb335194177019170cabf7da7558a47798',
+        'pretty_version' => 'dev-copilot/next-steps',
+        'version' => 'dev-copilot/next-steps',
+        'reference' => 'bf24e7ecd2bd5c787dddcf86e5cbf3103dcc2433',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => true,
         ),
         'pearblog/engine' => array(
-            'pretty_version' => 'dev-copilot/update-documentation-and-visualization',
-            'version' => 'dev-copilot/update-documentation-and-visualization',
-            'reference' => 'b0d659bb335194177019170cabf7da7558a47798',
+            'pretty_version' => 'dev-copilot/next-steps',
+            'version' => 'dev-copilot/next-steps',
+            'reference' => 'bf24e7ecd2bd5c787dddcf86e5cbf3103dcc2433',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

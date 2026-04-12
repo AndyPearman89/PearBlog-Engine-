@@ -2,6 +2,19 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [6.0.2] — 2026-04-12
+
+### Added — v7.1 Monitoring Dashboard UI
+
+- **Alert history table** — Monitoring tab now renders the last 50 alerts from `AlertManager`'s ring buffer, colour-coded by severity level (Info / Warning / Error / Critical) with a priority badge (P0–P3).
+- **Alert level filter** — Quick-filter links above the history table let you narrow to a single severity level without leaving the page.
+- **Active silences display** — When one or more alert silences are active, a table shows the muted pattern, affected level, and expiry time.
+- **Reset Performance Metrics action** — One-click button (with confirmation dialog) to wipe all performance metric records stored in `pearblog_perf_metrics` and `pearblog_perf_daily`.
+- **Clear Alert History action** — One-click button to clear `pearblog_alert_history`.
+- **Export CSV download** — Form button that streams all pipeline run records as a CSV file (`pearblog-metrics-YYYY-MM-DD.csv`). Each row includes timestamp, type, post ID, topic, duration, memory, cost, and DB queries.
+- **`PerformanceDashboard::get_csv_rows()`** — New public method returning the header row + data rows as a plain PHP array, making the CSV generation independently testable.
+- **4 new PHPUnit tests** for `get_csv_rows()` in `PerformanceDashboardTest`.
+
 ## [6.0.0] — 2026-04-05
 
 ### Added — Sprint 1: Critical Stability

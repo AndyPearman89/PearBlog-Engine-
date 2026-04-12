@@ -566,21 +566,30 @@ if ( ! class_exists( 'WP_Error' ) ) {
 
 if ( ! class_exists( 'WP_REST_Request' ) ) {
 	class WP_REST_Request {
-		private array $params = [];
+		private array $params  = [];
+		private array $headers = [];
 		public function get_param( string $key ) { return $this->params[ $key ] ?? null; }
 		public function set_param( string $key, $value ): void { $this->params[ $key ] = $value; }
 		public function get_params(): array { return $this->params; }
+		public function get_header( string $name ): ?string { return $this->headers[ strtolower( $name ) ] ?? null; }
+		public function set_header( string $name, string $value ): void { $this->headers[ strtolower( $name ) ] = $value; }
 	}
 }
 
 if ( ! class_exists( 'WP_REST_Response' ) ) {
 	class WP_REST_Response {
 		public $data;
-		public int $status;
+		public int   $status;
+		public array $headers = [];
 		public function __construct( $data = null, int $status = 200 ) {
 			$this->data   = $data;
 			$this->status = $status;
 		}
+		public function header( string $name, string $value, bool $replace = true ): void {
+			// $replace matches the real WP_REST_Response::header() signature; always replace in the stub.
+			$this->headers[ $name ] = $value;
+		}
+		public function get_headers(): array { return $this->headers; }
 	}
 }
 
