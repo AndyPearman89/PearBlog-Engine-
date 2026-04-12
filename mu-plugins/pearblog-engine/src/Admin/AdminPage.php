@@ -452,6 +452,10 @@ class AdminPage {
 					<span class="pb-tab-icon" aria-hidden="true">🤖</span>
 					<?php esc_html_e( 'Automation', 'pearblog-engine' ); ?>
 				</button>
+				<button class="pb-tab-btn" data-tab="monitoring" role="tab" aria-selected="false" aria-controls="pb-tab-monitoring">
+					<span class="pb-tab-icon" aria-hidden="true">📊</span>
+					<?php esc_html_e( 'Monitoring', 'pearblog-engine' ); ?>
+				</button>
 			</div>
 
 			<!-- ============================================================
@@ -1165,6 +1169,13 @@ class AdminPage {
 					</form>
 				</div>
 			</div><!-- /pb-tab-automation -->
+
+			<!-- ============================================================
+				TAB: MONITORING
+				============================================================ -->
+			<div id="pb-tab-monitoring" class="pb-tab-panel">
+				<?php ( new \PearBlogEngine\Monitoring\PerformanceDashboard() )->render_admin_tab(); ?>
+			</div><!-- /pb-tab-monitoring -->
 
 		</div><!-- /pb-admin-wrap -->
 		<?php

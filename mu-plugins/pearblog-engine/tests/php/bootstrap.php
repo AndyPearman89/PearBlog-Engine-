@@ -89,6 +89,24 @@ if ( ! function_exists( 'sanitize_title' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_bloginfo' ) ) {
+	function get_bloginfo( string $key = '' ): string {
+		return 'Test Blog';
+	}
+}
+
+if ( ! function_exists( 'get_site_url' ) ) {
+	function get_site_url(): string {
+		return 'https://example.com';
+	}
+}
+
+if ( ! function_exists( 'wp_date' ) ) {
+	function wp_date( string $format, int $timestamp = 0 ): string {
+		return gmdate( $format, $timestamp ?: time() );
+	}
+}
+
 if ( ! function_exists( 'sanitize_text_field' ) ) {
 	function sanitize_text_field( string $str ): string {
 		return trim( strip_tags( $str ) );

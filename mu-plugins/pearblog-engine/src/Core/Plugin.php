@@ -12,10 +12,12 @@ namespace PearBlogEngine\Core;
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
+use PearBlogEngine\Monitoring\PerformanceDashboard;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
+use PearBlogEngine\Admin\OnboardingWizard;
 use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Email\EmailDigest;
 use PearBlogEngine\SEO\ProgrammaticSEO;
@@ -52,6 +54,10 @@ class Plugin {
 		( new AdminPage() )->register();
 		( new DashboardWidget() )->register();
 		( new ProgrammaticSEO() )->register();
+		( new OnboardingWizard() )->register();
+
+		// Performance monitoring.
+		( new PerformanceDashboard() )->register();
 
 		// REST API – automation endpoints for external scripts.
 		add_action( 'rest_api_init', static function (): void {
