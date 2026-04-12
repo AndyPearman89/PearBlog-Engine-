@@ -46,7 +46,7 @@ All 26 enterprise tasks across 7 phases are complete:
 - [ ] Apply fixes from Week 2 triage
 - [ ] Cut `v6.0.0-rc1` (Release Candidate) on GitHub
 - [ ] Update [CHANGELOG.md](CHANGELOG.md) with v6.0.0 full release notes
-- [ ] Add `examples/postman/PearBlog-Engine-v6.postman_collection.json` to the repo (Postman collection referenced in API docs)
+- [x] Add `examples/postman/PearBlog-Engine-v6.postman_collection.json` to the repo ✅
 - [ ] Verify all links in [DOCUMENTATION-INDEX.md](DOCUMENTATION-INDEX.md) are live
 
 ### Week 4 (2026-05-03 – 2026-05-09): Pre-Launch Sign-off
@@ -141,11 +141,11 @@ These are known issues to resolve in the first patch releases:
 
 | Issue | File | Priority |
 |-------|------|----------|
-| `pearblog_booking_api_key` not registered with `register_setting()` | `src/Admin/AdminPage.php` | P1 |
+| `pearblog_booking_api_key` not registered with `register_setting()` | Fixed ✅ (registered at AdminPage.php:139) | Done |
 | AutopilotRunner test used `assertMatchesRegularExpression` (PHPUnit 8.5 compat) | Fixed ✅ | Done |
+| Postman collection JSON referenced in API docs but not committed | Fixed ✅ `examples/postman/PearBlog-Engine-v6.postman_collection.json` | Done |
 | `ESCALATION_LEVELS` constant defined but not used in AlertManager | `src/Monitoring/AlertManager.php` | P3 |
 | No rate-limit headers actually set on REST responses (only documented) | `src/API/` | P2 |
-| Postman collection JSON file referenced in API docs but not committed | `examples/postman/` | P2 |
 
 ---
 
