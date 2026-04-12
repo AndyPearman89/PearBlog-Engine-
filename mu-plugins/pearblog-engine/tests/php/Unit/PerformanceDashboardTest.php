@@ -119,4 +119,47 @@ class PerformanceDashboardTest extends TestCase {
 		}
 		$this->assertLessThanOrEqual( 200, count( $this->dashboard->get_all_records() ) );
 	}
+
+	// -----------------------------------------------------------------------
+	// get_csv_rows()
+	// -----------------------------------------------------------------------
+
+	public function test_get_csv_rows_returns_header_as_first_row(): void {
+		$rows = $this->dashboard->get_csv_rows();
+
+		$this->assertNotEmpty( $rows );
+		$this->assertSame( 'timestamp', $rows[0][0] );
+		$this->assertSame( 'type',      $rows[0][1] );
+		$this->assertSame( 'post_id',   $rows[0][2] );
+		$this->assertSame( 'topic',     $rows[0][3] );
+	}
+
+	public function test_get_csv_rows_includes_recorded_run(): void {
+		$this->dashboard->record_pipeline_run( 7, 'CSV Topic', 1.5 );
+		$rows = $this->dashboard->get_csv_rows();
+
+		// rows[0] = header, rows[1] = the run.
+		$this->assertCount( 2, $rows );
+		$this->assertSame( 'success',   $rows[1][1] );
+		$this->assertSame( '7',         $rows[1][2] );
+		$this->assertSame( 'CSV Topic', $rows[1][3] );
+	}
+
+	public function test_get_csv_rows_empty_when_no_runs(): void {
+		$rows = $this->dashboard->get_csv_rows();
+
+		// Only the header row should be present.
+		$this->assertCount( 1, $rows );
+		$this->assertSame( 'timestamp', $rows[0][0] );
+	}
+
+	public function test_get_csv_rows_respects_limit(): void {
+		for ( $i = 1; $i <= 10; $i++ ) {
+			$this->dashboard->record_pipeline_run( $i, "T{$i}", 0.5 );
+		}
+
+		$rows = $this->dashboard->get_csv_rows( 3 );
+		// 1 header + 3 data rows.
+		$this->assertCount( 4, $rows );
+	}
 }

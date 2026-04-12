@@ -12,6 +12,8 @@ namespace PearBlogEngine\Admin;
 use PearBlogEngine\AI\ImageAnalyzer;
 use PearBlogEngine\AI\ImageGenerator;
 use PearBlogEngine\Content\TopicQueue;
+use PearBlogEngine\Monitoring\AlertManager;
+use PearBlogEngine\Monitoring\PerformanceDashboard;
 use PearBlogEngine\SEO\ProgrammaticSEO;
 use PearBlogEngine\Tenant\TenantContext;
 
@@ -35,7 +37,10 @@ class AdminPage {
 		add_action( 'admin_post_pearblog_generate_images', [ $this, 'handle_generate_images' ] );
 		add_action( 'admin_post_pearblog_run_seo_audit', [ $this, 'handle_seo_audit' ] );
 		add_action( 'admin_post_pearblog_fix_alt_texts', [ $this, 'handle_fix_alt_texts' ] );
-		add_action( 'admin_post_pearblog_run_pipeline', [ $this, 'handle_run_pipeline' ] );
+		add_action( 'admin_post_pearblog_run_pipeline',           [ $this, 'handle_run_pipeline' ] );
+		add_action( 'admin_post_pearblog_reset_metrics',          [ $this, 'handle_reset_metrics' ] );
+		add_action( 'admin_post_pearblog_clear_alert_history',    [ $this, 'handle_clear_alert_history' ] );
+		add_action( 'admin_post_pearblog_export_metrics_csv',     [ $this, 'handle_export_metrics_csv' ] );
 	}
 
 	// -----------------------------------------------------------------------
@@ -373,8 +378,74 @@ class AdminPage {
 		);
 	}
 
-	public function render_page(): void {
+	/**
+	 * Reset all stored performance metrics.
+	 */
+	public function handle_reset_metrics(): void {
 		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+
+		check_admin_referer( 'pearblog_reset_metrics' );
+
+		( new PerformanceDashboard() )->reset_metrics();
+
+		$this->redirect_with_notice(
+			__( 'Performance metrics have been reset.', 'pearblog-engine' ),
+			'success'
+		);
+	}
+
+	/**
+	 * Clear the alert history ring buffer.
+	 */
+	public function handle_clear_alert_history(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+
+		check_admin_referer( 'pearblog_clear_alert_history' );
+
+		( new AlertManager() )->clear_history();
+
+		$this->redirect_with_notice(
+			__( 'Alert history cleared.', 'pearblog-engine' ),
+			'success'
+		);
+	}
+
+	/**
+	 * Stream performance metrics as a CSV download.
+	 *
+	 * Outputs CSV headers and content directly, then exits.
+	 */
+	public function handle_export_metrics_csv(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+
+		check_admin_referer( 'pearblog_export_metrics_csv' );
+
+		$rows     = ( new PerformanceDashboard() )->get_csv_rows();
+		$filename = 'pearblog-metrics-' . gmdate( 'Y-m-d' ) . '.csv';
+
+		header( 'Content-Type: text/csv; charset=UTF-8' );
+		header( 'Content-Disposition: attachment; filename="' . $filename . '"' );
+		header( 'Pragma: no-cache' );
+		header( 'Expires: 0' );
+
+		$output = fopen( 'php://output', 'w' );
+		if ( false !== $output ) {
+			foreach ( $rows as $row ) {
+				fputcsv( $output, $row );
+			}
+			fclose( $output );
+		}
+
+		exit;
+	}
+
+	public function render_page(): void {
 			return;
 		}
 
@@ -1174,7 +1245,9 @@ class AdminPage {
 				TAB: MONITORING
 				============================================================ -->
 			<div id="pb-tab-monitoring" class="pb-tab-panel">
-				<?php ( new \PearBlogEngine\Monitoring\PerformanceDashboard() )->render_admin_tab(); ?>
+				<?php ( new PerformanceDashboard() )->render_admin_tab(); ?>
+				<?php $this->render_monitoring_actions(); ?>
+				<?php $this->render_alert_history(); ?>
 			</div><!-- /pb-tab-monitoring -->
 
 		</div><!-- /pb-admin-wrap -->
@@ -1184,6 +1257,192 @@ class AdminPage {
 	// -----------------------------------------------------------------------
 	// Private helpers
 	// -----------------------------------------------------------------------
+
+	/**
+	 * Render the Monitoring tab action buttons (Reset Metrics, Clear Alerts, Export CSV).
+	 */
+	private function render_monitoring_actions(): void {
+		?>
+		<div class="pb-admin-card">
+			<div class="pb-admin-card-header">
+				<span class="pb-admin-card-icon" aria-hidden="true">🔧</span>
+				<h2 class="pb-admin-card-title"><?php esc_html_e( 'Actions', 'pearblog-engine' ); ?></h2>
+			</div>
+			<div style="display:flex; gap:12px; flex-wrap:wrap; margin-top:.5rem;">
+
+				<!-- Reset performance metrics -->
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
+					<input type="hidden" name="action" value="pearblog_reset_metrics" />
+					<?php wp_nonce_field( 'pearblog_reset_metrics' ); ?>
+					<button type="submit" class="pb-admin-btn pb-admin-btn-danger"
+					        onclick="return confirm('<?php esc_attr_e( 'Reset all performance metrics? This cannot be undone.', 'pearblog-engine' ); ?>');">
+						🗑️ <?php esc_html_e( 'Reset Performance Metrics', 'pearblog-engine' ); ?>
+					</button>
+				</form>
+
+				<!-- Clear alert history -->
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
+					<input type="hidden" name="action" value="pearblog_clear_alert_history" />
+					<?php wp_nonce_field( 'pearblog_clear_alert_history' ); ?>
+					<button type="submit" class="pb-admin-btn pb-admin-btn-danger"
+					        onclick="return confirm('<?php esc_attr_e( 'Clear all alert history?', 'pearblog-engine' ); ?>');">
+						🗑️ <?php esc_html_e( 'Clear Alert History', 'pearblog-engine' ); ?>
+					</button>
+				</form>
+
+				<!-- Export metrics CSV -->
+				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:inline;">
+					<input type="hidden" name="action" value="pearblog_export_metrics_csv" />
+					<?php wp_nonce_field( 'pearblog_export_metrics_csv' ); ?>
+					<button type="submit" class="pb-admin-btn pb-admin-btn-secondary">
+						📥 <?php esc_html_e( 'Export CSV', 'pearblog-engine' ); ?>
+					</button>
+				</form>
+
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the alert history and active silences sections in the Monitoring tab.
+	 */
+	private function render_alert_history(): void {
+		$alert_manager = new AlertManager();
+		$silences      = $alert_manager->get_active_silences();
+
+		// Level filter via URL param.
+		$valid_levels = [
+			AlertManager::LEVEL_INFO,
+			AlertManager::LEVEL_WARNING,
+			AlertManager::LEVEL_ERROR,
+			AlertManager::LEVEL_CRITICAL,
+		];
+		$filter_level = isset( $_GET['alert_level'] ) ? sanitize_key( (string) $_GET['alert_level'] ) : ''; // phpcs:ignore WordPress.Security.NonceVerification
+		if ( ! in_array( $filter_level, $valid_levels, true ) ) {
+			$filter_level = '';
+		}
+
+		$history = $alert_manager->get_history( 50 );
+		if ( '' !== $filter_level ) {
+			$history = array_values( array_filter(
+				$history,
+				fn( array $entry ) => ( $entry['level'] ?? '' ) === $filter_level
+			) );
+		}
+
+		// Colour map for badge backgrounds.
+		$level_bg = [
+			AlertManager::LEVEL_INFO     => '#36a64f',
+			AlertManager::LEVEL_WARNING  => '#ffc107',
+			AlertManager::LEVEL_ERROR    => '#e53935',
+			AlertManager::LEVEL_CRITICAL => '#b71c1c',
+		];
+		$level_fg = [
+			AlertManager::LEVEL_INFO     => '#ffffff',
+			AlertManager::LEVEL_WARNING  => '#333333',
+			AlertManager::LEVEL_ERROR    => '#ffffff',
+			AlertManager::LEVEL_CRITICAL => '#ffffff',
+		];
+		?>
+
+		<!-- Active silences -->
+		<?php if ( ! empty( $silences ) ) : ?>
+		<div class="pb-admin-card">
+			<div class="pb-admin-card-header">
+				<span class="pb-admin-card-icon" aria-hidden="true">🔇</span>
+				<h2 class="pb-admin-card-title"><?php esc_html_e( 'Active Alert Silences', 'pearblog-engine' ); ?></h2>
+			</div>
+			<table class="widefat striped" style="margin-top:.5rem;">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'Pattern', 'pearblog-engine' ); ?></th>
+						<th><?php esc_html_e( 'Level', 'pearblog-engine' ); ?></th>
+						<th><?php esc_html_e( 'Expires', 'pearblog-engine' ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $silences as $silence ) : ?>
+						<tr>
+							<td><code><?php echo esc_html( $silence['pattern'] ); ?></code></td>
+							<td><?php echo esc_html( $silence['level'] ?? __( 'all levels', 'pearblog-engine' ) ); ?></td>
+							<td><?php echo esc_html( gmdate( 'Y-m-d H:i:s', (int) $silence['until'] ) ); ?></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		</div>
+		<?php endif; ?>
+
+		<!-- Alert history -->
+		<div class="pb-admin-card">
+			<div class="pb-admin-card-header">
+				<span class="pb-admin-card-icon" aria-hidden="true">🔔</span>
+				<h2 class="pb-admin-card-title"><?php esc_html_e( 'Alert History', 'pearblog-engine' ); ?></h2>
+			</div>
+
+			<!-- Level filter links -->
+			<div style="margin-bottom:.75rem; display:flex; gap:8px; flex-wrap:wrap;">
+				<?php
+				$base_url = add_query_arg(
+					[ 'page' => 'pearblog-engine', 'tab' => 'monitoring' ],
+					admin_url( 'admin.php' )
+				);
+				$levels = [
+					''                          => __( 'All', 'pearblog-engine' ),
+					AlertManager::LEVEL_INFO     => __( 'Info', 'pearblog-engine' ),
+					AlertManager::LEVEL_WARNING  => __( 'Warning', 'pearblog-engine' ),
+					AlertManager::LEVEL_ERROR    => __( 'Error', 'pearblog-engine' ),
+					AlertManager::LEVEL_CRITICAL => __( 'Critical', 'pearblog-engine' ),
+				];
+				foreach ( $levels as $lvl => $label ) :
+					$url       = '' !== $lvl ? add_query_arg( 'alert_level', $lvl, $base_url ) : $base_url;
+					$is_active = $filter_level === $lvl;
+				?>
+					<a href="<?php echo esc_url( $url ); ?>"
+					   style="padding:4px 12px; border-radius:3px; text-decoration:none; font-size:13px;
+					          <?php echo $is_active ? 'background:#1d2327; color:#fff;' : 'background:#f0f0f0; color:#1d2327;'; ?>">
+						<?php echo esc_html( $label ); ?>
+					</a>
+				<?php endforeach; ?>
+			</div>
+
+			<?php if ( empty( $history ) ) : ?>
+				<p style="color:#666; margin:0;"><?php esc_html_e( 'No alerts recorded yet.', 'pearblog-engine' ); ?></p>
+			<?php else : ?>
+				<table class="widefat striped" style="margin-top:.5rem;">
+					<thead>
+						<tr>
+							<th><?php esc_html_e( 'Time', 'pearblog-engine' ); ?></th>
+							<th><?php esc_html_e( 'Level', 'pearblog-engine' ); ?></th>
+							<th><?php esc_html_e( 'Priority', 'pearblog-engine' ); ?></th>
+							<th><?php esc_html_e( 'Title', 'pearblog-engine' ); ?></th>
+							<th><?php esc_html_e( 'Message', 'pearblog-engine' ); ?></th>
+						</tr>
+					</thead>
+					<tbody>
+						<?php foreach ( $history as $entry ) :
+							$bg = $level_bg[ $entry['level'] ] ?? '#888';
+							$fg = $level_fg[ $entry['level'] ] ?? '#fff';
+						?>
+							<tr>
+								<td style="white-space:nowrap;"><?php echo esc_html( gmdate( 'Y-m-d H:i:s', (int) ( $entry['timestamp'] ?? 0 ) ) ); ?></td>
+								<td>
+									<span style="display:inline-block; padding:2px 8px; border-radius:3px; font-size:11px; font-weight:600; background:<?php echo esc_attr( $bg ); ?>; color:<?php echo esc_attr( $fg ); ?>; text-transform:uppercase;">
+										<?php echo esc_html( $entry['level'] ); ?>
+									</span>
+								</td>
+								<td>P<?php echo esc_html( (string) ( $entry['priority'] ?? 3 ) ); ?></td>
+								<td><strong><?php echo esc_html( $entry['title'] ); ?></strong></td>
+								<td><?php echo esc_html( mb_substr( (string) ( $entry['message'] ?? '' ), 0, 150 ) ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+					</tbody>
+				</table>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
 
 	/**
 	 * Sanitize checkbox value to boolean.

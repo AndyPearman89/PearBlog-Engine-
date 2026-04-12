@@ -88,12 +88,12 @@ These are the next-generation features planned for the first post-launch release
 - Auto-promote winning variant after 7 days
 - New class: `src/Testing/ABTestEngine.php`
 
-### Monitoring Dashboard UI (Real-Time)
-- Add "Monitoring" tab to the admin panel
-- Display PerformanceDashboard metrics in live Chart.js graphs
-- Alert history view with filter by level/date
-- Cost tracking visualization (daily/weekly/monthly)
-- Export metrics to CSV/JSON
+### Monitoring Dashboard UI (Real-Time) ✅ Done — v6.0.2
+- ~~Add "Monitoring" tab to the admin panel~~ ✅ Tab already existed; now fully populated
+- ~~Display PerformanceDashboard metrics in live Chart.js graphs~~ → Static tables (Chart.js deferred to v7.2 post-launch)
+- ~~Alert history view with filter by level/date~~ ✅ Level filter + history table added
+- ~~Cost tracking visualization (daily/weekly/monthly)~~ ✅ Daily table + summary card already render cost data
+- ~~Export metrics to CSV/JSON~~ ✅ CSV download button + existing JSON REST endpoint
 
 ---
 
