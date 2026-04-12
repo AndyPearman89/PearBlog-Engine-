@@ -60,6 +60,7 @@
 | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) | EN | Dev / Ops | 26-task autonomous execution plan (Phase 1-7) |
 | [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | EN | Ops | Hour-by-hour launch day plan, T-7 timeline, rollback procedure |
 | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | EN | Ops | Standalone pre-launch & weekly/monthly/quarterly operations checklists |
+| [NEXT-STEPS.md](NEXT-STEPS.md) | EN | Everyone | Post-v6.0 action plan: beta sprint, v7.0 launch, v7.1/v7.2/v7.3 feature roadmap |
 
 ### Learning & Onboarding
 
@@ -119,6 +120,7 @@
 | Create travel content | [TRAVEL-CONTENT-ENGINE.md](TRAVEL-CONTENT-ENGINE.md) |
 | Scale to multiple sites | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 7 |
 | Check security posture | [SECURITY-AUDIT-REPORT.md](SECURITY-AUDIT-REPORT.md) |
+| See what's next | [NEXT-STEPS.md](NEXT-STEPS.md) |
 | Prepare for launch | [PRE-LAUNCH-CHECKLIST.md](PRE-LAUNCH-CHECKLIST.md) → [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) |
 | Join beta testing | [BETA-TESTING-PROGRAM.md](BETA-TESTING-PROGRAM.md) |
 | See performance baselines | [PERFORMANCE-BENCHMARKS.md](PERFORMANCE-BENCHMARKS.md) |
