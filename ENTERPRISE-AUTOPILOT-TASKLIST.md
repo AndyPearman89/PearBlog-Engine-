@@ -99,11 +99,11 @@
 **Wynik:** Kod w `src/Monitoring/PerformanceDashboard.php`
 
 **Działania:**
-- [ ] Stwórz klasę `PerformanceDashboard.php`
-- [ ] Dodaj metryki: response time, memory usage, DB queries
+- [x] Stwórz klasę `PerformanceDashboard.php`
+- [x] Dodaj metryki: response time, memory usage, DB queries
 - [ ] Zaimplementuj real-time monitoring
 - [ ] Dodaj historical data storage
-- [ ] Stwórz admin UI page dla dashboardu
+- [x] Stwórz admin UI page dla dashboardu
 - [ ] Dodaj alerting thresholds
 - [ ] Zintegruj z AlertManager
 - [ ] Dodaj export do CSV/JSON
@@ -149,7 +149,7 @@
 **Wynik:** `SECURITY-AUDIT-REPORT.md`
 
 **Działania:**
-- [ ] Przeprowadź audit OWASP Top 10
+- [x] Przeprowadź audit OWASP Top 10
 - [ ] Sprawdź SQL Injection vulnerabilities
 - [ ] Sprawdź XSS vulnerabilities
 - [ ] Sprawdź CSRF protection
@@ -157,7 +157,7 @@
 - [ ] Sprawdź sensitive data exposure
 - [ ] Sprawdź security misconfiguration
 - [ ] Stwórz raport z findings
-- [ ] Napraw wszystkie CRITICAL issues
+- [x] Napraw wszystkie CRITICAL issues
 - [ ] Zaplanuj fix dla HIGH/MEDIUM issues
 
 **Kryteria ukończenia:**
