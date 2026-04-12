@@ -82,11 +82,11 @@ These are the next-generation features planned for the first post-launch release
 - Content performance ranking (views × quality score)
 - Admin tab: "Analytics" with interactive charts
 
-### A/B Testing Framework
-- Split-test two prompt templates for the same topic
-- Track which variant achieves higher quality score / traffic
-- Auto-promote winning variant after 7 days
-- New class: `src/Testing/ABTestEngine.php`
+### A/B Testing Framework ✅ Done — v7.1.0
+- ~~Split-test two prompt templates for the same topic~~ ✅ `modifier_a` / `modifier_b` appended to the `pearblog_prompt` filter
+- ~~Track which variant achieves higher quality score~~ ✅ Scores recorded via `pearblog_pipeline_completed` action
+- ~~Auto-promote winning variant after 7 days~~ ✅ Daily cron + `promote_mature_tests()`
+- ~~New class: `src/Testing/ABTestEngine.php`~~ ✅
 
 ### Monitoring Dashboard UI (Real-Time) ✅ Done — v6.0.2
 - ~~Add "Monitoring" tab to the admin panel~~ ✅ Tab already existed; now fully populated
@@ -99,15 +99,15 @@ These are the next-generation features planned for the first post-launch release
 
 ## 🗺️ v7.2 AI Enhancements (2026-07-01)
 
-### GPT-4o Support
-- Update `AIClient.php` model options to include `gpt-4o`
-- Add a model selector dropdown in Admin → General → AI Settings
-- Update cost-per-token calculations for new models
+### GPT-4o Support ✅ Done — v7.2.0
+- ~~Update `AIClient.php` model options to include `gpt-4o`~~ ✅ `MODELS` constant with gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo
+- ~~Add a model selector dropdown in Admin → General → AI Settings~~ ✅ `pearblog_ai_model` option + select row in General tab
+- ~~Update cost-per-token calculations for new models~~ ✅ Per-model input/output cost rates + `estimate_cost_cents()`
 
-### Multi-Model Support
-- Support Anthropic Claude 3 via a swappable `AIProviderInterface`
-- Support Google Gemini Pro via the same interface
-- Factory pattern: `AIProviderFactory::make('anthropic'|'openai'|'gemini')`
+### Multi-Model Support ✅ Done — v7.2.1
+- ~~Support Anthropic Claude 3 via a swappable `AIProviderInterface`~~ ✅ `AnthropicProvider` (Claude 3.5 Sonnet + Claude 3 Haiku)
+- ~~Support Google Gemini Pro via the same interface~~ ✅ `GeminiProvider` (Gemini 1.5 Pro + Flash)
+- ~~Factory pattern: `AIProviderFactory::make('anthropic'|'openai'|'gemini')`~~ ✅ `AIProviderFactory` with full metadata API
 
 ### Advanced Prompt Engineering
 - Dynamic few-shot examples pulled from top-performing past articles
@@ -177,4 +177,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v6.0 complete, v7.0 launch sprint active; P2 rate-limit headers + P3 ESCALATION_LEVELS resolved*
+*Last updated: 2026-04-12 — v7.2.1 Multi-Model Support complete (OpenAI, Anthropic, Gemini); Advanced Prompt Engineering pending*

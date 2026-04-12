@@ -2,6 +2,45 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.2.1] — 2026-04-12
+
+### Added — v7.2 Multi-Model Support
+
+- **`AIProviderInterface`** (`src/AI/AIProviderInterface.php`) — provider contract with `complete()`, `get_slug()`, `get_label()`, `get_api_key_option()`, `get_models()`, `get_default_model()`.
+- **`OpenAIProvider`** (`src/AI/OpenAIProvider.php`) — extracted from AIClient; implements the interface for gpt-4o, gpt-4o-mini, gpt-4-turbo, gpt-3.5-turbo.
+- **`AnthropicProvider`** (`src/AI/AnthropicProvider.php`) — Claude 3.5 Sonnet + Claude 3 Haiku via `api.anthropic.com/v1/messages`; treats HTTP 529 (overloaded) as a rate-limit for retry.
+- **`GeminiProvider`** (`src/AI/GeminiProvider.php`) — Gemini 1.5 Pro + Flash via `generativelanguage.googleapis.com/v1beta/models/{model}:generateContent`.
+- **`AIProviderFactory`** (`src/AI/AIProviderFactory.php`) — `make('openai'|'anthropic'|'gemini')`, `get_all_providers()`, `get_all_models()`, `get_active_provider_models()`, `get_active_provider_default_model()`, `get_active_api_key_option()`. Active provider stored in `pearblog_ai_provider` option.
+- **`RateLimitException`** (`src/AI/RateLimitException.php`) — extracted to its own file so providers can throw it without importing AIClient.
+- **Updated `AIClient`** — `do_request()` now delegates to a provider via `AIProviderFactory::make()`; constructor accepts `?AIProviderInterface $provider` override for testing; `get_model()` / `get_available_models()` are now provider-aware; `estimate_cost_cents()` searches all providers' model lists.
+- **Admin UI** — new **AI Provider** dropdown (`pearblog_ai_provider`) + Anthropic/Gemini API key rows that show/hide based on selection; inline JS filters the Model dropdown per provider. Settings registered: `pearblog_ai_provider`, `pearblog_anthropic_api_key`, `pearblog_gemini_api_key`.
+- **38 new PHPUnit tests** in `AIProviderFactoryTest`; updated `AIClientTest` with provider-injection tests and stub provider.
+- **323 tests / 721 assertions** — all passing.
+
+
+
+### Added — v7.2 GPT-4o / Multi-Model Support
+
+- **Configurable AI model** — `pearblog_ai_model` option selects the active OpenAI model; supported values: `gpt-4o`, `gpt-4o-mini` (default), `gpt-4-turbo`, `gpt-3.5-turbo`.
+- **`AIClient::MODELS` constant** — full metadata map per model: human label, max tokens, input/output cost rates (per 1k tokens in USD cents).
+- **`AIClient::get_model()`** — reads `pearblog_ai_model` option; falls back to `gpt-4o-mini` if unset or invalid slug.
+- **`AIClient::get_available_models()`** — returns the full models map; used by the admin dropdown.
+- **`AIClient::estimate_cost_cents()`** — calculates blended cost estimate for a given token count and model (40 % input / 60 % output ratio).
+- **Accurate per-model billing** — `do_request()` now splits `prompt_tokens` and `completion_tokens` and applies the correct input/output rate per model instead of the former flat average.
+- **Admin model selector** — new row in Admin → General → AI Settings lets site admins change the model from the UI; setting registered via `register_setting()`.
+- **13 new PHPUnit tests** in `AIClientTest` covering model selection, fallback, available-model list, cost estimation accuracy, and constructor injection.
+
+
+
+### Added — v7.1 A/B Testing Framework
+
+- **ABTestEngine** (`src/Testing/ABTestEngine.php`) — split-test two prompt variants (modifier A vs modifier B) for the same topic; winner elected automatically after 7 days by highest average quality score.
+- **Balanced variant selection** — round-robin assignment keeps runs per variant equal; ties default to variant A.
+- **Automatic hook integration** — registers on `pearblog_prompt` filter to append the variant's modifier, and on `pearblog_pipeline_completed` to record quality scores; no changes required to `ContentPipeline`.
+- **Daily auto-promotion cron** — `pearblog_abtest_promote` hook calls `promote_mature_tests()` each day; requires at least 2 articles per variant before electing a winner.
+- **`wp pearblog abtest` CLI commands** — `create`, `list`, `status`, `promote`, `delete` subcommands for full command-line management.
+- **34 new PHPUnit tests** in `tests/php/Unit/ABTestEngineTest.php` covering CRUD, variant selection, score recording, promotion, hook callbacks, and edge cases.
+
 ## [6.0.2] — 2026-04-12
 
 ### Added — v7.1 Monitoring Dashboard UI

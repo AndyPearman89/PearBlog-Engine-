@@ -23,6 +23,7 @@ use PearBlogEngine\Email\EmailDigest;
 use PearBlogEngine\SEO\ProgrammaticSEO;
 use PearBlogEngine\SEO\SchemaManager;
 use PearBlogEngine\Social\SocialPublisher;
+use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Webhook\WebhookManager;
 
 /**
@@ -85,6 +86,9 @@ class Plugin {
 
 		// Webhook event dispatcher.
 		( new WebhookManager() )->register();
+
+		// A/B Testing Framework – split-test prompt variants.
+		( new ABTestEngine() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
