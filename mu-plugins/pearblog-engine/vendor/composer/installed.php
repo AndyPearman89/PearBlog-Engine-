@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => 'pearblog/engine',
-        'pretty_version' => 'dev-copilot/next-steps',
-        'version' => 'dev-copilot/next-steps',
-        'reference' => 'bf24e7ecd2bd5c787dddcf86e5cbf3103dcc2433',
+        'pretty_version' => 'dev-copilot/create-screenshots-from-documentation',
+        'version' => 'dev-copilot/create-screenshots-from-documentation',
+        'reference' => 'a7068f59ccb4534cb75c7e770dfd0760fc552fd4',
         'type' => 'wordpress-plugin',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -29,9 +29,9 @@
             'dev_requirement' => true,
         ),
         'pearblog/engine' => array(
-            'pretty_version' => 'dev-copilot/next-steps',
-            'version' => 'dev-copilot/next-steps',
-            'reference' => 'bf24e7ecd2bd5c787dddcf86e5cbf3103dcc2433',
+            'pretty_version' => 'dev-copilot/create-screenshots-from-documentation',
+            'version' => 'dev-copilot/create-screenshots-from-documentation',
+            'reference' => 'a7068f59ccb4534cb75c7e770dfd0760fc552fd4',
             'type' => 'wordpress-plugin',
             'install_path' => __DIR__ . '/../../',
             'aliases' => array(),

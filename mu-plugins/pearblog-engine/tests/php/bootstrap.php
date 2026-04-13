@@ -63,6 +63,13 @@ if ( ! function_exists( 'update_post_meta' ) ) {
 	}
 }
 
+if ( ! function_exists( 'delete_post_meta' ) ) {
+	function delete_post_meta( int $post_id, string $key, $meta_value = '' ): bool {
+		unset( $GLOBALS['_post_meta'][ $post_id ][ $key ] );
+		return true;
+	}
+}
+
 if ( ! function_exists( 'get_transient' ) ) {
 	function get_transient( string $key ) {
 		return $GLOBALS['_transients'][ $key ] ?? false;
@@ -144,7 +151,11 @@ if ( ! function_exists( 'apply_filters' ) ) {
 }
 
 if ( ! function_exists( 'do_action' ) ) {
-	function do_action( string $hook, ...$args ): void {}
+	function do_action( string $hook, ...$args ): void {
+		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
+			$callback( ...$args );
+		}
+	}
 }
 
 // Hook system stubs.
@@ -206,6 +217,79 @@ if ( ! function_exists( 'wp_clear_scheduled_hook' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_schedule_single_event' ) ) {
+	function wp_schedule_single_event( int $timestamp, string $hook, array $args = [] ): bool {
+		// Only register if not already scheduled (mirrors WP behaviour).
+		if ( ! isset( $GLOBALS['_cron_scheduled'][ $hook ] ) ) {
+			$GLOBALS['_cron_scheduled'][ $hook ] = $timestamp;
+		}
+		return true;
+	}
+}
+
+// Object Cache stubs (wp_cache_* API).
+if ( ! function_exists( 'wp_cache_get' ) ) {
+	function wp_cache_get( $key, string $group = '', bool $force = false, &$found = null ) {
+		$store_key = "{$group}:{$key}";
+		if ( array_key_exists( $store_key, $GLOBALS['_object_cache'] ?? [] ) ) {
+			$found = true;
+			return $GLOBALS['_object_cache'][ $store_key ];
+		}
+		$found = false;
+		return false;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_set' ) ) {
+	function wp_cache_set( $key, $data, string $group = '', int $expire = 0 ): bool {
+		$GLOBALS['_object_cache'][ "{$group}:{$key}" ] = $data;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_delete' ) ) {
+	function wp_cache_delete( $key, string $group = '' ): bool {
+		unset( $GLOBALS['_object_cache'][ "{$group}:{$key}" ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_flush' ) ) {
+	function wp_cache_flush(): bool {
+		$GLOBALS['_object_cache'] = [];
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_flush_group' ) ) {
+	function wp_cache_flush_group( string $group ): bool {
+		foreach ( array_keys( $GLOBALS['_object_cache'] ?? [] ) as $store_key ) {
+			if ( str_starts_with( $store_key, "{$group}:" ) ) {
+				unset( $GLOBALS['_object_cache'][ $store_key ] );
+			}
+		}
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_cache_add_global_groups' ) ) {
+	function wp_cache_add_global_groups( array $groups ): void {
+		$GLOBALS['_object_cache_global_groups'] = array_merge(
+			$GLOBALS['_object_cache_global_groups'] ?? [],
+			$groups
+		);
+	}
+}
+
+if ( ! function_exists( 'wp_using_ext_object_cache' ) ) {
+	function wp_using_ext_object_cache( ?bool $using = null ): bool {
+		if ( null !== $using ) {
+			$GLOBALS['_using_ext_object_cache'] = $using;
+		}
+		return (bool) ( $GLOBALS['_using_ext_object_cache'] ?? false );
+	}
+}
+
 // Query stubs.
 if ( ! function_exists( 'is_singular' ) ) {
 	function is_singular( $post_types = '' ): bool {
@@ -264,6 +348,18 @@ if ( ! function_exists( 'wp_remote_post' ) ) {
 if ( ! function_exists( 'wp_remote_get' ) ) {
 	function wp_remote_get( string $url, array $args = [] ): array {
 		return [ 'response' => [ 'code' => 200 ], 'body' => '' ];
+	}
+}
+
+if ( ! function_exists( 'wp_remote_request' ) ) {
+	function wp_remote_request( string $url, array $args = [] ): array {
+		return $GLOBALS['_http_response'] ?? [ 'response' => [ 'code' => 200 ], 'body' => '' ];
+	}
+}
+
+if ( ! function_exists( 'get_attached_file' ) ) {
+	function get_attached_file( int $attachment_id, bool $unfiltered = false ) {
+		return $GLOBALS['_attached_files'][ $attachment_id ] ?? false;
 	}
 }
 

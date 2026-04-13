@@ -141,21 +141,22 @@
 ```
 PearBlog Engine v6.0
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
-│   ├── src/Pipeline/               # 12-step autonomous content pipeline
+│   ├── src/Pipeline/               # ContentPipeline (12-step) + BackgroundProcessor (async WP-Cron queue)
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
-│   ├── src/Content/                # 7 prompt builders + validator + queue + RefreshEngine
+│   ├── src/Content/                # 13 content classes + FewShotEngine + PersonaBuilder + CompetitiveGapEngine + SerpScraper + MultilingualManager
+│   ├── src/Analytics/              # GA4Client + AnalyticsDashboard (GA4 Data API, daily sync)
 │   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO (Schema, OG, audit)
 │   ├── src/Monetization/           # AdSense + Affiliate + SaaS CTA injection
 │   ├── src/Scheduler/              # WP-Cron management (multisite-safe)
-│   ├── src/Keywords/               # Keyword clustering value object
-│   ├── src/Cache/                  # ContentCache (transient-based + stats)
-│   ├── src/API/                    # REST automation endpoints + WebhookManager
-│   ├── src/Admin/                  # Top-level WP admin menu + DashboardWidget + OnboardingWizard + ContentCalendar
-│   ├── src/Monitoring/             # AlertManager + HealthController + PerformanceDashboard + Logger
+│   ├── src/Keywords/               # KeywordCluster value object + KeywordClusterEngine (IDF-based GA4 clustering)
+│   ├── src/Cache/                  # ContentCache + ObjectCacheAdapter (wp_cache_*) + CdnManager (BunnyCDN/Cloudflare)
+│   ├── src/API/                    # REST automation endpoints + WebhookManager + PermissionManager + GraphQLController
+│   ├── src/Admin/                  # Top-level WP admin menu + DashboardWidget + OnboardingWizard + ContentCalendar + WhiteLabelManager
+│   ├── src/Monitoring/             # AlertManager + HealthController + PerformanceDashboard + Logger + SLAManager
 │   ├── src/Social/                 # SocialPublisher + EmailDigest
 │   ├── src/CLI/                    # PearBlogCommand + AutopilotRunner (26 tasks, 7 phases)
 │   ├── src/Tenant/                 # Multi-site context
-│   ├── tests/php/Unit/             # 19 unit test classes (207 tests)
+│   ├── tests/php/Unit/             # 39 unit test classes (588 tests · 1096 assertions)
 │   ├── tests/php/Integration/      # ContentPipelineIntegrationTest
 │   └── assets/css/admin.css        # Admin panel styles
 │
@@ -218,8 +219,8 @@ Topic Queue
 | Monthly cost (720 articles + images) | ~$58 |
 | Break-even traffic | ~5,000 visitors/month |
 | Pipeline execution time (avg) | ~55 seconds |
-| Unit tests | 207 tests · 423 assertions |
-| PHPUnit test classes | 19 unit + 1 integration |
+| Unit tests | 588 tests · 1096 assertions |
+| PHPUnit test classes | 39 unit + 1 integration |
 | Automation level | 100% |
 
 ---

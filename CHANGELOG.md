@@ -2,6 +2,126 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.6.0] — 2026-04-13
+
+### Added — v7.6 Performance & Infrastructure
+
+#### Object Cache Integration
+
+- **`ObjectCacheAdapter`** (`src/Cache/ObjectCacheAdapter.php`) — wraps the native WordPress Object Cache API (`wp_cache_get/set/delete`) so all PearBlog caching automatically benefits from Redis, Memcached, or APCu when a persistent object-cache drop-in is installed; falls back to an in-memory store (eliminating SQL transient reads) on vanilla installs; group-scoped `flush_group()` uses `wp_cache_flush_group()` (WP 6.1+) or falls back to `wp_cache_flush()`; all entries stored in the configurable `pearblog` cache group with `wp_cache_add_global_groups()` support for multisite; typed helpers: `set/get_ai_content`, `set/get_seo_meta`, `set/get_link_candidates`, `set/get_duplicate_hash`; options: `pearblog_object_cache_group`, `pearblog_object_cache_ttl_ai/seo/links`.
+- Bootstrap test stubs added for the full `wp_cache_*` API and `wp_using_ext_object_cache()`.
+
+#### Async Pipeline (Background Processing)
+
+- **`BackgroundProcessor`** (`src/Pipeline/BackgroundProcessor.php`) — persistent job queue (`pearblog_bg_queue` WP option) with one-off WP-Cron events (`pearblog_bg_process`) so pipeline runs never block HTTP requests; `dispatch(topic, tenant_id)` enqueues a job and schedules a cron event 5 seconds later; `handle_batch()` processes up to `MAX_BATCH_SIZE` (default 5) jobs per cron invocation; jobs decouple via `pearblog_bg_run_pipeline` action (ContentPipeline hooks in via Plugin::boot()); exponential back-off retry on failure (2^attempts minutes); `pearblog_bg_job_completed` / `pearblog_bg_job_failed` action hooks; `cancel(id)` and `clear_queue()` management methods; options: `pearblog_bg_enabled`, `pearblog_bg_max_batch_size`, `pearblog_bg_max_attempts`.
+- Bootstrap test stubs added for `wp_schedule_single_event`.
+
+#### CDN Image Auto-Offload
+
+- **`CdnManager`** (`src/Cache/CdnManager.php`) — uploads AI-generated WP attachment images to a CDN and rewrites `wp_get_attachment_url()` responses transparently via a `wp_get_attachment_url` filter; two providers: **BunnyCDN** Storage + pull zone (default) and **Cloudflare Images** API; stores CDN URL in `_pearblog_cdn_url` post meta + provider in `_pearblog_cdn_provider`; `offload_attachment(id)` is idempotent; `remove_from_cdn(id)` deletes from the CDN and clears meta; optional local file deletion after offload (`pearblog_cdn_delete_local`); `pearblog_cdn_offloaded` action hook; options: `pearblog_cdn_enabled`, `pearblog_cdn_provider`, `pearblog_cdn_bunny_api_key/zone_name/region/pull_zone_url`, `pearblog_cdn_cf_account_id/api_token/delivery_url`.
+- Bootstrap test stubs added for `wp_remote_request`, `get_attached_file`, `delete_post_meta`.
+
+### Tests
+
+- **62 new PHPUnit tests** across 3 new test classes:
+  - `ObjectCacheAdapterTest` (23 tests) — get/set/delete, flush_group, all typed helpers, is_persistent, register, cache_key
+  - `BackgroundProcessorTest` (22 tests) — dispatch, cancel, queue persistence, handle_batch, batch size, retry/failure logic, action hooks
+  - `CdnManagerTest` (27 tests) — enabled guard, providers, offload success/failure, filter_attachment_url, remove_from_cdn, meta keys
+- **588 tests / 1096 assertions** — all passing.
+
+---
+
+## [7.5.0] — 2026-04-13
+
+### Added — v7.5 Content Automation 2.0
+
+#### SERP Scraper
+
+- **`SerpScraper`** (`src/Content/SerpScraper.php`) — fetches top organic search results from configurable third-party SERP APIs; two providers supported out of the box: **Value SERP** (default) and **Serper.dev**; results cached via WP transients (`pearblog_serp_cache_ttl`, default 24 h); options: `pearblog_serp_provider`, `pearblog_serp_api_key`, `pearblog_serp_results_count`, `pearblog_serp_country`, `pearblog_serp_language`; `fetch_titles()` convenience method integrates directly with `CompetitiveGapEngine::set_competitor_topics()`.
+
+#### Auto-Keyword Clustering
+
+- **`KeywordClusterEngine`** (`src/Keywords/KeywordClusterEngine.php`) — groups GA4 organic search terms into `KeywordCluster` value objects using a greedy IDF-based clustering algorithm with configurable Jaccard similarity threshold; pulls raw terms from `GA4Client::run_report()` (dimension: `searchTerm`); persists cluster snapshots to `pearblog_kce_clusters` WP option; weekly cron (`pearblog_keyword_cluster_refresh`) keeps clusters fresh; options: `pearblog_kce_similarity_thresh` (0.25), `pearblog_kce_min_cluster_size` (2), `pearblog_kce_max_clusters` (20), `pearblog_kce_ga4_days` (90).
+
+#### Multilingual Content Generation
+
+- **`MultilingualManager`** (`src/Content/MultilingualManager.php`) — AI-powered translation of existing posts into multiple target languages; configurable prompt template with `{language}` / `{source}` placeholders; creates translated draft posts and stores `_pearblog_ml_source_post_id` + `_pearblog_ml_language` meta; native WPML integration via `wpml_set_element_language_details` (auto-detected); native Polylang integration via `pll_set_post_language` + `pll_save_post_translations` (auto-detected); fires `pearblog_translation_created` action on success; options: `pearblog_ml_target_languages`, `pearblog_ml_post_status` (draft), `pearblog_ml_prompt_template`, `pearblog_ml_enabled`.
+
+### Tests
+
+- **61 new PHPUnit tests** across 3 new test classes:
+  - `SerpScraperTest` (35 tests) — configuration, caching, both provider parsers, edge cases
+  - `KeywordClusterEngineTest` (18 tests) — tokenisation, Jaccard similarity, cluster grouping, min/max options, persistence
+  - `MultilingualManagerTest` (18 tests) — enabled guard, language management, AI prompt injection, post creation, meta storage, disabled guard
+- **526 tests / 1019 assertions** — all passing.
+
+---
+
+## [7.4.0] — 2026-04-12
+
+### Added — v7.4 Competitive Intelligence + Analytics + GraphQL
+
+#### v7.2 Completion — Competitive Gap Analysis
+
+- **`CompetitiveGapEngine`** (`src/Content/CompetitiveGapEngine.php`) — compares a configurable list of competitor topics against the published post corpus using Jaccard similarity; returns uncovered ("gap") topics sorted by lowest similarity first; injects top N gaps into AI prompts via `enrich_prompt()`; options: `pearblog_gap_competitor_topics`, `pearblog_gap_max_inject` (default 3), `pearblog_gap_similarity_thresh` (default 0.5).
+
+#### v7.1 Completion — Advanced Analytics Dashboard
+
+- **`GA4Client`** (`src/Analytics/GA4Client.php`) — Google Analytics 4 Data API v1beta client; authenticates via service-account JWT (RS256 signed, stored as `pearblog_ga4_credentials`); fetches `screenPageViews` per post path, top-N posts, and site-wide totals; results cached via WP transients (`pearblog_ga4_cache_ttl`, default 3600 s).
+- **`AnalyticsDashboard`** (`src/Analytics/AnalyticsDashboard.php`) — daily cron (`pearblog_analytics_sync`) syncs GA4 views to `_pearblog_ga4_views_30d` / `_pearblog_ga4_views_7d` post meta; `get_top_performing_posts()` blends quality score and page views into a `performance_score`; `get_summary()` returns site-wide stats for the admin Analytics tab.
+
+#### v7.1 Completion — GraphQL API
+
+- **`GraphQLController`** (`src/API/GraphQLController.php`) — dual integration: (a) registers types and fields with WPGraphQL if active (`PearBlogStats`, `PearBlogPost`, `PearBlogHealth`; root fields `pearBlogStats`, `pearBlogTopPosts`, `pearBlogHealth`, `pearBlogQueue`); (b) always registers a standalone REST endpoint at `GET|POST /pearblog/v1/graphql` with a built-in query resolver for the same four queries; auth via bearer token or `manage_options`.
+
+### New `src/Analytics/` module
+
+First analytics module in the codebase. Two classes: `GA4Client` + `AnalyticsDashboard`.
+
+### Tests
+
+- **71 new PHPUnit tests** across 4 new test classes:
+  - `CompetitiveGapEngineTest` (21 tests) — tokenisation, Jaccard similarity, gap analysis, threshold, prompt enrichment
+  - `GA4ClientTest` (14 tests) — configuration checks, response parsing, caching
+  - `AnalyticsDashboardTest` (12 tests) — summary, top posts, sync guard, meta key constants
+  - `GraphQLControllerTest` (24 tests) — all resolvers, request handling, permission checks
+- **465 tests / 932 assertions** — all passing.
+
+---
+
+## [7.3.0] — 2026-04-12
+
+### Added — v7.3 Enterprise Features
+
+#### Advanced Prompt Engineering (v7.2 completion)
+
+- **`FewShotEngine`** (`src/Content/FewShotEngine.php`) — pulls top-scoring published articles (score ≥ `pearblog_fewshot_min_score`, default 70) and injects their excerpts into the AI prompt as style examples; configurable via `pearblog_fewshot_enabled`, `pearblog_fewshot_max_posts`, `pearblog_fewshot_excerpt_len`.
+- **`PersonaBuilder`** (`src/Content/PersonaBuilder.php`) — manages named author personas (name, bio, writing style, tone, vocabulary preferences/avoidances); the active persona is appended to every AI prompt; CRUD API: `save_persona()`, `get_persona()`, `delete_persona()`, `set_active()`, `enrich_prompt()`.
+
+#### White-Label Manager
+
+- **`WhiteLabelManager`** (`src/Admin/WhiteLabelManager.php`) — full white-label branding override: custom brand name, admin menu label, logo URL, accent hex colour, support URL, and optional admin footer suppression; all settings registered under the `pearblog_branding` settings group; accent CSS injected via `admin_head`.
+
+#### Advanced Permissions & Audit Log
+
+- **`PermissionManager`** (`src/API/PermissionManager.php`) — role-based access control for pipeline trigger, pause, and settings actions; configurable per-action role lists stored as JSON options; ring-buffer audit log (500 entries max) with actor, action, context, success flag, and timestamp; `log()`, `get_audit_log()`, `clear_audit_log()`, `role_can()`, `set_allowed_roles()`.
+
+#### SLA Management
+
+- **`SLAManager`** (`src/Monitoring/SLAManager.php`) — configurable per-site SLA targets for uptime %, pipeline success %, API response time (ms), and cost per article (cents); hourly evaluation cron (`pearblog_sla_check`) fires `pearblog_sla_breached` action on any breach; monthly report cron (`pearblog_sla_report`) stores a 12-month history and optionally e-mails the report to `pearblog_sla_report_email`; `evaluate()`, `generate_monthly_report()`, `get_history()`, `set_targets()`.
+
+### Tests
+
+- **71 new PHPUnit tests** across 5 new test classes:
+  - `FewShotEngineTest` (11 tests)
+  - `PersonaBuilderTest` (19 tests)
+  - `WhiteLabelManagerTest` (21 tests)
+  - `PermissionManagerTest` (17 tests)
+  - `SLAManagerTest` (17 tests) — including e-mail dispatch verification and history persistence.
+- **394 tests / 827 assertions** — all passing.
+
+---
+
 ## [7.2.1] — 2026-04-12
 
 ### Added — v7.2 Multi-Model Support
