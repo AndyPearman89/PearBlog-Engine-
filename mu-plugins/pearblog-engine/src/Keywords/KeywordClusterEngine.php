@@ -152,7 +152,10 @@ class KeywordClusterEngine {
 			$score = 0.0;
 			foreach ( array_keys( $token_sets[ $term ] ) as $tok ) {
 				$df     = $term_counts[ $tok ] ?? 1;
-				$score += 1.0 / $df; // Inverse document frequency (simplified).
+				// Simplified IDF (1/df) is used instead of log(N/df) because term lists
+				// are short (<500 terms) and log-dampening makes little difference at this scale.
+				// It also avoids edge-cases with log(0) when N equals df.
+				$score += 1.0 / $df;
 			}
 			$idf_scores[ $term ] = $score;
 		}
