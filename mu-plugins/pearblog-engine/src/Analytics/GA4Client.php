@@ -39,8 +39,9 @@ class GA4Client {
 	/** Access token transient key. */
 	public const TRANSIENT_TOKEN = 'pearblog_ga4_access_token';
 
-	// -----------------------------------------------------------------------
-	// Configuration helpers
+	/** Buffer in seconds subtracted from token TTL to avoid using near-expired tokens. */
+	public const TOKEN_EXPIRY_BUFFER = 60;
+
 	// -----------------------------------------------------------------------
 
 	/**
@@ -280,7 +281,7 @@ class GA4Client {
 
 		if ( '' !== $token ) {
 			$expires_in = (int) ( $data['expires_in'] ?? 3600 );
-			set_transient( self::TRANSIENT_TOKEN, $token, $expires_in - 60 );
+			set_transient( self::TRANSIENT_TOKEN, $token, $expires_in - self::TOKEN_EXPIRY_BUFFER );
 		}
 
 		return $token;

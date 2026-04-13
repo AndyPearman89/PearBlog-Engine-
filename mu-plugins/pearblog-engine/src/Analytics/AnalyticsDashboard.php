@@ -36,8 +36,8 @@ class AnalyticsDashboard {
 	/** WP cron hook for daily analytics sync. */
 	public const CRON_HOOK = 'pearblog_analytics_sync';
 
-	/** @var GA4Client */
-	private GA4Client $ga4;
+	/** Normalisation divisor: N views maps to 100 performance points (e.g. 1000 views = 100). */
+	public const VIEWS_SCORE_NORMALIZER = 10;
 
 	public function __construct( ?GA4Client $ga4 = null ) {
 		$this->ga4 = $ga4 ?? new GA4Client();
@@ -156,7 +156,7 @@ class AnalyticsDashboard {
 			$quality_score = (float) get_post_meta( (int) $post_id, '_pearblog_quality_score', true );
 
 			// Performance score: geometric blend of views (normalised to 0–100) and quality.
-			$views_score      = min( 100, $views_30d / 10 ); // 1000 views = 100 pts
+			$views_score      = min( 100, $views_30d / self::VIEWS_SCORE_NORMALIZER );
 			$performance_score = round( sqrt( $views_score * $quality_score ), 1 );
 
 			$results[] = [
