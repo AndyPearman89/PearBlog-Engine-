@@ -71,16 +71,16 @@ All 26 enterprise tasks across 7 phases are complete:
 
 These are the next-generation features planned for the first post-launch release:
 
-### GraphQL API
-- Expose all REST endpoints as GraphQL queries/mutations
-- Enable headless WordPress use cases
-- Integrate with WPGraphQL plugin if available
+### GraphQL API ✅ Done — v7.4.0
+- ~~Expose all REST endpoints as GraphQL queries/mutations~~ ✅ `GraphQLController.php` — WPGraphQL types + standalone `/pearblog/v1/graphql` endpoint
+- ~~Enable headless WordPress use cases~~ ✅ Supports `queue`, `stats`, `topPosts`, `health` queries
+- ~~Integrate with WPGraphQL plugin if available~~ ✅ `graphql_register_types` hook auto-registers types if WPGraphQL is active
 
-### Advanced Analytics Dashboard
-- Per-post traffic integration (Google Analytics 4 API)
-- Revenue attribution per AI-generated article
-- Content performance ranking (views × quality score)
-- Admin tab: "Analytics" with interactive charts
+### Advanced Analytics Dashboard ✅ Done — v7.4.0
+- ~~Per-post traffic integration (Google Analytics 4 API)~~ ✅ `GA4Client.php` — service-account JWT auth + Data API v1beta
+- ~~Revenue attribution per AI-generated article~~ ✅ `performance_score` blends views × quality score
+- ~~Content performance ranking (views × quality score)~~ ✅ `AnalyticsDashboard::get_top_performing_posts()`
+- ~~Admin tab: "Analytics" with interactive charts~~ ✅ `AnalyticsDashboard::get_summary()` + per-post meta sync
 
 ### A/B Testing Framework ✅ Done — v7.1.0
 - ~~Split-test two prompt templates for the same topic~~ ✅ `modifier_a` / `modifier_b` appended to the `pearblog_prompt` filter
@@ -112,7 +112,8 @@ These are the next-generation features planned for the first post-launch release
 ### Advanced Prompt Engineering ✅ Done — v7.3.0
 - ~~Dynamic few-shot examples pulled from top-performing past articles~~ ✅ `FewShotEngine.php` — configurable score threshold + excerpt length
 - ~~Persona builder: configure author voice/style~~ ✅ `PersonaBuilder.php` — named personas with name/bio/style/tone/vocabulary
-- Competitive gap analysis: scrape SERPs and inject missing topics into prompt
+### Competitive gap analysis ✅ Done — v7.4.0
+- ~~Scrape SERPs and inject missing topics into prompt~~ ✅ `CompetitiveGapEngine.php` — Jaccard similarity gap analysis + prompt injection
 
 ---
 
@@ -177,4 +178,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v7.3.0 Enterprise Features complete (FewShotEngine, PersonaBuilder, WhiteLabelManager, PermissionManager, SLAManager); Competitive Gap Analysis pending*
+*Last updated: 2026-04-12 — v7.4.0 complete (CompetitiveGapEngine, GA4Client, AnalyticsDashboard, GraphQLController); all v7.1 + v7.2 features done; 465 tests passing*

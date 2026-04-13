@@ -2,6 +2,38 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.4.0] — 2026-04-12
+
+### Added — v7.4 Competitive Intelligence + Analytics + GraphQL
+
+#### v7.2 Completion — Competitive Gap Analysis
+
+- **`CompetitiveGapEngine`** (`src/Content/CompetitiveGapEngine.php`) — compares a configurable list of competitor topics against the published post corpus using Jaccard similarity; returns uncovered ("gap") topics sorted by lowest similarity first; injects top N gaps into AI prompts via `enrich_prompt()`; options: `pearblog_gap_competitor_topics`, `pearblog_gap_max_inject` (default 3), `pearblog_gap_similarity_thresh` (default 0.5).
+
+#### v7.1 Completion — Advanced Analytics Dashboard
+
+- **`GA4Client`** (`src/Analytics/GA4Client.php`) — Google Analytics 4 Data API v1beta client; authenticates via service-account JWT (RS256 signed, stored as `pearblog_ga4_credentials`); fetches `screenPageViews` per post path, top-N posts, and site-wide totals; results cached via WP transients (`pearblog_ga4_cache_ttl`, default 3600 s).
+- **`AnalyticsDashboard`** (`src/Analytics/AnalyticsDashboard.php`) — daily cron (`pearblog_analytics_sync`) syncs GA4 views to `_pearblog_ga4_views_30d` / `_pearblog_ga4_views_7d` post meta; `get_top_performing_posts()` blends quality score and page views into a `performance_score`; `get_summary()` returns site-wide stats for the admin Analytics tab.
+
+#### v7.1 Completion — GraphQL API
+
+- **`GraphQLController`** (`src/API/GraphQLController.php`) — dual integration: (a) registers types and fields with WPGraphQL if active (`PearBlogStats`, `PearBlogPost`, `PearBlogHealth`; root fields `pearBlogStats`, `pearBlogTopPosts`, `pearBlogHealth`, `pearBlogQueue`); (b) always registers a standalone REST endpoint at `GET|POST /pearblog/v1/graphql` with a built-in query resolver for the same four queries; auth via bearer token or `manage_options`.
+
+### New `src/Analytics/` module
+
+First analytics module in the codebase. Two classes: `GA4Client` + `AnalyticsDashboard`.
+
+### Tests
+
+- **71 new PHPUnit tests** across 4 new test classes:
+  - `CompetitiveGapEngineTest` (21 tests) — tokenisation, Jaccard similarity, gap analysis, threshold, prompt enrichment
+  - `GA4ClientTest` (14 tests) — configuration checks, response parsing, caching
+  - `AnalyticsDashboardTest` (12 tests) — summary, top posts, sync guard, meta key constants
+  - `GraphQLControllerTest` (24 tests) — all resolvers, request handling, permission checks
+- **465 tests / 932 assertions** — all passing.
+
+---
+
 ## [7.3.0] — 2026-04-12
 
 ### Added — v7.3 Enterprise Features
