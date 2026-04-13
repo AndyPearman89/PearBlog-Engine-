@@ -599,6 +599,16 @@ if ( ! function_exists( 'get_the_title' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_post_field' ) ) {
+	function get_post_field( string $field, $post_id, string $context = 'raw' ) {
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			return '';
+		}
+		return $post->$field ?? '';
+	}
+}
+
 if ( ! function_exists( 'current_time' ) ) {
 	function current_time( string $type ): string {
 		return gmdate( 'Y-m-d H:i:s' );
@@ -660,7 +670,8 @@ if ( ! class_exists( 'WP_Term' ) ) {
 
 if ( ! class_exists( 'WP_Query' ) ) {
 	class WP_Query {
-		public int $found_posts = 0;
+		public int   $found_posts = 0;
+		public array $posts       = [];
 		public function __construct( array $args = [] ) {}
 	}
 }

@@ -2,6 +2,43 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.8.0] — 2026-04-13
+
+### Added — v7.8 Smart Content Planning
+
+#### Topic Research Engine
+
+- **`TopicResearchEngine`** (`src/Content/TopicResearchEngine.php`) — combines three data sources (GA4 organic search terms, SERP-derived competitive gaps, keyword cluster pillars) into a composite 0–100 score per topic candidate: GA4 signal up to 40 pts, competitive gap up to 40 pts, keyword cluster membership bonus up to 20 pts; SERP-only topics receive half the GA4 weight; results are filtered by `pearblog_tre_min_score` (default 30) and sorted descending; persisted to `pearblog_tre_recommendations`; weekly `pearblog_topic_research_refresh` cron auto-refreshes; fires `pearblog_topics_researched` action with `$recommendations` and `$queued_count`; registered in `Plugin::boot()`.
+- **`wp pearblog topics research [--auto-queue] [--limit=<n>]`** — run the research engine; optionally push top-scoring topics directly into the content queue.
+- **`wp pearblog topics list [--limit=<n>]`** — display the most recently cached topic recommendations without re-running.
+
+#### Content Import / Export
+
+- **`ContentImportExport`** (`src/Pipeline/ContentImportExport.php`) — bulk topic import and article export engine; topic imports support CSV (required `topic` header, optional `priority`/`tags` columns) and JSON (array of strings or `{ "topic": "..." }` objects); deduplication is case-insensitive and checked against the existing queue; batch capped at 500 topics (`MAX_IMPORT_BATCH`); article export writes `post_id`, `title`, `slug`, `status`, `quality_score`, `word_count`, `published_date`, `meta_description`; CSV output includes UTF-8 BOM for Excel compatibility; registered in `Plugin::boot()`.
+- **REST `POST /pearblog/v1/import/topics`** — body params: `format` (csv/json), `data` (raw content), `site_id`; admin-only (`manage_options`); returns `{ imported, skipped, errors }`.
+- **REST `GET /pearblog/v1/export/articles`** — query params: `format` (csv/json, default csv), `limit` (1–1000, default 100); auth via `manage_options` or Bearer API key; returns `{ csv, count }` or `{ articles, count }`.
+- **`wp pearblog import topics <file> [--format=csv|json] [--site-id=<id>]`** — import topics from a local file.
+- **`wp pearblog export articles [--format=csv|json] [--output=<file>] [--limit=<n>]`** — export articles to stdout or a local file.
+
+#### Smart Publish Scheduler
+
+- **`PublishScheduler`** (`src/Scheduler/PublishScheduler.php`) — analyses historical GA4 page engagement (sessions + engaged sessions, hour-of-day × day-of-week) to determine the optimal publish slot; hour signal weighted at 60%, day-of-week at 40%; scores normalised to 0–100 per dimension; falls back to configured `pearblog_ps_fallback_hour` / `pearblog_ps_fallback_dow` options (defaults: Tuesday 10:00 am) when GA4 is not configured or all engagement signals are zero; analysis persisted to `pearblog_ps_analysis` option; weekly `pearblog_publish_schedule_refresh` cron auto-updates analysis; `schedule_post(int $post_id)` sets post status to `'future'` and schedules a `publish_future_post` event at the next occurrence of the optimal slot; fires `pearblog_post_scheduled` action; registered in `Plugin::boot()`.
+- **`wp pearblog schedule analyse`** — run GA4 analysis and display optimal day + hour.
+- **`wp pearblog schedule next`** — show the next calendar occurrence of the optimal publish slot.
+- **`wp pearblog schedule post <post_id>`** — schedule a specific post to the next optimal publish time.
+
+### Tests
+
+- **74 new PHPUnit tests** across three new test classes:
+  - `TopicResearchEngineTest.php` — 23 tests: `is_enabled`, `compute_score`, `collect_candidates`, `score_topics`, `run`, `auto_queue`
+  - `ContentImportExportTest.php` — 27 tests: CSV import (7), JSON import (5), `rows_to_csv` (5), export (2), REST permissions (4), REST import (4), REST export (2)
+  - `PublishSchedulerTest.php` — 24 tests: `normalise`, `aggregate_engagement`, `find_optimal_slot`, `compute_analysis`, persistence, `next_occurrence`, `get_optimal_publish_time`
+- `WP_Query` stub updated to include `$posts` property.
+- `get_post_field()` stub added to bootstrap.
+- **714 tests / 1317 assertions** — all passing.
+
+---
+
 ## [7.7.0] — 2026-04-13
 
 ### Added — v7.7 Developer Experience & Extensibility

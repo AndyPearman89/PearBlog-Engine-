@@ -170,7 +170,15 @@ These are the next-generation features planned for the first post-launch release
 
 ---
 
-## 🗺️ v7.8 (Planned)
+## 🗺️ v7.8 Smart Content Planning ✅ Done — 2026-04-13
+
+- ~~Topic Research Engine~~ ✅ `TopicResearchEngine.php` — GA4 + competitive gap + keyword cluster signals → scored topic recommendations; auto-queue; weekly cron; `pearblog_topics_researched` action
+- ~~Content Import/Export~~ ✅ `ContentImportExport.php` — CSV/JSON bulk topic import + article export; REST `POST /pearblog/v1/import/topics` + `GET /pearblog/v1/export/articles`
+- ~~Smart Publish Scheduler~~ ✅ `PublishScheduler.php` — GA4 hour/dow engagement analysis; optimal-slot picker; `schedule_post()`; weekly cron; `pearblog_post_scheduled` action
+
+---
+
+## 🗺️ v7.9 (Planned)
 
 
 
@@ -214,4 +222,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-13 — v7.7.0 complete (PipelineAuditLog, scaffold CLI, DEVELOPER-HOOKS.md); 640 tests passing*
+*Last updated: 2026-04-13 — v7.8.0 complete (TopicResearchEngine, ContentImportExport, PublishScheduler); 714 tests passing*

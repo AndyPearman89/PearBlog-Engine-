@@ -28,6 +28,13 @@
  *   wp pearblog audit list [--limit=<n>] [--level=<level>] [--event=<event>]
  *   wp pearblog audit clear
  *   wp pearblog audit stats
+ *   wp pearblog topics research [--auto-queue] [--limit=<n>]
+ *   wp pearblog topics list
+ *   wp pearblog import topics <file> [--format=csv|json] [--site-id=<id>]
+ *   wp pearblog export articles [--format=csv|json] [--output=<file>] [--limit=<n>]
+ *   wp pearblog schedule analyse
+ *   wp pearblog schedule next
+ *   wp pearblog schedule post <post_id>
  *
  * @package PearBlogEngine\CLI
  */
@@ -39,12 +46,15 @@ namespace PearBlogEngine\CLI;
 use PearBlogEngine\AI\AIClient;
 use PearBlogEngine\CLI\AutopilotRunner;
 use PearBlogEngine\Content\ContentRefreshEngine;
+use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Content\DuplicateDetector;
 use PearBlogEngine\Content\QualityScorer;
 use PearBlogEngine\Content\TopicQueue;
+use PearBlogEngine\Pipeline\ContentImportExport;
 use PearBlogEngine\Pipeline\ContentPipeline;
 use PearBlogEngine\Pipeline\PipelineAuditLog;
+use PearBlogEngine\Scheduler\PublishScheduler;
 use PearBlogEngine\SEO\InternalLinker;
 use PearBlogEngine\Tenant\TenantContext;
 
@@ -754,7 +764,7 @@ class PearBlogCommand {
 					$ts      = gmdate( 'Y-m-d H:i:s', $entry['timestamp'] );
 					$context = empty( $entry['context'] )
 						? ''
-						: ' | ' . http_build_query( $entry['context'], '', ', ' );
+						: ' | ' . json_encode( $entry['context'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
 					\WP_CLI::log( sprintf(
 						'[%s] [%s] %s%s',
 						$ts,
@@ -942,7 +952,7 @@ class {$class_name} implements AIProviderInterface {
 
 	/** @inheritdoc */
 	public static function requires_option(): string {
-		return 'pearblog_{$provider_slug}_api_key'; // {$provider_slug} is expanded by the heredoc at generation time.
+		return 'pearblog_{$provider_slug}_api_key'; // NOTE: {$provider_slug} is a PHP variable expanded by the outer <<<PHP heredoc when generating the file.
 	}
 
 	// -----------------------------------------------------------------------
@@ -959,5 +969,301 @@ class {$class_name} implements AIProviderInterface {
 	}
 }
 PHP;
+	}
+
+	// -----------------------------------------------------------------------
+	// topics command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Research and manage topic recommendations.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   research  Run the topic research engine and display scored recommendations.
+	 *   list      Show the current cached recommendations without re-running.
+	 *
+	 * ## OPTIONS (research)
+	 *
+	 * [--auto-queue]
+	 * : Automatically push qualifying topics into the content queue.
+	 *
+	 * [--limit=<n>]
+	 * : Number of recommendations to display (default: 20).
+	 *
+	 * [--site-id=<id>]
+	 * : WordPress site ID for queue operations (default: 1).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog topics research
+	 *   wp pearblog topics research --auto-queue --limit=10
+	 *   wp pearblog topics list
+	 *
+	 * @subcommand topics
+	 */
+	public function topics( array $args, array $assoc_args ): void {
+		$sub     = $args[0] ?? 'list';
+		$engine  = new TopicResearchEngine();
+		$limit   = (int) ( $assoc_args['limit']   ?? 20 );
+		$site_id = (int) ( $assoc_args['site-id'] ?? 1 );
+
+		switch ( $sub ) {
+			case 'research':
+				$auto_queue = isset( $assoc_args['auto-queue'] );
+				\WP_CLI::log( 'Running topic research engine…' );
+				$recs = $engine->run( $auto_queue, $site_id );
+
+				if ( empty( $recs ) ) {
+					\WP_CLI::log( 'No topic recommendations found. Ensure GA4 and/or CompetitiveGapEngine are configured.' );
+					return;
+				}
+
+				\WP_CLI::log( sprintf( 'Found %d recommendation(s):', count( $recs ) ) );
+				foreach ( array_slice( $recs, 0, $limit ) as $i => $rec ) {
+					\WP_CLI::log( sprintf(
+						'  %2d. [score: %5.1f | sources: %-18s] %s',
+						$i + 1,
+						$rec['score'],
+						implode( ', ', $rec['sources'] ),
+						$rec['topic']
+					) );
+				}
+
+				if ( $auto_queue ) {
+					\WP_CLI::success( 'Qualifying topics pushed to queue.' );
+				}
+				break;
+
+			case 'list':
+				$recs = $engine->get_recommendations();
+				if ( empty( $recs ) ) {
+					\WP_CLI::log( 'No cached recommendations. Run: wp pearblog topics research' );
+					return;
+				}
+
+				\WP_CLI::log( sprintf( 'Cached recommendations (%d):', count( $recs ) ) );
+				foreach ( array_slice( $recs, 0, $limit ) as $i => $rec ) {
+					\WP_CLI::log( sprintf(
+						'  %2d. [score: %5.1f] %s',
+						$i + 1,
+						$rec['score'],
+						$rec['topic']
+					) );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use research or list." );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// import command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Import topics or content from external files.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   topics  Import topics from a CSV or JSON file into the content queue.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <file>
+	 * : Path to the input file.
+	 *
+	 * [--format=<format>]
+	 * : File format: csv (default) or json.
+	 *
+	 * [--site-id=<id>]
+	 * : WordPress site ID for the target queue (default: 1).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog import topics /path/to/topics.csv
+	 *   wp pearblog import topics /path/to/topics.json --format=json --site-id=2
+	 *
+	 * @subcommand import
+	 */
+	public function import( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? '';
+
+		if ( 'topics' !== $sub ) {
+			\WP_CLI::error( "Unknown subcommand: '{$sub}'. Available: topics." );
+			return;
+		}
+
+		$file    = $args[1] ?? '';
+		$format  = $assoc_args['format']  ?? 'csv';
+		$site_id = (int) ( $assoc_args['site-id'] ?? 1 );
+
+		if ( '' === $file ) {
+			\WP_CLI::error( 'Usage: wp pearblog import topics <file> [--format=csv|json] [--site-id=<id>]' );
+			return;
+		}
+
+		if ( ! file_exists( $file ) ) {
+			\WP_CLI::error( "File not found: {$file}" );
+			return;
+		}
+
+		$content = file_get_contents( $file );
+		if ( false === $content ) {
+			\WP_CLI::error( "Could not read file: {$file}" );
+			return;
+		}
+
+		$ie = new ContentImportExport();
+
+		try {
+			$result = ( 'json' === $format )
+				? $ie->import_topics_json( $content, $site_id )
+				: $ie->import_topics_csv( $content, $site_id );
+		} catch ( \InvalidArgumentException $e ) {
+			\WP_CLI::error( $e->getMessage() );
+			return;
+		}
+
+		\WP_CLI::success( sprintf(
+			'Import complete: %d topic(s) added, %d skipped (duplicates).',
+			$result['imported'],
+			$result['skipped']
+		) );
+
+		if ( ! empty( $result['errors'] ) ) {
+			\WP_CLI::warning( 'Errors encountered:' );
+			foreach ( $result['errors'] as $err ) {
+				\WP_CLI::log( "  - {$err}" );
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// export command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Export generated articles to a file.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   articles  Export PearBlog-generated posts as CSV or JSON.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Output format: csv (default) or json.
+	 *
+	 * [--output=<file>]
+	 * : Output file path. Defaults to stdout.
+	 *
+	 * [--limit=<n>]
+	 * : Maximum number of articles to export (default: 100).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog export articles
+	 *   wp pearblog export articles --format=json --output=/tmp/articles.json --limit=500
+	 *
+	 * @subcommand export
+	 */
+	public function export( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? 'articles';
+
+		if ( 'articles' !== $sub ) {
+			\WP_CLI::error( "Unknown subcommand: '{$sub}'. Available: articles." );
+			return;
+		}
+
+		$format  = $assoc_args['format'] ?? 'csv';
+		$output  = $assoc_args['output'] ?? '';
+		$limit   = (int) ( $assoc_args['limit'] ?? 100 );
+
+		$ie = new ContentImportExport();
+
+		$data = ( 'json' === $format )
+			? $ie->export_articles_json()
+			: $ie->export_articles_csv();
+
+		if ( '' !== $output ) {
+			file_put_contents( $output, $data );
+			\WP_CLI::success( "Exported to: {$output}" );
+		} else {
+			\WP_CLI::log( $data );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// schedule command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Smart publish-time scheduling based on GA4 engagement data.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   analyse  (Re-)analyse GA4 data and update the optimal publish slot.
+	 *   next     Display the next optimal publish time without scheduling anything.
+	 *   post     Schedule a specific post to the next optimal publish time.
+	 *
+	 * ## OPTIONS (post)
+	 *
+	 * <post_id>
+	 * : WordPress post ID to schedule.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog schedule analyse
+	 *   wp pearblog schedule next
+	 *   wp pearblog schedule post 42
+	 *
+	 * @subcommand schedule
+	 */
+	public function schedule( array $args, array $assoc_args ): void {
+		$sub       = $args[0] ?? 'next';
+		$scheduler = new PublishScheduler();
+
+		switch ( $sub ) {
+			case 'analyse':
+				\WP_CLI::log( 'Analysing GA4 engagement data…' );
+				$analysis = $scheduler->analyse();
+				[ $hour, $dow ] = [ $analysis['optimal_hour'], $analysis['optimal_dow'] ];
+				$day_names = [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ];
+				\WP_CLI::success( sprintf(
+					'Optimal publish slot: %s at %02d:00 (site local time).',
+					$day_names[ $dow ] ?? "Day {$dow}",
+					$hour
+				) );
+				break;
+
+			case 'next':
+				$time = $scheduler->get_optimal_publish_time();
+				\WP_CLI::log( 'Next optimal publish time: ' . $time->format( 'Y-m-d H:i:s T' ) );
+				break;
+
+			case 'post':
+				$post_id = (int) ( $args[1] ?? 0 );
+				if ( $post_id <= 0 ) {
+					\WP_CLI::error( 'Usage: wp pearblog schedule post <post_id>' );
+					return;
+				}
+
+				if ( $scheduler->schedule_post( $post_id ) ) {
+					$time = $scheduler->get_optimal_publish_time();
+					\WP_CLI::success( sprintf(
+						'Post %d scheduled for: %s',
+						$post_id,
+						$time->format( 'Y-m-d H:i:s T' )
+					) );
+				} else {
+					\WP_CLI::error( "Post not found: {$post_id}" );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use analyse, next, or post." );
+		}
 	}
 }

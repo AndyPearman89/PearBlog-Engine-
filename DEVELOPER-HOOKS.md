@@ -688,4 +688,4 @@ The generated files include all required method stubs, PHPDoc, and placeholder h
 
 ---
 
-*Last updated: v7.7.0 — covers all 30 hooks (17 actions + 13 filters)*
+*Last updated: v7.8.0 — covers all 33 hooks (20 actions + 13 filters)*

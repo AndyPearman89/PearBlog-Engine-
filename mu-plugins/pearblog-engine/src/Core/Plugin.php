@@ -13,8 +13,11 @@ use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
+use PearBlogEngine\Pipeline\ContentImportExport;
 use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\CronManager;
+use PearBlogEngine\Scheduler\PublishScheduler;
+use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
@@ -63,6 +66,13 @@ class Plugin {
 
 		// Event-sourced pipeline audit log.
 		( new PipelineAuditLog() )->register();
+
+		// Smart content planning.
+		( new TopicResearchEngine() )->register();
+		( new PublishScheduler() )->register();
+
+		// Bulk import / export REST endpoints.
+		( new ContentImportExport() )->register();
 
 		// REST API – automation endpoints for external scripts.
 		add_action( 'rest_api_init', static function (): void {
