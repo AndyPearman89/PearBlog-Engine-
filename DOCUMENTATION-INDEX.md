@@ -143,12 +143,12 @@ PearBlog Engine v6.0
 ├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
 │   ├── src/Pipeline/               # 12-step autonomous content pipeline
 │   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
-│   ├── src/Content/                # 10 content classes + FewShotEngine + PersonaBuilder + CompetitiveGapEngine
+│   ├── src/Content/                # 13 content classes + FewShotEngine + PersonaBuilder + CompetitiveGapEngine + SerpScraper + MultilingualManager
 │   ├── src/Analytics/              # GA4Client + AnalyticsDashboard (GA4 Data API, daily sync)
 │   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO (Schema, OG, audit)
 │   ├── src/Monetization/           # AdSense + Affiliate + SaaS CTA injection
 │   ├── src/Scheduler/              # WP-Cron management (multisite-safe)
-│   ├── src/Keywords/               # Keyword clustering value object
+│   ├── src/Keywords/               # KeywordCluster value object + KeywordClusterEngine (IDF-based GA4 clustering)
 │   ├── src/Cache/                  # ContentCache (transient-based + stats)
 │   ├── src/API/                    # REST automation endpoints + WebhookManager + PermissionManager + GraphQLController
 │   ├── src/Admin/                  # Top-level WP admin menu + DashboardWidget + OnboardingWizard + ContentCalendar + WhiteLabelManager
@@ -156,7 +156,7 @@ PearBlog Engine v6.0
 │   ├── src/Social/                 # SocialPublisher + EmailDigest
 │   ├── src/CLI/                    # PearBlogCommand + AutopilotRunner (26 tasks, 7 phases)
 │   ├── src/Tenant/                 # Multi-site context
-│   ├── tests/php/Unit/             # 33 unit test classes (465 tests · 932 assertions)
+│   ├── tests/php/Unit/             # 36 unit test classes (526 tests · 1019 assertions)
 │   ├── tests/php/Integration/      # ContentPipelineIntegrationTest
 │   └── assets/css/admin.css        # Admin panel styles
 │
@@ -219,8 +219,8 @@ Topic Queue
 | Monthly cost (720 articles + images) | ~$58 |
 | Break-even traffic | ~5,000 visitors/month |
 | Pipeline execution time (avg) | ~55 seconds |
-| Unit tests | 465 tests · 932 assertions |
-| PHPUnit test classes | 33 unit + 1 integration |
+| Unit tests | 526 tests · 1019 assertions |
+| PHPUnit test classes | 36 unit + 1 integration |
 | Automation level | 100% |
 
 ---

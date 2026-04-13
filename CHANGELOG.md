@@ -2,6 +2,32 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.5.0] — 2026-04-13
+
+### Added — v7.5 Content Automation 2.0
+
+#### SERP Scraper
+
+- **`SerpScraper`** (`src/Content/SerpScraper.php`) — fetches top organic search results from configurable third-party SERP APIs; two providers supported out of the box: **Value SERP** (default) and **Serper.dev**; results cached via WP transients (`pearblog_serp_cache_ttl`, default 24 h); options: `pearblog_serp_provider`, `pearblog_serp_api_key`, `pearblog_serp_results_count`, `pearblog_serp_country`, `pearblog_serp_language`; `fetch_titles()` convenience method integrates directly with `CompetitiveGapEngine::set_competitor_topics()`.
+
+#### Auto-Keyword Clustering
+
+- **`KeywordClusterEngine`** (`src/Keywords/KeywordClusterEngine.php`) — groups GA4 organic search terms into `KeywordCluster` value objects using a greedy IDF-based clustering algorithm with configurable Jaccard similarity threshold; pulls raw terms from `GA4Client::run_report()` (dimension: `searchTerm`); persists cluster snapshots to `pearblog_kce_clusters` WP option; weekly cron (`pearblog_keyword_cluster_refresh`) keeps clusters fresh; options: `pearblog_kce_similarity_thresh` (0.25), `pearblog_kce_min_cluster_size` (2), `pearblog_kce_max_clusters` (20), `pearblog_kce_ga4_days` (90).
+
+#### Multilingual Content Generation
+
+- **`MultilingualManager`** (`src/Content/MultilingualManager.php`) — AI-powered translation of existing posts into multiple target languages; configurable prompt template with `{language}` / `{source}` placeholders; creates translated draft posts and stores `_pearblog_ml_source_post_id` + `_pearblog_ml_language` meta; native WPML integration via `wpml_set_element_language_details` (auto-detected); native Polylang integration via `pll_set_post_language` + `pll_save_post_translations` (auto-detected); fires `pearblog_translation_created` action on success; options: `pearblog_ml_target_languages`, `pearblog_ml_post_status` (draft), `pearblog_ml_prompt_template`, `pearblog_ml_enabled`.
+
+### Tests
+
+- **61 new PHPUnit tests** across 3 new test classes:
+  - `SerpScraperTest` (35 tests) — configuration, caching, both provider parsers, edge cases
+  - `KeywordClusterEngineTest` (18 tests) — tokenisation, Jaccard similarity, cluster grouping, min/max options, persistence
+  - `MultilingualManagerTest` (18 tests) — enabled guard, language management, AI prompt injection, post creation, meta storage, disabled guard
+- **526 tests / 1019 assertions** — all passing.
+
+---
+
 ## [7.4.0] — 2026-04-12
 
 ### Added — v7.4 Competitive Intelligence + Analytics + GraphQL

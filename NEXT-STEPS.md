@@ -136,7 +136,26 @@ These are the next-generation features planned for the first post-launch release
 
 ---
 
-## 🛠️ Technical Debt to Address Post-Launch
+## 🗺️ v7.5 Content Automation 2.0 (2026-09-01)
+
+### SERP Scraper ✅ Done — v7.5.0
+- ~~Real-time competitor article fetch~~ ✅ `SerpScraper.php` — Value SERP + Serper.dev providers; results cached; `fetch_titles()` feeds `CompetitiveGapEngine`
+
+### Auto-Keyword Clustering ✅ Done — v7.5.0
+- ~~Auto-keyword clustering from GA4 search terms~~ ✅ `KeywordClusterEngine.php` — IDF + Jaccard similarity; weekly cron refresh; `KeywordCluster` value objects
+
+### Multilingual Content Generation ✅ Done — v7.5.0
+- ~~Multilingual content generation (WPML/Polylang integration)~~ ✅ `MultilingualManager.php` — AI translation, WPML + Polylang native hook integration, `pearblog_translation_created` action
+
+---
+
+## 🗺️ v7.6 Performance & Infrastructure (Planned 2026-10-01)
+
+- Object cache integration (Redis/Memcached via WP_Object_Cache)
+- Async pipeline via WP Background Processing library
+- CDN image auto-offload (Cloudflare/BunnyCDN integration)
+
+
 
 These are known issues to resolve in the first patch releases:
 
@@ -178,4 +197,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-12 — v7.4.0 complete (CompetitiveGapEngine, GA4Client, AnalyticsDashboard, GraphQLController); all v7.1 + v7.2 features done; 465 tests passing*
+*Last updated: 2026-04-13 — v7.5.0 complete (SerpScraper, KeywordClusterEngine, MultilingualManager); 526 tests passing*
