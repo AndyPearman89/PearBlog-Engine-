@@ -149,11 +149,24 @@ These are the next-generation features planned for the first post-launch release
 
 ---
 
-## 🗺️ v7.6 Performance & Infrastructure (Planned 2026-10-01)
+## 🗺️ v7.6 Performance & Infrastructure ✅ Done — 2026-04-13
 
-- Object cache integration (Redis/Memcached via WP_Object_Cache)
-- Async pipeline via WP Background Processing library
-- CDN image auto-offload (Cloudflare/BunnyCDN integration)
+### Object Cache Integration ✅ Done — v7.6.0
+- ~~Object cache integration (Redis/Memcached via WP_Object_Cache)~~ ✅ `ObjectCacheAdapter.php` — wraps `wp_cache_*` API; transparent Redis/Memcached/APCu support; multisite global group; typed helpers for AI content/SEO/links/duplicates
+
+### Async Pipeline ✅ Done — v7.6.0
+- ~~Async pipeline via WP Background Processing library~~ ✅ `BackgroundProcessor.php` — persistent WP-Cron job queue; `dispatch()` + `handle_batch()`; exponential back-off retry; action-decoupled via `pearblog_bg_run_pipeline`
+
+### CDN Image Auto-Offload ✅ Done — v7.6.0
+- ~~CDN image auto-offload (Cloudflare/BunnyCDN integration)~~ ✅ `CdnManager.php` — BunnyCDN Storage + Cloudflare Images; transparent URL rewriting; `_pearblog_cdn_url` meta; `pearblog_cdn_offloaded` action
+
+---
+
+## 🗺️ v7.7 Developer Experience & Extensibility (Planned 2026-11-01)
+
+- Plugin hooks reference documentation
+- Developer CLI scaffolding tools
+- Event-sourced pipeline audit log API
 
 
 
@@ -197,4 +210,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-13 — v7.5.0 complete (SerpScraper, KeywordClusterEngine, MultilingualManager); 526 tests passing*
+*Last updated: 2026-04-13 — v7.6.0 complete (ObjectCacheAdapter, BackgroundProcessor, CdnManager); 588 tests passing*

@@ -2,6 +2,35 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.6.0] — 2026-04-13
+
+### Added — v7.6 Performance & Infrastructure
+
+#### Object Cache Integration
+
+- **`ObjectCacheAdapter`** (`src/Cache/ObjectCacheAdapter.php`) — wraps the native WordPress Object Cache API (`wp_cache_get/set/delete`) so all PearBlog caching automatically benefits from Redis, Memcached, or APCu when a persistent object-cache drop-in is installed; falls back to an in-memory store (eliminating SQL transient reads) on vanilla installs; group-scoped `flush_group()` uses `wp_cache_flush_group()` (WP 6.1+) or falls back to `wp_cache_flush()`; all entries stored in the configurable `pearblog` cache group with `wp_cache_add_global_groups()` support for multisite; typed helpers: `set/get_ai_content`, `set/get_seo_meta`, `set/get_link_candidates`, `set/get_duplicate_hash`; options: `pearblog_object_cache_group`, `pearblog_object_cache_ttl_ai/seo/links`.
+- Bootstrap test stubs added for the full `wp_cache_*` API and `wp_using_ext_object_cache()`.
+
+#### Async Pipeline (Background Processing)
+
+- **`BackgroundProcessor`** (`src/Pipeline/BackgroundProcessor.php`) — persistent job queue (`pearblog_bg_queue` WP option) with one-off WP-Cron events (`pearblog_bg_process`) so pipeline runs never block HTTP requests; `dispatch(topic, tenant_id)` enqueues a job and schedules a cron event 5 seconds later; `handle_batch()` processes up to `MAX_BATCH_SIZE` (default 5) jobs per cron invocation; jobs decouple via `pearblog_bg_run_pipeline` action (ContentPipeline hooks in via Plugin::boot()); exponential back-off retry on failure (2^attempts minutes); `pearblog_bg_job_completed` / `pearblog_bg_job_failed` action hooks; `cancel(id)` and `clear_queue()` management methods; options: `pearblog_bg_enabled`, `pearblog_bg_max_batch_size`, `pearblog_bg_max_attempts`.
+- Bootstrap test stubs added for `wp_schedule_single_event`.
+
+#### CDN Image Auto-Offload
+
+- **`CdnManager`** (`src/Cache/CdnManager.php`) — uploads AI-generated WP attachment images to a CDN and rewrites `wp_get_attachment_url()` responses transparently via a `wp_get_attachment_url` filter; two providers: **BunnyCDN** Storage + pull zone (default) and **Cloudflare Images** API; stores CDN URL in `_pearblog_cdn_url` post meta + provider in `_pearblog_cdn_provider`; `offload_attachment(id)` is idempotent; `remove_from_cdn(id)` deletes from the CDN and clears meta; optional local file deletion after offload (`pearblog_cdn_delete_local`); `pearblog_cdn_offloaded` action hook; options: `pearblog_cdn_enabled`, `pearblog_cdn_provider`, `pearblog_cdn_bunny_api_key/zone_name/region/pull_zone_url`, `pearblog_cdn_cf_account_id/api_token/delivery_url`.
+- Bootstrap test stubs added for `wp_remote_request`, `get_attached_file`, `delete_post_meta`.
+
+### Tests
+
+- **62 new PHPUnit tests** across 3 new test classes:
+  - `ObjectCacheAdapterTest` (23 tests) — get/set/delete, flush_group, all typed helpers, is_persistent, register, cache_key
+  - `BackgroundProcessorTest` (22 tests) — dispatch, cancel, queue persistence, handle_batch, batch size, retry/failure logic, action hooks
+  - `CdnManagerTest` (27 tests) — enabled guard, providers, offload success/failure, filter_attachment_url, remove_from_cdn, meta keys
+- **588 tests / 1096 assertions** — all passing.
+
+---
+
 ## [7.5.0] — 2026-04-13
 
 ### Added — v7.5 Content Automation 2.0
