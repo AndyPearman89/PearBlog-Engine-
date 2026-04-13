@@ -23,6 +23,18 @@
  *   wp pearblog abtest status <test_id>
  *   wp pearblog abtest promote <test_id>
  *   wp pearblog abtest delete <test_id>
+ *   wp pearblog scaffold prompt-builder <ClassName> --industry=<industry>
+ *   wp pearblog scaffold provider <ClassName>
+ *   wp pearblog audit list [--limit=<n>] [--level=<level>] [--event=<event>]
+ *   wp pearblog audit clear
+ *   wp pearblog audit stats
+ *   wp pearblog topics research [--auto-queue] [--limit=<n>]
+ *   wp pearblog topics list
+ *   wp pearblog import topics <file> [--format=csv|json] [--site-id=<id>]
+ *   wp pearblog export articles [--format=csv|json] [--output=<file>] [--limit=<n>]
+ *   wp pearblog schedule analyse
+ *   wp pearblog schedule next
+ *   wp pearblog schedule post <post_id>
  *
  * @package PearBlogEngine\CLI
  */
@@ -34,11 +46,15 @@ namespace PearBlogEngine\CLI;
 use PearBlogEngine\AI\AIClient;
 use PearBlogEngine\CLI\AutopilotRunner;
 use PearBlogEngine\Content\ContentRefreshEngine;
+use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Content\DuplicateDetector;
 use PearBlogEngine\Content\QualityScorer;
 use PearBlogEngine\Content\TopicQueue;
+use PearBlogEngine\Pipeline\ContentImportExport;
 use PearBlogEngine\Pipeline\ContentPipeline;
+use PearBlogEngine\Pipeline\PipelineAuditLog;
+use PearBlogEngine\Scheduler\PublishScheduler;
 use PearBlogEngine\SEO\InternalLinker;
 use PearBlogEngine\Tenant\TenantContext;
 
@@ -581,5 +597,673 @@ class PearBlogCommand {
 		\WP_CLI::log( 'Failed        : ' . $summary['failed'] );
 		\WP_CLI::log( 'Remaining     : ' . $summary['remaining'] );
 		\WP_CLI::log( 'Started at    : ' . ( $summary['start_time'] ?? '—' ) );
+	}
+
+	// -----------------------------------------------------------------------
+	// scaffold command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Generate boilerplate files for extending PearBlog Engine.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   prompt-builder  Scaffold a new industry-specific PromptBuilder class.
+	 *   provider        Scaffold a new AIProvider class.
+	 *
+	 * ## OPTIONS (prompt-builder)
+	 *
+	 * <ClassName>
+	 * : PHP class name for the new builder (e.g. RealEstatePromptBuilder).
+	 *
+	 * [--industry=<industry>]
+	 * : Human-readable industry description (e.g. "real estate").
+	 *   Defaults to the class name without "PromptBuilder" suffix.
+	 *
+	 * [--dir=<dir>]
+	 * : Output directory. Defaults to src/Content/ relative to the current
+	 *   working directory.
+	 *
+	 * ## OPTIONS (provider)
+	 *
+	 * <ClassName>
+	 * : PHP class name for the new provider (e.g. MistralProvider).
+	 *
+	 * [--dir=<dir>]
+	 * : Output directory. Defaults to src/AI/ relative to the current
+	 *   working directory.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog scaffold prompt-builder RealEstatePromptBuilder --industry="real estate"
+	 *   wp pearblog scaffold provider MistralProvider
+	 *
+	 * @subcommand scaffold
+	 */
+	public function scaffold( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? '';
+
+		switch ( $sub ) {
+			case 'prompt-builder':
+				$class_name = $args[1] ?? '';
+				if ( '' === $class_name ) {
+					\WP_CLI::error( 'Usage: wp pearblog scaffold prompt-builder <ClassName> [--industry=<industry>] [--dir=<dir>]' );
+					return;
+				}
+
+				$industry = $assoc_args['industry'] ?? str_replace( 'PromptBuilder', '', $class_name );
+				$industry = '' !== $industry ? $industry : $class_name;
+
+				$base_dir = rtrim( $assoc_args['dir'] ?? ( getcwd() . '/src/Content' ), '/' );
+				$file     = "{$base_dir}/{$class_name}.php";
+
+				if ( file_exists( $file ) ) {
+					\WP_CLI::error( "File already exists: {$file}" );
+					return;
+				}
+
+				$code = $this->generate_prompt_builder_stub( $class_name, $industry );
+
+				if ( ! is_dir( $base_dir ) ) {
+					mkdir( $base_dir, 0755, true );
+				}
+
+				file_put_contents( $file, $code );
+				\WP_CLI::success( "Created prompt builder: {$file}" );
+				\WP_CLI::log( "Next steps:" );
+				\WP_CLI::log( "  1. Edit {$file} to customise the prompt structure." );
+				\WP_CLI::log( "  2. Register the builder in PromptBuilderFactory::make() or via the" );
+				\WP_CLI::log( "     pearblog_prompt_builder_class filter." );
+				break;
+
+			case 'provider':
+				$class_name = $args[1] ?? '';
+				if ( '' === $class_name ) {
+					\WP_CLI::error( 'Usage: wp pearblog scaffold provider <ClassName> [--dir=<dir>]' );
+					return;
+				}
+
+				$base_dir = rtrim( $assoc_args['dir'] ?? ( getcwd() . '/src/AI' ), '/' );
+				$file     = "{$base_dir}/{$class_name}.php";
+
+				if ( file_exists( $file ) ) {
+					\WP_CLI::error( "File already exists: {$file}" );
+					return;
+				}
+
+				$code = $this->generate_provider_stub( $class_name );
+
+				if ( ! is_dir( $base_dir ) ) {
+					mkdir( $base_dir, 0755, true );
+				}
+
+				file_put_contents( $file, $code );
+				\WP_CLI::success( "Created AI provider: {$file}" );
+				\WP_CLI::log( "Next steps:" );
+				\WP_CLI::log( "  1. Edit {$file} to implement the complete() method." );
+				\WP_CLI::log( "  2. Register the provider in AIProviderFactory::make()." );
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown scaffold type: '{$sub}'. Available types: prompt-builder, provider." );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// audit command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Inspect and manage the pipeline audit log.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   list   List recent audit events.
+	 *   clear  Erase all stored events.
+	 *   stats  Show summary statistics.
+	 *
+	 * ## OPTIONS (list)
+	 *
+	 * [--limit=<n>]
+	 * : Number of events to display (default: 20, max: 500).
+	 *
+	 * [--level=<level>]
+	 * : Filter by severity: info, warning, error.
+	 *
+	 * [--event=<event>]
+	 * : Filter by event type slug (e.g. pipeline_completed).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog audit list
+	 *   wp pearblog audit list --limit=50 --level=error
+	 *   wp pearblog audit list --event=pipeline_completed
+	 *   wp pearblog audit clear
+	 *   wp pearblog audit stats
+	 *
+	 * @subcommand audit
+	 */
+	public function audit( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? 'list';
+		$log = new PipelineAuditLog();
+
+		switch ( $sub ) {
+			case 'list':
+				$limit      = min( (int) ( $assoc_args['limit'] ?? 20 ), PipelineAuditLog::MAX_ENTRIES );
+				$level      = $assoc_args['level'] ?? null;
+				$event_type = $assoc_args['event'] ?? null;
+
+				$events = $log->get_events( $limit, $level ?: null, $event_type ?: null );
+
+				if ( empty( $events ) ) {
+					\WP_CLI::log( 'No audit events found.' );
+					return;
+				}
+
+				foreach ( $events as $entry ) {
+					$ts      = gmdate( 'Y-m-d H:i:s', $entry['timestamp'] );
+					$context = empty( $entry['context'] )
+						? ''
+						: ' | ' . json_encode( $entry['context'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+					\WP_CLI::log( sprintf(
+						'[%s] [%s] %s%s',
+						$ts,
+						strtoupper( $entry['level'] ),
+						$entry['event'],
+						$context
+					) );
+				}
+
+				\WP_CLI::log( sprintf( 'Showing %d of %d total events.', count( $events ), $log->count() ) );
+				break;
+
+			case 'clear':
+				$total = $log->count();
+				$log->clear();
+				\WP_CLI::success( "Cleared {$total} audit event(s)." );
+				break;
+
+			case 'stats':
+				$all    = $log->get_all_events();
+				$total  = count( $all );
+				$counts = array_count_values( array_column( $all, 'level' ) );
+				$events = array_count_values( array_column( $all, 'event' ) );
+
+				\WP_CLI::log( "=== Audit Log Statistics ===" );
+				\WP_CLI::log( "Total events : {$total}" );
+				\WP_CLI::log( "Info         : " . ( $counts[ PipelineAuditLog::LEVEL_INFO ]    ?? 0 ) );
+				\WP_CLI::log( "Warning      : " . ( $counts[ PipelineAuditLog::LEVEL_WARNING ] ?? 0 ) );
+				\WP_CLI::log( "Error        : " . ( $counts[ PipelineAuditLog::LEVEL_ERROR ]   ?? 0 ) );
+				\WP_CLI::log( '' );
+				\WP_CLI::log( "Top event types:" );
+				arsort( $events );
+				foreach ( array_slice( $events, 0, 10, true ) as $type => $count ) {
+					\WP_CLI::log( sprintf( '  %-40s %d', $type, $count ) );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use list, clear, or stats." );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Scaffold code-generation helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Generate the PHP source for a new PromptBuilder subclass.
+	 *
+	 * @param string $class_name PHP class name.
+	 * @param string $industry   Industry label for the prompt.
+	 * @return string            PHP source code.
+	 */
+	private function generate_prompt_builder_stub( string $class_name, string $industry ): string {
+		$industry_esc = addslashes( $industry );
+		$filter_slug  = strtolower( preg_replace( '/(?<=[a-z])([A-Z])/', '_$1', $class_name ) );
+
+		return <<<PHP
+<?php
+/**
+ * {$class_name} – AI prompt builder for the {$industry_esc} niche.
+ *
+ * Generated by: wp pearblog scaffold prompt-builder {$class_name}
+ *
+ * @package PearBlogEngine\Content
+ */
+
+declare(strict_types=1);
+
+namespace PearBlogEngine\Content;
+
+use PearBlogEngine\Tenant\SiteProfile;
+
+/**
+ * Builds AI prompts optimised for {$industry_esc} content.
+ */
+class {$class_name} extends PromptBuilder {
+
+	public function __construct( SiteProfile \$profile ) {
+		parent::__construct( \$profile );
+	}
+
+	/**
+	 * Build a {$industry_esc}-focused prompt.
+	 *
+	 * @param string \$topic The article topic / keyword.
+	 * @return string        Ready-to-use prompt text.
+	 */
+	public function build( string \$topic ): string {
+		\$topic   = trim( \$topic );
+		\$profile = \$this->get_profile();
+
+		\$prompt  = "You are an expert {$industry_esc} writer specialising in {\$profile->industry}.\\n";
+		\$prompt .= "Write a comprehensive, SEO-optimised article in {\$profile->language} ";
+		\$prompt .= "using a {\$profile->tone} tone.\\n\\n";
+		\$prompt .= "Topic: {\$topic}\\n\\n";
+		\$prompt .= "Requirements:\\n";
+		\$prompt .= "- Minimum 1,200 words\\n";
+		\$prompt .= "- Include a compelling H1 title\\n";
+		\$prompt .= "- Add a meta description (max 160 chars) prefixed with META:\\n";
+		\$prompt .= "- Use H2/H3 subheadings for structure\\n";
+		// TODO: add {$industry_esc}-specific prompt requirements here.
+		\$prompt .= \$this->monetisation_instructions();
+
+		/**
+		 * Filter: pearblog_{$filter_slug}_prompt
+		 *
+		 * Allows further customisation of this industry-specific prompt.
+		 *
+		 * @param string      \$prompt  The assembled prompt text.
+		 * @param string      \$topic   The article topic.
+		 * @param SiteProfile \$profile The active site profile.
+		 */
+		\$prompt = (string) apply_filters( 'pearblog_{$filter_slug}_prompt', \$prompt, \$topic, \$profile );
+
+		return (string) apply_filters( 'pearblog_prompt', \$prompt, \$topic, \$profile );
+	}
+}
+PHP;
+	}
+
+	/**
+	 * Generate the PHP source for a new AIProvider class.
+	 *
+	 * @param string $class_name PHP class name.
+	 * @return string            PHP source code.
+	 */
+	private function generate_provider_stub( string $class_name ): string {
+		$provider_slug = strtolower( str_replace( 'Provider', '', $class_name ) );
+
+		return <<<PHP
+<?php
+/**
+ * {$class_name} – AI provider implementation.
+ *
+ * Generated by: wp pearblog scaffold provider {$class_name}
+ *
+ * @package PearBlogEngine\AI
+ */
+
+declare(strict_types=1);
+
+namespace PearBlogEngine\AI;
+
+/**
+ * AI text-generation provider adapter for {$provider_slug}.
+ *
+ * Implement the complete() method to proxy requests to your chosen API.
+ * Register this provider in AIProviderFactory::make() using the slug
+ * '{$provider_slug}'.
+ */
+class {$class_name} implements AIProviderInterface {
+
+	// -----------------------------------------------------------------------
+	// Metadata (required by AIProviderInterface)
+	// -----------------------------------------------------------------------
+
+	/** @inheritdoc */
+	public static function get_provider_slug(): string {
+		return '{$provider_slug}';
+	}
+
+	/** @inheritdoc */
+	public static function get_provider_label(): string {
+		return '{$class_name}'; // TODO: update to a friendly display name.
+	}
+
+	/** @inheritdoc */
+	public static function get_models(): array {
+		return [
+			// TODO: add supported model definitions, e.g.:
+			// 'model-slug' => [
+			// 	'label'                    => 'Model Label',
+			// 	'max_tokens'               => 4096,
+			// 	'cost_per_1k_input_cents'  => 0.01,
+			// 	'cost_per_1k_output_cents' => 0.03,
+			// ],
+		];
+	}
+
+	/** @inheritdoc */
+	public static function get_default_model(): string {
+		return ''; // TODO: return the default model slug.
+	}
+
+	/** @inheritdoc */
+	public static function requires_option(): string {
+		return 'pearblog_{$provider_slug}_api_key'; // NOTE: {$provider_slug} is a PHP variable expanded by the outer <<<PHP heredoc when generating the file.
+	}
+
+	// -----------------------------------------------------------------------
+	// Instance API
+	// -----------------------------------------------------------------------
+
+	/** @inheritdoc */
+	public function complete( string \$prompt, int \$max_tokens ): array {
+		// TODO: implement HTTP call to the {$provider_slug} API.
+		// Must return:  [ 'content' => string, 'prompt_tokens' => int, 'completion_tokens' => int ]
+		// Throw RateLimitException on rate-limit responses.
+		// Throw \\RuntimeException on other errors.
+		throw new \\RuntimeException( '{$class_name}::complete() is not yet implemented.' );
+	}
+}
+PHP;
+	}
+
+	// -----------------------------------------------------------------------
+	// topics command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Research and manage topic recommendations.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   research  Run the topic research engine and display scored recommendations.
+	 *   list      Show the current cached recommendations without re-running.
+	 *
+	 * ## OPTIONS (research)
+	 *
+	 * [--auto-queue]
+	 * : Automatically push qualifying topics into the content queue.
+	 *
+	 * [--limit=<n>]
+	 * : Number of recommendations to display (default: 20).
+	 *
+	 * [--site-id=<id>]
+	 * : WordPress site ID for queue operations (default: 1).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog topics research
+	 *   wp pearblog topics research --auto-queue --limit=10
+	 *   wp pearblog topics list
+	 *
+	 * @subcommand topics
+	 */
+	public function topics( array $args, array $assoc_args ): void {
+		$sub     = $args[0] ?? 'list';
+		$engine  = new TopicResearchEngine();
+		$limit   = (int) ( $assoc_args['limit']   ?? 20 );
+		$site_id = (int) ( $assoc_args['site-id'] ?? 1 );
+
+		switch ( $sub ) {
+			case 'research':
+				$auto_queue = isset( $assoc_args['auto-queue'] );
+				\WP_CLI::log( 'Running topic research engine…' );
+				$recs = $engine->run( $auto_queue, $site_id );
+
+				if ( empty( $recs ) ) {
+					\WP_CLI::log( 'No topic recommendations found. Ensure GA4 and/or CompetitiveGapEngine are configured.' );
+					return;
+				}
+
+				\WP_CLI::log( sprintf( 'Found %d recommendation(s):', count( $recs ) ) );
+				foreach ( array_slice( $recs, 0, $limit ) as $i => $rec ) {
+					\WP_CLI::log( sprintf(
+						'  %2d. [score: %5.1f | sources: %-18s] %s',
+						$i + 1,
+						$rec['score'],
+						implode( ', ', $rec['sources'] ),
+						$rec['topic']
+					) );
+				}
+
+				if ( $auto_queue ) {
+					\WP_CLI::success( 'Qualifying topics pushed to queue.' );
+				}
+				break;
+
+			case 'list':
+				$recs = $engine->get_recommendations();
+				if ( empty( $recs ) ) {
+					\WP_CLI::log( 'No cached recommendations. Run: wp pearblog topics research' );
+					return;
+				}
+
+				\WP_CLI::log( sprintf( 'Cached recommendations (%d):', count( $recs ) ) );
+				foreach ( array_slice( $recs, 0, $limit ) as $i => $rec ) {
+					\WP_CLI::log( sprintf(
+						'  %2d. [score: %5.1f] %s',
+						$i + 1,
+						$rec['score'],
+						$rec['topic']
+					) );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use research or list." );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// import command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Import topics or content from external files.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   topics  Import topics from a CSV or JSON file into the content queue.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <file>
+	 * : Path to the input file.
+	 *
+	 * [--format=<format>]
+	 * : File format: csv (default) or json.
+	 *
+	 * [--site-id=<id>]
+	 * : WordPress site ID for the target queue (default: 1).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog import topics /path/to/topics.csv
+	 *   wp pearblog import topics /path/to/topics.json --format=json --site-id=2
+	 *
+	 * @subcommand import
+	 */
+	public function import( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? '';
+
+		if ( 'topics' !== $sub ) {
+			\WP_CLI::error( "Unknown subcommand: '{$sub}'. Available: topics." );
+			return;
+		}
+
+		$file    = $args[1] ?? '';
+		$format  = $assoc_args['format']  ?? 'csv';
+		$site_id = (int) ( $assoc_args['site-id'] ?? 1 );
+
+		if ( '' === $file ) {
+			\WP_CLI::error( 'Usage: wp pearblog import topics <file> [--format=csv|json] [--site-id=<id>]' );
+			return;
+		}
+
+		if ( ! file_exists( $file ) ) {
+			\WP_CLI::error( "File not found: {$file}" );
+			return;
+		}
+
+		$content = file_get_contents( $file );
+		if ( false === $content ) {
+			\WP_CLI::error( "Could not read file: {$file}" );
+			return;
+		}
+
+		$ie = new ContentImportExport();
+
+		try {
+			$result = ( 'json' === $format )
+				? $ie->import_topics_json( $content, $site_id )
+				: $ie->import_topics_csv( $content, $site_id );
+		} catch ( \InvalidArgumentException $e ) {
+			\WP_CLI::error( $e->getMessage() );
+			return;
+		}
+
+		\WP_CLI::success( sprintf(
+			'Import complete: %d topic(s) added, %d skipped (duplicates).',
+			$result['imported'],
+			$result['skipped']
+		) );
+
+		if ( ! empty( $result['errors'] ) ) {
+			\WP_CLI::warning( 'Errors encountered:' );
+			foreach ( $result['errors'] as $err ) {
+				\WP_CLI::log( "  - {$err}" );
+			}
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// export command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Export generated articles to a file.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   articles  Export PearBlog-generated posts as CSV or JSON.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : Output format: csv (default) or json.
+	 *
+	 * [--output=<file>]
+	 * : Output file path. Defaults to stdout.
+	 *
+	 * [--limit=<n>]
+	 * : Maximum number of articles to export (default: 100).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog export articles
+	 *   wp pearblog export articles --format=json --output=/tmp/articles.json --limit=500
+	 *
+	 * @subcommand export
+	 */
+	public function export( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? 'articles';
+
+		if ( 'articles' !== $sub ) {
+			\WP_CLI::error( "Unknown subcommand: '{$sub}'. Available: articles." );
+			return;
+		}
+
+		$format  = $assoc_args['format'] ?? 'csv';
+		$output  = $assoc_args['output'] ?? '';
+		$limit   = (int) ( $assoc_args['limit'] ?? 100 );
+
+		$ie = new ContentImportExport();
+
+		$data = ( 'json' === $format )
+			? $ie->export_articles_json()
+			: $ie->export_articles_csv();
+
+		if ( '' !== $output ) {
+			file_put_contents( $output, $data );
+			\WP_CLI::success( "Exported to: {$output}" );
+		} else {
+			\WP_CLI::log( $data );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// schedule command
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Smart publish-time scheduling based on GA4 engagement data.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   analyse  (Re-)analyse GA4 data and update the optimal publish slot.
+	 *   next     Display the next optimal publish time without scheduling anything.
+	 *   post     Schedule a specific post to the next optimal publish time.
+	 *
+	 * ## OPTIONS (post)
+	 *
+	 * <post_id>
+	 * : WordPress post ID to schedule.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog schedule analyse
+	 *   wp pearblog schedule next
+	 *   wp pearblog schedule post 42
+	 *
+	 * @subcommand schedule
+	 */
+	public function schedule( array $args, array $assoc_args ): void {
+		$sub       = $args[0] ?? 'next';
+		$scheduler = new PublishScheduler();
+
+		switch ( $sub ) {
+			case 'analyse':
+				\WP_CLI::log( 'Analysing GA4 engagement data…' );
+				$analysis = $scheduler->analyse();
+				[ $hour, $dow ] = [ $analysis['optimal_hour'], $analysis['optimal_dow'] ];
+				$day_names = [ 'Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday' ];
+				\WP_CLI::success( sprintf(
+					'Optimal publish slot: %s at %02d:00 (site local time).',
+					$day_names[ $dow ] ?? "Day {$dow}",
+					$hour
+				) );
+				break;
+
+			case 'next':
+				$time = $scheduler->get_optimal_publish_time();
+				\WP_CLI::log( 'Next optimal publish time: ' . $time->format( 'Y-m-d H:i:s T' ) );
+				break;
+
+			case 'post':
+				$post_id = (int) ( $args[1] ?? 0 );
+				if ( $post_id <= 0 ) {
+					\WP_CLI::error( 'Usage: wp pearblog schedule post <post_id>' );
+					return;
+				}
+
+				if ( $scheduler->schedule_post( $post_id ) ) {
+					$time = $scheduler->get_optimal_publish_time();
+					\WP_CLI::success( sprintf(
+						'Post %d scheduled for: %s',
+						$post_id,
+						$time->format( 'Y-m-d H:i:s T' )
+					) );
+				} else {
+					\WP_CLI::error( "Post not found: {$post_id}" );
+				}
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: {$sub}. Use analyse, next, or post." );
+		}
 	}
 }

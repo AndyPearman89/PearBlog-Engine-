@@ -162,11 +162,23 @@ These are the next-generation features planned for the first post-launch release
 
 ---
 
-## 🗺️ v7.7 Developer Experience & Extensibility (Planned 2026-11-01)
+## 🗺️ v7.7 Developer Experience & Extensibility ✅ Done — 2026-04-13
 
-- Plugin hooks reference documentation
-- Developer CLI scaffolding tools
-- Event-sourced pipeline audit log API
+- ~~Plugin hooks reference documentation~~ ✅ `DEVELOPER-HOOKS.md` — all 30 action/filter hooks documented with signatures, parameters, source locations, and examples
+- ~~Developer CLI scaffolding tools~~ ✅ `wp pearblog scaffold prompt-builder` + `wp pearblog scaffold provider` + `wp pearblog audit` commands added to `PearBlogCommand.php`
+- ~~Event-sourced pipeline audit log API~~ ✅ `PipelineAuditLog.php` — ring-buffer (500 entries), 14 auto-hooked pipeline actions, REST endpoints `GET /pearblog/v1/audit` + `POST /pearblog/v1/audit/append`
+
+---
+
+## 🗺️ v7.8 Smart Content Planning ✅ Done — 2026-04-13
+
+- ~~Topic Research Engine~~ ✅ `TopicResearchEngine.php` — GA4 + competitive gap + keyword cluster signals → scored topic recommendations; auto-queue; weekly cron; `pearblog_topics_researched` action
+- ~~Content Import/Export~~ ✅ `ContentImportExport.php` — CSV/JSON bulk topic import + article export; REST `POST /pearblog/v1/import/topics` + `GET /pearblog/v1/export/articles`
+- ~~Smart Publish Scheduler~~ ✅ `PublishScheduler.php` — GA4 hour/dow engagement analysis; optimal-slot picker; `schedule_post()`; weekly cron; `pearblog_post_scheduled` action
+
+---
+
+## 🗺️ v7.9 (Planned)
 
 
 
@@ -210,4 +222,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-13 — v7.6.0 complete (ObjectCacheAdapter, BackgroundProcessor, CdnManager); 588 tests passing*
+*Last updated: 2026-04-13 — v7.8.0 complete (TopicResearchEngine, ContentImportExport, PublishScheduler); 714 tests passing*
