@@ -2,6 +2,47 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [7.7.0] — 2026-04-13
+
+### Added — v7.7 Developer Experience & Extensibility
+
+#### Plugin Hooks Reference
+
+- **`DEVELOPER-HOOKS.md`** — comprehensive reference for all 30 action/filter hooks (17 actions + 13 filters) exposed by PearBlog Engine; each entry includes the full signature, parameter descriptions, source file, and a real-world usage example; structured into thematic sections: Pipeline Lifecycle, Background Processing, Content Operations, SEO & Publishing, Social & Distribution, Monitoring & SLA, A/B Testing, CDN & Cache, Admin Trigger, CLI / Autopilot, Prompt Generation, Builder Selection, Monetisation, SEO & Internal Links, Monitoring Thresholds, Image Generation.
+
+#### Developer CLI Scaffolding Tools
+
+- **`wp pearblog scaffold prompt-builder <ClassName> [--industry=<industry>] [--dir=<dir>]`** — generates a fully-stubbed `PromptBuilder` subclass with the correct namespace, `build()` method, monetisation helper call, and both the industry-specific and `pearblog_prompt` filter hooks wired up; accepts optional `--industry` label (defaults to class name with "PromptBuilder" stripped) and `--dir` for output directory.
+- **`wp pearblog scaffold provider <ClassName> [--dir=<dir>]`** — generates a fully-stubbed `AIProviderInterface` implementation with all required metadata methods (`get_provider_slug`, `get_provider_label`, `get_models`, `get_default_model`, `requires_option`) and a `complete()` stub that throws `\RuntimeException` until implemented.
+- Both subcommands guard against overwriting an existing file and print clear "Next steps" instructions after generation.
+
+#### `wp pearblog audit` Command
+
+- **`wp pearblog audit list [--limit=<n>] [--level=<level>] [--event=<event>]`** — list recent audit events in reverse-chronological order with optional severity and event-type filters.
+- **`wp pearblog audit clear`** — erase all stored audit events.
+- **`wp pearblog audit stats`** — print a summary: total events, per-level counts, and the top-10 event types.
+
+#### Event-Sourced Pipeline Audit Log
+
+- **`PipelineAuditLog`** (`src/Pipeline/PipelineAuditLog.php`) — append-only ring-buffer (max 500 entries) stored in `pearblog_audit_log` WP option; automatically hooks into 16 pipeline actions (`pearblog_pipeline_started`, `pearblog_pipeline_completed`, `pearblog_pipeline_duplicate_skipped`, `pearblog_pipeline_cron_error`, `pearblog_seo_applied`, `pearblog_quality_scored`, `pearblog_content_refreshed`, `pearblog_translation_created`, `pearblog_social_published`, `pearblog_cdn_offloaded`, `pearblog_bg_job_completed`, `pearblog_bg_job_failed`, `pearblog_sla_breached`, `pearblog_abtest_winner_promoted`) and records structured event entries with `id`, `timestamp`, `event`, `level`, and `context` fields; three severity levels: `info`, `warning`, `error`; registered in `Plugin::boot()`.
+- **REST endpoint `GET /pearblog/v1/audit`** — returns filtered events; query params: `limit` (1–500, default 50), `level` (info/warning/error), `event` (slug); authentication via `manage_options` capability or Bearer API token.
+- **REST endpoint `POST /pearblog/v1/audit/append`** — admin-only endpoint to manually append a custom event; body: `event` (required), `level` (default info), `context` (object).
+- Bootstrap test stubs added for `current_user_can()` (global-variable-controlled, defaults to `false`) and `WP_REST_Server` class constants.
+
+### Tests
+
+- **38 new PHPUnit tests** in `PipelineAuditLogTest.php`:
+  - Append / count / clear (7 tests)
+  - `get_events` filtering and ordering (6 tests)
+  - Ring-buffer enforcement (2 tests)
+  - All 14 action callbacks (14 tests)
+  - REST permission callbacks (2 tests)
+  - REST `GET /audit` endpoint (3 tests)
+  - REST `POST /audit/append` endpoint (4 tests — including 400 validation)
+- **640 tests / 1196 assertions** — all passing.
+
+---
+
 ## [7.6.0] — 2026-04-13
 
 ### Added — v7.6 Performance & Infrastructure

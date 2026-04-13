@@ -13,6 +13,7 @@ use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
+use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\ContentCalendar;
@@ -59,6 +60,9 @@ class Plugin {
 
 		// Performance monitoring.
 		( new PerformanceDashboard() )->register();
+
+		// Event-sourced pipeline audit log.
+		( new PipelineAuditLog() )->register();
 
 		// REST API – automation endpoints for external scripts.
 		add_action( 'rest_api_init', static function (): void {

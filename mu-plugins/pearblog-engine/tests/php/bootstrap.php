@@ -339,6 +339,24 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 	}
 }
 
+if ( ! function_exists( 'current_user_can' ) ) {
+	function current_user_can( string $capability ): bool {
+		// Default to false so existing permission-denial tests keep passing.
+		// Tests that need a privileged user can set $GLOBALS['_current_user_can'] = true.
+		return (bool) ( $GLOBALS['_current_user_can'] ?? false );
+	}
+}
+
+if ( ! class_exists( 'WP_REST_Server' ) ) {
+	class WP_REST_Server {
+		const READABLE  = 'GET';
+		const CREATABLE = 'POST';
+		const EDITABLE  = 'POST, PUT, PATCH';
+		const DELETABLE = 'DELETE';
+		const ALLMETHODS = 'GET, POST, PUT, PATCH, DELETE';
+	}
+}
+
 if ( ! function_exists( 'wp_remote_post' ) ) {
 	function wp_remote_post( string $url, array $args = [] ): array {
 		return [ 'response' => [ 'code' => 200 ], 'body' => '' ];

@@ -162,11 +162,15 @@ These are the next-generation features planned for the first post-launch release
 
 ---
 
-## 🗺️ v7.7 Developer Experience & Extensibility (Planned 2026-11-01)
+## 🗺️ v7.7 Developer Experience & Extensibility ✅ Done — 2026-04-13
 
-- Plugin hooks reference documentation
-- Developer CLI scaffolding tools
-- Event-sourced pipeline audit log API
+- ~~Plugin hooks reference documentation~~ ✅ `DEVELOPER-HOOKS.md` — all 30 action/filter hooks documented with signatures, parameters, source locations, and examples
+- ~~Developer CLI scaffolding tools~~ ✅ `wp pearblog scaffold prompt-builder` + `wp pearblog scaffold provider` + `wp pearblog audit` commands added to `PearBlogCommand.php`
+- ~~Event-sourced pipeline audit log API~~ ✅ `PipelineAuditLog.php` — ring-buffer (500 entries), 14 auto-hooked pipeline actions, REST endpoints `GET /pearblog/v1/audit` + `POST /pearblog/v1/audit/append`
+
+---
+
+## 🗺️ v7.8 (Planned)
 
 
 
@@ -210,4 +214,4 @@ These are known issues to resolve in the first patch releases:
 
 ---
 
-*Last updated: 2026-04-13 — v7.6.0 complete (ObjectCacheAdapter, BackgroundProcessor, CdnManager); 588 tests passing*
+*Last updated: 2026-04-13 — v7.7.0 complete (PipelineAuditLog, scaffold CLI, DEVELOPER-HOOKS.md); 640 tests passing*
