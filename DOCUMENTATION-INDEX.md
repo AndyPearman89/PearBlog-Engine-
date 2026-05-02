@@ -23,6 +23,7 @@
 | [DEPLOYMENT.md](DEPLOYMENT.md) | EN | Ops / Dev | Full production deployment guide (Apache/Nginx, SSL, Git, FTP, WP-CLI, 4 hosting providers) |
 | [DEPLOYMENT-PL.md](DEPLOYMENT-PL.md) | **PL** | Ops / Dev | Pełny przewodnik wdrożenia produkcyjnego po polsku |
 | [DEPLOYMENT-poradnik-pro.md](DEPLOYMENT-poradnik-pro.md) | **PL** | Ops / Dev | Specific deployment guide for poradnik.pro (204.48.27.118) |
+| [GITHUB-SECRETS-GUIDE.md](GITHUB-SECRETS-GUIDE.md) | EN | Ops / Dev | Complete GitHub Secrets configuration guide with all required credentials |
 | [DATABASE-MIGRATIONS.md](DATABASE-MIGRATIONS.md) | EN | Ops / Dev | Full schema reference, upgrade SQL scripts v4→v5→v6, rollback procedures, compatibility matrix |
 | [DISASTER-RECOVERY.md](DISASTER-RECOVERY.md) | EN | Ops / DevOps | Disaster recovery plan: RTO/RPO targets, backup automation, 8 disaster scenarios, restore procedures |
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | EN | Everyone | 30+ failure scenarios with step-by-step solutions, diagnostic commands, FAQ |

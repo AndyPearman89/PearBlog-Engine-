@@ -71,10 +71,22 @@ wp pearblog autopilot status --allow-root
 
 You'll need during deployment:
 
-1. **MySQL root password** (for database creation)
-2. **OpenAI API key** (sk-proj-...)
+1. **MySQL root password** (for database creation) - Add as `ROOT_PASSWORD` secret
+2. **OpenAI API key** (sk-proj-...) - Add as `OPENAI_API_KEY` secret
 3. **WordPress admin password** (your choice)
 4. **Email address** (for SSL certificate)
+
+### GitHub Secrets Setup
+
+For automated deployment via GitHub Actions, configure these secrets:
+- `SSH_HOST` = 204.48.27.118
+- `SSH_USER` = root
+- `SSH_PRIVATE_KEY` = [Your SSH private key]
+- `WP_PATH` = /var/www/poradnik.pro
+- `ROOT_PASSWORD` = [MySQL root password]
+- `OPENAI_API_KEY` = sk-proj-...
+
+See [GITHUB-SECRETS-GUIDE.md](GITHUB-SECRETS-GUIDE.md) for complete setup instructions.
 
 ---
 
