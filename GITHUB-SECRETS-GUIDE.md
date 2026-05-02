@@ -328,12 +328,46 @@ mysql -u root -p -e "SELECT VERSION();"
 
 ## Environment-Specific Secrets
 
-### Production (poradnik.pro)
+### Production Site 1 (poradnik.pro)
 ```
 SSH_HOST=204.48.27.118
+SSH_USER=root
 WP_PATH=/var/www/poradnik.pro
 SITE_URL=https://poradnik.pro
+ROOT_PASSWORD=[MySQL root password]
+OPENAI_API_KEY=sk-proj-...
 ```
+
+### Production Site 2 (mucharski.pl)
+```
+MUCHARSKI_SSH_HOST=[Your server IP - TBD]
+MUCHARSKI_SSH_USER=root
+MUCHARSKI_WP_PATH=/var/www/mucharski.pl
+MUCHARSKI_SITE_URL=https://mucharski.pl
+MUCHARSKI_ROOT_PASSWORD=[MySQL root password]
+MUCHARSKI_OPENAI_API_KEY=sk-proj-... (can share with poradnik.pro)
+```
+
+**Note for mucharski.pl:** Before deployment, update the `SERVER_IP` variable in `scripts/deploy-mucharski-pl.sh` and add the corresponding GitHub Secrets.
+
+### Multi-Site Deployment Strategy
+
+When deploying multiple sites with PearBlog Engine:
+
+1. **Shared Secrets** (can be reused across sites):
+   - `OPENAI_API_KEY` - Same API key for all sites
+   - `SSH_PRIVATE_KEY` - If using same server
+
+2. **Site-Specific Secrets** (unique per site):
+   - `[SITE]_SSH_HOST` - Different servers = different IPs
+   - `[SITE]_WP_PATH` - Different WordPress installations
+   - `[SITE]_ROOT_PASSWORD` - Different databases
+   - `[SITE]_SITE_URL` - Different domains
+
+3. **Naming Convention:**
+   - Prefix site-specific secrets with site identifier
+   - Examples: `MUCHARSKI_*`, `PORADNIK_*`
+   - Keeps secrets organized and prevents conflicts
 
 ### Staging (Optional)
 ```
