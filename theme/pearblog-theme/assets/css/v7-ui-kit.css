@@ -1,0 +1,256 @@
+/* ======================================================
+   PEARBLOG v7 — FULL UI KIT (BASE + COMPONENTS + LAYOUT)
+   ====================================================== */
+
+/* ======================
+   VARIABLES
+====================== */
+
+:root {
+  --pb-bg-main: #0B1118;
+  --pb-bg-secondary: #111827;
+
+  --pb-text-main: #ffffff;
+  --pb-text-secondary: #9CA3AF;
+
+  --pb-primary: #4ADE80;
+  --pb-secondary: #60A5FA;
+
+  --pb-border: rgba(255,255,255,0.08);
+
+  --pb-radius: 12px;
+  --pb-radius-lg: 16px;
+
+  --pb-spacing-xs: 6px;
+  --pb-spacing-sm: 10px;
+  --pb-spacing: 16px;
+  --pb-spacing-lg: 24px;
+  --pb-spacing-xl: 40px;
+
+  --pb-font-display: 'Poppins', sans-serif;
+  --pb-font-ui: 'Inter', sans-serif;
+}
+
+/* ======================
+   RESET
+====================== */
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--pb-bg-main);
+  color: var(--pb-text-main);
+  font-family: var(--pb-font-ui);
+  font-size: 18px;
+  line-height: 1.7;
+}
+
+/* ======================
+   TYPOGRAPHY
+====================== */
+
+h1, h2, h3 {
+  font-family: var(--pb-font-display);
+  font-weight: 700;
+  margin-bottom: var(--pb-spacing);
+}
+
+h1 { font-size: 44px; }
+h2 { font-size: 30px; }
+h3 { font-size: 22px; }
+
+p {
+  color: var(--pb-text-secondary);
+  margin-bottom: var(--pb-spacing);
+}
+
+/* ======================
+   LAYOUT
+====================== */
+
+.pb-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 var(--pb-spacing);
+}
+
+.pb-content {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+/* ======================
+   HERO
+====================== */
+
+.pb-hero {
+  position: relative;
+  height: 70vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.pb-hero__bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+}
+
+.pb-hero__overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    to bottom,
+    rgba(11,17,24,0.4),
+    rgba(11,17,24,0.9)
+  );
+}
+
+.pb-hero__content {
+  position: relative;
+  z-index: 10;
+  max-width: 700px;
+}
+
+/* ======================
+   BUTTONS
+====================== */
+
+.pb-btn-primary {
+  background: linear-gradient(135deg, var(--pb-primary), var(--pb-secondary));
+  color: #0B1118;
+  padding: 14px 24px;
+  border-radius: var(--pb-radius);
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.pb-btn-primary:hover {
+  transform: translateY(-2px);
+}
+
+.pb-btn-secondary {
+  border: 1px solid var(--pb-border);
+  padding: 12px 20px;
+  border-radius: var(--pb-radius);
+}
+
+/* ======================
+   TLDR
+====================== */
+
+.pb-tldr {
+  background: var(--pb-bg-secondary);
+  border: 1px solid var(--pb-border);
+  padding: var(--pb-spacing);
+  border-radius: var(--pb-radius);
+}
+
+/* ======================
+   CARD
+====================== */
+
+.pb-card {
+  background: var(--pb-bg-secondary);
+  border-radius: var(--pb-radius-lg);
+  overflow: hidden;
+  transition: 0.3s;
+}
+
+.pb-card:hover {
+  transform: translateY(-4px);
+}
+
+/* ======================
+   CTA
+====================== */
+
+.pb-cta {
+  background: linear-gradient(135deg, #111827, #0B1118);
+  padding: var(--pb-spacing-lg);
+  border-radius: var(--pb-radius);
+  text-align: center;
+}
+
+/* ======================
+   HEADER
+====================== */
+
+.pb-header {
+  position: sticky;
+  top: 0;
+  background: rgba(11,17,24,0.85);
+  backdrop-filter: blur(10px);
+  z-index: 100;
+}
+
+/* ======================
+   PROGRESS BAR
+====================== */
+
+#pb-reading-progress-bar {
+  position: fixed;
+  top: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--pb-primary), var(--pb-secondary));
+  z-index: 9999;
+}
+
+/* ======================
+   SEARCH PANEL
+====================== */
+
+#pb-search-panel {
+  position: fixed;
+  top: 0;
+  width: 100%;
+  background: var(--pb-bg-main);
+  transform: translateY(-100%);
+  transition: 0.3s;
+}
+
+#pb-search-panel.active {
+  transform: translateY(0);
+}
+
+/* ======================
+   FAQ
+====================== */
+
+.pb-faq-item {
+  border-bottom: 1px solid var(--pb-border);
+  padding: var(--pb-spacing);
+}
+
+/* ======================
+   FOOTER
+====================== */
+
+.pb-footer {
+  background: #05080c;
+  padding: var(--pb-spacing-xl);
+}
+
+/* ======================
+   MOBILE
+====================== */
+
+@media (max-width: 768px) {
+
+  h1 { font-size: 32px; }
+  h2 { font-size: 24px; }
+
+  .pb-hero {
+    height: 60vh;
+  }
+
+}
