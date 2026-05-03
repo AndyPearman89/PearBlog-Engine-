@@ -71,6 +71,7 @@ class AdminPageV7 {
 		add_action( 'admin_post_pearblog_save_affiliate', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_affiliate' ] );
 		add_action( 'admin_post_pearblog_save_sponsored', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_sponsored' ] );
 		add_action( 'admin_post_pearblog_save_revenue_tracking', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_revenue_tracking' ] );
+		add_action( 'admin_post_pearblog_save_multisite_settings', [ 'PearBlogEngine\Admin\MultisiteTab', 'handle_save_multisite_settings' ] );
 	}
 
 	/**
@@ -306,34 +307,14 @@ class AdminPageV7 {
 	 * Render Analytics tab - Advanced metrics.
 	 */
 	private function render_analytics_tab(): void {
-		?>
-		<div class="pearblog-v7-analytics">
-			<h2><?php echo esc_html__( 'Analytics & Performance Metrics', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Advanced filtering and performance analysis.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Coming in Phase 2 (v7.2 - July 2026)', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'Enhanced analytics with custom date ranges and filtering.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		AnalyticsTab::render();
 	}
 
 	/**
 	 * Render Multisite/SaaS tab - Multi-tenant management.
 	 */
 	private function render_multisite_tab(): void {
-		?>
-		<div class="pearblog-v7-multisite">
-			<h2><?php echo esc_html__( 'Multisite / SaaS Control', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Manage multiple sites from a central dashboard.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Coming in Phase 5 (v7.5 - October 2026)', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'Central SaaS dashboard for managing multiple PearBlog sites.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		MultisiteTab::render();
 	}
 
 	/**
