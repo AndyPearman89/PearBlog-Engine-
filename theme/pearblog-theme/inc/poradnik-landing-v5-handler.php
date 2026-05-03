@@ -5,7 +5,7 @@
  * AJAX handlers, lead processing, email notifications
  *
  * @package PearBlog
- * @version 5.0.0
+ * @version 5.2.0
  */
 
 // Prevent direct access
@@ -43,7 +43,7 @@ class PoradnikLandingV5Handler {
             'poradnik-landing-v5',
             get_template_directory_uri() . '/assets/css/poradnik-landing-v5.css',
             [],
-            '5.0.0'
+            '5.2.0'
         );
 
         // Enqueue JavaScript
@@ -51,7 +51,7 @@ class PoradnikLandingV5Handler {
             'poradnik-landing-v5',
             get_template_directory_uri() . '/assets/js/poradnik-landing-v5.js',
             [],
-            '5.0.0',
+            '5.2.0',
             true
         );
 
@@ -75,6 +75,7 @@ class PoradnikLandingV5Handler {
         $service = sanitize_text_field($_POST['service'] ?? '');
         $email = sanitize_email($_POST['email'] ?? '');
         $source = sanitize_text_field($_POST['source'] ?? 'unknown');
+        $meta = self::get_submission_meta();
 
         // Validate
         $errors = [];
@@ -101,6 +102,7 @@ class PoradnikLandingV5Handler {
             'ip' => self::get_client_ip(),
             'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
             'utm' => $_POST['utm'] ?? null,
+            'meta' => $meta,
         ]);
 
         if (!$lead_id) {
@@ -142,10 +144,11 @@ class PoradnikLandingV5Handler {
                 'ip_address' => $data['ip'],
                 'user_agent' => $data['user_agent'],
                 'utm_data' => is_array($data['utm']) ? wp_json_encode($data['utm']) : null,
+                'lead_meta' => !empty($data['meta']) ? wp_json_encode($data['meta']) : null,
                 'status' => 'new',
                 'created_at' => current_time('mysql'),
             ],
-            ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
+            ['%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s', '%s']
         );
 
         return $result ? $wpdb->insert_id : false;
@@ -168,6 +171,7 @@ class PoradnikLandingV5Handler {
             ip_address varchar(45) DEFAULT NULL,
             user_agent text DEFAULT NULL,
             utm_data text DEFAULT NULL,
+            lead_meta text DEFAULT NULL,
             status varchar(20) DEFAULT 'new',
             created_at datetime NOT NULL,
             PRIMARY KEY (id),
@@ -210,6 +214,18 @@ class PoradnikLandingV5Handler {
             foreach ($utm as $key => $value) {
                 if ($value) {
                     $message .= "  $key: $value\n";
+                }
+            }
+        }
+
+        if ($lead->lead_meta) {
+            $meta = json_decode($lead->lead_meta, true);
+            if (is_array($meta) && !empty($meta)) {
+                $message .= "\nMeta:\n";
+                foreach ($meta as $key => $value) {
+                    if ($value !== null && $value !== '') {
+                        $message .= "  $key: $value\n";
+                    }
                 }
             }
         }
@@ -289,6 +305,33 @@ class PoradnikLandingV5Handler {
         }
 
         return '0.0.0.0';
+    }
+
+    /**
+     * Get sanitized submission metadata
+     *
+     * @return array
+     */
+    private static function get_submission_meta() {
+        $meta = [
+            'ab_variant' => sanitize_text_field($_POST['ab_variant'] ?? ''),
+            'industry' => sanitize_text_field($_POST['industry'] ?? 'general'),
+            'landing_version' => sanitize_text_field($_POST['landing_version'] ?? ''),
+            'device' => sanitize_text_field($_POST['device'] ?? ''),
+            'viewport' => sanitize_text_field($_POST['viewport'] ?? ''),
+            'page_url' => esc_url_raw($_POST['page_url'] ?? ''),
+            'referrer' => esc_url_raw($_POST['referrer'] ?? ''),
+        ];
+
+        if (!empty($_POST['utm']) && is_array($_POST['utm'])) {
+            $meta['utm_source'] = sanitize_text_field($_POST['utm']['source'] ?? '');
+            $meta['utm_medium'] = sanitize_text_field($_POST['utm']['medium'] ?? '');
+            $meta['utm_campaign'] = sanitize_text_field($_POST['utm']['campaign'] ?? '');
+        }
+
+        return array_filter($meta, static function($value) {
+            return $value !== null && $value !== '';
+        });
     }
 }
 

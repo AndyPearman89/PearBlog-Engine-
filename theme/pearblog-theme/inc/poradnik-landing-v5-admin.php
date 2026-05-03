@@ -99,6 +99,7 @@ class PoradnikLandingV5Admin {
             'ajaxUrl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('plv5_admin_nonce'),
             'exportUrl' => admin_url('admin.php?page=poradnik-landing-leads&action=export_csv'),
+            'exportNonce' => wp_create_nonce('plv5_export'),
         ]);
     }
 
@@ -261,6 +262,16 @@ class PoradnikLandingV5Admin {
                 </div>
 
                 <div class="plv5-chart-card">
+                    <h3>A/B Variant Performance</h3>
+                    <canvas id="ab-variant-chart"></canvas>
+                </div>
+
+                <div class="plv5-chart-card">
+                    <h3>Industry Performance</h3>
+                    <canvas id="industry-chart"></canvas>
+                </div>
+
+                <div class="plv5-chart-card">
                     <h3>Conversion Funnel</h3>
                     <canvas id="funnel-chart"></canvas>
                 </div>
@@ -281,6 +292,43 @@ class PoradnikLandingV5Admin {
                     </thead>
                     <tbody id="utm-stats-tbody">
                         <tr><td colspan="5" style="text-align: center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="plv5-stats-table">
+                <h3>A/B Variants Table</h3>
+                <table class="wp-list-table widefat">
+                    <thead>
+                        <tr>
+                            <th>Variant</th>
+                            <th>Leads</th>
+                            <th>Converted</th>
+                            <th>Conversion Rate</th>
+                        </tr>
+                    </thead>
+                    <tbody id="ab-stats-tbody">
+                        <tr><td colspan="4" style="text-align: center;">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="plv5-stats-table">
+                <h3>Recent Leads Snapshot</h3>
+                <table class="wp-list-table widefat">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Service</th>
+                            <th>Variant</th>
+                            <th>Industry</th>
+                            <th>Source</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody id="recent-leads-tbody">
+                        <tr><td colspan="7" style="text-align: center;">Loading...</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -607,51 +655,174 @@ class PoradnikLandingV5Admin {
             wp_send_json_error(['message' => 'Unauthorized']);
         }
 
-        $days = isset($_POST['days']) ? absint($_POST['days']) : 7;
-
         global $wpdb;
         $table = $wpdb->prefix . 'poradnik_leads';
 
+        $days = isset($_POST['days']) ? absint($_POST['days']) : 7;
+        $date_from = isset($_POST['date_from']) ? sanitize_text_field(wp_unslash($_POST['date_from'])) : '';
+        $date_to = isset($_POST['date_to']) ? sanitize_text_field(wp_unslash($_POST['date_to'])) : '';
+
+        $use_custom_range = !empty($date_from) && !empty($date_to) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_from) && preg_match('/^\d{4}-\d{2}-\d{2}$/', $date_to);
+        if ($use_custom_range && $date_from > $date_to) {
+            wp_send_json_error(['message' => 'Invalid custom date range']);
+        }
+
+        $date_sql = $use_custom_range
+            ? $wpdb->prepare('created_at >= %s AND created_at < DATE_ADD(%s, INTERVAL 1 DAY)', $date_from, $date_to)
+            : $wpdb->prepare('created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)', $days);
+
         // Leads timeline
-        $timeline = $wpdb->get_results($wpdb->prepare("
+        $timeline = $wpdb->get_results("
             SELECT DATE(created_at) as date, COUNT(*) as count
             FROM $table
-            WHERE created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)
+            WHERE $date_sql
             GROUP BY DATE(created_at)
             ORDER BY date ASC
-        ", $days));
+        ");
 
-        // Status distribution
+        // Status distribution (period)
         $status_dist = $wpdb->get_results("
             SELECT status, COUNT(*) as count
             FROM $table
+            WHERE $date_sql
             GROUP BY status
         ");
 
-        // Source distribution
+        // Source distribution (period)
         $source_dist = $wpdb->get_results("
             SELECT source, COUNT(*) as count
             FROM $table
+            WHERE $date_sql
             GROUP BY source
         ");
 
-        // UTM performance
-        $utm_performance = $wpdb->get_results("
-            SELECT
-                utm_data,
-                COUNT(*) as leads,
-                SUM(CASE WHEN status = 'converted' THEN 1 ELSE 0 END) as conversions
+        // UTM performance (period)
+        $utm_rows = $wpdb->get_results("
+            SELECT utm_data, status
             FROM $table
-            WHERE utm_data IS NOT NULL AND utm_data != ''
-            GROUP BY utm_data
+            WHERE $date_sql
+              AND utm_data IS NOT NULL
+              AND utm_data != ''
         ");
+
+        $utm_stats = [];
+        foreach ($utm_rows as $row) {
+            $utm = json_decode($row->utm_data, true);
+            if (!is_array($utm)) {
+                continue;
+            }
+
+            $key = ($utm['source'] ?? '(none)') . '|' . ($utm['medium'] ?? '(none)') . '|' . ($utm['campaign'] ?? '(none)');
+            if (!isset($utm_stats[$key])) {
+                $utm_stats[$key] = [
+                    'source' => $utm['source'] ?? '(none)',
+                    'medium' => $utm['medium'] ?? '(none)',
+                    'campaign' => $utm['campaign'] ?? '(none)',
+                    'leads' => 0,
+                    'conversions' => 0,
+                ];
+            }
+
+            $utm_stats[$key]['leads']++;
+            if ($row->status === 'converted') {
+                $utm_stats[$key]['conversions']++;
+            }
+        }
+
+        $utm_performance = array_values($utm_stats);
+        usort($utm_performance, static function($a, $b) {
+            return $b['leads'] <=> $a['leads'];
+        });
+
+        // A/B and industry analytics from lead_meta (period)
+        $meta_rows = $wpdb->get_results("
+            SELECT id, service, source, status, created_at, lead_meta
+            FROM $table
+            WHERE $date_sql
+            ORDER BY created_at DESC
+        ");
+
+        $ab_stats = [
+            'a' => ['variant' => 'a', 'leads' => 0, 'converted' => 0],
+            'b' => ['variant' => 'b', 'leads' => 0, 'converted' => 0],
+        ];
+        $industry_stats = [];
+        $recent_leads = [];
+
+        foreach ($meta_rows as $row) {
+            $meta = self::decode_json_assoc($row->lead_meta);
+            $variant = isset($meta['ab_variant']) && in_array($meta['ab_variant'], ['a', 'b'], true)
+                ? $meta['ab_variant']
+                : 'a';
+            $industry = !empty($meta['industry']) ? sanitize_key($meta['industry']) : 'general';
+
+            if (!isset($ab_stats[$variant])) {
+                $ab_stats[$variant] = ['variant' => $variant, 'leads' => 0, 'converted' => 0];
+            }
+            $ab_stats[$variant]['leads']++;
+            if ($row->status === 'converted') {
+                $ab_stats[$variant]['converted']++;
+            }
+
+            if (!isset($industry_stats[$industry])) {
+                $industry_stats[$industry] = [
+                    'industry' => $industry,
+                    'leads' => 0,
+                    'converted' => 0,
+                ];
+            }
+            $industry_stats[$industry]['leads']++;
+            if ($row->status === 'converted') {
+                $industry_stats[$industry]['converted']++;
+            }
+
+            if (count($recent_leads) < 15) {
+                $recent_leads[] = [
+                    'id' => (int) $row->id,
+                    'service' => $row->service,
+                    'source' => $row->source,
+                    'status' => $row->status,
+                    'created_at' => $row->created_at,
+                    'variant' => $variant,
+                    'industry' => $industry,
+                ];
+            }
+        }
+
+        $ab_distribution = array_values($ab_stats);
+        usort($ab_distribution, static function($a, $b) {
+            return strcmp($a['variant'], $b['variant']);
+        });
+
+        $industry_distribution = array_values($industry_stats);
+        usort($industry_distribution, static function($a, $b) {
+            return $b['leads'] <=> $a['leads'];
+        });
 
         wp_send_json_success([
             'timeline' => $timeline,
             'status_dist' => $status_dist,
             'source_dist' => $source_dist,
-            'utm_performance' => $utm_performance
+            'utm_performance' => $utm_performance,
+            'ab_distribution' => $ab_distribution,
+            'industry_distribution' => $industry_distribution,
+            'recent_leads' => $recent_leads,
         ]);
+    }
+
+    /**
+     * Decode JSON string into associative array
+     *
+     * @param string|null $json Raw JSON string
+     * @return array
+     */
+    private static function decode_json_assoc($json) {
+        if (empty($json) || !is_string($json)) {
+            return [];
+        }
+
+        $decoded = json_decode($json, true);
+        return is_array($decoded) ? $decoded : [];
     }
 
     /**
@@ -838,9 +1009,39 @@ class PoradnikLandingV5Admin {
         jQuery(document).ready(function($) {
             let currentPage = 1;
             let currentFilters = {};
+            const charts = {};
+
+            function makeConversionRate(conversions, leads) {
+                if (!leads) {
+                    return '0.0%';
+                }
+
+                return ((conversions / leads) * 100).toFixed(1) + '%';
+            }
+
+            function drawChart(id, config) {
+                if (typeof Chart === 'undefined') {
+                    return;
+                }
+
+                const canvas = document.getElementById(id);
+                if (!canvas) {
+                    return;
+                }
+
+                if (charts[id]) {
+                    charts[id].destroy();
+                }
+
+                charts[id] = new Chart(canvas.getContext('2d'), config);
+            }
 
             // Load leads
             function loadLeads(page = 1) {
+                if (!$('#plv5-leads-tbody').length) {
+                    return;
+                }
+
                 page = page || currentPage;
                 $('#plv5-leads-tbody').html('<tr><td colspan=\"8\" style=\"text-align: center;\"><span class=\"spinner is-active\" style=\"float: none;\"></span> Loading...</td></tr>');
 
@@ -857,6 +1058,192 @@ class PoradnikLandingV5Admin {
                         currentPage = response.data.current_page;
                     }
                 });
+            }
+
+            // Load analytics
+            function loadAnalytics(days = 7, customRange = null) {
+                if (!$('#leads-timeline-chart').length) {
+                    return;
+                }
+
+                const payload = {
+                    action: 'plv5_get_analytics',
+                    nonce: plv5AdminData.nonce,
+                    days: days
+                };
+
+                if (customRange && customRange.from && customRange.to) {
+                    payload.date_from = customRange.from;
+                    payload.date_to = customRange.to;
+                }
+
+                $.post(plv5AdminData.ajaxUrl, {
+                    ...payload
+                }, function(response) {
+                    if (!response.success) {
+                        return;
+                    }
+
+                    renderAnalytics(response.data);
+                });
+            }
+
+            function renderAnalytics(data) {
+                drawChart('leads-timeline-chart', {
+                    type: 'line',
+                    data: {
+                        labels: (data.timeline || []).map(row => row.date),
+                        datasets: [{
+                            label: 'Leads',
+                            data: (data.timeline || []).map(row => Number(row.count || 0)),
+                            borderColor: '#0073aa',
+                            backgroundColor: 'rgba(0, 115, 170, 0.1)',
+                            fill: true,
+                            tension: 0.3
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                drawChart('status-pie-chart', {
+                    type: 'doughnut',
+                    data: {
+                        labels: (data.status_dist || []).map(row => row.status),
+                        datasets: [{
+                            data: (data.status_dist || []).map(row => Number(row.count || 0)),
+                            backgroundColor: ['#00a0d2', '#46b450', '#00ba37', '#dc3232']
+                        }]
+                    },
+                    options: { responsive: true }
+                });
+
+                drawChart('source-bar-chart', {
+                    type: 'bar',
+                    data: {
+                        labels: (data.source_dist || []).map(row => row.source),
+                        datasets: [{
+                            label: 'Leads',
+                            data: (data.source_dist || []).map(row => Number(row.count || 0)),
+                            backgroundColor: '#0073aa'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                drawChart('ab-variant-chart', {
+                    type: 'bar',
+                    data: {
+                        labels: (data.ab_distribution || []).map(row => ('Variant ' + String(row.variant || '').toUpperCase())),
+                        datasets: [{
+                            label: 'Leads',
+                            data: (data.ab_distribution || []).map(row => Number(row.leads || 0)),
+                            backgroundColor: ['#6f42c1', '#20c997']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                drawChart('industry-chart', {
+                    type: 'bar',
+                    data: {
+                        labels: (data.industry_distribution || []).map(row => row.industry),
+                        datasets: [{
+                            label: 'Leads',
+                            data: (data.industry_distribution || []).map(row => Number(row.leads || 0)),
+                            backgroundColor: '#f56e28'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                const statusMap = {};
+                (data.status_dist || []).forEach(function(row) {
+                    statusMap[row.status] = Number(row.count || 0);
+                });
+
+                drawChart('funnel-chart', {
+                    type: 'bar',
+                    data: {
+                        labels: ['New', 'Contacted', 'Converted'],
+                        datasets: [{
+                            label: 'Leads',
+                            data: [statusMap.new || 0, statusMap.contacted || 0, statusMap.converted || 0],
+                            backgroundColor: ['#00a0d2', '#46b450', '#00ba37']
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        plugins: { legend: { display: false } }
+                    }
+                });
+
+                const utmTbody = $('#utm-stats-tbody');
+                if (utmTbody.length) {
+                    utmTbody.empty();
+                    if (!(data.utm_performance || []).length) {
+                        utmTbody.html('<tr><td colspan=\"5\" style=\"text-align:center;\">No UTM data</td></tr>');
+                    } else {
+                        (data.utm_performance || []).forEach(function(row) {
+                            const leads = Number(row.leads || 0);
+                            const conversions = Number(row.conversions || 0);
+                            const tr = $('<tr>')
+                                .append('<td>' + (row.source || '(none)') + '</td>')
+                                .append('<td>' + (row.medium || '(none)') + '</td>')
+                                .append('<td>' + (row.campaign || '(none)') + '</td>')
+                                .append('<td>' + leads + '</td>')
+                                .append('<td>' + makeConversionRate(conversions, leads) + '</td>');
+                            utmTbody.append(tr);
+                        });
+                    }
+                }
+
+                const abTbody = $('#ab-stats-tbody');
+                if (abTbody.length) {
+                    abTbody.empty();
+                    (data.ab_distribution || []).forEach(function(row) {
+                        const leads = Number(row.leads || 0);
+                        const converted = Number(row.converted || 0);
+                        const tr = $('<tr>')
+                            .append('<td>Variant ' + String(row.variant || '').toUpperCase() + '</td>')
+                            .append('<td>' + leads + '</td>')
+                            .append('<td>' + converted + '</td>')
+                            .append('<td>' + makeConversionRate(converted, leads) + '</td>');
+                        abTbody.append(tr);
+                    });
+                }
+
+                const recentTbody = $('#recent-leads-tbody');
+                if (recentTbody.length) {
+                    recentTbody.empty();
+                    if (!(data.recent_leads || []).length) {
+                        recentTbody.html('<tr><td colspan=\"7\" style=\"text-align:center;\">No data in selected range</td></tr>');
+                    } else {
+                        (data.recent_leads || []).forEach(function(lead) {
+                            const statusBadge = '<span class=\"lead-status-badge ' + lead.status + '\">' + lead.status + '</span>';
+                            const tr = $('<tr>')
+                                .append('<td>' + lead.id + '</td>')
+                                .append('<td>' + (lead.service || '-') + '</td>')
+                                .append('<td>' + String(lead.variant || '').toUpperCase() + '</td>')
+                                .append('<td>' + (lead.industry || 'general') + '</td>')
+                                .append('<td>' + (lead.source || '-') + '</td>')
+                                .append('<td>' + statusBadge + '</td>')
+                                .append('<td>' + lead.created_at + '</td>');
+                            recentTbody.append(tr);
+                        });
+                    }
+                }
             }
 
             // Display leads
@@ -941,6 +1328,33 @@ class PoradnikLandingV5Admin {
                 loadLeads(currentPage + 1);
             });
 
+            $('input[name=\"dateRange\"]').on('change', function() {
+                const value = $(this).val();
+                if (value === 'custom') {
+                    $('#custom-from, #custom-to').show();
+                    return;
+                }
+
+                $('#custom-from, #custom-to').hide();
+                loadAnalytics(Number(value));
+            });
+
+            $('#custom-from, #custom-to').on('change', function() {
+                const selectedRange = $('input[name=\"dateRange\"]:checked').val();
+                if (selectedRange !== 'custom') {
+                    return;
+                }
+
+                const from = $('#custom-from').val();
+                const to = $('#custom-to').val();
+
+                if (!from || !to) {
+                    return;
+                }
+
+                loadAnalytics(0, { from: from, to: to });
+            });
+
             $(document).on('change', '.plv5-update-status', function() {
                 const leadId = $(this).data('id');
                 const status = $(this).val();
@@ -981,11 +1395,17 @@ class PoradnikLandingV5Admin {
 
             $('#plv5-export-csv').on('click', function(e) {
                 e.preventDefault();
-                window.location.href = plv5AdminData.exportUrl + '&nonce=' + plv5AdminData.nonce;
+                window.location.href = plv5AdminData.exportUrl + '&nonce=' + plv5AdminData.exportNonce;
             });
 
-            // Load leads on page load
-            loadLeads();
+            // Initial data load by page type
+            if ($('#plv5-leads-tbody').length) {
+                loadLeads();
+            }
+
+            if ($('#leads-timeline-chart').length) {
+                loadAnalytics(7);
+            }
         });
         ";
     }

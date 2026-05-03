@@ -1,395 +1,383 @@
 /**
- * Poradnik.pro Landing V5 - JavaScript
- *
- * Interactive features for high-conversion landing page
- * Form handling, animations, FAQ toggles, stats counter
+ * Poradnik.pro Landing V5 - Full Front Rebuild
  *
  * @package PearBlog
- * @version 5.0.0
+ * @version 5.2.0
  */
 
 (function() {
     'use strict';
 
-    const PoradnikLandingV5 = {
-        /**
-         * Initialize all features
-         */
+    const SELECTOR = {
+        main: '.poradnik-landing-v5',
+        faqQuestion: '.plv5-faq-item__question',
+        faqAnswer: '.plv5-faq-item__answer',
+        statNumber: '.plv5-stat__number',
+        reveal: '[data-reveal]',
+        alert: '.plv5-alert',
+    };
+
+    const LandingV5 = {
         init() {
-            this.setupHeroForm();
-            this.setupCtaForm();
+            this.mainNode = document.querySelector(SELECTOR.main);
+            this.context = this.getContext();
+            this.setupUTMTracking();
+            this.setupForm('plv5HeroForm', 'hero');
+            this.setupForm('plv5CtaForm', 'cta');
             this.setupFAQ();
             this.setupStatsCounter();
             this.setupSmoothScroll();
-            this.setupIntersectionObserver();
-            console.log('🚀 Poradnik.pro Landing V5 initialized');
+            this.setupRevealAnimations();
+            this.setupMobileCtaVisibility();
         },
 
-        /**
-         * Setup hero form submission
-         */
-        setupHeroForm() {
-            const form = document.getElementById('plv5HeroForm');
-            if (!form) return;
+        getContext() {
+            const dataset = this.mainNode ? this.mainNode.dataset : {};
+            const width = Math.max(window.innerWidth || 0, document.documentElement.clientWidth || 0);
 
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleLeadSubmission(form, 'hero');
+            return {
+                abVariant: dataset.abVariant || 'a',
+                industry: dataset.industry || 'general',
+                landingVersion: dataset.landingVersion || '5.2.0',
+                device: width <= 760 ? 'mobile' : (width <= 1024 ? 'tablet' : 'desktop'),
+                viewport: width + 'x' + (window.innerHeight || 0),
+                pageUrl: window.location.href,
+                referrer: document.referrer || '',
+            };
+        },
+
+        setupForm(formId, source) {
+            const form = document.getElementById(formId);
+            if (!form) {
+                return;
+            }
+
+            form.addEventListener('submit', (event) => {
+                event.preventDefault();
+                this.handleLeadSubmission(form, source);
             });
         },
 
-        /**
-         * Setup CTA form submission
-         */
-        setupCtaForm() {
-            const form = document.getElementById('plv5CtaForm');
-            if (!form) return;
-
-            form.addEventListener('submit', (e) => {
-                e.preventDefault();
-                this.handleLeadSubmission(form, 'cta');
-            });
-        },
-
-        /**
-         * Handle lead form submission
-         *
-         * @param {HTMLFormElement} form - Form element
-         * @param {string} source - Form source (hero/cta)
-         */
         handleLeadSubmission(form, source) {
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (!submitBtn) {
+                return;
+            }
+
+            this.clearFormAlerts(form);
+
             const formData = new FormData(form);
-            const data = {
-                service: formData.get('service') || '',
-                email: formData.get('email') || '',
-                source: source,
+            const payload = {
                 action: 'plv5_submit_lead',
+                source,
+                service: (formData.get('service') || '').toString().trim(),
+                email: (formData.get('email') || '').toString().trim(),
+                ab_variant: (formData.get('ab_variant') || this.context.abVariant || '').toString(),
+                industry: (formData.get('industry') || this.context.industry || 'general').toString(),
+                landing_version: (formData.get('landing_version') || this.context.landingVersion || '5.2.0').toString(),
+                device: this.context.device,
+                viewport: this.context.viewport,
+                page_url: this.context.pageUrl,
+                referrer: this.context.referrer,
             };
 
-            // Show loading state
-            const submitBtn = form.querySelector('button[type="submit"]');
-            const originalBtnText = submitBtn.innerHTML;
-            submitBtn.disabled = true;
-            submitBtn.innerHTML = '<span>Wysyłanie...</span>';
+            const withUtm = this.addUTMToData(payload);
+            const encodedPayload = this.toUrlEncoded(withUtm);
 
-            // Submit via AJAX
-            fetch(poradnikData?.ajaxUrl || '/wp-admin/admin-ajax.php', {
+            const originalText = submitBtn.textContent;
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Wysyłanie...';
+
+            fetch((window.poradnikData && poradnikData.ajaxUrl) || '/wp-admin/admin-ajax.php', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
                 },
-                body: new URLSearchParams(data)
+                body: encodedPayload,
             })
-            .then(response => response.json())
-            .then(result => {
-                if (result.success) {
-                    this.showSuccessMessage(form, 'Dziękujemy! Skontaktujemy się wkrótce.');
-                    form.reset();
+                .then((response) => response.json())
+                .then((result) => {
+                    if (result && result.success) {
+                        this.showAlert(form, 'Dziękujemy. Zgłoszenie zostało wysłane.', 'success');
+                        form.reset();
+                        this.trackConversion(source, withUtm);
+                        return;
+                    }
 
-                    // Track conversion
-                    this.trackConversion(source, data);
-                } else {
-                    this.showErrorMessage(form, result.data?.message || 'Wystąpił błąd. Spróbuj ponownie.');
+                    const message = result && result.data && result.data.message
+                        ? result.data.message
+                        : 'Nie udało się wysłać zgłoszenia. Spróbuj ponownie.';
+                    this.showAlert(form, message, 'error');
+                })
+                .catch(() => {
+                    this.showAlert(form, 'Błąd połączenia. Sprawdź internet i spróbuj ponownie.', 'error');
+                })
+                .finally(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = originalText;
+                });
+        },
+
+        showAlert(form, message, type) {
+            const alert = document.createElement('div');
+            alert.className = 'plv5-alert plv5-alert--' + type;
+            alert.textContent = message;
+            form.appendChild(alert);
+
+            window.setTimeout(() => {
+                alert.remove();
+            }, 5200);
+        },
+
+        clearFormAlerts(form) {
+            form.querySelectorAll(SELECTOR.alert).forEach((node) => node.remove());
+        },
+
+        toUrlEncoded(payload) {
+            const params = new URLSearchParams();
+
+            Object.keys(payload).forEach((key) => {
+                const value = payload[key];
+
+                if (value && typeof value === 'object' && !Array.isArray(value)) {
+                    Object.keys(value).forEach((subKey) => {
+                        params.append('utm[' + subKey + ']', value[subKey] || '');
+                    });
+                    return;
                 }
-            })
-            .catch(error => {
-                console.error('Form submission error:', error);
-                this.showErrorMessage(form, 'Wystąpił błąd połączenia. Sprawdź internet i spróbuj ponownie.');
-            })
-            .finally(() => {
-                submitBtn.disabled = false;
-                submitBtn.innerHTML = originalBtnText;
+
+                params.append(key, value || '');
             });
+
+            return params.toString();
         },
 
-        /**
-         * Show success message
-         *
-         * @param {HTMLFormElement} form - Form element
-         * @param {string} message - Success message
-         */
-        showSuccessMessage(form, message) {
-            const alert = document.createElement('div');
-            alert.className = 'plv5-alert plv5-alert--success';
-            alert.style.cssText = `
-                padding: 1rem;
-                margin-top: 1rem;
-                background: #00c853;
-                color: white;
-                border-radius: 0.5rem;
-                font-weight: 600;
-                text-align: center;
-                animation: plv5-fadeInUp 0.3s ease-out;
-            `;
-            alert.textContent = message;
-
-            form.appendChild(alert);
-
-            setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            }, 5000);
-        },
-
-        /**
-         * Show error message
-         *
-         * @param {HTMLFormElement} form - Form element
-         * @param {string} message - Error message
-         */
-        showErrorMessage(form, message) {
-            const alert = document.createElement('div');
-            alert.className = 'plv5-alert plv5-alert--error';
-            alert.style.cssText = `
-                padding: 1rem;
-                margin-top: 1rem;
-                background: #f44336;
-                color: white;
-                border-radius: 0.5rem;
-                font-weight: 600;
-                text-align: center;
-                animation: plv5-fadeInUp 0.3s ease-out;
-            `;
-            alert.textContent = message;
-
-            form.appendChild(alert);
-
-            setTimeout(() => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 300);
-            }, 5000);
-        },
-
-        /**
-         * Track conversion for analytics
-         *
-         * @param {string} source - Conversion source
-         * @param {object} data - Lead data
-         */
-        trackConversion(source, data) {
-            // Google Analytics 4
-            if (typeof gtag !== 'undefined') {
-                gtag('event', 'generate_lead', {
-                    event_category: 'Lead',
-                    event_label: source,
-                    value: 1
-                });
-            }
-
-            // Facebook Pixel
-            if (typeof fbq !== 'undefined') {
-                fbq('track', 'Lead', {
-                    content_name: source,
-                    value: 1
-                });
-            }
-
-            // Custom tracking
-            if (typeof poradnikTrack !== 'undefined') {
-                poradnikTrack('lead_submitted', {
-                    source: source,
-                    service: data.service,
-                    timestamp: new Date().toISOString()
-                });
-            }
-
-            console.log('✅ Conversion tracked:', source);
-        },
-
-        /**
-         * Setup FAQ accordion
-         */
         setupFAQ() {
-            const faqItems = document.querySelectorAll('.plv5-faq-item');
+            const questions = document.querySelectorAll(SELECTOR.faqQuestion);
+            if (!questions.length) {
+                return;
+            }
 
-            faqItems.forEach(item => {
-                const question = item.querySelector('.plv5-faq-item__question');
-                const answer = item.querySelector('.plv5-faq-item__answer');
-
-                if (!question || !answer) return;
-
+            questions.forEach((question) => {
                 question.addEventListener('click', () => {
-                    const isActive = answer.classList.contains('is-active');
+                    const faqId = question.getAttribute('data-faq-toggle');
+                    if (!faqId) {
+                        return;
+                    }
 
-                    // Close all other FAQs
-                    document.querySelectorAll('.plv5-faq-item__answer').forEach(a => {
-                        a.classList.remove('is-active');
+                    const currentAnswer = document.querySelector('[data-faq-content="' + faqId + '"]');
+                    if (!currentAnswer) {
+                        return;
+                    }
+
+                    const alreadyOpen = currentAnswer.classList.contains('is-active');
+
+                    document.querySelectorAll(SELECTOR.faqQuestion).forEach((item) => {
+                        item.classList.remove('is-active');
+                        item.setAttribute('aria-expanded', 'false');
                     });
-                    document.querySelectorAll('.plv5-faq-item__question').forEach(q => {
-                        q.classList.remove('is-active');
+                    document.querySelectorAll(SELECTOR.faqAnswer).forEach((item) => {
+                        item.classList.remove('is-active');
                     });
 
-                    // Toggle current FAQ
-                    if (!isActive) {
-                        answer.classList.add('is-active');
+                    if (!alreadyOpen) {
                         question.classList.add('is-active');
+                        question.setAttribute('aria-expanded', 'true');
+                        currentAnswer.classList.add('is-active');
                     }
                 });
             });
         },
 
-        /**
-         * Setup animated stats counter
-         */
         setupStatsCounter() {
-            const stats = document.querySelectorAll('.plv5-stat__number');
+            const stats = document.querySelectorAll(SELECTOR.statNumber);
+            if (!stats.length) {
+                return;
+            }
 
-            const animateCounter = (element) => {
-                const target = parseFloat(element.dataset.count);
-                const duration = 2000;
-                const increment = target / (duration / 16);
-                let current = 0;
+            const animateStat = (node) => {
+                const target = parseFloat(node.getAttribute('data-count') || '0');
+                const hasDecimal = !Number.isInteger(target);
+                const duration = 1300;
+                const start = performance.now();
 
-                const updateCounter = () => {
-                    current += increment;
+                const tick = (now) => {
+                    const progress = Math.min((now - start) / duration, 1);
+                    const eased = 1 - Math.pow(1 - progress, 3);
+                    const value = target * eased;
 
-                    if (current < target) {
-                        element.textContent = Math.floor(current).toLocaleString('pl-PL');
-                        requestAnimationFrame(updateCounter);
-                    } else {
-                        element.textContent = target.toLocaleString('pl-PL');
+                    node.textContent = hasDecimal
+                        ? value.toFixed(1).replace('.', ',')
+                        : Math.round(value).toLocaleString('pl-PL');
+
+                    if (progress < 1) {
+                        requestAnimationFrame(tick);
                     }
                 };
 
-                updateCounter();
+                requestAnimationFrame(tick);
             };
 
-            // Use Intersection Observer to trigger animation when visible
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting && !entry.target.dataset.animated) {
-                        animateCounter(entry.target);
-                        entry.target.dataset.animated = 'true';
+            const observer = new IntersectionObserver((entries, self) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting || entry.target.dataset.animated === 'true') {
+                        return;
                     }
+
+                    entry.target.dataset.animated = 'true';
+                    animateStat(entry.target);
+                    self.unobserve(entry.target);
                 });
             }, {
-                threshold: 0.5
+                threshold: 0.45,
             });
 
-            stats.forEach(stat => observer.observe(stat));
+            stats.forEach((node) => observer.observe(node));
         },
 
-        /**
-         * Setup smooth scrolling for anchor links
-         */
         setupSmoothScroll() {
-            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-                anchor.addEventListener('click', function(e) {
-                    const href = this.getAttribute('href');
-
-                    if (href === '#') return;
+            document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+                anchor.addEventListener('click', (event) => {
+                    const href = anchor.getAttribute('href');
+                    if (!href || href === '#') {
+                        return;
+                    }
 
                     const target = document.querySelector(href);
-                    if (!target) return;
+                    if (!target) {
+                        return;
+                    }
 
-                    e.preventDefault();
-
-                    const offsetTop = target.getBoundingClientRect().top + window.pageYOffset - 100;
-
-                    window.scrollTo({
-                        top: offsetTop,
-                        behavior: 'smooth'
-                    });
+                    event.preventDefault();
+                    const top = target.getBoundingClientRect().top + window.scrollY - 20;
+                    window.scrollTo({ top, behavior: 'smooth' });
                 });
             });
         },
 
-        /**
-         * Setup intersection observer for animations
-         */
-        setupIntersectionObserver() {
-            const animatedElements = document.querySelectorAll(`
-                .plv5-step,
-                .plv5-feature,
-                .plv5-testimonial
-            `);
+        setupRevealAnimations() {
+            const items = document.querySelectorAll(SELECTOR.reveal);
+            if (!items.length) {
+                return;
+            }
 
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach((entry, index) => {
-                    if (entry.isIntersecting) {
-                        setTimeout(() => {
-                            entry.target.style.opacity = '1';
-                            entry.target.style.transform = 'translateY(0)';
-                        }, index * 100);
-
-                        observer.unobserve(entry.target);
+            const observer = new IntersectionObserver((entries, self) => {
+                entries.forEach((entry) => {
+                    if (!entry.isIntersecting) {
+                        return;
                     }
+
+                    entry.target.classList.add('is-visible');
+                    self.unobserve(entry.target);
                 });
             }, {
-                threshold: 0.1,
-                rootMargin: '0px 0px -50px 0px'
+                threshold: 0.12,
+                rootMargin: '0px 0px -30px 0px',
             });
 
-            animatedElements.forEach(el => {
-                el.style.opacity = '0';
-                el.style.transform = 'translateY(20px)';
-                el.style.transition = 'opacity 0.6s ease-out, transform 0.6s ease-out';
-                observer.observe(el);
+            items.forEach((item, index) => {
+                item.style.transitionDelay = Math.min(index * 40, 240) + 'ms';
+                observer.observe(item);
             });
         },
 
-        /**
-         * Get URL parameters
-         *
-         * @param {string} param - Parameter name
-         * @returns {string|null} Parameter value
-         */
-        getUrlParameter(param) {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get(param);
-        },
+        setupMobileCtaVisibility() {
+            const stickyCta = document.querySelector('.plv5-mobile-cta');
+            if (!stickyCta) {
+                return;
+            }
 
-        /**
-         * Setup UTM tracking
-         */
-        setupUTMTracking() {
-            const utm = {
-                source: this.getUrlParameter('utm_source'),
-                medium: this.getUrlParameter('utm_medium'),
-                campaign: this.getUrlParameter('utm_campaign'),
-                term: this.getUrlParameter('utm_term'),
-                content: this.getUrlParameter('utm_content'),
+            const hero = document.getElementById('top');
+            if (!hero) {
+                return;
+            }
+
+            const toggle = () => {
+                const show = window.scrollY > hero.offsetHeight * 0.5;
+                stickyCta.style.opacity = show ? '1' : '0';
+                stickyCta.style.pointerEvents = show ? 'auto' : 'none';
             };
 
-            // Store UTM parameters in sessionStorage
-            if (Object.values(utm).some(v => v !== null)) {
-                sessionStorage.setItem('plv5_utm', JSON.stringify(utm));
-                console.log('📊 UTM parameters tracked:', utm);
+            stickyCta.style.opacity = '0';
+            stickyCta.style.pointerEvents = 'none';
+            stickyCta.style.transition = 'opacity 220ms ease';
+
+            toggle();
+            window.addEventListener('scroll', toggle, { passive: true });
+        },
+
+        setupUTMTracking() {
+            const params = new URLSearchParams(window.location.search);
+            const utm = {
+                source: params.get('utm_source'),
+                medium: params.get('utm_medium'),
+                campaign: params.get('utm_campaign'),
+                term: params.get('utm_term'),
+                content: params.get('utm_content'),
+            };
+
+            const hasUtm = Object.keys(utm).some((key) => !!utm[key]);
+            if (!hasUtm) {
+                return;
+            }
+
+            sessionStorage.setItem('plv5_utm', JSON.stringify(utm));
+        },
+
+        addUTMToData(payload) {
+            const raw = sessionStorage.getItem('plv5_utm');
+            if (!raw) {
+                return payload;
+            }
+
+            try {
+                const utm = JSON.parse(raw);
+                return Object.assign({}, payload, { utm });
+            } catch (_err) {
+                return payload;
             }
         },
 
-        /**
-         * Add UTM parameters to form submissions
-         *
-         * @param {object} data - Form data
-         * @returns {object} Data with UTM parameters
-         */
-        addUTMToData(data) {
-            const storedUTM = sessionStorage.getItem('plv5_utm');
+        trackConversion(source, payload) {
+            const eventPayload = {
+                source,
+                service_type: payload.service || 'unknown',
+                ab_variant: payload.ab_variant || this.context.abVariant,
+                industry: payload.industry || this.context.industry,
+                landing_version: payload.landing_version || this.context.landingVersion,
+                device: payload.device || this.context.device,
+                viewport: payload.viewport || this.context.viewport,
+                utm_source: payload.utm && payload.utm.source ? payload.utm.source : '',
+                utm_medium: payload.utm && payload.utm.medium ? payload.utm.medium : '',
+                utm_campaign: payload.utm && payload.utm.campaign ? payload.utm.campaign : '',
+            };
 
-            if (storedUTM) {
-                try {
-                    const utm = JSON.parse(storedUTM);
-                    return { ...data, utm };
-                } catch (e) {
-                    console.error('UTM parse error:', e);
-                }
+            if (typeof gtag !== 'undefined') {
+                gtag('event', 'generate_lead', Object.assign({
+                    event_category: 'Lead',
+                    event_label: source,
+                    value: 1,
+                }, eventPayload));
             }
 
-            return data;
-        }
+            if (typeof fbq !== 'undefined') {
+                fbq('track', 'Lead', {
+                    content_name: source,
+                    content_category: eventPayload.industry,
+                    value: 1,
+                    currency: 'PLN',
+                });
+            }
+
+            if (typeof window.poradnikTrack === 'function') {
+                window.poradnikTrack('lead_submitted_v5', eventPayload);
+            }
+        },
     };
 
-    // Initialize when DOM is ready
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', () => {
-            PoradnikLandingV5.init();
-        });
+        document.addEventListener('DOMContentLoaded', () => LandingV5.init());
     } else {
-        PoradnikLandingV5.init();
+        LandingV5.init();
     }
-
-    // Expose to global scope for external access
-    window.PoradnikLandingV5 = PoradnikLandingV5;
-
 })();
