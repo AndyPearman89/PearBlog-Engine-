@@ -15,7 +15,7 @@ Part of PearBlog Automation PRO v2
 import re
 import logging
 from typing import List, Dict, Set, Tuple, Optional
-from dataclasses import dataclass, asdict
+from dataclasses import dataclass, field, asdict
 from collections import Counter
 import hashlib
 
@@ -24,13 +24,15 @@ import hashlib
 class KeywordData:
     """Represents keyword analysis data."""
     keyword: str
-    variations: List[str]
-    search_intent: str  # informational, commercial, transactional, navigational
-    difficulty: str  # easy, medium, hard
-    priority: int  # 1-10
-    related_keywords: List[str]
-    suggested_title: str
-    suggested_headings: List[str]
+    search_volume: int = 0
+    competition: str = ""
+    variants: List[str] = field(default_factory=list)
+    related: List[str] = field(default_factory=list)
+    search_intent: str = "informational"  # informational, commercial, transactional, navigational
+    difficulty: str = "medium"  # easy, medium, hard
+    priority: int = 5  # 1-10
+    suggested_title: str = ""
+    suggested_headings: List[str] = field(default_factory=list)
 
 
 class KeywordEngine:
@@ -68,6 +70,58 @@ class KeywordEngine:
             'pogoda', 'kiedy jechać', 'jak dojechać', 'mapa',
             'najpiękniejsze miejsca', 'ukryte perły', 'weekend'
         ]
+
+    def expand_keyword(self, keyword: str, niche: str = 'general') -> List[str]:
+        """
+        Expand a keyword into a list of variants, including the original.
+
+        Args:
+            keyword: Keyword to expand
+            niche: Content niche (general, travel, tech, etc.)
+
+        Returns:
+            List of keyword variants (original is always included)
+        """
+        return self.generate_keyword_variations(keyword, niche)
+
+    def get_keyword_data(self, keyword: str, niche: str = 'general') -> KeywordData:
+        """
+        Return a KeywordData object for the given keyword.
+
+        Args:
+            keyword: Keyword to analyze
+            niche: Content niche
+
+        Returns:
+            KeywordData instance
+        """
+        return self.analyze_keyword(keyword, niche)
+
+    def filter_by_competition(self, data: List[KeywordData], level: str) -> List[KeywordData]:
+        """
+        Filter a list of KeywordData by competition level.
+
+        Args:
+            data: List of KeywordData objects
+            level: Competition level to keep (e.g. "low", "medium", "high")
+
+        Returns:
+            Filtered list
+        """
+        return [kd for kd in data if kd.competition == level]
+
+    def filter_by_volume(self, data: List[KeywordData], min_volume: int) -> List[KeywordData]:
+        """
+        Filter a list of KeywordData, keeping only entries at or above min_volume.
+
+        Args:
+            data: List of KeywordData objects
+            min_volume: Minimum search_volume threshold (inclusive)
+
+        Returns:
+            Filtered list
+        """
+        return [kd for kd in data if kd.search_volume >= min_volume]
 
     def generate_keyword_variations(self, base_keyword: str, niche: str = 'general') -> List[str]:
         """
@@ -381,11 +435,11 @@ class KeywordEngine:
 
         return KeywordData(
             keyword=keyword,
-            variations=variations[:20],  # Limit to top 20
+            variants=variations[:20],  # Limit to top 20
             search_intent=intent,
             difficulty=difficulty,
             priority=priority,
-            related_keywords=related_keywords,
+            related=related_keywords,
             suggested_title=title,
             suggested_headings=headings
         )
@@ -444,7 +498,7 @@ if __name__ == "__main__":
     for i, heading in enumerate(analysis.suggested_headings, 1):
         print(f"  {i}. {heading}")
     print(f"\nTop Related Keywords:")
-    for keyword in analysis.related_keywords[:5]:
+    for keyword in analysis.related[:5]:
         print(f"  - {keyword}")
 
     # Test keyword clustering

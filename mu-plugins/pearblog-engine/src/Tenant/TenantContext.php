@@ -40,17 +40,28 @@ class TenantContext {
 	 */
 	public static function for_site( int $site_id = 0 ): self {
 		if ( $site_id <= 0 ) {
-			$site_id = get_current_blog_id();
+			$site_id = \get_current_blog_id();
 		}
 
-		$domain = get_site_url( $site_id );
+		$domain = \get_site_url( $site_id );
+		$get_option = static function ( string $key, mixed $default ) use ( $site_id ) {
+			if ( \function_exists( 'is_multisite' ) ) {
+				$multisite = \is_multisite();
+			} else {
+				$multisite = \function_exists( 'get_blog_option' );
+			}
+
+			return $multisite
+				? \get_blog_option( $site_id, $key, $default )
+				: \get_option( $key, $default );
+		};
 
 		$profile = new SiteProfile(
-			industry:         get_blog_option( $site_id, 'pearblog_industry', 'general' ),
-			tone:             get_blog_option( $site_id, 'pearblog_tone', 'neutral' ),
-			monetization:     get_blog_option( $site_id, 'pearblog_monetization', 'adsense' ),
-			publish_rate:     (int) get_blog_option( $site_id, 'pearblog_publish_rate', 1 ),
-			language:         get_blog_option( $site_id, 'pearblog_language', 'en' ),
+			industry:         $get_option( 'pearblog_industry', 'general' ),
+			tone:             $get_option( 'pearblog_tone', 'neutral' ),
+			monetization:     $get_option( 'pearblog_monetization', 'adsense' ),
+			publish_rate:     (int) $get_option( 'pearblog_publish_rate', 1 ),
+			language:         $get_option( 'pearblog_language', 'en' ),
 		);
 
 		return new self( $site_id, $domain, $profile );

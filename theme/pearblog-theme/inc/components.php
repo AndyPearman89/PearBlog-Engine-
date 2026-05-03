@@ -56,6 +56,73 @@ function pearblog_ads($args = array()) {
 }
 
 /**
+ * V3 Frontend Components - High Conversion Sections
+ */
+
+/**
+ * Quick Actions section
+ */
+function pearblog_quick_actions($args = array()) {
+    get_template_part('template-parts/section-quick-actions', null, $args);
+}
+
+/**
+ * Trending section
+ */
+function pearblog_trending($args = array()) {
+    get_template_part('template-parts/section-trending', null, $args);
+}
+
+/**
+ * How It Works section
+ */
+function pearblog_how_it_works($args = array()) {
+    get_template_part('template-parts/section-how-it-works', null, $args);
+}
+
+/**
+ * Features section
+ */
+function pearblog_features($args = array()) {
+    get_template_part('template-parts/section-features', null, $args);
+}
+
+/**
+ * AI Advisor section
+ */
+function pearblog_ai_advisor($args = array()) {
+    get_template_part('template-parts/section-ai-advisor', null, $args);
+}
+
+/**
+ * Experts section
+ */
+function pearblog_experts_section($args = array()) {
+    get_template_part('template-parts/section-experts', null, $args);
+}
+
+/**
+ * For Specialists section
+ */
+function pearblog_for_specialists($args = array()) {
+    get_template_part('template-parts/section-for-specialists', null, $args);
+}
+
+/**
+ * Why It Works section
+ */
+function pearblog_why_it_works($args = array()) {
+    get_template_part('template-parts/section-why-it-works', null, $args);
+}
+
+/**
+ * Final CTA section
+ */
+function pearblog_final_cta($args = array()) {
+    get_template_part('template-parts/section-final-cta', null, $args);
+}
+
+/**
  * Render cards grid
  */
 function pearblog_render_cards($posts = null, $args = array()) {

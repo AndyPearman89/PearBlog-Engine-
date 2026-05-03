@@ -2,6 +2,8 @@
 
 **Autonomous AI content production system for WordPress — v6.0**
 
+**🚀 NEW: [Poradnik.pro Decision Platform →](PORADNIK-PRO-PLATFORM.md)** — Transform your content into a full decision engine with comparisons, rankings, calculators, expert marketplace, and lead generation.
+
 📚 **[Documentation Index →](DOCUMENTATION-INDEX.md)** · 📋 **[Changelog →](CHANGELOG.md)** · ⚙️ **[Setup →](SETUP.md)** · 🗺️ **[Roadmap →](ROADMAP-VISUAL.md)** · 📊 **[Progress →](PROGRESS-VISUALIZATION.md)** · 🤖 **[Autopilot →](ENTERPRISE-AUTOPILOT-TASKLIST.md)**
 
 ---
@@ -31,6 +33,26 @@ Topic Queue → PromptBuilder → GPT-4o-mini → DuplicateCheck → Draft
   → SEOEngine → MonetizationEngine → InternalLinker → DALL-E 3
   → DuplicateIndex → Publish → QualityScore + Alert
 ```
+
+### 🚀 NEW: Decision Platform (Poradnik.pro)
+
+Transform your content site into an Enterprise Decision Platform:
+
+- **Comparisons** — AI-generated comparison pages (Product A vs B)
+- **Rankings** — TOP lists with local filtering (Best services in {city})
+- **Calculators** — Interactive cost/ROI calculators
+- **Expert Marketplace** — Verified service provider profiles
+- **Lead Generation** — Capture and match user inquiries
+- **Decision Assistant AI** — Personalized recommendations
+- **Intent Detection** — Automatic content enrichment based on user intent
+- **Internal Link Graph** — Automatic relationship discovery
+
+**Complete User Journey:**
+```
+Problem → Knowledge → Comparison → Decision → Expert → Contact → Lead
+```
+
+**[Learn more about the Decision Platform →](PORADNIK-PRO-PLATFORM.md)**
 
 ---
 
