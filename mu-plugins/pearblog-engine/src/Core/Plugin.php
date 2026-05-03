@@ -9,29 +9,54 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Core;
 
+use PearBlogEngine\AI\FactChecker;
+use PearBlogEngine\AI\PromptOptimizer;
+use PearBlogEngine\AI\StreamingAIClient;
+use PearBlogEngine\AI\VideoScriptBuilder;
+use PearBlogEngine\Analytics\CohortEngine;
+use PearBlogEngine\Analytics\ContentROIEngine;
+use PearBlogEngine\Analytics\PredictiveEngine;
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
+use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
+use PearBlogEngine\DecisionPlatform\QuizEngine;
+use PearBlogEngine\Distribution\AMPGenerator;
+use PearBlogEngine\Email\EmailDigest;
+use PearBlogEngine\Email\NewsletterBuilder;
+use PearBlogEngine\Integration\ZapierManager;
+use PearBlogEngine\Monetization\AffiliateDiscovery;
+use PearBlogEngine\Monetization\PaywallEngine;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
+use PearBlogEngine\Pipeline\ApprovalWorkflow;
+use PearBlogEngine\Pipeline\AsyncQueueManager;
 use PearBlogEngine\Pipeline\ContentImportExport;
 use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Scheduler\PublishScheduler;
+use PearBlogEngine\Security\ComplianceExporter;
+use PearBlogEngine\Security\ContentModerator;
+use PearBlogEngine\Security\PIIDetector;
+use PearBlogEngine\Security\RBACManager;
+use PearBlogEngine\SEO\CoreWebVitalsMonitor;
+use PearBlogEngine\SEO\ProgrammaticSEO;
+use PearBlogEngine\SEO\SchemaManager;
+use PearBlogEngine\SEO\SearchConsoleClient;
+use PearBlogEngine\SEO\TopicalAuthorityEngine;
+use PearBlogEngine\Social\PushNotificationPublisher;
+use PearBlogEngine\Social\SocialPublisher;
+use PearBlogEngine\Tenant\BillingEngine;
+use PearBlogEngine\Tenant\TenantIsolator;
+use PearBlogEngine\Testing\ABTestEngine;
+use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\AdminPageV7;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
 use PearBlogEngine\Admin\OnboardingWizard;
-use PearBlogEngine\Content\ContentRefreshEngine;
-use PearBlogEngine\Email\EmailDigest;
-use PearBlogEngine\SEO\ProgrammaticSEO;
-use PearBlogEngine\SEO\SchemaManager;
-use PearBlogEngine\Social\SocialPublisher;
-use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Webhook\WebhookManager;
-use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -118,6 +143,120 @@ class Plugin {
 
 		// Decision Platform – Poradnik.pro Enterprise features.
 		( new DecisionPlatformManager() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.0 – P0 Modules
+		// ----------------------------------------------------------------
+
+		// Revenue ROI Dashboard.
+		( new ContentROIEngine() )->register();
+
+		// Content Approval Workflow.
+		( new ApprovalWorkflow() )->register();
+
+		// Google Search Console integration.
+		( new SearchConsoleClient() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.0 – P1 Modules
+		// ----------------------------------------------------------------
+
+		// AI Fact-Checker (hooks into pipeline via action).
+		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ): void {
+			$checker = new FactChecker();
+			if ( ! $checker->is_enabled() ) {
+				return;
+			}
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$checker->check_and_annotate( $post_id, $post->post_content );
+			}
+		}, 15 );
+
+		// Prompt Optimizer.
+		( new PromptOptimizer() )->register();
+
+		// Tenant Billing Engine.
+		( new BillingEngine() )->register();
+
+		// Push Notifications.
+		( new PushNotificationPublisher() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.0 – P2 Modules
+		// ----------------------------------------------------------------
+
+		// AI Streaming live preview.
+		( new StreamingAIClient() )->register();
+
+		// Video Script Builder.
+		( new VideoScriptBuilder() )->register();
+
+		// RBAC Manager.
+		( new RBACManager() )->register();
+
+		// Content Moderation (blocks harmful content before publish).
+		$moderator = new ContentModerator();
+		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ) use ( $moderator ): void {
+			if ( ! $moderator->is_enabled() ) {
+				return;
+			}
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$moderator->check( $post_id, $post->post_content );
+			}
+		}, 8 );
+
+		// PII Detection (scans before publish).
+		$pii_detector = new PIIDetector();
+		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ) use ( $pii_detector ): void {
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$pii_detector->scan_and_persist( $post_id, $post->post_content );
+			}
+		}, 9 );
+
+		// Compliance Exporter.
+		( new ComplianceExporter() )->register();
+
+		// Affiliate Discovery.
+		( new AffiliateDiscovery() )->register();
+
+		// Paywall Engine.
+		( new PaywallEngine() )->register();
+
+		// Topical Authority Engine.
+		( new TopicalAuthorityEngine() )->register();
+
+		// Core Web Vitals Monitor.
+		( new CoreWebVitalsMonitor() )->register();
+
+		// Zapier / Make.com Integration.
+		( new ZapierManager() )->register();
+
+		// Newsletter Builder.
+		( new NewsletterBuilder() )->register();
+
+		// AMP Generator.
+		( new AMPGenerator() )->register();
+
+		// Cohort & Funnel Analytics.
+		( new CohortEngine() )->register();
+
+		// Predictive Traffic Engine.
+		( new PredictiveEngine() )->register();
+
+		// Async Queue Manager.
+		( new AsyncQueueManager() )->register();
+
+		// Distributed Lock Manager (initialised globally for use by CronManager).
+		$GLOBALS['pearblog_lock_manager'] = new DistributedLockManager();
+
+		// Tenant Isolator (multisite data separation).
+		( new TenantIsolator() )->register();
+
+		// Decision Quiz Engine.
+		( new QuizEngine() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {

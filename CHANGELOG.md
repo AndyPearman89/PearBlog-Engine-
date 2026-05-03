@@ -2,6 +2,67 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [8.0.0] — 2026-05-03
+
+### Added — v8.0 Enterprise Expansion (30+ new modules across 10 areas)
+
+#### AI Pipeline
+
+- **`StreamingAIClient`** (`src/AI/StreamingAIClient.php`) — streams AI-generated content token-by-token via Server-Sent Events to the browser; REST endpoint `GET /pearblog/v1/stream/generate?topic=<topic>` outputs `text/event-stream`; uses cURL with `CURLOPT_WRITEFUNCTION` to pipe OpenAI streaming chunks directly to the browser; requires `pearblog_openai_api_key`.
+- **`VideoScriptBuilder`** (`src/AI/VideoScriptBuilder.php`) — converts published articles into platform-specific video scripts for YouTube (8–12 min), TikTok (60–90 s), and YouTube Shorts (30–60 s); REST `POST /pearblog/v1/article/{id}/video-script`; WP-CLI `wp pearblog video script <post_id> [--platform=youtube|tiktok|shorts]`; scripts stored in post meta `pearblog_video_script_{platform}`.
+- **`PromptOptimizer`** (`src/AI/PromptOptimizer.php`) — self-learning prompt optimizer using epsilon-greedy exploration (20%) vs exploitation (80%); maintains a ring buffer of 500 data points correlating 6 modifier variants with QualityScorer results; `get_best_modifier()` returns the modifier with the highest mean quality score (minimum 10 samples required); hooks into `pearblog_quality_scored` action to auto-record scores; filter `pearblog_optimized_prompt_modifier` allows overriding selection.
+
+#### Revenue & Monetization
+
+- **`BillingEngine`** (`src/Tenant/BillingEngine.php`) — AI usage metering per tenant; tracks cost in USD cents and generation events; monthly cron cycles; Stripe Billing metered usage reporting via daily cron; quota alerts at configurable threshold (default 80%); REST `GET /pearblog/v1/billing/usage` and `/billing/history`; stores up to 12 months of usage history.
+- **`AffiliateDiscovery`** (`src/Monetization/AffiliateDiscovery.php`) — detects product/brand keywords in article content and injects affiliate links; supports AWIN API and manual keyword→URL mapping; limits to 5 affiliate links per article; stores discovered links in `pearblog_affiliate_links` post meta; hooks into `the_content` for dynamic injection.
+- **`PaywallEngine`** (`src/Monetization/PaywallEngine.php`) — metered paywall with configurable free article limit (default: 3/month); cookie-based reader tracking; Stripe Checkout session creation for subscriptions; REST `POST /pearblog/v1/paywall/checkout` and `GET /pearblog/v1/paywall/status`; per-post premium flag via `pearblog_paywall_premium` meta.
+
+#### Analytics & Business Intelligence
+
+- **`CohortEngine`** (`src/Analytics/CohortEngine.php`) — tracks full conversion funnel (visit → register → lead → conversion) via REST endpoint and lightweight JS pixel; per-source cohort analysis (organic, referral, direct); weekly funnel snapshot with conversion rates; REST `POST /pearblog/v1/cohort/event` (open) and `GET /pearblog/v1/cohort/summary` (admin).
+- **`PredictiveEngine`** (`src/Analytics/PredictiveEngine.php`) — forecasts traffic potential for queued topics by matching keywords against top-performing published articles using GA4 view data; scores normalized 0–100; confidence bands (high/medium/low); weekly auto-refresh cron; REST `GET /pearblog/v1/predictive/scores` and `POST /pearblog/v1/predictive/refresh`.
+
+#### Security, RBAC & Compliance
+
+- **`RBACManager`** (`src/Security/RBACManager.php`) — registers 8 granular WordPress capabilities (`pearblog_generate_content`, `pearblog_manage_queue`, `pearblog_view_analytics`, `pearblog_manage_monetization`, `pearblog_approve_content`, `pearblog_manage_settings`, `pearblog_view_roi`, `pearblog_manage_billing`); assigns defaults to administrator/editor/author/contributor roles; admin submenu page with checkbox matrix for per-role overrides; stored in `pearblog_rbac_overrides`.
+- **`ContentModerator`** (`src/Security/ContentModerator.php`) — checks AI-generated content against OpenAI Moderation API before publication; configurable action `block` (reverts to draft) or `flag`; fires `pearblog_content_moderation_flagged` action; result stored in `pearblog_moderation_result` post meta.
+- **`PIIDetector`** (`src/Security/PIIDetector.php`) — scans content for 8 PII patterns (email, PESEL, NIP, Polish phone, credit card, IBAN, IPv4, passport); false-positive allowlist for example/test domains; `redact()` replaces detected PII with type-specific placeholders; fires `pearblog_pii_detected` action; results persisted to post meta.
+- **`ComplianceExporter`** (`src/Security/ComplianceExporter.php`) — exports PipelineAuditLog data in GDPR/SOC2 formats (JSON, CSV with UTF-8 BOM); configurable period (1–365 days); includes event counts by type and level, data retention info, and full event list; REST `GET /pearblog/v1/compliance/export?format=json|csv&days=30`; admin submenu page.
+
+#### Multi-Tenant
+
+- **`TenantIsolator`** (`src/Tenant/TenantIsolator.php`) — enforces data separation in WordPress multisite; per-site AES-256-CBC encryption of 8 sensitive options (API keys, credentials); key derivation via HKDF (HMAC-SHA256) from `PEARBLOG_MASTER_SECRET` constant or `AUTH_KEY`; REST middleware validates site membership; graceful fallback to plaintext when OpenSSL unavailable.
+
+#### Distribution & Omnichannel
+
+- **`PushNotificationPublisher`** (`src/Social/PushNotificationPublisher.php`) — sends web push notifications on article publication; supports OneSignal (with category-tag segmentation) and Firebase FCM v1 API; duplicate prevention via `pearblog_push_notified` post meta; fires `pearblog_push_sent` action.
+- **`NewsletterBuilder`** (`src/Email/NewsletterBuilder.php`) — builds and sends HTML newsletters from top weekly articles; integrates with SendGrid, Mailchimp (3-step: create campaign → set content → send), and Brevo (Sendinblue); configurable article count, sender info, subject with `{date}` placeholder; weekly Monday 9am cron; REST `GET /pearblog/v1/newsletter/preview` and `POST /pearblog/v1/newsletter/send`.
+- **`AMPGenerator`** (`src/Distribution/AMPGenerator.php`) — generates valid AMP HTML pages served at `?amp=1`; converts `<img>` to `<amp-img>`, removes scripts/iframes/style attributes; outputs `<link rel="amphtml">` in standard page head; optional Google Analytics and AdSense AMP components; configurable styles (<75KB AMP limit).
+
+#### SEO Intelligence
+
+- **`TopicalAuthorityEngine`** (`src/SEO/TopicalAuthorityEngine.php`) — classifies published posts into pillar (≥1500 words) and cluster articles; groups clusters to pillars by keyword overlap; suggests up to 5 missing cluster topics per pillar using title templates; auto-queues missing clusters; silo map stored in `pearblog_topical_silos`; weekly rebuild cron; REST `GET /pearblog/v1/seo/silos` and `POST /pearblog/v1/seo/silos/build`.
+- **`CoreWebVitalsMonitor`** (`src/SEO/CoreWebVitalsMonitor.php`) — integrates with Google PageSpeed Insights API v5 (mobile strategy); measures LCP, CLS, TBT per article URL; configurable pass/fail thresholds (default: LCP≤2500ms, CLS≤0.1, TBT≤100ms); 24h result cache; fires `pearblog_cwv_threshold_breached` on failures; weekly audit cron; admin submenu page with results table; REST `GET /pearblog/v1/cwv/snapshot` and `POST /pearblog/v1/cwv/measure`.
+
+#### Workflow Automation & Integrations
+
+- **`ZapierManager`** (`src/Integration/ZapierManager.php`) — Zapier/Make.com webhook integration; outgoing events `article.published`, `quality.failed` with HMAC-SHA256 signatures; incoming action endpoints `POST /pearblog/v1/zapier/topic/add` and `/zapier/pipeline/trigger`; shared secret auth via `X-PearBlog-Secret` header.
+
+#### Performance & Infrastructure
+
+- **`AsyncQueueManager`** (`src/Pipeline/AsyncQueueManager.php`) — asynchronous pipeline job queue with three backends: `wp_cron` (default), `database` (MySQL with retry/dead-letter), `redis` (phpredis native); database backend uses `pearblog_queue` table with `status`/`priority`/`attempts` columns; dead-letter queue for jobs exceeding `pearblog_async_max_retries` (default: 3); batch processing via 5-minute cron; REST endpoints for queue status and dead-letter retry.
+- **`DistributedLockManager`** (`src/Core/DistributedLockManager.php`) — advisory distributed locking for multi-server deployments; transient backend (single-server, race-condition-mitigated) or Redis backend (atomic `SET NX EX`, Lua script for safe release); `with_lock(name, callback, ttl)` convenience method; initialised globally as `$GLOBALS['pearblog_lock_manager']` in `Plugin::boot()`.
+
+#### Decision Platform
+
+- **`QuizEngine`** (`src/DecisionPlatform/QuizEngine.php`) — interactive AI-powered decision quizzes; custom post type `pearblog_quiz`; questions stored as JSON in post meta; AI generates personalized recommendations based on user answers; lead capture (name + email) with recommendation email delivery; `[pearblog_quiz id="123"]` shortcode; REST `GET /pearblog/v1/quiz/{id}` and `POST /pearblog/v1/quiz/{id}/submit`; up to 500 leads stored in `pearblog_quiz_leads` option.
+
+### Changed
+
+- `Plugin::boot()` — registers all 20 new enterprise modules in priority order (P0 → P1 → P2); ContentModerator and PIIDetector run at pipeline priority 8–9 (before social publish at 20).
+- `PearBlogCommand` — added `video` subcommand (`wp pearblog video script <post_id> [--platform=youtube|tiktok|shorts]`).
+
 ## [7.8.0] — 2026-04-13
 
 ### Added — v7.8 Smart Content Planning

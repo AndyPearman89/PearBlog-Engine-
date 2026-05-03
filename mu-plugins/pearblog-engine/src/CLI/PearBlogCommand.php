@@ -35,6 +35,7 @@
  *   wp pearblog schedule analyse
  *   wp pearblog schedule next
  *   wp pearblog schedule post <post_id>
+ *   wp pearblog video script <post_id> [--platform=youtube|tiktok|shorts]
  *
  * @package PearBlogEngine\CLI
  */
@@ -44,6 +45,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\CLI;
 
 use PearBlogEngine\AI\AIClient;
+use PearBlogEngine\AI\VideoScriptBuilder;
 use PearBlogEngine\CLI\AutopilotRunner;
 use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Content\TopicResearchEngine;
@@ -1264,6 +1266,58 @@ PHP;
 
 			default:
 				\WP_CLI::error( "Unknown subcommand: {$sub}. Use analyse, next, or post." );
+		}
+	}
+
+	/**
+	 * Generate a video script from a published article.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   script   Generate a video script for a post.
+	 *
+	 * ## OPTIONS (script)
+	 *
+	 * <post_id>
+	 * : WordPress post ID.
+	 *
+	 * [--platform=<platform>]
+	 * : Target platform: youtube, tiktok, or shorts (default: youtube).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog video script 42
+	 *   wp pearblog video script 42 --platform=tiktok
+	 *
+	 * @subcommand video
+	 */
+	public function video( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? 'script';
+
+		if ( 'script' !== $sub ) {
+			\WP_CLI::error( "Unknown subcommand: '{$sub}'. Available: script." );
+			return;
+		}
+
+		$post_id  = (int) ( $args[1] ?? 0 );
+		$platform = (string) ( $assoc_args['platform'] ?? VideoScriptBuilder::PLATFORM_YOUTUBE );
+
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog video script <post_id> [--platform=youtube|tiktok|shorts]' );
+			return;
+		}
+
+		$builder = new VideoScriptBuilder();
+		\WP_CLI::log( "Generating {$platform} video script for post #{$post_id}…" );
+
+		try {
+			$script = $builder->generate( $post_id, $platform );
+			\WP_CLI::success( "Script generated! ({$platform})" );
+			\WP_CLI::log( "\n" . str_repeat( '-', 60 ) );
+			\WP_CLI::log( $script );
+			\WP_CLI::log( str_repeat( '-', 60 ) );
+		} catch ( \Throwable $e ) {
+			\WP_CLI::error( 'Failed: ' . $e->getMessage() );
 		}
 	}
 }
