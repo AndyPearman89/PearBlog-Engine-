@@ -1674,6 +1674,185 @@
 }
 
 /* ==========================================
+   Monetization Tab
+   ========================================== */
+.pearblog-v7-monetization {
+	max-width: 1400px;
+}
+
+.pearblog-monetization-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-monetization-header h2 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-monetization-header .description {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	margin: 0;
+}
+
+/* Revenue Cards */
+.pearblog-revenue-stats {
+	margin-bottom: 32px;
+}
+
+.pearblog-revenue-card {
+	background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	padding: 24px;
+	text-align: center;
+	transition: all 0.2s ease;
+}
+
+.pearblog-revenue-card:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--pb-v7-shadow-lg);
+	border-color: var(--pb-v7-primary);
+}
+
+.pearblog-revenue-card-highlight {
+	background: linear-gradient(135deg, var(--pb-v7-primary) 0%, var(--pb-v7-primary-hover) 100%);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+}
+
+.pearblog-revenue-card-highlight .pearblog-revenue-amount,
+.pearblog-revenue-card-highlight .pearblog-revenue-label,
+.pearblog-revenue-card-highlight .pearblog-revenue-change {
+	color: #fff;
+}
+
+.pearblog-revenue-icon {
+	font-size: 40px;
+	margin-bottom: 12px;
+}
+
+.pearblog-revenue-amount {
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.pearblog-revenue-label {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.pearblog-revenue-change {
+	font-size: 14px;
+	color: #10b981;
+	font-weight: 600;
+}
+
+/* Monetization Forms */
+.pearblog-monetization-form {
+	max-width: 800px;
+}
+
+/* Ad Placements Grid */
+.pearblog-adsense-placements {
+	margin-top: 24px;
+}
+
+.pearblog-adsense-placements h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+.pearblog-placements-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.pearblog-placement-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: var(--pb-v7-light);
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-align: center;
+}
+
+.pearblog-placement-card:hover {
+	border-color: var(--pb-v7-primary);
+	background: #e0f2fe;
+}
+
+.pearblog-placement-card input[type="checkbox"] {
+	display: none;
+}
+
+.pearblog-placement-card:has(input:checked) {
+	background: var(--pb-v7-primary);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+}
+
+.pearblog-placement-card:has(input:checked) .pearblog-placement-label {
+	color: #fff;
+}
+
+.pearblog-placement-icon {
+	font-size: 32px;
+	margin-bottom: 8px;
+}
+
+.pearblog-placement-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+/* Affiliate Programs */
+.pearblog-affiliate-programs {
+	margin-top: 32px;
+}
+
+.pearblog-affiliate-programs h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+/* Top Earnings Table */
+.pearblog-earnings-table .pearblog-revenue-cell {
+	font-weight: 700;
+	color: #10b981;
+}
+
+/* Monetization Responsive */
+@media (max-width: 768px) {
+	.pearblog-placements-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.pearblog-revenue-stats .pearblog-stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* ==========================================
    Dark Mode Support (Future)
    ========================================== */
 @media (prefers-color-scheme: dark) {

@@ -67,6 +67,10 @@ class AdminPageV7 {
 		add_action( 'admin_post_pearblog_save_cron_settings', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_save_cron_settings' ] );
 		add_action( 'admin_post_pearblog_add_topic', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_add_topic' ] );
 		add_action( 'admin_post_pearblog_delete_topic', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_delete_topic' ] );
+		add_action( 'admin_post_pearblog_save_adsense', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_adsense' ] );
+		add_action( 'admin_post_pearblog_save_affiliate', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_affiliate' ] );
+		add_action( 'admin_post_pearblog_save_sponsored', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_sponsored' ] );
+		add_action( 'admin_post_pearblog_save_revenue_tracking', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_revenue_tracking' ] );
 	}
 
 	/**
@@ -281,17 +285,7 @@ class AdminPageV7 {
 	 * Render Monetization tab - Revenue tracking & ad management.
 	 */
 	private function render_monetization_tab(): void {
-		?>
-		<div class="pearblog-v7-monetization">
-			<h2><?php echo esc_html__( 'Monetization & Revenue Tracking', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Track revenue per article and optimize ad placement.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Coming in Phase 5 (v7.5 - October 2026)', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'Enhanced monetization controls with per-article revenue tracking.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		MonetizationTab::render();
 	}
 
 	/**
