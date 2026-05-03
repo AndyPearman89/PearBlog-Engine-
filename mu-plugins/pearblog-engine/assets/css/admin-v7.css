@@ -1,0 +1,362 @@
+/**
+ * Admin Panel v7.0 - SaaS Control Center Styles
+ *
+ * Modern, revenue-focused design language for PearBlog Engine v7.0
+ *
+ * @package PearBlogEngine
+ * @since 7.1.0
+ */
+
+/* ==========================================
+   V7 Design System Variables
+   ========================================== */
+:root {
+	--pb-v7-primary: #2563eb;
+	--pb-v7-primary-hover: #1d4ed8;
+	--pb-v7-success: #10b981;
+	--pb-v7-warning: #f59e0b;
+	--pb-v7-danger: #ef4444;
+	--pb-v7-dark: #1e293b;
+	--pb-v7-light: #f1f5f9;
+	--pb-v7-border: #e2e8f0;
+	--pb-v7-text: #334155;
+	--pb-v7-text-muted: #64748b;
+	--pb-v7-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	--pb-v7-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+	--pb-v7-radius: 8px;
+	--pb-v7-spacing: 16px;
+}
+
+/* ==========================================
+   Main Container
+   ========================================== */
+.pearblog-admin-v7 {
+	max-width: 1400px;
+	margin: 20px 0 0 0;
+	background: #fff;
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.pearblog-v7-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 24px 32px;
+	margin: 0;
+	border-bottom: 2px solid var(--pb-v7-border);
+	font-size: 24px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-logo {
+	font-size: 32px;
+	line-height: 1;
+}
+
+.pearblog-version-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	margin-left: 8px;
+	background: linear-gradient(135deg, var(--pb-v7-primary) 0%, #7c3aed 100%);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-radius: 12px;
+}
+
+/* ==========================================
+   Tab Navigation
+   ========================================== */
+.pearblog-v7-tabs {
+	display: flex;
+	gap: 4px;
+	padding: 16px 32px 0;
+	border-bottom: 2px solid var(--pb-v7-border);
+	background: var(--pb-v7-light);
+	overflow-x: auto;
+}
+
+.pearblog-v7-tab {
+	padding: 12px 20px;
+	background: transparent;
+	border: none;
+	border-radius: var(--pb-v7-radius) var(--pb-v7-radius) 0 0;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.pearblog-v7-tab:hover {
+	background: rgba(255, 255, 255, 0.6);
+	color: var(--pb-v7-text);
+}
+
+.pearblog-v7-tab.is-active {
+	background: #fff;
+	color: var(--pb-v7-primary);
+	font-weight: 600;
+	box-shadow: 0 -2px 0 0 var(--pb-v7-primary) inset;
+}
+
+/* ==========================================
+   Tab Content Area
+   ========================================== */
+.pearblog-v7-content {
+	padding: 32px;
+	min-height: 600px;
+}
+
+.pearblog-v7-content h2 {
+	margin: 0 0 8px;
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-v7-content > p {
+	margin: 0 0 24px;
+	color: var(--pb-v7-text-muted);
+	font-size: 14px;
+}
+
+/* ==========================================
+   KPI Cards (Dashboard)
+   ========================================== */
+.pearblog-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 32px;
+}
+
+.pearblog-kpi-card {
+	padding: 24px;
+	background: linear-gradient(135deg, #fff 0%, var(--pb-v7-light) 100%);
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pearblog-kpi-card:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--pb-v7-shadow-lg);
+}
+
+.pearblog-kpi-card .kpi-icon {
+	font-size: 32px;
+	margin-bottom: 12px;
+}
+
+.pearblog-kpi-card .kpi-label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.pearblog-kpi-card .kpi-value {
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+	margin-bottom: 4px;
+}
+
+.pearblog-kpi-card .kpi-trend {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.pearblog-kpi-card .kpi-trend[data-direction="up"],
+.pearblog-kpi-card .kpi-trend:not([data-direction]) {
+	color: var(--pb-v7-success);
+}
+
+.pearblog-kpi-card .kpi-trend[data-direction="down"] {
+	color: var(--pb-v7-danger);
+}
+
+/* ==========================================
+   Charts
+   ========================================== */
+.pearblog-chart-container {
+	margin-bottom: 32px;
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.pearblog-chart-container h3 {
+	margin: 0 0 20px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-chart-container canvas {
+	max-height: 300px;
+}
+
+/* ==========================================
+   Top Articles Table
+   ========================================== */
+.pearblog-top-articles {
+	margin-bottom: 32px;
+}
+
+.pearblog-top-articles h3 {
+	margin: 0 0 16px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-top-articles table {
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	overflow: hidden;
+}
+
+.pearblog-top-articles th {
+	background: var(--pb-v7-light);
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+/* ==========================================
+   Notices
+   ========================================== */
+.pearblog-notice {
+	padding: 16px 20px;
+	margin: 20px 0;
+	border-left: 4px solid;
+	border-radius: var(--pb-v7-radius);
+	background: var(--pb-v7-light);
+}
+
+.pearblog-notice p {
+	margin: 8px 0;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.pearblog-notice p:first-child {
+	margin-top: 0;
+}
+
+.pearblog-notice p:last-child {
+	margin-bottom: 0;
+}
+
+.pearblog-notice-info {
+	border-left-color: var(--pb-v7-primary);
+	background: #eff6ff;
+}
+
+.pearblog-notice-success {
+	border-left-color: var(--pb-v7-success);
+	background: #f0fdf4;
+}
+
+.pearblog-notice-warning {
+	border-left-color: var(--pb-v7-warning);
+	background: #fffbeb;
+}
+
+.pearblog-notice-danger {
+	border-left-color: var(--pb-v7-danger);
+	background: #fef2f2;
+}
+
+/* ==========================================
+   Forms & Inputs
+   ========================================== */
+.pearblog-v7-content .form-table th {
+	padding: 20px 0;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-v7-content .form-table td {
+	padding: 20px 0;
+}
+
+.pearblog-v7-content input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.pearblog-v7-content .description {
+	margin-top: 8px;
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+.pearblog-v7-content .button-primary {
+	background: var(--pb-v7-primary);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+	font-weight: 500;
+	padding: 8px 24px;
+	border-radius: var(--pb-v7-radius);
+	transition: all 0.2s ease;
+}
+
+.pearblog-v7-content .button-primary:hover,
+.pearblog-v7-content .button-primary:focus {
+	background: var(--pb-v7-primary-hover);
+	border-color: var(--pb-v7-primary-hover);
+	color: #fff;
+}
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+@media (max-width: 782px) {
+	.pearblog-v7-title {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 20px;
+		font-size: 20px;
+	}
+
+	.pearblog-v7-tabs {
+		padding: 12px 20px 0;
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.pearblog-v7-content {
+		padding: 20px;
+	}
+
+	.pearblog-kpi-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ==========================================
+   Dark Mode Support (Future)
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+	.pearblog-admin-v7 {
+		/* Dark mode styles will be added in future phase */
+	}
+}
