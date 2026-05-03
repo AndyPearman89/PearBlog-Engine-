@@ -40,6 +40,11 @@ class PromptBuilderFactory {
 		// Auto-detect based on industry.
 		$industry = strtolower( trim( $profile->industry ) );
 
+		// Check for Poradnik.pro clean content system.
+		if ( self::is_poradnik_content( $industry, $profile ) ) {
+			return new PoradnikPromptBuilder( $profile );
+		}
+
 		// Check for Beskidy-specific content.
 		if ( self::is_beskidy_content( $industry, $profile ) ) {
 			return new MultiLanguageTravelBuilder( $profile );
@@ -122,6 +127,45 @@ class PromptBuilderFactory {
 		 * @param SiteProfile $profile    Site profile.
 		 */
 		return (bool) apply_filters( 'pearblog_is_beskidy_content', false, $industry, $profile );
+	}
+
+	/**
+	 * Check if this is Poradnik.pro content.
+	 *
+	 * @param string      $industry Industry string.
+	 * @param SiteProfile $profile  Site profile.
+	 * @return bool                 True if Poradnik content.
+	 */
+	private static function is_poradnik_content( string $industry, SiteProfile $profile ): bool {
+		// Check industry for Poradnik keywords.
+		$poradnik_keywords = [
+			'poradnik',
+			'guide',
+			'porady',
+			'remont',
+			'renovation',
+			'budowa',
+			'construction',
+			'home improvement',
+			'home services',
+		];
+
+		foreach ( $poradnik_keywords as $keyword ) {
+			if ( stripos( $industry, $keyword ) !== false ) {
+				return true;
+			}
+		}
+
+		/**
+		 * Filter: pearblog_is_poradnik_content
+		 *
+		 * Allows manual override for Poradnik content detection.
+		 *
+		 * @param bool        $is_poradnik Current detection result.
+		 * @param string      $industry    Industry string.
+		 * @param SiteProfile $profile     Site profile.
+		 */
+		return (bool) apply_filters( 'pearblog_is_poradnik_content', false, $industry, $profile );
 	}
 
 	/**
