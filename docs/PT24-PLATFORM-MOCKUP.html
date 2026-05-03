@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PT24.PRO - Platform Mockup</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #e8ecf1 100%);
+            padding: 40px 20px;
+            color: #2c3e50;
+        }
+
+        .mockup-container {
+            max-width: 1800px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 30px;
+        }
+
+        .screen {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: transform 0.3s ease;
+        }
+
+        .screen:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 50px rgba(0, 0, 0, 0.15);
+        }
+
+        .screen-label {
+            background: #3498db;
+            color: white;
+            padding: 8px 16px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .screen-content {
+            padding: 30px;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #ecf0f1;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            color: #3498db;
+        }
+
+        .nav {
+            display: flex;
+            gap: 20px;
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        /* Hero Section */
+        .hero {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 40px 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 8px;
+            color: white;
+        }
+
+        .hero h1 {
+            font-size: 32px;
+            margin-bottom: 20px;
+            line-height: 1.3;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 25px;
+        }
+
+        .btn {
+            padding: 12px 30px;
+            border: none;
+            border-radius: 6px;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background: #3498db;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2980b9;
+        }
+
+        .btn-secondary {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #c0392b;
+        }
+
+        /* Service Categories */
+        .services {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .service-card {
+            padding: 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 8px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .service-card:hover {
+            border-color: #3498db;
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(52, 152, 219, 0.2);
+        }
+
+        .service-icon {
+            font-size: 36px;
+            margin-bottom: 10px;
+        }
+
+        .service-name {
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        /* How it Works */
+        .how-it-works {
+            margin: 40px 0;
+        }
+
+        .how-it-works h2 {
+            font-size: 24px;
+            margin-bottom: 25px;
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .steps {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .step {
+            flex: 1;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+
+        .step-number {
+            width: 40px;
+            height: 40px;
+            background: #3498db;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            font-weight: 700;
+            font-size: 18px;
+        }
+
+        .step-text {
+            font-size: 14px;
+            color: #555;
+        }
+
+        /* Business Section */
+        .business-section {
+            background: #3498db;
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 30px;
+        }
+
+        .business-section h3 {
+            font-size: 22px;
+            margin-bottom: 15px;
+        }
+
+        .business-section p {
+            margin-bottom: 20px;
+            opacity: 0.95;
+        }
+
+        /* Service List */
+        .service-list {
+            list-style: none;
+            margin: 25px 0;
+        }
+
+        .service-list li {
+            padding: 12px 0;
+            border-bottom: 1px solid #ecf0f1;
+            display: flex;
+            align-items: center;
+        }
+
+        .service-list li:before {
+            content: "✓";
+            color: #27ae60;
+            font-weight: bold;
+            margin-right: 10px;
+            font-size: 18px;
+        }
+
+        /* Title Section */
+        .title-section {
+            margin-bottom: 30px;
+        }
+
+        .title-section h1 {
+            font-size: 28px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #7f8c8d;
+            font-size: 15px;
+        }
+
+        /* City Selector */
+        .city-selector {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 30px;
+        }
+
+        .city-button {
+            padding: 8px 20px;
+            border: 2px solid #ecf0f1;
+            border-radius: 20px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .city-button:hover {
+            border-color: #3498db;
+            background: #3498db;
+            color: white;
+        }
+
+        /* Trust Section */
+        .trust-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 25px 0;
+        }
+
+        .trust-items {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .trust-item {
+            text-align: center;
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .trust-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .trust-text {
+            font-size: 13px;
+            color: #555;
+        }
+
+        /* CTA Section */
+        .cta-section {
+            background: #e74c3c;
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            margin: 25px 0;
+        }
+
+        .cta-section h2 {
+            font-size: 24px;
+            margin-bottom: 15px;
+        }
+
+        .phone-number {
+            font-size: 32px;
+            font-weight: 700;
+            margin: 15px 0;
+        }
+
+        /* Profile Header */
+        .profile-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+        }
+
+        .profile-header h1 {
+            font-size: 26px;
+            margin-bottom: 10px;
+        }
+
+        .profile-location {
+            opacity: 0.9;
+            font-size: 15px;
+        }
+
+        /* About Section */
+        .about-section {
+            margin: 25px 0;
+        }
+
+        .about-section h3 {
+            font-size: 18px;
+            margin-bottom: 12px;
+            color: #2c3e50;
+        }
+
+        .about-section p {
+            color: #555;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        /* Reviews */
+        .reviews {
+            margin: 25px 0;
+        }
+
+        .review {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .stars {
+            color: #f39c12;
+            font-size: 18px;
+            margin-bottom: 8px;
+        }
+
+        .review-text {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .reviewer {
+            font-size: 12px;
+            color: #7f8c8d;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mockup-container {
+                grid-template-columns: 1fr;
+            }
+
+            .services {
+                grid-template-columns: 1fr;
+            }
+
+            .steps {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="mockup-container">
+
+        <!-- Screen 1: Homepage -->
+        <div class="screen">
+            <div class="screen-label">Screen 1: Homepage (pt24.pro)</div>
+            <div class="screen-content">
+                <div class="header">
+                    <div class="logo">pt24.pro</div>
+                    <div class="nav">
+                        <span>Usługi</span>
+                        <span>Miasta</span>
+                        <span>Kontakt</span>
+                    </div>
+                </div>
+
+                <div class="hero">
+                    <h1>Znajdź sprawdzonego fachowca<br>w swojej okolicy</h1>
+                    <p>Mechanik, hydraulik, elektryk i inne usługi — szybki kontakt, lokalni specjaliści</p>
+                    <div class="hero-buttons">
+                        <button class="btn btn-primary">🔍 Znajdź usługę</button>
+                        <button class="btn btn-secondary">➕ Dodaj firmę</button>
+                    </div>
+                </div>
+
+                <div class="services">
+                    <div class="service-card">
+                        <div class="service-icon">🔧</div>
+                        <div class="service-name">Mechanik</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🚰</div>
+                        <div class="service-name">Hydraulik</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">⚡</div>
+                        <div class="service-name">Elektryk</div>
+                    </div>
+                    <div class="service-card">
+                        <div class="service-icon">🚗</div>
+                        <div class="service-name">Laweta</div>
+                    </div>
+                </div>
+
+                <div class="how-it-works">
+                    <h2>Jak to działa?</h2>
+                    <div class="steps">
+                        <div class="step">
+                            <div class="step-number">1</div>
+                            <div class="step-text">Wybierz usługę</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">2</div>
+                            <div class="step-text">Wybierz miasto</div>
+                        </div>
+                        <div class="step">
+                            <div class="step-number">3</div>
+                            <div class="step-text">Zadzwoń do fachowca</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="business-section">
+                    <h3>Dodaj swoją firmę i zdobywaj klientów</h3>
+                    <p>Własny profil, widoczność w Google, telefony od klientów</p>
+                    <button class="btn" style="background: white; color: #3498db;">➕ Dodaj firmę za darmo</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Service Category -->
+        <div class="screen">
+            <div class="screen-label">Screen 2: Service Category (mechanik.pt24.pro)</div>
+            <div class="screen-content">
+                <div class="header">
+                    <div class="logo">mechanik.<span style="color: #95a5a6;">pt24.pro</span></div>
+                </div>
+
+                <div class="title-section">
+                    <h1>Mechanik samochodowy</h1>
+                    <p class="subtitle">Szybka pomoc w Twojej okolicy</p>
+                </div>
+
+                <p style="margin-bottom: 25px; color: #555;">
+                    Auto się zepsuło? Znajdź sprawdzonego mechanika w swoim mieście i załatw problem dzisiaj.
+                </p>
+
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Najpopularniejsze usługi:</h3>
+                <ul class="service-list">
+                    <li>Diagnostyka komputerowa</li>
+                    <li>Naprawa silnika</li>
+                    <li>Elektryka samochodowa</li>
+                    <li>Mobilny mechanik</li>
+                    <li>Pomoc drogowa</li>
+                </ul>
+
+                <div style="text-align: center; margin: 30px 0;">
+                    <button class="btn btn-secondary" style="width: 100%; padding: 18px; font-size: 16px;">
+                        📞 Znajdź mechanika w swoim mieście
+                    </button>
+                </div>
+
+                <h4 style="text-align: center; margin-bottom: 15px; color: #7f8c8d;">Popularne miasta:</h4>
+                <div class="city-selector">
+                    <div class="city-button">Ruda Śląska</div>
+                    <div class="city-button">Katowice</div>
+                    <div class="city-button">Wrocław</div>
+                    <div class="city-button">Kraków</div>
+                    <div class="city-button">Warszawa</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 3: Local Page -->
+        <div class="screen">
+            <div class="screen-label">Screen 3: Local Page (mechanik Ruda Śląska)</div>
+            <div class="screen-content">
+                <div class="header">
+                    <div class="logo">pt24.pro</div>
+                </div>
+
+                <div class="title-section">
+                    <h1>Mechanik samochodowy<br>Ruda Śląska</h1>
+                </div>
+
+                <p style="margin-bottom: 25px; color: #555;">
+                    Auto się zepsuło w Rudzie Śląskiej? Znajdź lokalnego mechanika, który szybko i uczciwie naprawi Twoje auto.
+                </p>
+
+                <h3 style="margin-bottom: 15px; color: #2c3e50;">Usługi w Rudzie Śląskiej:</h3>
+                <ul class="service-list">
+                    <li>Diagnostyka komputerowa</li>
+                    <li>Naprawy mechaniczne</li>
+                    <li>Elektryka samochodowa</li>
+                    <li>Mobilny serwis</li>
+                    <li>Przeglądy okresowe</li>
+                </ul>
+
+                <div class="trust-section">
+                    <h3 style="text-align: center; margin-bottom: 20px; color: #2c3e50;">Dlaczego my?</h3>
+                    <div class="trust-items">
+                        <div class="trust-item">
+                            <div class="trust-icon">👨‍🔧</div>
+                            <div class="trust-text">Lokalni<br>specjaliści</div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-icon">🚗</div>
+                            <div class="trust-text">Szybki<br>dojazd</div>
+                        </div>
+                        <div class="trust-item">
+                            <div class="trust-icon">💰</div>
+                            <div class="trust-text">Uczciwe<br>ceny</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cta-section">
+                    <h2>Potrzebujesz mechanika?</h2>
+                    <div class="phone-number">📞 Zadzwoń teraz</div>
+                    <p style="opacity: 0.9; margin-top: 10px;">Szybki kontakt bez pośredników</p>
+                </div>
+
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-top: 20px;">
+                    <h4 style="margin-bottom: 10px; color: #2c3e50;">FAQ</h4>
+                    <p style="font-size: 14px; color: #555; margin-bottom: 8px;"><strong>Ile kosztuje diagnostyka?</strong><br>
+                    40-80 zł, niektórzy mechanicy odliczają od naprawy.</p>
+                    <p style="font-size: 14px; color: #555;"><strong>Czy mechanik może przyjechać do domu?</strong><br>
+                    Tak, mobilni mechanicy obsługują całą Rudę Śląską.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Business Profile -->
+        <div class="screen">
+            <div class="screen-label">Screen 4: Business Profile (Kowalski Mechanik)</div>
+            <div class="screen-content">
+                <div class="profile-header">
+                    <h1>Kowalski Mechanik</h1>
+                    <p class="profile-location">📍 Ruda Śląska i okolice</p>
+                </div>
+
+                <div class="about-section">
+                    <h3>O firmie</h3>
+                    <p>Naprawiam auta od 15 lat. Działam mobilnie — przyjeżdżam do klienta. Nie nabijam w butelkę. Mówię, co trzeba naprawić teraz, a co może poczekać.</p>
+                </div>
+
+                <div class="about-section">
+                    <h3>Usługi</h3>
+                    <ul class="service-list">
+                        <li>Diagnostyka komputerowa</li>
+                        <li>Naprawy silnika</li>
+                        <li>Elektryka samochodowa</li>
+                        <li>Wymiana rozrządu</li>
+                        <li>Wymiana sprzęgła</li>
+                        <li>Przeglądy</li>
+                    </ul>
+                </div>
+
+                <div class="about-section">
+                    <h3>Obszar działania</h3>
+                    <p>Ruda Śląska, Chorzów, Świętochłowice, Katowice, Zabrze, Bytom (max 20 km)</p>
+                </div>
+
+                <div class="reviews">
+                    <h3 style="margin-bottom: 15px; color: #2c3e50;">Opinie</h3>
+                    <div class="review">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <div class="review-text">"Szybko zdiagnozował i naprawił. Bez wciskania niepotrzebnych rzeczy."</div>
+                        <div class="reviewer">— Marek, Ruda Śląska</div>
+                    </div>
+                    <div class="review">
+                        <div class="stars">⭐⭐⭐⭐⭐</div>
+                        <div class="review-text">"Przyjechał w godzinę, wymienił alternator na miejscu. Polecam."</div>
+                        <div class="reviewer">— Ania, Chorzów</div>
+                    </div>
+                </div>
+
+                <div class="cta-section">
+                    <h2>Kontakt</h2>
+                    <div class="phone-number">📞 +48 XXX XXX XXX</div>
+                    <p style="opacity: 0.9; margin-top: 10px;">Pn-Pt: 8:00-18:00 | Sob: 9:00-14:00</p>
+                    <button class="btn" style="background: white; color: #e74c3c; margin-top: 15px; width: 100%; padding: 15px; font-size: 16px;">
+                        Zadzwoń teraz
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div style="text-align: center; margin-top: 40px; color: #7f8c8d; font-size: 14px;">
+        <p>PT24.PRO Platform Mockup - Professional UI/UX Design</p>
+        <p style="margin-top: 10px;">Modern SaaS • Clean Layout • Blue/Red Accent Colors • Polish Language</p>
+    </div>
+</body>
+</html>
