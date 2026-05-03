@@ -26,39 +26,68 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate required secrets
+      - name: Resolve deploy configuration
+        id: vars
         run: |
+          SSH_HOST="${{ secrets.SSH_HOST || vars.SSH_HOST }}"
+          SSH_USER="${{ secrets.SSH_USER || vars.SSH_USER }}"
+          WP_PATH="${{ secrets.WP_PATH || vars.WP_PATH }}"
+          SSH_PORT="${{ secrets.SSH_PORT || vars.SSH_PORT }}"
+          FORCE="${{ github.event.inputs.force_deploy }}"
+
+          HAS_KEY=false
+          HAS_PASSWORD=false
+          [[ -n "${{ secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
+          [[ -n "${{ secrets.SSH_PASSWORD }}" ]] && HAS_PASSWORD=true
+
           MISSING=()
-          [[ -z "${{ secrets.SSH_HOST }}" ]]          && MISSING+=("SSH_HOST")
-          [[ -z "${{ secrets.SSH_USER }}" ]]          && MISSING+=("SSH_USER")
-          [[ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]]   && MISSING+=("SSH_PRIVATE_KEY")
-          [[ -z "${{ secrets.WP_PATH }}" ]]           && MISSING+=("WP_PATH")
+          [[ -z "$SSH_HOST" ]] && MISSING+=("SSH_HOST (secret or variable)")
+          [[ -z "$SSH_USER" ]] && MISSING+=("SSH_USER (secret or variable)")
+          [[ -z "$WP_PATH" ]]  && MISSING+=("WP_PATH (secret or variable)")
+
+          if [[ "$HAS_KEY" != true && "$HAS_PASSWORD" != true ]]; then
+            MISSING+=("SSH_PRIVATE_KEY or SSH_PASSWORD")
+          fi
+
           if [[ ${#MISSING[@]} -gt 0 ]]; then
             echo "::error::Missing required secrets: ${MISSING[*]}"
             echo "Add them under Settings → Secrets and variables → Actions"
             exit 1
           fi
-          echo "All required secrets are present."
 
-      - name: Set common variables
-        id: vars
-        run: |
-          SSH_PORT="${{ secrets.SSH_PORT }}"
+          AUTH_MODE="key"
+          if [[ "$HAS_KEY" != true ]]; then
+            AUTH_MODE="password"
+          fi
+
+          echo "ssh_host=$SSH_HOST" >> "$GITHUB_OUTPUT"
+          echo "ssh_user=$SSH_USER" >> "$GITHUB_OUTPUT"
+          echo "wp_path=$WP_PATH" >> "$GITHUB_OUTPUT"
+          echo "auth_mode=$AUTH_MODE" >> "$GITHUB_OUTPUT"
           echo "ssh_port=${SSH_PORT:-22}" >> "$GITHUB_OUTPUT"
-          FORCE="${{ github.event.inputs.force_deploy }}"
           echo "force=${FORCE:-false}" >> "$GITHUB_OUTPUT"
 
+          echo "Deploy config ready. Auth mode: $AUTH_MODE"
+
       - name: Set up SSH agent
+        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Install sshpass for password auth
+        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y sshpass
+
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -p "${{ steps.vars.outputs.ssh_port }}" -H "${{ secrets.SSH_HOST }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -p "${{ steps.vars.outputs.ssh_port }}" -H "${{ steps.vars.outputs.ssh_host }}" >> ~/.ssh/known_hosts
 
-      - name: Deploy mu-plugin (pearblog-engine)
+      - name: Deploy mu-plugin (pearblog-engine) via key
+        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
         run: |
           RSYNC_OPTS="-avz --delete"
           # When force_deploy is false only changed paths trigger this job (push paths filter).
@@ -67,25 +96,53 @@ jobs:
           rsync $RSYNC_OPTS \
             -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
             mu-plugins/pearblog-engine/ \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WP_PATH }}/wp-content/mu-plugins/pearblog-engine/"
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/mu-plugins/pearblog-engine/"
 
-      - name: Deploy theme (pearblog-theme)
+      - name: Deploy mu-plugin (pearblog-engine) via password
+        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        run: |
+          RSYNC_OPTS="-avz --delete"
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync $RSYNC_OPTS \
+            -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
+            mu-plugins/pearblog-engine/ \
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/mu-plugins/pearblog-engine/"
+
+      - name: Deploy theme (pearblog-theme) via key
+        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
         run: |
           rsync -avz --delete \
             -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
             theme/pearblog-theme/ \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}:${{ secrets.WP_PATH }}/wp-content/themes/pearblog-theme/"
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/themes/pearblog-theme/"
 
-      - name: Flush WordPress object cache
+      - name: Deploy theme (pearblog-theme) via password
+        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete \
+            -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
+            theme/pearblog-theme/ \
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/themes/pearblog-theme/"
+
+      - name: Flush WordPress object cache via key
+        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
         continue-on-error: true
         run: |
           ssh -p "${{ steps.vars.outputs.ssh_port }}" \
-            "${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }}" \
-            "cd '${{ secrets.WP_PATH }}' && wp cache flush --allow-root 2>/dev/null || true"
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
+            "cd '${{ steps.vars.outputs.wp_path }}' && wp cache flush --allow-root 2>/dev/null || true"
+
+      - name: Flush WordPress object cache via password
+        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        continue-on-error: true
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" \
+            ssh -p "${{ steps.vars.outputs.ssh_port }}" \
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
+            "cd '${{ steps.vars.outputs.wp_path }}' && wp cache flush --allow-root 2>/dev/null || true"
 
       - name: Deployment summary
         run: |
           echo "✅ Deploy complete"
           echo "   Plugin:  wp-content/mu-plugins/pearblog-engine/"
           echo "   Theme:   wp-content/themes/pearblog-theme/"
-          echo "   Server:  ${{ secrets.SSH_HOST }}"
+          echo "   Server:  ${{ steps.vars.outputs.ssh_host }}"
