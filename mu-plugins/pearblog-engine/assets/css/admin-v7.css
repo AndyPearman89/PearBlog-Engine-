@@ -515,6 +515,225 @@
 }
 
 /* ==========================================
+   Content Engine Tab
+   ========================================== */
+.pearblog-v7-content-engine .content-engine-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-v7-content-engine .content-engine-header h2 {
+	margin: 0 0 8px;
+}
+
+.pearblog-v7-content-engine .content-engine-header p {
+	margin: 0;
+	color: var(--pb-v7-text-muted);
+}
+
+.engine-section {
+	margin-bottom: 40px;
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.engine-section h3 {
+	margin: 0 0 8px;
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.engine-section .section-description {
+	margin: 0 0 20px;
+	color: var(--pb-v7-text-muted);
+	font-size: 14px;
+}
+
+/* Batch Generation Controls */
+.batch-gen-info {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.info-card {
+	padding: 16px;
+	background: var(--pb-v7-light);
+	border-radius: var(--pb-v7-radius);
+	text-align: center;
+}
+
+.info-card .info-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.info-card .info-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+}
+
+.batch-gen-form .form-row {
+	margin-bottom: 16px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.batch-gen-form .form-row label {
+	font-weight: 500;
+	min-width: 150px;
+}
+
+.batch-gen-form .form-row .description {
+	color: var(--pb-v7-text-muted);
+	font-size: 13px;
+}
+
+/* Templates Grid */
+.templates-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.template-card {
+	padding: 20px;
+	background: #fff;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	transition: all 0.2s ease;
+}
+
+.template-card:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.template-card.is-active {
+	border-color: var(--pb-v7-primary);
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.template-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.template-icon {
+	font-size: 32px;
+	line-height: 1;
+}
+
+.template-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	flex: 1;
+}
+
+.template-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background: var(--pb-v7-success);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	border-radius: 4px;
+	letter-spacing: 0.5px;
+}
+
+.template-desc {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 12px;
+}
+
+.template-features {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 16px;
+}
+
+.feature-tag {
+	display: inline-block;
+	padding: 4px 10px;
+	background: var(--pb-v7-light);
+	color: var(--pb-v7-text);
+	font-size: 12px;
+	border-radius: 12px;
+}
+
+.template-card form {
+	margin: 0;
+}
+
+.template-card .button {
+	width: 100%;
+}
+
+/* Bulk Operations */
+.bulk-operations-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.operation-card {
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	text-align: center;
+	transition: all 0.2s ease;
+}
+
+.operation-card:hover {
+	box-shadow: var(--pb-v7-shadow-lg);
+	transform: translateY(-2px);
+}
+
+.operation-icon {
+	font-size: 40px;
+	margin-bottom: 12px;
+}
+
+.operation-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.operation-desc {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 16px;
+}
+
+.operation-card .button {
+	width: 100%;
+}
+
+/* ==========================================
    Notices
    ========================================== */
 .pearblog-notice {

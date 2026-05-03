@@ -54,6 +54,8 @@ class AdminPageV7 {
 		// Admin POST handlers
 		add_action( 'admin_post_pearblog_v7_save_settings', [ $this, 'handle_save_settings' ] );
 		add_action( 'admin_post_pearblog_save_strategy', [ 'PearBlogEngine\Admin\StrategyTab', 'handle_save' ] );
+		add_action( 'admin_post_pearblog_batch_generate', [ 'PearBlogEngine\Admin\ContentEngineTab', 'handle_batch_generate' ] );
+		add_action( 'admin_post_pearblog_set_template', [ 'PearBlogEngine\Admin\ContentEngineTab', 'handle_set_template' ] );
 	}
 
 	/**
@@ -254,17 +256,7 @@ class AdminPageV7 {
 	 * Render Content Engine tab - Batch content operations.
 	 */
 	private function render_content_tab(): void {
-		?>
-		<div class="pearblog-v7-content-engine">
-			<h2><?php echo esc_html__( 'Content Engine', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Batch content generation, updates, and template management.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Coming in Phase 3 (v7.3 - August 2026)', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'Content Engine will enable batch generation of 10-100 articles and content templates.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		ContentEngineTab::render();
 	}
 
 	/**
