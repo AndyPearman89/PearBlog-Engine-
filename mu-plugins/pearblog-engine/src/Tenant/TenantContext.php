@@ -45,7 +45,13 @@ class TenantContext {
 
 		$domain = \get_site_url( $site_id );
 		$get_option = static function ( string $key, mixed $default ) use ( $site_id ) {
-			return \is_multisite()
+			if ( \function_exists( 'is_multisite' ) ) {
+				$multisite = \is_multisite();
+			} else {
+				$multisite = \function_exists( 'get_blog_option' );
+			}
+
+			return $multisite
 				? \get_blog_option( $site_id, $key, $default )
 				: \get_option( $key, $default );
 		};

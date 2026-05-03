@@ -69,7 +69,7 @@ class TopicQueue {
 	 * @return string[]
 	 */
 	public function all(): array {
-		$raw = \is_multisite()
+		$raw = $this->is_multisite_enabled()
 			? \get_blog_option( $this->site_id, self::OPTION_KEY, [] )
 			: \get_option( self::OPTION_KEY, [] );
 		return is_array( $raw ) ? array_values( $raw ) : [];
@@ -94,11 +94,19 @@ class TopicQueue {
 	// -----------------------------------------------------------------------
 
 	private function save( array $queue ): void {
-		if ( \is_multisite() ) {
+		if ( $this->is_multisite_enabled() ) {
 			\update_blog_option( $this->site_id, self::OPTION_KEY, array_values( $queue ) );
 			return;
 		}
 
 		\update_option( self::OPTION_KEY, array_values( $queue ) );
+	}
+
+	private function is_multisite_enabled(): bool {
+		if ( \function_exists( 'is_multisite' ) ) {
+			return \is_multisite();
+		}
+
+		return \function_exists( 'get_blog_option' ) && \function_exists( 'update_blog_option' );
 	}
 }

@@ -30,3 +30,6 @@ Thumbs.db
 
 # Test artifacts
 mu-plugins/pearblog-engine/.phpunit.result.cache
+
+# Composer dependencies (generated)
+mu-plugins/pearblog-engine/vendor/
