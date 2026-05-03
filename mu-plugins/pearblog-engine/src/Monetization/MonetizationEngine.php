@@ -38,6 +38,24 @@ class MonetizationEngine {
 	 * @return string           Content with monetisation markup inserted.
 	 */
 	public function apply( int $post_id, string $content ): string {
+		// Detect funnel stage for intelligent AdSense placement.
+		$post = get_post( $post_id );
+		if ( $post instanceof \WP_Post ) {
+			$detector     = new FunnelStageDetector();
+			$funnel_stage = $detector->detect( $post->post_title, $content );
+
+			// Store funnel stage as post meta for analytics/reporting.
+			update_post_meta( $post_id, 'pearblog_funnel_stage', $funnel_stage );
+
+			/**
+			 * Action: pearblog_funnel_stage_detected
+			 *
+			 * @param int    $post_id      Post ID.
+			 * @param string $funnel_stage Detected stage (tofu/mofu/bofu).
+			 */
+			do_action( 'pearblog_funnel_stage_detected', $post_id, $funnel_stage );
+		}
+
 		$monetized = match ( $this->profile->monetization ) {
 			'affiliate' => $this->apply_affiliate( $post_id, $content ),
 			'saas'      => $this->apply_saas_cta( $content ),
@@ -60,6 +78,17 @@ class MonetizationEngine {
 	// v1 – AdSense
 	// -----------------------------------------------------------------------
 
+	/**
+	 * Apply funnel-aware AdSense placement strategy.
+	 *
+	 * TOFU (informational): Full AdSense enabled.
+	 * MOFU (consideration): Limited AdSense (single placement only).
+	 * BOFU (decision):      AdSense disabled (focus on conversions).
+	 *
+	 * @param int    $post_id WordPress post ID.
+	 * @param string $content Article content.
+	 * @return string Content with AdSense units injected (or unchanged).
+	 */
 	private function apply_adsense( int $post_id, string $content ): string {
 		$publisher_id = (string) get_option( 'pearblog_adsense_publisher_id', '' );
 
@@ -67,7 +96,34 @@ class MonetizationEngine {
 			return $content;
 		}
 
-		$ad_unit = sprintf(
+		// Check funnel stage to determine AdSense strategy.
+		$funnel_stage = (string) get_post_meta( $post_id, 'pearblog_funnel_stage', true );
+		$detector     = new FunnelStageDetector();
+
+		// Skip AdSense entirely for BOFU content (or if strategy says no).
+		if ( ! $detector->should_enable_adsense( $funnel_stage ) ) {
+			return $content;
+		}
+
+		$ad_unit = $this->build_adsense_unit( $publisher_id );
+
+		// MOFU: Limited placement (single ad after first paragraph only).
+		if ( $detector->should_limit_placement( $funnel_stage ) ) {
+			return $this->inject_single_ad( $content, $ad_unit );
+		}
+
+		// TOFU: Full placement (after first paragraph + at 66% mark).
+		return $this->inject_box( $content, $ad_unit );
+	}
+
+	/**
+	 * Build an AdSense ad unit HTML block.
+	 *
+	 * @param string $publisher_id AdSense publisher ID (ca-pub-...).
+	 * @return string HTML for the ad unit.
+	 */
+	private function build_adsense_unit( string $publisher_id ): string {
+		return sprintf(
 			'<div class="pearblog-ad pearblog-ad--adsense">' .
 			'<ins class="adsbygoogle" style="display:block" ' .
 			'data-ad-client="%s" data-ad-slot="auto" data-ad-format="auto" ' .
@@ -76,7 +132,16 @@ class MonetizationEngine {
 			'</div>',
 			esc_attr( $publisher_id )
 		);
+	}
 
+	/**
+	 * Inject a single ad unit after the first paragraph (limited placement).
+	 *
+	 * @param string $content Article HTML.
+	 * @param string $ad_unit Ad unit HTML.
+	 * @return string Modified content.
+	 */
+	private function inject_single_ad( string $content, string $ad_unit ): string {
 		// Insert the ad unit after the first paragraph.
 		$first_para = strpos( $content, '</p>' );
 		if ( false !== $first_para ) {
