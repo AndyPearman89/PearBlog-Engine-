@@ -12,7 +12,7 @@ if (!defined('ABSPATH')) {
 }
 
 // Theme constants
-define('PEARBLOG_VERSION', '5.1.0');
+define('PEARBLOG_VERSION', '7.0.0');
 define('PEARBLOG_DIR', get_template_directory());
 define('PEARBLOG_URI', get_template_directory_uri());
 define('PEARBLOG_IS_PRO', true);
@@ -103,6 +103,11 @@ function pearblog_enqueue_assets() {
     // V3 High-Conversion Components (enqueue if V3 layout is enabled)
     if (get_option('pearblog_homepage_version', 'v3') === 'v3') {
         wp_enqueue_style('pearblog-v3-components', PEARBLOG_URI . '/assets/css/v3-components.css', array('pearblog-components'), PEARBLOG_VERSION);
+    }
+
+    // V7 Dark UI Kit (enqueue if V7 layout is enabled)
+    if (get_option('pearblog_homepage_version', 'v3') === 'v7') {
+        wp_enqueue_style('pearblog-v7-ui-kit', PEARBLOG_URI . '/assets/css/v7-ui-kit.css', array('pearblog-style'), PEARBLOG_VERSION);
     }
 
     // Utilities
