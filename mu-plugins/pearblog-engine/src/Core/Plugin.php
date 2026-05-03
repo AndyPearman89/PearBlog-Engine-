@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\Core;
 
 use PearBlogEngine\AI\FactChecker;
+use PearBlogEngine\AI\PodcastGenerator;
 use PearBlogEngine\AI\PromptOptimizer;
 use PearBlogEngine\AI\StreamingAIClient;
 use PearBlogEngine\AI\VideoScriptBuilder;
@@ -18,14 +19,18 @@ use PearBlogEngine\Analytics\ContentROIEngine;
 use PearBlogEngine\Analytics\PredictiveEngine;
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
+use PearBlogEngine\Cache\QueryOptimizer;
 use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
+use PearBlogEngine\DecisionPlatform\PriceComparison;
 use PearBlogEngine\DecisionPlatform\QuizEngine;
 use PearBlogEngine\Distribution\AMPGenerator;
 use PearBlogEngine\Email\EmailDigest;
 use PearBlogEngine\Email\NewsletterBuilder;
 use PearBlogEngine\Integration\ZapierManager;
 use PearBlogEngine\Monetization\AffiliateDiscovery;
+use PearBlogEngine\Monetization\CROEngine;
 use PearBlogEngine\Monetization\PaywallEngine;
+use PearBlogEngine\Monetization\RevenueTracker;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
@@ -40,6 +45,7 @@ use PearBlogEngine\Security\ContentModerator;
 use PearBlogEngine\Security\PIIDetector;
 use PearBlogEngine\Security\RBACManager;
 use PearBlogEngine\SEO\CoreWebVitalsMonitor;
+use PearBlogEngine\SEO\HreflangManager;
 use PearBlogEngine\SEO\ProgrammaticSEO;
 use PearBlogEngine\SEO\SchemaManager;
 use PearBlogEngine\SEO\SearchConsoleClient;
@@ -48,6 +54,7 @@ use PearBlogEngine\Social\PushNotificationPublisher;
 use PearBlogEngine\Social\SocialPublisher;
 use PearBlogEngine\Tenant\BillingEngine;
 use PearBlogEngine\Tenant\TenantIsolator;
+use PearBlogEngine\Tenant\TenantOnboardingController;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Content\TopicResearchEngine;
@@ -257,6 +264,27 @@ class Plugin {
 
 		// Decision Quiz Engine.
 		( new QuizEngine() )->register();
+
+		// Price Comparison Engine.
+		( new PriceComparison() )->register();
+
+		// Revenue Tracker.
+		( new RevenueTracker() )->register();
+
+		// CRO Engine (A/B testing for CTAs).
+		( new CROEngine() )->register();
+
+		// Podcast Generator.
+		( new PodcastGenerator() )->register();
+
+		// Hreflang Manager (international SEO).
+		( new HreflangManager() )->register();
+
+		// Tenant Onboarding Controller.
+		( new TenantOnboardingController() )->register();
+
+		// Query Optimizer (persistent cache + slow-query monitor).
+		( new QueryOptimizer() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {

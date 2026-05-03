@@ -59,6 +59,7 @@ use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\PublishScheduler;
 use PearBlogEngine\SEO\InternalLinker;
 use PearBlogEngine\Tenant\TenantContext;
+use PearBlogEngine\Tenant\TenantOnboardingController;
 
 /**
  * Manage the PearBlog Engine content pipeline.
@@ -1319,5 +1320,111 @@ PHP;
 		} catch ( \Throwable $e ) {
 			\WP_CLI::error( 'Failed: ' . $e->getMessage() );
 		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Tenant management
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Manage PearBlog tenants.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   create   Provision a new tenant site.
+	 *   list     List all provisioned tenants.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog tenant create --domain=client.example.com --industry=finance --plan=pro
+	 *   wp pearblog tenant list
+	 *
+	 * @subcommand tenant
+	 * @when       after_wp_load
+	 */
+	public function tenant( array $args, array $assoc_args ): void {
+		$sub = $args[0] ?? '';
+
+		switch ( $sub ) {
+			case 'create':
+				$this->tenant_create( $assoc_args );
+				break;
+
+			case 'list':
+				$this->tenant_list();
+				break;
+
+			default:
+				\WP_CLI::error( "Unknown subcommand: '{$sub}'. Available: create, list." );
+		}
+	}
+
+	/**
+	 * Provision a new tenant (called by `tenant create`).
+	 *
+	 * @param array $assoc_args CLI assoc args.
+	 */
+	private function tenant_create( array $assoc_args ): void {
+		$domain = $assoc_args['domain'] ?? '';
+		if ( ! $domain ) {
+			\WP_CLI::error( 'Usage: wp pearblog tenant create --domain=<domain> [--industry=...] [--plan=starter|pro|enterprise] [--title=...] [--language=...] [--admin=<email>]' );
+			return;
+		}
+
+		$params = [
+			'domain'      => $domain,
+			'title'       => $assoc_args['title']    ?? $domain,
+			'industry'    => $assoc_args['industry']  ?? 'general',
+			'tone'        => $assoc_args['tone']      ?? 'professional',
+			'language'    => $assoc_args['language']  ?? 'en',
+			'plan'        => $assoc_args['plan']      ?? 'starter',
+			'admin_email' => $assoc_args['admin']     ?? get_option( 'admin_email', '' ),
+		];
+
+		\WP_CLI::log( "Provisioning tenant '{$params['domain']}'…" );
+
+		$controller = new TenantOnboardingController();
+		$result     = $controller->provision( $params );
+
+		if ( is_wp_error( $result ) ) {
+			\WP_CLI::error( $result->get_error_message() );
+			return;
+		}
+
+		\WP_CLI::success( "Tenant provisioned successfully!" );
+		\WP_CLI::log( sprintf( '  Domain   : %s', $result['domain'] ) );
+		\WP_CLI::log( sprintf( '  Site ID  : %d', $result['site_id'] ) );
+		\WP_CLI::log( sprintf( '  Plan     : %s', $result['plan'] ) );
+		\WP_CLI::log( sprintf( '  Industry : %s', $result['industry'] ) );
+		\WP_CLI::log( sprintf( '  Admin    : %s', $result['admin_email'] ) );
+		if ( ! empty( $result['admin_url'] ) ) {
+			\WP_CLI::log( sprintf( '  Admin URL: %s', $result['admin_url'] ) );
+		}
+	}
+
+	/**
+	 * List provisioned tenants (called by `tenant list`).
+	 */
+	private function tenant_list(): void {
+		$controller = new TenantOnboardingController();
+		$tenants    = $controller->list_tenants();
+
+		if ( empty( $tenants ) ) {
+			\WP_CLI::log( 'No tenants provisioned yet.' );
+			return;
+		}
+
+		$rows = array_map( static function ( array $t ): array {
+			return [
+				'Site ID'     => $t['site_id'] ?? '-',
+				'Domain'      => $t['domain']  ?? '-',
+				'Plan'        => $t['plan']    ?? '-',
+				'Industry'    => $t['industry'] ?? '-',
+				'Language'    => $t['language'] ?? '-',
+				'Provisioned' => isset( $t['provisioned'] ) ? gmdate( 'Y-m-d', $t['provisioned'] ) : '-',
+			];
+		}, $tenants );
+
+		\WP_CLI\Utils\format_items( 'table', $rows, array_keys( $rows[0] ) );
 	}
 }

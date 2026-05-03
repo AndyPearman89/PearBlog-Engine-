@@ -57,11 +57,33 @@ All notable changes to PearBlog Engine are documented in this file.
 #### Decision Platform
 
 - **`QuizEngine`** (`src/DecisionPlatform/QuizEngine.php`) — interactive AI-powered decision quizzes; custom post type `pearblog_quiz`; questions stored as JSON in post meta; AI generates personalized recommendations based on user answers; lead capture (name + email) with recommendation email delivery; `[pearblog_quiz id="123"]` shortcode; REST `GET /pearblog/v1/quiz/{id}` and `POST /pearblog/v1/quiz/{id}/submit`; up to 500 leads stored in `pearblog_quiz_leads` option.
+- **`PriceComparison`** (`src/DecisionPlatform/PriceComparison.php`) — real-time price aggregation for decision-type articles; `[pearblog_price_comparison product="..."]` shortcode renders interactive comparison table; price-drop alert subscriptions via `POST /pearblog/v1/prices/alert`; hourly cron refreshes data and sends email alerts; extensible via `pearblog_price_fetch_{product}` filter.
+
+#### AI (continued)
+
+- **`PodcastGenerator`** (`src/AI/PodcastGenerator.php`) — converts published articles into podcast scripts (GPT-4o-mini) and MP3 audio files (ElevenLabs TTS); auto-inserts HTML5 `<audio>` player before post content; REST `POST /pearblog/v1/article/{id}/podcast` and `GET /pearblog/v1/article/{id}/podcast`; optional `pearblog_podcast_auto_insert` on publish; audio saved to `wp-content/uploads/pearblog-podcasts/`.
+
+#### Monetization (continued)
+
+- **`CROEngine`** (`src/Monetization/CROEngine.php`) — A/B testing for CTA variants using `<!-- cro:{id} -->` content placeholders; round-robin cookie-based variant assignment; two-proportion z-test for statistical significance (min 100 impressions, z ≥ 1.96); auto-promotes winner on daily cron; REST full CRUD for experiments plus `POST /pearblog/v1/cro/track`; fires `pearblog_cro_winner_promoted` action.
+- **`RevenueTracker`** (`src/Monetization/RevenueTracker.php`) — per-article revenue attribution (AdSense clicks, affiliate conversions); ROI calculator comparing AI generation cost vs revenue; REST `GET /pearblog/v1/revenue`, `/revenue/{post_id}`, `POST /revenue/{post_id}/track`.
+
+#### SEO (continued)
+
+- **`HreflangManager`** (`src/SEO/HreflangManager.php`) — outputs `<link rel="alternate" hreflang="...">` tags in `<head>`; per-language XML sitemaps at `/pearblog-sitemap-{lang}.xml`; DeepL API integration for automatic translation; REST `POST /pearblog/v1/hreflang/{id}/translate`; `pearblog_hreflang_auto_trans` option triggers auto-translation on publish.
+
+#### Tenant (continued)
+
+- **`TenantOnboardingController`** (`src/Tenant/TenantOnboardingController.php`) — REST `POST /pearblog/v1/tenant/provision` provisions new tenant (sub-site on multisite + PearBlog settings); WP-CLI `wp pearblog tenant create --domain=... --industry=... --plan=pro`; tenant registry stored in `pearblog_tenant_registry` option; `wp pearblog tenant list` shows all tenants.
+
+#### Cache / Performance (continued)
+
+- **`QueryOptimizer`** (`src/Cache/QueryOptimizer.php`) — static `QueryOptimizer::cached_query()` wraps any WP DB query with object-cache + transient fallback; slow-query instrumentation with configurable threshold (`pearblog_query_slow_threshold_ms`, default 500 ms); hit/miss stats and slow-query log accessible via REST `GET /pearblog/v1/query-cache/stats` and admin submenu; weekly cron trims log to last 100 entries.
 
 ### Changed
 
-- `Plugin::boot()` — registers all 20 new enterprise modules in priority order (P0 → P1 → P2); ContentModerator and PIIDetector run at pipeline priority 8–9 (before social publish at 20).
-- `PearBlogCommand` — added `video` subcommand (`wp pearblog video script <post_id> [--platform=youtube|tiktok|shorts]`).
+- `Plugin::boot()` — registers all 28 new enterprise modules in priority order (P0 → P1 → P2); ContentModerator and PIIDetector run at pipeline priority 8–9; 8 additional modules registered in this session (PriceComparison, RevenueTracker, CROEngine, PodcastGenerator, HreflangManager, TenantOnboardingController, QueryOptimizer).
+- `PearBlogCommand` — added `video` subcommand (`wp pearblog video script <post_id> [--platform=youtube|tiktok|shorts]`) and `tenant` subcommand (`wp pearblog tenant create/list`).
 
 ## [7.8.0] — 2026-04-13
 
