@@ -48,6 +48,9 @@ require_once PEARBLOG_DIR . '/inc/poradnik-v4-helpers.php';
 // Poradnik.pro Landing V5 — Conversion System
 require_once PEARBLOG_DIR . '/inc/poradnik-landing-v5-handler.php';
 
+// Poradnik.pro Landing V5 — Admin Dashboard
+require_once PEARBLOG_DIR . '/inc/poradnik-landing-v5-admin.php';
+
 /**
  * Theme setup
  */
