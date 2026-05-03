@@ -39,6 +39,9 @@ class AnalyticsDashboard {
 	/** Normalisation divisor: N views maps to 100 performance points (e.g. 1000 views = 100). */
 	public const VIEWS_SCORE_NORMALIZER = 10;
 
+	/** GA4 adapter used for analytics reads/sync. */
+	private GA4Client $ga4;
+
 	public function __construct( ?GA4Client $ga4 = null ) {
 		$this->ga4 = $ga4 ?? new GA4Client();
 	}
