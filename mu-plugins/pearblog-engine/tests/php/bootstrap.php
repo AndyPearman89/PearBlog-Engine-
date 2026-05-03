@@ -588,7 +588,8 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
-		return 'https://example.com/post/' . (int) $post_id . '/';
+		$id = is_object( $post_id ) ? ( $post_id->ID ?? 0 ) : (int) $post_id;
+		return 'https://example.com/post/' . $id . '/';
 	}
 }
 
@@ -715,6 +716,115 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 			$this->headers[ $name ] = $value;
 		}
 		public function get_headers(): array { return $this->headers; }
+	}
+}
+
+// -----------------------------------------------------------------------
+// Additional stubs for v8.1 modules.
+// -----------------------------------------------------------------------
+
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ): string|false {
+		return $GLOBALS['_post_type'] ?? 'post';
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( int $post_id = 0 ): array|false {
+		return $GLOBALS['_post_tags'][ $post_id ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'sanitize_html_class' ) ) {
+	function sanitize_html_class( string $class, string $fallback = '' ): string {
+		return preg_replace( '/[^a-zA-Z0-9_-]/', '-', $class ) ?: $fallback;
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post' ): object {
+		return (object) [ 'publish' => (int) ( $GLOBALS['_post_count'] ?? 0 ) ];
+	}
+}
+
+if ( ! function_exists( 'wp_is_post_revision' ) ) {
+	function wp_is_post_revision( int $post_id ): bool {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
+	function get_the_post_thumbnail_url( $post = null, string $size = 'post-thumbnail' ): string|false {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, string $more = null ): string {
+		$words = explode( ' ', $text );
+		if ( count( $words ) <= $num_words ) {
+			return $text;
+		}
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . ( $more ?? ' ...' );
+	}
+}
+
+if ( ! function_exists( 'get_query_var' ) ) {
+	function get_query_var( string $var, $default = '' ): mixed {
+		return $GLOBALS['_query_vars'][ $var ] ?? $default;
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $redirect, string $after = 'bottom' ): void {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $redirect, $after ];
+	}
+}
+
+if ( ! function_exists( 'add_meta_box' ) ) {
+	function add_meta_box( string $id, string $title, callable $callback, string $screen = '', string $context = 'advanced', string $priority = 'default', ?array $callback_args = null ): void {
+		$GLOBALS['_meta_boxes'][] = compact( 'id', 'title', 'screen' );
+	}
+}
+
+if ( ! function_exists( 'wp_get_attachment_url' ) ) {
+	function wp_get_attachment_url( int $attachment_id ): string|false {
+		return $GLOBALS['_attachment_urls'][ $attachment_id ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_get_attachment_caption' ) ) {
+	function wp_get_attachment_caption( int $post_id ): string|false {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'get_post_modified_time' ) ) {
+	function get_post_modified_time( string $format = 'U', bool $gmt = false, $post = null, bool $translate = false ): string|int|false {
+		return date( $format );
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null, bool $translate = false ): string|int|false {
+		return date( $format );
+	}
+}
+
+if ( ! function_exists( 'robots_txt' ) ) {
+	// Stub: robots_txt is a filter, not a function. register_rewrites test uses add_filter.
+}
+
+if ( ! function_exists( 'WP_Query' ) ) {
+	// WP_Query is stubbed as a class below.
+}
+
+if ( ! class_exists( 'WP_Query' ) ) {
+	class WP_Query {
+		public array $posts = [];
+		public function __construct( array $args = [] ) {
+			$this->posts = $GLOBALS['_wp_query_posts'] ?? [];
+		}
 	}
 }
 

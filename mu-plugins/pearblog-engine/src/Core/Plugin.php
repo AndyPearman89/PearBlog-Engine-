@@ -74,6 +74,9 @@ use PearBlogEngine\Pipeline\BackgroundProcessor;
 use PearBlogEngine\Scheduler\TimeZoneScheduler;
 use PearBlogEngine\SEO\XmlSitemapManager;
 use PearBlogEngine\Social\SocialCalendar;
+use PearBlogEngine\AI\ContentRewriter;
+use PearBlogEngine\Analytics\SearchIntentEngine;
+use PearBlogEngine\Distribution\RSSFeedBuilder;
 use PearBlogEngine\Webhook\WebhookManager;
 
 /**
@@ -337,6 +340,17 @@ class Plugin {
 
 		// Social Calendar (multi-platform post scheduling).
 		( new SocialCalendar() )->register();
+
+		// ── Enterprise v8.2 ───────────────────────────────────────────────────
+
+		// Content Rewriter (AI-powered refresh & full-rewrite engine).
+		( new ContentRewriter() )->register();
+
+		// Search Intent Engine (classifies informational/commercial/transactional).
+		( new SearchIntentEngine() )->register();
+
+		// RSS Feed Builder (rich feeds: media, Dublin Core, podcast RSS).
+		( new RSSFeedBuilder() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
