@@ -89,7 +89,7 @@ class KeywordEngine:
         Return a KeywordData object for the given keyword.
 
         Args:
-            keyword: Keyword to analyse
+            keyword: Keyword to analyze
             niche: Content niche
 
         Returns:
