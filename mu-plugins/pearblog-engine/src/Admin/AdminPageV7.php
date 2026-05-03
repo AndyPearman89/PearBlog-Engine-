@@ -63,6 +63,10 @@ class AdminPageV7 {
 		add_action( 'admin_post_pearblog_save_seo_settings', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_seo_settings' ] );
 		add_action( 'admin_post_pearblog_save_internal_links', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_internal_links' ] );
 		add_action( 'admin_post_pearblog_save_programmatic_seo', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_programmatic_seo' ] );
+		add_action( 'admin_post_pearblog_save_schedule', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_save_schedule' ] );
+		add_action( 'admin_post_pearblog_save_cron_settings', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_save_cron_settings' ] );
+		add_action( 'admin_post_pearblog_add_topic', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_add_topic' ] );
+		add_action( 'admin_post_pearblog_delete_topic', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_delete_topic' ] );
 	}
 
 	/**
@@ -301,17 +305,7 @@ class AdminPageV7 {
 	 * Render Automation tab - Queue & scheduling.
 	 */
 	private function render_automation_tab(): void {
-		?>
-		<div class="pearblog-v7-automation">
-			<h2><?php echo esc_html__( 'Automation & Scheduling', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Manage topic queue and publishing schedule.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Migrating from v6 Settings', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'Automation features from v6 will be enhanced and moved here.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		AutomationTab::render();
 	}
 
 	/**

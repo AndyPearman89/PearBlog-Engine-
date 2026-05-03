@@ -1459,6 +1459,221 @@
 }
 
 /* ==========================================
+   Automation Tab
+   ========================================== */
+.pearblog-v7-automation {
+	max-width: 1400px;
+}
+
+.pearblog-automation-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-automation-header h2 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-automation-header .description {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	margin: 0;
+}
+
+/* Automation Forms */
+.pearblog-automation-form {
+	max-width: 800px;
+}
+
+/* Hours Grid */
+.pearblog-hours-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.pearblog-hour-checkbox {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+	background: var(--pb-v7-light);
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.pearblog-hour-checkbox:hover {
+	border-color: var(--pb-v7-primary);
+	background: #e0f2fe;
+}
+
+.pearblog-hour-checkbox input[type="checkbox"] {
+	display: none;
+}
+
+.pearblog-hour-checkbox input[type="checkbox"]:checked + span {
+	color: #fff;
+}
+
+.pearblog-hour-checkbox:has(input:checked) {
+	background: var(--pb-v7-primary);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+}
+
+/* Queue Actions */
+.pearblog-queue-actions {
+	margin-bottom: 24px;
+}
+
+.pearblog-inline-form {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.pearblog-inline-form .pearblog-input {
+	flex: 1;
+}
+
+.pearblog-queue-bulk-actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* Priority Badges */
+.pearblog-priority-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 700;
+	border-radius: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.pearblog-priority-high {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.pearblog-priority-normal {
+	background: #e0f2fe;
+	color: #075985;
+}
+
+.pearblog-priority-low {
+	background: #f3f4f6;
+	color: #6b7280;
+}
+
+/* Cron Jobs */
+.pearblog-cron-status {
+	margin-top: 32px;
+}
+
+.pearblog-cron-status h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+.pearblog-cron-table {
+	margin-top: 16px;
+}
+
+/* Workflow Cards */
+.pearblog-workflows-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+}
+
+.pearblog-workflow-card {
+	background: #fff;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	transition: all 0.2s ease;
+}
+
+.pearblog-workflow-card:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: var(--pb-v7-shadow);
+	transform: translateY(-2px);
+}
+
+.pearblog-workflow-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.pearblog-workflow-icon {
+	font-size: 32px;
+}
+
+.pearblog-workflow-header h4 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-workflow-card p {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 16px;
+	flex: 1;
+}
+
+.pearblog-workflow-card .pearblog-switch {
+	align-self: flex-start;
+}
+
+/* Rate Selector */
+.pearblog-rate-selector {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Automation Responsive */
+@media (max-width: 768px) {
+	.pearblog-hours-grid {
+		grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+	}
+
+	.pearblog-workflows-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.pearblog-inline-form {
+		flex-direction: column;
+	}
+
+	.pearblog-queue-bulk-actions {
+		flex-direction: column;
+	}
+
+	.pearblog-queue-bulk-actions .pearblog-button {
+		width: 100%;
+	}
+}
+
+/* ==========================================
    Dark Mode Support (Future)
    ========================================== */
 @media (prefers-color-scheme: dark) {
