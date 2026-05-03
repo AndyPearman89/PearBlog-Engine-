@@ -45,7 +45,7 @@ if ( ! function_exists( 'update_blog_option' ) ) {
 
 if ( ! function_exists( 'get_current_blog_id' ) ) {
 	function get_current_blog_id(): int {
-		return 1;
+		return $GLOBALS['_current_blog_id'] ?? 1;
 	}
 }
 
@@ -615,6 +615,69 @@ if ( ! function_exists( 'current_time' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_get_current_user' ) ) {
+	function wp_get_current_user() {
+		return (object) [
+			'ID'         => $GLOBALS['current_user']->ID ?? 0,
+			'user_login' => $GLOBALS['current_user']->user_login ?? '',
+			'roles'      => $GLOBALS['current_user']->roles ?? [],
+		];
+	}
+}
+
+if ( ! function_exists( 'is_multisite' ) ) {
+	function is_multisite(): bool {
+		return $GLOBALS['_is_multisite'] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_get_theme' ) ) {
+	function wp_get_theme() {
+		return new class {
+			public function get( string $header ): string {
+				return 'Test Theme';
+			}
+		};
+	}
+}
+
+if ( ! function_exists( 'gmdate' ) ) {
+	function gmdate( string $format, ?int $timestamp = null ): string {
+		return \gmdate( $format, $timestamp ?? time() );
+	}
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	function sanitize_text_field( $str ): string {
+		return is_string( $str ) ? trim( strip_tags( $str ) ) : '';
+	}
+}
+
+if ( ! function_exists( 'esc_url_raw' ) ) {
+	function esc_url_raw( $url ): string {
+		return is_string( $url ) ? $url : '';
+	}
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return is_string( $value ) ? stripslashes( $value ) : $value;
+	}
+}
+
+if ( ! function_exists( 'wp_parse_args' ) ) {
+	function wp_parse_args( $args, $defaults = [] ): array {
+		if ( is_object( $args ) ) {
+			$parsed = get_object_vars( $args );
+		} elseif ( is_array( $args ) ) {
+			$parsed = $args;
+		} else {
+			parse_str( (string) $args, $parsed );
+		}
+		return array_merge( $defaults, $parsed );
+	}
+}
+
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
@@ -623,6 +686,17 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 }
 if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
 	define( 'MINUTE_IN_SECONDS', 60 );
+}
+
+// WordPress database result types
+if ( ! defined( 'OBJECT' ) ) {
+	define( 'OBJECT', 'OBJECT' );
+}
+if ( ! defined( 'ARRAY_A' ) ) {
+	define( 'ARRAY_A', 'ARRAY_A' );
+}
+if ( ! defined( 'ARRAY_N' ) ) {
+	define( 'ARRAY_N', 'ARRAY_N' );
 }
 
 // Reset global test state before each test.
@@ -637,6 +711,14 @@ $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
 $GLOBALS['_is_singular']    = false;
 $GLOBALS['_is_admin']       = false;
+$GLOBALS['_db_inserts']     = [];
+$GLOBALS['_db_queries']     = [];
+$GLOBALS['_db_results']     = [];
+$GLOBALS['_db_affected_rows'] = 0;
+$GLOBALS['_db_level_counts'] = [];
+$GLOBALS['_db_channel_counts'] = [];
+$GLOBALS['_is_multisite']   = false;
+$GLOBALS['_current_blog_id'] = 1;
 
 // WordPress class stubs.
 if ( ! class_exists( 'WP_Post' ) ) {
@@ -715,6 +797,92 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 			$this->headers[ $name ] = $value;
 		}
 		public function get_headers(): array { return $this->headers; }
+		public function get_data() { return $this->data; }
+		public function get_status(): int { return $this->status; }
+	}
+}
+
+// Mock wpdb class for database testing
+if ( ! isset( $GLOBALS['wpdb'] ) ) {
+	$GLOBALS['wpdb'] = new class {
+		public string $prefix = 'wp_';
+		public int $insert_id = 1;
+		public string $last_error = '';
+
+		public function get_charset_collate(): string {
+			return 'DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci';
+		}
+
+		public function insert( string $table, array $data, array $format = [] ) {
+			$GLOBALS['_db_inserts'][] = array_merge( [ '_table' => $table ], $data );
+			return 1;
+		}
+
+		public function prepare( string $query, ...$args ) {
+			// Handle array arguments (for bulk operations)
+			if ( count( $args ) === 1 && is_array( $args[0] ) ) {
+				$args = $args[0];
+			}
+
+			// Simple prepare that handles %s and %d placeholders
+			$query = str_replace( '%s', "'%s'", $query );
+			$query = str_replace( '%d', '%d', $query );
+
+			return vsprintf( $query, $args );
+		}
+
+		public function query( string $query ) {
+			$GLOBALS['_db_queries'][] = $query;
+
+			// Track INSERT queries in _db_inserts for testing
+			if ( stripos( $query, 'INSERT INTO' ) === 0 ) {
+				$GLOBALS['_db_inserts'][] = [ '_query' => $query ];
+			}
+
+			return $GLOBALS['_db_affected_rows'] ?? 1;
+		}
+
+		public function get_results( string $query, string $output = OBJECT ) {
+			// Support multiple sequential calls by checking query content
+			if ( stripos( $query, 'GROUP BY level' ) !== false && ! empty( $GLOBALS['_db_level_counts'] ) ) {
+				return $GLOBALS['_db_level_counts'];
+			}
+			if ( stripos( $query, 'GROUP BY channel' ) !== false && ! empty( $GLOBALS['_db_channel_counts'] ) ) {
+				return $GLOBALS['_db_channel_counts'];
+			}
+			return $GLOBALS['_db_results'] ?? [];
+		}
+
+		public function get_var( string $query ) {
+			if ( ! empty( $GLOBALS['_db_results'] ) ) {
+				$first = $GLOBALS['_db_results'][0];
+				return is_array( $first ) ? reset( $first ) : $first;
+			}
+			if ( ! empty( $GLOBALS['_db_level_counts'] ) ) {
+				return $GLOBALS['_db_level_counts'];
+			}
+			if ( ! empty( $GLOBALS['_db_channel_counts'] ) ) {
+				return $GLOBALS['_db_channel_counts'];
+			}
+			return null;
+		}
+
+		public function esc_like( string $text ): string {
+			return addcslashes( $text, '_%\\' );
+		}
+	};
+}
+
+// Define ABSPATH if not already defined
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', '/tmp/' );
+}
+
+// dbDelta function stub
+if ( ! function_exists( 'dbDelta' ) ) {
+	function dbDelta( $queries ) {
+		$GLOBALS['_db_queries'][] = $queries;
+		return [ 'Created table wp_pearblog_logs' ];
 	}
 }
 
