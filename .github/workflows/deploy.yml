@@ -140,6 +140,29 @@ jobs:
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
             "cd '${{ steps.vars.outputs.wp_path }}' && wp cache flush --allow-root 2>/dev/null || true"
 
+      - name: Enterprise V8 admin smoke test via key
+        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
+        run: |
+          ssh -p "${{ steps.vars.outputs.ssh_port }}" \
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
+            "cd '${{ steps.vars.outputs.wp_path }}' && wp eval 'echo class_exists(\"PearBlogEngine\\\\Admin\\\\AdminPageV8Enterprise\") ? \"CLASS_OK\\n\" : \"CLASS_MISSING\\n\"; global \$menu; do_action(\"admin_menu\"); \$found=false; foreach ((array) \$menu as \$item) { if (isset(\$item[2]) && \$item[2] === \"pearblog-enterprise-v8\") { \$found=true; break; } } echo \$found ? \"MENU_OK\\n\" : \"MENU_MISSING\\n\";' --allow-root" \
+            | tee smoke-output.txt
+
+          grep -q '^CLASS_OK$' smoke-output.txt
+          grep -q '^MENU_OK$' smoke-output.txt
+
+      - name: Enterprise V8 admin smoke test via password
+        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        run: |
+          sshpass -p "${{ secrets.SSH_PASSWORD }}" \
+            ssh -p "${{ steps.vars.outputs.ssh_port }}" \
+            "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
+            "cd '${{ steps.vars.outputs.wp_path }}' && wp eval 'echo class_exists(\"PearBlogEngine\\\\Admin\\\\AdminPageV8Enterprise\") ? \"CLASS_OK\\n\" : \"CLASS_MISSING\\n\"; global \$menu; do_action(\"admin_menu\"); \$found=false; foreach ((array) \$menu as \$item) { if (isset(\$item[2]) && \$item[2] === \"pearblog-enterprise-v8\") { \$found=true; break; } } echo \$found ? \"MENU_OK\\n\" : \"MENU_MISSING\\n\";' --allow-root" \
+            | tee smoke-output.txt
+
+          grep -q '^CLASS_OK$' smoke-output.txt
+          grep -q '^MENU_OK$' smoke-output.txt
+
       - name: Deployment summary
         run: |
           echo "✅ Deploy complete"
