@@ -88,9 +88,10 @@ class PerformanceDashboard {
 	 *
 	 * @param int    $post_id          ID of the published post.
 	 * @param string $topic            Article topic.
-	 * @param float  $duration_seconds Time the pipeline took (seconds).
+	 * @param mixed  $duration_or_context Time in seconds (legacy) or pipeline context object.
 	 */
-	public function record_pipeline_run( int $post_id, string $topic = '', float $duration_seconds = 0.0 ): void {
+	public function record_pipeline_run( int $post_id, string $topic = '', $duration_or_context = 0.0 ): void {
+		$duration_seconds = is_numeric( $duration_or_context ) ? (float) $duration_or_context : 0.0;
 		$memory_peak = round( memory_get_peak_usage( true ) / ( 1024 * 1024 ), 2 );
 		$cost_cents  = AIClient::get_total_cost_cents();
 

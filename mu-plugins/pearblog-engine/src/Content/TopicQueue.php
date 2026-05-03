@@ -69,7 +69,9 @@ class TopicQueue {
 	 * @return string[]
 	 */
 	public function all(): array {
-		$raw = get_blog_option( $this->site_id, self::OPTION_KEY, [] );
+		$raw = \is_multisite()
+			? \get_blog_option( $this->site_id, self::OPTION_KEY, [] )
+			: \get_option( self::OPTION_KEY, [] );
 		return is_array( $raw ) ? array_values( $raw ) : [];
 	}
 
@@ -92,6 +94,11 @@ class TopicQueue {
 	// -----------------------------------------------------------------------
 
 	private function save( array $queue ): void {
-		update_blog_option( $this->site_id, self::OPTION_KEY, array_values( $queue ) );
+		if ( \is_multisite() ) {
+			\update_blog_option( $this->site_id, self::OPTION_KEY, array_values( $queue ) );
+			return;
+		}
+
+		\update_option( self::OPTION_KEY, array_values( $queue ) );
 	}
 }
