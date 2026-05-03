@@ -40,6 +40,7 @@ class AdminPageV7 {
 		'automation'    => '⚙️ Automation',
 		'analytics'     => '📈 Analytics',
 		'multisite'     => '🌐 Multisite/SaaS',
+		'performance'   => '⚡ Performance',
 		'settings'      => '⚙️ Settings',
 	];
 
@@ -251,6 +252,9 @@ class AdminPageV7 {
 			case 'multisite':
 				$this->render_multisite_tab();
 				break;
+			case 'performance':
+				$this->render_performance_tab();
+				break;
 			case 'settings':
 				$this->render_settings_tab();
 				break;
@@ -320,6 +324,13 @@ class AdminPageV7 {
 	 */
 	private function render_multisite_tab(): void {
 		MultisiteTab::render();
+	}
+
+	/**
+	 * Render Performance tab - Performance monitoring dashboard.
+	 */
+	private function render_performance_tab(): void {
+		PerformanceDashboardTab::render();
 	}
 
 	/**
