@@ -45,6 +45,17 @@ require_once PEARBLOG_DIR . '/inc/analytics-page.php';
 // Poradnik.pro V4 — Decision System
 require_once PEARBLOG_DIR . '/inc/poradnik-v4-helpers.php';
 
+// Poradnik.pro Landing V5 — Conversion System
+require_once PEARBLOG_DIR . '/inc/poradnik-landing-v5-handler.php';
+
+// Poradnik.pro Landing V5 — Admin Dashboard
+require_once PEARBLOG_DIR . '/inc/poradnik-landing-v5-admin.php';
+
+// Poradnik.pro Advanced Monetization Suite
+require_once PEARBLOG_DIR . '/inc/poradnik-ads-layout-pro.php';
+require_once PEARBLOG_DIR . '/inc/poradnik-affiliate-copy-generator.php';
+require_once PEARBLOG_DIR . '/inc/poradnik-rpm-lead-fusion.php';
+
 /**
  * Theme setup
  */

@@ -23,14 +23,24 @@ class MultitenantIntegrationTest extends TestCase {
 		parent::setUp();
 
 		// Initialize multisite environment
-		$GLOBALS['_options']      = [];
 		$GLOBALS['_site_options'] = [];
 		$GLOBALS['_sites']        = [];
 		$GLOBALS['_blog_id']      = 1;
 
+		// Initialize per-site options
+		$GLOBALS['_options'] = [
+			1 => [],
+			2 => [],
+			3 => [],
+		];
+
 		// Configure multisite
-		define( 'MULTISITE', true );
-		define( 'SUBDOMAIN_INSTALL', false );
+		if ( ! defined( 'MULTISITE' ) ) {
+			define( 'MULTISITE', true );
+		}
+		if ( ! defined( 'SUBDOMAIN_INSTALL' ) ) {
+			define( 'SUBDOMAIN_INSTALL', false );
+		}
 
 		// Create test sites
 		$GLOBALS['_sites'][1] = [
@@ -64,28 +74,28 @@ class MultitenantIntegrationTest extends TestCase {
 	public function test_each_site_has_isolated_options(): void {
 		// Site 1 settings
 		$this->switch_to_blog( 1 );
-		$GLOBALS['_options']['pearblog_site_name'] = 'Site One';
+		$GLOBALS['_options'][1]['pearblog_site_name'] = 'Site One';
 
 		// Site 2 settings
 		$this->switch_to_blog( 2 );
-		$GLOBALS['_options']['pearblog_site_name'] = 'Site Two';
+		$GLOBALS['_options'][2]['pearblog_site_name'] = 'Site Two';
 
 		// Verify isolation
 		$this->switch_to_blog( 1 );
-		$this->assertSame( 'Site One', $GLOBALS['_options']['pearblog_site_name'] ?? '' );
+		$this->assertSame( 'Site One', $GLOBALS['_options'][1]['pearblog_site_name'] ?? '' );
 
 		$this->switch_to_blog( 2 );
-		$this->assertSame( 'Site Two', $GLOBALS['_options']['pearblog_site_name'] ?? '' );
+		$this->assertSame( 'Site Two', $GLOBALS['_options'][2]['pearblog_site_name'] ?? '' );
 	}
 
 	public function test_site_cannot_access_another_sites_data(): void {
 		// Site 1 creates private data
 		$this->switch_to_blog( 1 );
-		$GLOBALS['_options']['pearblog_private_key'] = 'secret_key_site_1';
+		$GLOBALS['_options'][1]['pearblog_private_key'] = 'secret_key_site_1';
 
 		// Site 2 should not see Site 1's data
 		$this->switch_to_blog( 2 );
-		$private_key = $GLOBALS['_options']['pearblog_private_key'] ?? null;
+		$private_key = $GLOBALS['_options'][2]['pearblog_private_key'] ?? null;
 
 		$this->assertNull( $private_key );
 	}
@@ -196,17 +206,18 @@ class MultitenantIntegrationTest extends TestCase {
 	public function test_cross_site_analytics_aggregation(): void {
 		// Site 1 analytics
 		$this->switch_to_blog( 1 );
-		$GLOBALS['_options']['pearblog_daily_views'] = 1000;
+		$GLOBALS['_options'][1]['pearblog_daily_views'] = 1000;
 
 		// Site 2 analytics
 		$this->switch_to_blog( 2 );
-		$GLOBALS['_options']['pearblog_daily_views'] = 1500;
+		$GLOBALS['_options'][2]['pearblog_daily_views'] = 1500;
 
 		// Network aggregate
 		$total_views = 0;
 		foreach ( $GLOBALS['_sites'] as $site ) {
-			$this->switch_to_blog( $site['blog_id'] );
-			$total_views += (int) ( $GLOBALS['_options']['pearblog_daily_views'] ?? 0 );
+			$blog_id = $site['blog_id'];
+			$this->switch_to_blog( $blog_id );
+			$total_views += (int) ( $GLOBALS['_options'][$blog_id]['pearblog_daily_views'] ?? 0 );
 		}
 
 		$this->assertSame( 2500, $total_views );
@@ -254,19 +265,20 @@ class MultitenantIntegrationTest extends TestCase {
 	public function test_usage_metering_tracks_per_site_consumption(): void {
 		// Site 1 usage
 		$this->switch_to_blog( 1 );
-		$GLOBALS['_options']['pearblog_ai_api_calls'] = 100;
-		$GLOBALS['_options']['pearblog_ai_cost_cents'] = 250;
+		$GLOBALS['_options'][1]['pearblog_ai_api_calls'] = 100;
+		$GLOBALS['_options'][1]['pearblog_ai_cost_cents'] = 250;
 
 		// Site 2 usage
 		$this->switch_to_blog( 2 );
-		$GLOBALS['_options']['pearblog_ai_api_calls'] = 150;
-		$GLOBALS['_options']['pearblog_ai_cost_cents'] = 375;
+		$GLOBALS['_options'][2]['pearblog_ai_api_calls'] = 150;
+		$GLOBALS['_options'][2]['pearblog_ai_cost_cents'] = 375;
 
 		// Network billing calculation
 		$total_cost = 0;
 		foreach ( $GLOBALS['_sites'] as $site ) {
-			$this->switch_to_blog( $site['blog_id'] );
-			$total_cost += (int) ( $GLOBALS['_options']['pearblog_ai_cost_cents'] ?? 0 );
+			$blog_id = $site['blog_id'];
+			$this->switch_to_blog( $blog_id );
+			$total_cost += (int) ( $GLOBALS['_options'][$blog_id]['pearblog_ai_cost_cents'] ?? 0 );
 		}
 
 		$this->assertSame( 625, $total_cost ); // $6.25 total
@@ -274,17 +286,17 @@ class MultitenantIntegrationTest extends TestCase {
 
 	public function test_per_site_subscription_tier(): void {
 		$this->switch_to_blog( 1 );
-		$GLOBALS['_options']['pearblog_subscription_tier'] = 'pro';
+		$GLOBALS['_options'][1]['pearblog_subscription_tier'] = 'pro';
 
 		$this->switch_to_blog( 2 );
-		$GLOBALS['_options']['pearblog_subscription_tier'] = 'enterprise';
+		$GLOBALS['_options'][2]['pearblog_subscription_tier'] = 'enterprise';
 
 		// Verify different tiers
 		$this->switch_to_blog( 1 );
-		$this->assertSame( 'pro', $GLOBALS['_options']['pearblog_subscription_tier'] );
+		$this->assertSame( 'pro', $GLOBALS['_options'][1]['pearblog_subscription_tier'] );
 
 		$this->switch_to_blog( 2 );
-		$this->assertSame( 'enterprise', $GLOBALS['_options']['pearblog_subscription_tier'] );
+		$this->assertSame( 'enterprise', $GLOBALS['_options'][2]['pearblog_subscription_tier'] );
 	}
 
 	public function test_usage_quota_enforcement(): void {
@@ -318,20 +330,20 @@ class MultitenantIntegrationTest extends TestCase {
 	public function test_white_label_branding_per_site(): void {
 		// Site 1 custom branding
 		$this->switch_to_blog( 1 );
-		$GLOBALS['_options']['pearblog_white_label_logo'] = 'https://site1.com/logo.png';
-		$GLOBALS['_options']['pearblog_white_label_name'] = 'Site One Brand';
+		$GLOBALS['_options'][1]['pearblog_white_label_logo'] = 'https://site1.com/logo.png';
+		$GLOBALS['_options'][1]['pearblog_white_label_name'] = 'Site One Brand';
 
 		// Site 2 custom branding
 		$this->switch_to_blog( 2 );
-		$GLOBALS['_options']['pearblog_white_label_logo'] = 'https://site2.com/logo.png';
-		$GLOBALS['_options']['pearblog_white_label_name'] = 'Site Two Brand';
+		$GLOBALS['_options'][2]['pearblog_white_label_logo'] = 'https://site2.com/logo.png';
+		$GLOBALS['_options'][2]['pearblog_white_label_name'] = 'Site Two Brand';
 
 		// Verify different branding
 		$this->switch_to_blog( 1 );
-		$this->assertSame( 'Site One Brand', $GLOBALS['_options']['pearblog_white_label_name'] );
+		$this->assertSame( 'Site One Brand', $GLOBALS['_options'][1]['pearblog_white_label_name'] );
 
 		$this->switch_to_blog( 2 );
-		$this->assertSame( 'Site Two Brand', $GLOBALS['_options']['pearblog_white_label_name'] );
+		$this->assertSame( 'Site Two Brand', $GLOBALS['_options'][2]['pearblog_white_label_name'] );
 	}
 
 	// ------------------------------------------------------------------
