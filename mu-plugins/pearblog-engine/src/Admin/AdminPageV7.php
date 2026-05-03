@@ -60,6 +60,9 @@ class AdminPageV7 {
 		add_action( 'admin_post_pearblog_save_expert_routing', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_save_expert_routing' ] );
 		add_action( 'admin_post_pearblog_add_expert', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_add_expert' ] );
 		add_action( 'admin_post_pearblog_delete_expert', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_delete_expert' ] );
+		add_action( 'admin_post_pearblog_save_seo_settings', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_seo_settings' ] );
+		add_action( 'admin_post_pearblog_save_internal_links', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_internal_links' ] );
+		add_action( 'admin_post_pearblog_save_programmatic_seo', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_programmatic_seo' ] );
 	}
 
 	/**
@@ -267,17 +270,7 @@ class AdminPageV7 {
 	 * Render SEO Engine tab - SEO automation.
 	 */
 	private function render_seo_tab(): void {
-		?>
-		<div class="pearblog-v7-seo">
-			<h2><?php echo esc_html__( 'SEO Engine', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Automated SEO optimization and programmatic SEO.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Migrating from v6 Settings', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'SEO features from the v6 admin will be enhanced and moved here.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		SEOTab::render();
 	}
 
 	/**
