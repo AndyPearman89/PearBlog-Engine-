@@ -75,8 +75,11 @@ use PearBlogEngine\Scheduler\TimeZoneScheduler;
 use PearBlogEngine\SEO\XmlSitemapManager;
 use PearBlogEngine\Social\SocialCalendar;
 use PearBlogEngine\AI\ContentRewriter;
+use PearBlogEngine\Analytics\ConversionTracker;
 use PearBlogEngine\Analytics\SearchIntentEngine;
+use PearBlogEngine\Content\GlossaryBuilder;
 use PearBlogEngine\Distribution\RSSFeedBuilder;
+use PearBlogEngine\Monitoring\ErrorTracker;
 use PearBlogEngine\Webhook\WebhookManager;
 
 /**
@@ -351,6 +354,17 @@ class Plugin {
 
 		// RSS Feed Builder (rich feeds: media, Dublin Core, podcast RSS).
 		( new RSSFeedBuilder() )->register();
+
+		// ── Enterprise v8.3 ───────────────────────────────────────────────────
+
+		// Glossary Builder (auto-generates SEO glossary pages for topic clusters).
+		( new GlossaryBuilder() )->register();
+
+		// Error Tracker (captures PHP errors with admin notices and REST log).
+		( new ErrorTracker() )->register();
+
+		// Conversion Tracker (funnel-aware page-view, CTA, email-signup tracking).
+		( new ConversionTracker() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {

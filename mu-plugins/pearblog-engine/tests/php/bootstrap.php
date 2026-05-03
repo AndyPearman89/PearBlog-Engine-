@@ -155,6 +155,10 @@ if ( ! function_exists( 'do_action' ) ) {
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
+		// Support simple single-handler registry used in some tests.
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			( $GLOBALS['_action_handlers'][ $hook ] )( ...$args );
+		}
 	}
 }
 
@@ -335,6 +339,7 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
+		$GLOBALS['_rest_routes'][] = [ 'namespace' => $namespace, 'route' => $route ];
 		return true;
 	}
 }
@@ -716,6 +721,8 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 			$this->headers[ $name ] = $value;
 		}
 		public function get_headers(): array { return $this->headers; }
+		public function get_data(): mixed { return $this->data; }
+		public function get_status(): int { return $this->status; }
 	}
 }
 
