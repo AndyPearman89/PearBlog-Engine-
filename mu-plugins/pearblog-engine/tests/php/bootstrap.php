@@ -45,7 +45,7 @@ if ( ! function_exists( 'update_blog_option' ) ) {
 
 if ( ! function_exists( 'get_current_blog_id' ) ) {
 	function get_current_blog_id(): int {
-		return 1;
+		return $GLOBALS['_current_blog_id'] ?? 1;
 	}
 }
 
@@ -154,10 +154,6 @@ if ( ! function_exists( 'do_action' ) ) {
 	function do_action( string $hook, ...$args ): void {
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
-		}
-		// Support simple single-handler registry used in some tests.
-		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) ) {
-			( $GLOBALS['_action_handlers'][ $hook ] )( ...$args );
 		}
 	}
 }
@@ -339,7 +335,6 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
-		$GLOBALS['_rest_routes'][] = [ 'namespace' => $namespace, 'route' => $route ];
 		return true;
 	}
 }
@@ -593,8 +588,7 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
-		$id = is_object( $post_id ) ? ( $post_id->ID ?? 0 ) : (int) $post_id;
-		return 'https://example.com/post/' . $id . '/';
+		return 'https://example.com/post/' . (int) $post_id . '/';
 	}
 }
 
@@ -621,6 +615,69 @@ if ( ! function_exists( 'current_time' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_get_current_user' ) ) {
+	function wp_get_current_user() {
+		return (object) [
+			'ID'         => $GLOBALS['current_user']->ID ?? 0,
+			'user_login' => $GLOBALS['current_user']->user_login ?? '',
+			'roles'      => $GLOBALS['current_user']->roles ?? [],
+		];
+	}
+}
+
+if ( ! function_exists( 'is_multisite' ) ) {
+	function is_multisite(): bool {
+		return $GLOBALS['_is_multisite'] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_get_theme' ) ) {
+	function wp_get_theme() {
+		return new class {
+			public function get( string $header ): string {
+				return 'Test Theme';
+			}
+		};
+	}
+}
+
+if ( ! function_exists( 'gmdate' ) ) {
+	function gmdate( string $format, ?int $timestamp = null ): string {
+		return \gmdate( $format, $timestamp ?? time() );
+	}
+}
+
+if ( ! function_exists( 'sanitize_text_field' ) ) {
+	function sanitize_text_field( $str ): string {
+		return is_string( $str ) ? trim( strip_tags( $str ) ) : '';
+	}
+}
+
+if ( ! function_exists( 'esc_url_raw' ) ) {
+	function esc_url_raw( $url ): string {
+		return is_string( $url ) ? $url : '';
+	}
+}
+
+if ( ! function_exists( 'wp_unslash' ) ) {
+	function wp_unslash( $value ) {
+		return is_string( $value ) ? stripslashes( $value ) : $value;
+	}
+}
+
+if ( ! function_exists( 'wp_parse_args' ) ) {
+	function wp_parse_args( $args, $defaults = [] ): array {
+		if ( is_object( $args ) ) {
+			$parsed = get_object_vars( $args );
+		} elseif ( is_array( $args ) ) {
+			$parsed = $args;
+		} else {
+			parse_str( (string) $args, $parsed );
+		}
+		return array_merge( $defaults, $parsed );
+	}
+}
+
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
@@ -629,6 +686,17 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 }
 if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
 	define( 'MINUTE_IN_SECONDS', 60 );
+}
+
+// WordPress database result types
+if ( ! defined( 'OBJECT' ) ) {
+	define( 'OBJECT', 'OBJECT' );
+}
+if ( ! defined( 'ARRAY_A' ) ) {
+	define( 'ARRAY_A', 'ARRAY_A' );
+}
+if ( ! defined( 'ARRAY_N' ) ) {
+	define( 'ARRAY_N', 'ARRAY_N' );
 }
 
 // Reset global test state before each test.
@@ -643,6 +711,14 @@ $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
 $GLOBALS['_is_singular']    = false;
 $GLOBALS['_is_admin']       = false;
+$GLOBALS['_db_inserts']     = [];
+$GLOBALS['_db_queries']     = [];
+$GLOBALS['_db_results']     = [];
+$GLOBALS['_db_affected_rows'] = 0;
+$GLOBALS['_db_level_counts'] = [];
+$GLOBALS['_db_channel_counts'] = [];
+$GLOBALS['_is_multisite']   = false;
+$GLOBALS['_current_blog_id'] = 1;
 
 // WordPress class stubs.
 if ( ! class_exists( 'WP_Post' ) ) {
@@ -721,117 +797,92 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 			$this->headers[ $name ] = $value;
 		}
 		public function get_headers(): array { return $this->headers; }
-		public function get_data(): mixed { return $this->data; }
+		public function get_data() { return $this->data; }
 		public function get_status(): int { return $this->status; }
 	}
 }
 
-// -----------------------------------------------------------------------
-// Additional stubs for v8.1 modules.
-// -----------------------------------------------------------------------
+// Mock wpdb class for database testing
+if ( ! isset( $GLOBALS['wpdb'] ) ) {
+	$GLOBALS['wpdb'] = new class {
+		public string $prefix = 'wp_';
+		public int $insert_id = 1;
+		public string $last_error = '';
 
-if ( ! function_exists( 'get_post_type' ) ) {
-	function get_post_type( $post = null ): string|false {
-		return $GLOBALS['_post_type'] ?? 'post';
-	}
-}
-
-if ( ! function_exists( 'get_the_tags' ) ) {
-	function get_the_tags( int $post_id = 0 ): array|false {
-		return $GLOBALS['_post_tags'][ $post_id ] ?? false;
-	}
-}
-
-if ( ! function_exists( 'sanitize_html_class' ) ) {
-	function sanitize_html_class( string $class, string $fallback = '' ): string {
-		return preg_replace( '/[^a-zA-Z0-9_-]/', '-', $class ) ?: $fallback;
-	}
-}
-
-if ( ! function_exists( 'wp_count_posts' ) ) {
-	function wp_count_posts( string $type = 'post' ): object {
-		return (object) [ 'publish' => (int) ( $GLOBALS['_post_count'] ?? 0 ) ];
-	}
-}
-
-if ( ! function_exists( 'wp_is_post_revision' ) ) {
-	function wp_is_post_revision( int $post_id ): bool {
-		return false;
-	}
-}
-
-if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
-	function get_the_post_thumbnail_url( $post = null, string $size = 'post-thumbnail' ): string|false {
-		return false;
-	}
-}
-
-if ( ! function_exists( 'wp_trim_words' ) ) {
-	function wp_trim_words( string $text, int $num_words = 55, string $more = null ): string {
-		$words = explode( ' ', $text );
-		if ( count( $words ) <= $num_words ) {
-			return $text;
+		public function get_charset_collate(): string {
+			return 'DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci';
 		}
-		return implode( ' ', array_slice( $words, 0, $num_words ) ) . ( $more ?? ' ...' );
-	}
-}
 
-if ( ! function_exists( 'get_query_var' ) ) {
-	function get_query_var( string $var, $default = '' ): mixed {
-		return $GLOBALS['_query_vars'][ $var ] ?? $default;
-	}
-}
-
-if ( ! function_exists( 'add_rewrite_rule' ) ) {
-	function add_rewrite_rule( string $regex, string $redirect, string $after = 'bottom' ): void {
-		$GLOBALS['_rewrite_rules'][] = [ $regex, $redirect, $after ];
-	}
-}
-
-if ( ! function_exists( 'add_meta_box' ) ) {
-	function add_meta_box( string $id, string $title, callable $callback, string $screen = '', string $context = 'advanced', string $priority = 'default', ?array $callback_args = null ): void {
-		$GLOBALS['_meta_boxes'][] = compact( 'id', 'title', 'screen' );
-	}
-}
-
-if ( ! function_exists( 'wp_get_attachment_url' ) ) {
-	function wp_get_attachment_url( int $attachment_id ): string|false {
-		return $GLOBALS['_attachment_urls'][ $attachment_id ] ?? false;
-	}
-}
-
-if ( ! function_exists( 'wp_get_attachment_caption' ) ) {
-	function wp_get_attachment_caption( int $post_id ): string|false {
-		return false;
-	}
-}
-
-if ( ! function_exists( 'get_post_modified_time' ) ) {
-	function get_post_modified_time( string $format = 'U', bool $gmt = false, $post = null, bool $translate = false ): string|int|false {
-		return date( $format );
-	}
-}
-
-if ( ! function_exists( 'get_post_time' ) ) {
-	function get_post_time( string $format = 'U', bool $gmt = false, $post = null, bool $translate = false ): string|int|false {
-		return date( $format );
-	}
-}
-
-if ( ! function_exists( 'robots_txt' ) ) {
-	// Stub: robots_txt is a filter, not a function. register_rewrites test uses add_filter.
-}
-
-if ( ! function_exists( 'WP_Query' ) ) {
-	// WP_Query is stubbed as a class below.
-}
-
-if ( ! class_exists( 'WP_Query' ) ) {
-	class WP_Query {
-		public array $posts = [];
-		public function __construct( array $args = [] ) {
-			$this->posts = $GLOBALS['_wp_query_posts'] ?? [];
+		public function insert( string $table, array $data, array $format = [] ) {
+			$GLOBALS['_db_inserts'][] = array_merge( [ '_table' => $table ], $data );
+			return 1;
 		}
+
+		public function prepare( string $query, ...$args ) {
+			// Handle array arguments (for bulk operations)
+			if ( count( $args ) === 1 && is_array( $args[0] ) ) {
+				$args = $args[0];
+			}
+
+			// Simple prepare that handles %s and %d placeholders
+			$query = str_replace( '%s', "'%s'", $query );
+			$query = str_replace( '%d', '%d', $query );
+
+			return vsprintf( $query, $args );
+		}
+
+		public function query( string $query ) {
+			$GLOBALS['_db_queries'][] = $query;
+
+			// Track INSERT queries in _db_inserts for testing
+			if ( stripos( $query, 'INSERT INTO' ) === 0 ) {
+				$GLOBALS['_db_inserts'][] = [ '_query' => $query ];
+			}
+
+			return $GLOBALS['_db_affected_rows'] ?? 1;
+		}
+
+		public function get_results( string $query, string $output = OBJECT ) {
+			// Support multiple sequential calls by checking query content
+			if ( stripos( $query, 'GROUP BY level' ) !== false && ! empty( $GLOBALS['_db_level_counts'] ) ) {
+				return $GLOBALS['_db_level_counts'];
+			}
+			if ( stripos( $query, 'GROUP BY channel' ) !== false && ! empty( $GLOBALS['_db_channel_counts'] ) ) {
+				return $GLOBALS['_db_channel_counts'];
+			}
+			return $GLOBALS['_db_results'] ?? [];
+		}
+
+		public function get_var( string $query ) {
+			if ( ! empty( $GLOBALS['_db_results'] ) ) {
+				$first = $GLOBALS['_db_results'][0];
+				return is_array( $first ) ? reset( $first ) : $first;
+			}
+			if ( ! empty( $GLOBALS['_db_level_counts'] ) ) {
+				return $GLOBALS['_db_level_counts'];
+			}
+			if ( ! empty( $GLOBALS['_db_channel_counts'] ) ) {
+				return $GLOBALS['_db_channel_counts'];
+			}
+			return null;
+		}
+
+		public function esc_like( string $text ): string {
+			return addcslashes( $text, '_%\\' );
+		}
+	};
+}
+
+// Define ABSPATH if not already defined
+if ( ! defined( 'ABSPATH' ) ) {
+	define( 'ABSPATH', '/tmp/' );
+}
+
+// dbDelta function stub
+if ( ! function_exists( 'dbDelta' ) ) {
+	function dbDelta( $queries ) {
+		$GLOBALS['_db_queries'][] = $queries;
+		return [ 'Created table wp_pearblog_logs' ];
 	}
 }
 
