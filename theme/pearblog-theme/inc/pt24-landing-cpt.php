@@ -24,6 +24,7 @@ class PearBlog_PT24_Landing_CPT {
      * Services configuration
      */
     private static $services = [
+        'mechanik' => 'Mechanik',
         'hydraulik' => 'Hydraulik',
         'elektryk' => 'Elektryk',
         'pompa-ciepla' => 'Pompa ciepła',
@@ -94,9 +95,16 @@ class PearBlog_PT24_Landing_CPT {
     }
 
     /**
-     * Add custom rewrite rules for /{miasto}/{usluga} URL structure
+     * Add custom rewrite rules for /{miasto}/{usluga} and /ranking/{miasto}/{usluga} URL structure
      */
     public static function add_rewrite_rules() {
+        // Pattern: /ranking/{city}/{service}
+        add_rewrite_rule(
+            '^ranking/([^/]+)/([^/]+)/?$',
+            'index.php?post_type=pt24_landing&pt24_city=$matches[1]&pt24_service=$matches[2]&pt24_type=ranking',
+            'top'
+        );
+
         // Pattern: /{city}/{service}
         add_rewrite_rule(
             '^([^/]+)/([^/]+)/?$',
@@ -108,6 +116,7 @@ class PearBlog_PT24_Landing_CPT {
         add_filter('query_vars', function($vars) {
             $vars[] = 'pt24_city';
             $vars[] = 'pt24_service';
+            $vars[] = 'pt24_type';
             return $vars;
         });
     }
@@ -137,6 +146,7 @@ class PearBlog_PT24_Landing_CPT {
         // Check if this is a PT24 landing query
         $city = get_query_var('pt24_city');
         $service = get_query_var('pt24_service');
+        $type = get_query_var('pt24_type');
 
         if ($city && $service) {
             // Find the landing page post
@@ -165,10 +175,17 @@ class PearBlog_PT24_Landing_CPT {
                 global $wp_query;
                 $wp_query = $query;
 
-                // Load custom template
-                $custom_template = locate_template('single-pt24_landing.php');
-                if ($custom_template) {
-                    return $custom_template;
+                // Load ranking or landing template based on type
+                if ($type === 'ranking') {
+                    $custom_template = locate_template('ranking-pt24_landing.php');
+                    if ($custom_template) {
+                        return $custom_template;
+                    }
+                } else {
+                    $custom_template = locate_template('single-pt24_landing.php');
+                    if ($custom_template) {
+                        return $custom_template;
+                    }
                 }
             }
         }
