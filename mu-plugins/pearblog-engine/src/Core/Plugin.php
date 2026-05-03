@@ -21,6 +21,7 @@ use PearBlogEngine\Scheduler\PublishScheduler;
 use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\AdminPageV7;
+use PearBlogEngine\Admin\AdminPageV8Enterprise;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
 use PearBlogEngine\Admin\OnboardingWizard;
@@ -61,9 +62,11 @@ class Plugin {
 		// Core pipeline & admin.
 		( new CronManager() )->register();
 
-		// Feature flag: Use v7 admin if enabled, otherwise v6
-		$admin_version = defined( 'PEARBLOG_ADMIN_VERSION' ) ? PEARBLOG_ADMIN_VERSION : 'v6';
-		if ( 'v7' === $admin_version ) {
+		// Feature flag: Use v8 Enterprise, v7, or v6 admin
+		$admin_version = defined( 'PEARBLOG_ADMIN_VERSION' ) ? PEARBLOG_ADMIN_VERSION : 'v8';
+		if ( 'v8' === $admin_version || 'v8-enterprise' === $admin_version ) {
+			( new AdminPageV8Enterprise() )->register();
+		} elseif ( 'v7' === $admin_version ) {
 			( new AdminPageV7() )->register();
 		} else {
 			( new AdminPage() )->register();
