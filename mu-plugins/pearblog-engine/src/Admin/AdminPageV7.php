@@ -1,0 +1,339 @@
+<?php
+/**
+ * Admin Panel v7.0 - SaaS Control Center
+ *
+ * Transformed admin interface focused on revenue management and autonomous operations.
+ * Replaces settings-focused AdminPage with a comprehensive SaaS control center.
+ *
+ * @package PearBlogEngine\Admin
+ * @since 7.1.0
+ */
+
+declare(strict_types=1);
+
+namespace PearBlogEngine\Admin;
+
+use PearBlogEngine\AI\AIClient;
+use PearBlogEngine\AI\AIProviderFactory;
+use PearBlogEngine\Content\TopicQueue;
+use PearBlogEngine\Monitoring\PerformanceDashboard;
+use PearBlogEngine\Tenant\TenantContext;
+
+/**
+ * Admin Panel v7.0 with 10-tab SaaS Control Center architecture.
+ */
+class AdminPageV7 {
+
+	private const MENU_SLUG  = 'pearblog-engine-v7';
+	private const OPTION_GRP = 'pearblog_settings_v7';
+
+	/**
+	 * Available tabs in v7 admin.
+	 */
+	private const TABS = [
+		'dashboard'     => '📊 Dashboard',
+		'strategy'      => '🧠 Strategy (AI)',
+		'content'       => '✍️ Content Engine',
+		'seo'           => '🔍 SEO Engine',
+		'monetization'  => '💰 Monetization',
+		'leads'         => '👥 Leads & Experts',
+		'automation'    => '⚙️ Automation',
+		'analytics'     => '📈 Analytics',
+		'multisite'     => '🌐 Multisite/SaaS',
+		'settings'      => '⚙️ Settings',
+	];
+
+	/**
+	 * Attach WordPress admin hooks.
+	 */
+	public function register(): void {
+		add_action( 'admin_menu', [ $this, 'add_menu' ] );
+		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_admin_assets' ] );
+
+		// Admin POST handlers
+		add_action( 'admin_post_pearblog_v7_save_settings', [ $this, 'handle_save_settings' ] );
+		add_action( 'admin_post_pearblog_save_strategy', [ 'PearBlogEngine\Admin\StrategyTab', 'handle_save' ] );
+		add_action( 'admin_post_pearblog_batch_generate', [ 'PearBlogEngine\Admin\ContentEngineTab', 'handle_batch_generate' ] );
+		add_action( 'admin_post_pearblog_set_template', [ 'PearBlogEngine\Admin\ContentEngineTab', 'handle_set_template' ] );
+		add_action( 'admin_post_pearblog_save_leads_config', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_save_leads_config' ] );
+		add_action( 'admin_post_pearblog_save_expert_routing', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_save_expert_routing' ] );
+		add_action( 'admin_post_pearblog_add_expert', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_add_expert' ] );
+		add_action( 'admin_post_pearblog_delete_expert', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_delete_expert' ] );
+		add_action( 'admin_post_pearblog_save_seo_settings', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_seo_settings' ] );
+		add_action( 'admin_post_pearblog_save_internal_links', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_internal_links' ] );
+		add_action( 'admin_post_pearblog_save_programmatic_seo', [ 'PearBlogEngine\Admin\SEOTab', 'handle_save_programmatic_seo' ] );
+		add_action( 'admin_post_pearblog_save_schedule', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_save_schedule' ] );
+		add_action( 'admin_post_pearblog_save_cron_settings', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_save_cron_settings' ] );
+		add_action( 'admin_post_pearblog_add_topic', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_add_topic' ] );
+		add_action( 'admin_post_pearblog_delete_topic', [ 'PearBlogEngine\Admin\AutomationTab', 'handle_delete_topic' ] );
+		add_action( 'admin_post_pearblog_save_adsense', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_adsense' ] );
+		add_action( 'admin_post_pearblog_save_affiliate', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_affiliate' ] );
+		add_action( 'admin_post_pearblog_save_sponsored', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_sponsored' ] );
+		add_action( 'admin_post_pearblog_save_revenue_tracking', [ 'PearBlogEngine\Admin\MonetizationTab', 'handle_save_revenue_tracking' ] );
+		add_action( 'admin_post_pearblog_save_multisite_settings', [ 'PearBlogEngine\Admin\MultisiteTab', 'handle_save_multisite_settings' ] );
+		add_action( 'admin_post_pearblog_save_general_settings', [ 'PearBlogEngine\Admin\SettingsTab', 'handle_save_general_settings' ] );
+		add_action( 'admin_post_pearblog_save_ai_config', [ 'PearBlogEngine\Admin\SettingsTab', 'handle_save_ai_config' ] );
+		add_action( 'admin_post_pearblog_save_performance_settings', [ 'PearBlogEngine\Admin\SettingsTab', 'handle_save_performance_settings' ] );
+		add_action( 'admin_post_pearblog_save_security_settings', [ 'PearBlogEngine\Admin\SettingsTab', 'handle_save_security_settings' ] );
+		add_action( 'admin_post_pearblog_clear_cache', [ 'PearBlogEngine\Admin\SettingsTab', 'handle_clear_cache' ] );
+	}
+
+	/**
+	 * Register WordPress admin menu.
+	 */
+	public function add_menu(): void {
+		add_menu_page(
+			__( 'PearBlog v7', 'pearblog-engine' ),
+			__( 'PearBlog v7', 'pearblog-engine' ),
+			'manage_options',
+			self::MENU_SLUG,
+			[ $this, 'render_page' ],
+			'data:image/svg+xml;base64,' . base64_encode( $this->get_menu_icon() ),
+			25
+		);
+
+		// Add submenu for direct tab access
+		foreach ( self::TABS as $tab_id => $tab_label ) {
+			add_submenu_page(
+				self::MENU_SLUG,
+				$tab_label,
+				$tab_label,
+				'manage_options',
+				self::MENU_SLUG . '#' . $tab_id,
+				[ $this, 'render_page' ]
+			);
+		}
+	}
+
+	/**
+	 * Get menu icon SVG.
+	 */
+	private function get_menu_icon(): string {
+		return '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+			<circle cx="12" cy="12" r="10"/>
+			<path d="M12 6v6l4 2"/>
+		</svg>';
+	}
+
+	/**
+	 * Register settings with WordPress.
+	 */
+	public function register_settings(): void {
+		register_setting( self::OPTION_GRP, 'pearblog_admin_version' );
+		register_setting( self::OPTION_GRP, 'pearblog_v7_revenue_enabled' );
+		register_setting( self::OPTION_GRP, 'pearblog_v7_leads_enabled' );
+		register_setting( self::OPTION_GRP, 'pearblog_v7_experts_enabled' );
+	}
+
+	/**
+	 * Enqueue admin CSS/JS only on our page.
+	 *
+	 * @param string $hook Current admin page hook.
+	 */
+	public function enqueue_admin_assets( string $hook ): void {
+		if ( false === strpos( $hook, self::MENU_SLUG ) ) {
+			return;
+		}
+
+		// Enqueue v7 admin stylesheet
+		wp_enqueue_style(
+			'pearblog-admin-v7',
+			PEARBLOG_ENGINE_URL . 'assets/css/admin-v7.css',
+			[],
+			PEARBLOG_ENGINE_VERSION
+		);
+
+		// Enqueue Chart.js for dashboard
+		wp_enqueue_script(
+			'chartjs',
+			'https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js',
+			[],
+			'4.4.0',
+			true
+		);
+
+		// Enqueue v7 admin JavaScript
+		wp_enqueue_script(
+			'pearblog-admin-v7',
+			PEARBLOG_ENGINE_URL . 'assets/js/admin-v7.js',
+			[ 'jquery', 'chartjs' ],
+			PEARBLOG_ENGINE_VERSION,
+			true
+		);
+
+		// Localize script with API data
+		wp_localize_script(
+			'pearblog-admin-v7',
+			'pearblogAdminV7',
+			[
+				'ajaxurl'   => admin_url( 'admin-ajax.php' ),
+				'nonce'     => wp_create_nonce( 'pearblog_admin_v7' ),
+				'restUrl'   => rest_url( 'pearblog/v1/' ),
+				'restNonce' => wp_create_nonce( 'wp_rest' ),
+			]
+		);
+	}
+
+	/**
+	 * Render the admin page.
+	 */
+	public function render_page(): void {
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( __( 'You do not have sufficient permissions to access this page.', 'pearblog-engine' ) );
+		}
+
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( $_GET['tab'] ) : 'dashboard';
+		if ( ! array_key_exists( $current_tab, self::TABS ) ) {
+			$current_tab = 'dashboard';
+		}
+
+		?>
+		<div class="wrap pearblog-admin-v7">
+			<h1 class="pearblog-v7-title">
+				<span class="pearblog-logo">🍐</span>
+				<?php echo esc_html__( 'PearBlog Engine v7.0', 'pearblog-engine' ); ?>
+				<span class="pearblog-version-badge">SaaS Control Center</span>
+			</h1>
+
+			<!-- Tab Navigation -->
+			<nav class="pearblog-v7-tabs">
+				<?php foreach ( self::TABS as $tab_id => $tab_label ) : ?>
+					<button
+						class="pearblog-v7-tab <?php echo $tab_id === $current_tab ? 'is-active' : ''; ?>"
+						data-tab="<?php echo esc_attr( $tab_id ); ?>"
+						onclick="window.location.href='<?php echo esc_url( admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=' . $tab_id ) ); ?>'"
+					>
+						<?php echo esc_html( $tab_label ); ?>
+					</button>
+				<?php endforeach; ?>
+			</nav>
+
+			<!-- Tab Content -->
+			<div class="pearblog-v7-content">
+				<?php $this->render_tab_content( $current_tab ); ?>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render content for specific tab.
+	 *
+	 * @param string $tab_id Tab identifier.
+	 */
+	private function render_tab_content( string $tab_id ): void {
+		switch ( $tab_id ) {
+			case 'dashboard':
+				$this->render_dashboard_tab();
+				break;
+			case 'strategy':
+				$this->render_strategy_tab();
+				break;
+			case 'content':
+				$this->render_content_tab();
+				break;
+			case 'seo':
+				$this->render_seo_tab();
+				break;
+			case 'monetization':
+				$this->render_monetization_tab();
+				break;
+			case 'leads':
+				$this->render_leads_tab();
+				break;
+			case 'automation':
+				$this->render_automation_tab();
+				break;
+			case 'analytics':
+				$this->render_analytics_tab();
+				break;
+			case 'multisite':
+				$this->render_multisite_tab();
+				break;
+			case 'settings':
+				$this->render_settings_tab();
+				break;
+			default:
+				$this->render_dashboard_tab();
+		}
+	}
+
+	/**
+	 * Render Dashboard tab - Revenue & Performance Overview.
+	 */
+	private function render_dashboard_tab(): void {
+		DashboardTab::render();
+	}
+
+	/**
+	 * Render Strategy (AI) tab - AI-driven content strategy.
+	 */
+	private function render_strategy_tab(): void {
+		StrategyTab::render();
+	}
+
+	/**
+	 * Render Content Engine tab - Batch content operations.
+	 */
+	private function render_content_tab(): void {
+		ContentEngineTab::render();
+	}
+
+	/**
+	 * Render SEO Engine tab - SEO automation.
+	 */
+	private function render_seo_tab(): void {
+		SEOTab::render();
+	}
+
+	/**
+	 * Render Monetization tab - Revenue tracking & ad management.
+	 */
+	private function render_monetization_tab(): void {
+		MonetizationTab::render();
+	}
+
+	/**
+	 * Render Leads & Experts tab - Lead management.
+	 */
+	private function render_leads_tab(): void {
+		LeadsTab::render();
+	}
+
+	/**
+	 * Render Automation tab - Queue & scheduling.
+	 */
+	private function render_automation_tab(): void {
+		AutomationTab::render();
+	}
+
+	/**
+	 * Render Analytics tab - Advanced metrics.
+	 */
+	private function render_analytics_tab(): void {
+		AnalyticsTab::render();
+	}
+
+	/**
+	 * Render Multisite/SaaS tab - Multi-tenant management.
+	 */
+	private function render_multisite_tab(): void {
+		MultisiteTab::render();
+	}
+
+	/**
+	 * Render Settings tab - Configuration.
+	 */
+	private function render_settings_tab(): void {
+		SettingsTab::render();
+	}
+
+	/**
+	 * Handle settings form submission.
+	 * @deprecated Use SettingsTab::handle_save_general_settings() instead
+	 */
+	public function handle_save_settings(): void {
+		SettingsTab::handle_save_general_settings();
+	}
+}

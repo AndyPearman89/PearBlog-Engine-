@@ -373,9 +373,6 @@ class PearBlogCommand {
 	 *
 	 * ## OPTIONS
 	 *
-	 * [<action>]
-	 * : Autopilot action: start, status, pause, resume, or next. Default: status.
-	 *
 	 * [--mode=<mode>]
 	 * : Autopilot mode. Accepts 'enterprise' or 'standard'. Default: enterprise.
 	 *

@@ -1,0 +1,2604 @@
+/**
+ * Admin Panel v7.0 - SaaS Control Center Styles
+ *
+ * Modern, revenue-focused design language for PearBlog Engine v7.0
+ *
+ * @package PearBlogEngine
+ * @since 7.1.0
+ */
+
+/* ==========================================
+   V7 Design System Variables
+   ========================================== */
+:root {
+	--pb-v7-primary: #2563eb;
+	--pb-v7-primary-hover: #1d4ed8;
+	--pb-v7-success: #10b981;
+	--pb-v7-warning: #f59e0b;
+	--pb-v7-danger: #ef4444;
+	--pb-v7-dark: #1e293b;
+	--pb-v7-light: #f1f5f9;
+	--pb-v7-border: #e2e8f0;
+	--pb-v7-text: #334155;
+	--pb-v7-text-muted: #64748b;
+	--pb-v7-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+	--pb-v7-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+	--pb-v7-radius: 8px;
+	--pb-v7-spacing: 16px;
+}
+
+/* ==========================================
+   Main Container
+   ========================================== */
+.pearblog-admin-v7 {
+	max-width: 1400px;
+	margin: 20px 0 0 0;
+	background: #fff;
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.pearblog-v7-title {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	padding: 24px 32px;
+	margin: 0;
+	border-bottom: 2px solid var(--pb-v7-border);
+	font-size: 24px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-logo {
+	font-size: 32px;
+	line-height: 1;
+}
+
+.pearblog-version-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	margin-left: 8px;
+	background: linear-gradient(135deg, var(--pb-v7-primary) 0%, #7c3aed 100%);
+	color: #fff;
+	font-size: 12px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	border-radius: 12px;
+}
+
+/* ==========================================
+   Tab Navigation
+   ========================================== */
+.pearblog-v7-tabs {
+	display: flex;
+	gap: 4px;
+	padding: 16px 32px 0;
+	border-bottom: 2px solid var(--pb-v7-border);
+	background: var(--pb-v7-light);
+	overflow-x: auto;
+}
+
+.pearblog-v7-tab {
+	padding: 12px 20px;
+	background: transparent;
+	border: none;
+	border-radius: var(--pb-v7-radius) var(--pb-v7-radius) 0 0;
+	font-size: 14px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+}
+
+.pearblog-v7-tab:hover {
+	background: rgba(255, 255, 255, 0.6);
+	color: var(--pb-v7-text);
+}
+
+.pearblog-v7-tab.is-active {
+	background: #fff;
+	color: var(--pb-v7-primary);
+	font-weight: 600;
+	box-shadow: 0 -2px 0 0 var(--pb-v7-primary) inset;
+}
+
+/* ==========================================
+   Tab Content Area
+   ========================================== */
+.pearblog-v7-content {
+	padding: 32px;
+	min-height: 600px;
+}
+
+.pearblog-v7-content h2 {
+	margin: 0 0 8px;
+	font-size: 20px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-v7-content > p {
+	margin: 0 0 24px;
+	color: var(--pb-v7-text-muted);
+	font-size: 14px;
+}
+
+/* ==========================================
+   Dashboard Widgets
+   ========================================== */
+.dashboard-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+}
+
+.dashboard-period {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.dashboard-period-select {
+	padding: 6px 12px;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+/* ==========================================
+   Revenue Sources
+   ========================================== */
+.pearblog-revenue-sources {
+	margin-bottom: 32px;
+}
+
+.pearblog-revenue-sources h3 {
+	margin: 0 0 16px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.revenue-sources-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+}
+
+.revenue-source-card {
+	padding: 20px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	text-align: center;
+}
+
+.revenue-source-card .source-name {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.revenue-source-card .source-revenue {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--pb-v7-primary);
+	margin-bottom: 4px;
+}
+
+.revenue-source-card .source-transactions {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+}
+
+/* ==========================================
+   KPI Cards (Dashboard)
+   ========================================== */
+.pearblog-kpi-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 32px;
+}
+
+.pearblog-kpi-card {
+	padding: 24px;
+	background: linear-gradient(135deg, #fff 0%, var(--pb-v7-light) 100%);
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pearblog-kpi-card:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--pb-v7-shadow-lg);
+}
+
+.pearblog-kpi-card .kpi-icon {
+	font-size: 32px;
+	margin-bottom: 12px;
+}
+
+.pearblog-kpi-card .kpi-label {
+	font-size: 13px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.pearblog-kpi-card .kpi-value {
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+	margin-bottom: 4px;
+}
+
+.pearblog-kpi-card .kpi-trend {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.pearblog-kpi-card .kpi-trend[data-direction="up"],
+.pearblog-kpi-card .kpi-trend:not([data-direction]) {
+	color: var(--pb-v7-success);
+}
+
+.pearblog-kpi-card .kpi-trend[data-direction="down"] {
+	color: var(--pb-v7-danger);
+}
+
+/* ==========================================
+   Charts
+   ========================================== */
+.pearblog-chart-container {
+	margin-bottom: 32px;
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.pearblog-chart-container h3 {
+	margin: 0 0 20px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-chart-container canvas {
+	max-height: 300px;
+}
+
+/* ==========================================
+   Top Articles Table
+   ========================================== */
+.pearblog-top-articles {
+	margin-bottom: 32px;
+}
+
+.pearblog-top-articles h3 {
+	margin: 0 0 16px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-top-articles table {
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	overflow: hidden;
+}
+
+.pearblog-top-articles th {
+	background: var(--pb-v7-light);
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+/* ==========================================
+   Strategy Tab
+   ========================================== */
+.pearblog-v7-strategy .strategy-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-v7-strategy .strategy-header h2 {
+	margin: 0 0 8px;
+}
+
+.pearblog-v7-strategy .strategy-header p {
+	margin: 0;
+	color: var(--pb-v7-text-muted);
+}
+
+.strategy-section {
+	margin-bottom: 40px;
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.strategy-section h3 {
+	margin: 0 0 8px;
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.strategy-section .section-description {
+	margin: 0 0 20px;
+	color: var(--pb-v7-text-muted);
+	font-size: 14px;
+}
+
+.strategy-options {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+}
+
+.strategy-option-card {
+	position: relative;
+	padding: 20px;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.strategy-option-card:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.strategy-option-card.is-active {
+	border-color: var(--pb-v7-primary);
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.strategy-option-card input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.strategy-option-card .option-content {
+	text-align: center;
+}
+
+.strategy-option-card .option-icon {
+	font-size: 32px;
+	margin-bottom: 12px;
+}
+
+.strategy-option-card .option-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.strategy-option-card .option-desc {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+}
+
+/* Intent Priority Options */
+.intent-priority-options {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: 16px;
+}
+
+.intent-option {
+	position: relative;
+	padding: 20px;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.intent-option:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.intent-option.is-active {
+	border-color: var(--pb-v7-primary);
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.intent-option input[type="radio"] {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.intent-option .intent-content {
+	text-align: center;
+}
+
+.intent-option .intent-icon {
+	font-size: 28px;
+	margin-bottom: 8px;
+}
+
+.intent-option .intent-title {
+	font-size: 14px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin-bottom: 6px;
+}
+
+.intent-option .intent-desc {
+	font-size: 12px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.4;
+	margin-bottom: 8px;
+}
+
+.intent-option .intent-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background: var(--pb-v7-primary);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	border-radius: 4px;
+	letter-spacing: 0.5px;
+}
+
+/* Strategy Actions */
+.strategy-actions {
+	margin-top: 32px;
+	padding-top: 24px;
+	border-top: 1px solid var(--pb-v7-border);
+}
+
+/* Strategy Stats */
+.strategy-stats {
+	margin-top: 40px;
+}
+
+.strategy-stats h3 {
+	margin: 0 0 16px;
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+}
+
+.stat-card {
+	padding: 20px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	text-align: center;
+}
+
+.stat-card .stat-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.stat-card .stat-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+}
+
+/* ==========================================
+   Content Engine Tab
+   ========================================== */
+.pearblog-v7-content-engine .content-engine-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-v7-content-engine .content-engine-header h2 {
+	margin: 0 0 8px;
+}
+
+.pearblog-v7-content-engine .content-engine-header p {
+	margin: 0;
+	color: var(--pb-v7-text-muted);
+}
+
+.engine-section {
+	margin-bottom: 40px;
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.engine-section h3 {
+	margin: 0 0 8px;
+	font-size: 18px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.engine-section .section-description {
+	margin: 0 0 20px;
+	color: var(--pb-v7-text-muted);
+	font-size: 14px;
+}
+
+/* Batch Generation Controls */
+.batch-gen-info {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.info-card {
+	padding: 16px;
+	background: var(--pb-v7-light);
+	border-radius: var(--pb-v7-radius);
+	text-align: center;
+}
+
+.info-card .info-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.info-card .info-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+}
+
+.batch-gen-form .form-row {
+	margin-bottom: 16px;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+.batch-gen-form .form-row label {
+	font-weight: 500;
+	min-width: 150px;
+}
+
+.batch-gen-form .form-row .description {
+	color: var(--pb-v7-text-muted);
+	font-size: 13px;
+}
+
+/* Templates Grid */
+.templates-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.template-card {
+	padding: 20px;
+	background: #fff;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	transition: all 0.2s ease;
+}
+
+.template-card:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: 0 4px 12px rgba(37, 99, 235, 0.1);
+}
+
+.template-card.is-active {
+	border-color: var(--pb-v7-primary);
+	background: rgba(37, 99, 235, 0.05);
+}
+
+.template-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.template-icon {
+	font-size: 32px;
+	line-height: 1;
+}
+
+.template-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	flex: 1;
+}
+
+.template-badge {
+	display: inline-block;
+	padding: 2px 8px;
+	background: var(--pb-v7-success);
+	color: #fff;
+	font-size: 10px;
+	font-weight: 600;
+	text-transform: uppercase;
+	border-radius: 4px;
+	letter-spacing: 0.5px;
+}
+
+.template-desc {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 12px;
+}
+
+.template-features {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: 16px;
+}
+
+.feature-tag {
+	display: inline-block;
+	padding: 4px 10px;
+	background: var(--pb-v7-light);
+	color: var(--pb-v7-text);
+	font-size: 12px;
+	border-radius: 12px;
+}
+
+.template-card form {
+	margin: 0;
+}
+
+.template-card .button {
+	width: 100%;
+}
+
+/* Bulk Operations */
+.bulk-operations-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.operation-card {
+	padding: 24px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	text-align: center;
+	transition: all 0.2s ease;
+}
+
+.operation-card:hover {
+	box-shadow: var(--pb-v7-shadow-lg);
+	transform: translateY(-2px);
+}
+
+.operation-icon {
+	font-size: 40px;
+	margin-bottom: 12px;
+}
+
+.operation-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.operation-desc {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 16px;
+}
+
+.operation-card .button {
+	width: 100%;
+}
+
+/* ==========================================
+   Notices
+   ========================================== */
+.pearblog-notice {
+	padding: 16px 20px;
+	margin: 20px 0;
+	border-left: 4px solid;
+	border-radius: var(--pb-v7-radius);
+	background: var(--pb-v7-light);
+}
+
+.pearblog-notice p {
+	margin: 8px 0;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.pearblog-notice p:first-child {
+	margin-top: 0;
+}
+
+.pearblog-notice p:last-child {
+	margin-bottom: 0;
+}
+
+.pearblog-notice-info {
+	border-left-color: var(--pb-v7-primary);
+	background: #eff6ff;
+}
+
+.pearblog-notice-success {
+	border-left-color: var(--pb-v7-success);
+	background: #f0fdf4;
+}
+
+.pearblog-notice-warning {
+	border-left-color: var(--pb-v7-warning);
+	background: #fffbeb;
+}
+
+.pearblog-notice-danger {
+	border-left-color: var(--pb-v7-danger);
+	background: #fef2f2;
+}
+
+/* ==========================================
+   Forms & Inputs
+   ========================================== */
+.pearblog-v7-content .form-table th {
+	padding: 20px 0;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-v7-content .form-table td {
+	padding: 20px 0;
+}
+
+.pearblog-v7-content input[type="checkbox"] {
+	width: 18px;
+	height: 18px;
+	margin-right: 8px;
+	vertical-align: middle;
+}
+
+.pearblog-v7-content .description {
+	margin-top: 8px;
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+}
+
+/* ==========================================
+   Buttons
+   ========================================== */
+.pearblog-v7-content .button-primary {
+	background: var(--pb-v7-primary);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+	font-weight: 500;
+	padding: 8px 24px;
+	border-radius: var(--pb-v7-radius);
+	transition: all 0.2s ease;
+}
+
+.pearblog-v7-content .button-primary:hover,
+.pearblog-v7-content .button-primary:focus {
+	background: var(--pb-v7-primary-hover);
+	border-color: var(--pb-v7-primary-hover);
+	color: #fff;
+}
+
+/* ==========================================
+   Responsive Design
+   ========================================== */
+@media (max-width: 782px) {
+	.pearblog-v7-title {
+		flex-direction: column;
+		align-items: flex-start;
+		padding: 20px;
+		font-size: 20px;
+	}
+
+	.pearblog-v7-tabs {
+		padding: 12px 20px 0;
+		overflow-x: scroll;
+		-webkit-overflow-scrolling: touch;
+	}
+
+	.pearblog-v7-content {
+		padding: 20px;
+	}
+
+	.pearblog-kpi-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ==========================================
+   Leads & Expert Management Tab
+   ========================================== */
+.pearblog-v7-leads {
+	max-width: 1400px;
+}
+
+.pearblog-leads-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-leads-header h2 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-leads-header .description {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	margin: 0;
+}
+
+/* Lead Capture Forms */
+.pearblog-leads-form {
+	max-width: 800px;
+}
+
+.pearblog-form-section {
+	margin-bottom: 24px;
+}
+
+.pearblog-toggle-label {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	cursor: pointer;
+	padding: 16px;
+	background: var(--pb-v7-light);
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	transition: all 0.2s ease;
+}
+
+.pearblog-toggle-label:hover {
+	background: #f0f4f8;
+	border-color: var(--pb-v7-primary);
+}
+
+.pearblog-toggle-label input[type="checkbox"] {
+	margin-top: 2px;
+	width: 18px;
+	height: 18px;
+	cursor: pointer;
+}
+
+.pearblog-toggle-text {
+	flex: 1;
+}
+
+.pearblog-toggle-text strong {
+	display: block;
+	font-size: 15px;
+	color: var(--pb-v7-dark);
+	margin-bottom: 4px;
+}
+
+.pearblog-toggle-description {
+	display: block;
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+}
+
+.pearblog-form-section label {
+	display: block;
+	font-weight: 600;
+	font-size: 14px;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.pearblog-input,
+.pearblog-select,
+.pearblog-textarea {
+	width: 100%;
+	padding: 10px 12px;
+	font-size: 14px;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	transition: all 0.2s ease;
+}
+
+.pearblog-input:focus,
+.pearblog-select:focus,
+.pearblog-textarea:focus {
+	outline: none;
+	border-color: var(--pb-v7-primary);
+	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.pearblog-checkbox-label {
+	display: block;
+	padding: 8px 0;
+	font-size: 14px;
+	color: var(--pb-v7-text);
+	cursor: pointer;
+}
+
+.pearblog-checkbox-label input[type="checkbox"] {
+	margin-right: 8px;
+	cursor: pointer;
+}
+
+/* Experts Management */
+.pearblog-experts-list {
+	margin-top: 32px;
+}
+
+.pearblog-experts-list h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+.pearblog-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	overflow: hidden;
+}
+
+.pearblog-table thead {
+	background: var(--pb-v7-light);
+	border-bottom: 2px solid var(--pb-v7-border);
+}
+
+.pearblog-table th {
+	text-align: left;
+	padding: 12px 16px;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.pearblog-table td {
+	padding: 12px 16px;
+	font-size: 14px;
+	color: var(--pb-v7-text);
+	border-top: 1px solid var(--pb-v7-border);
+}
+
+.pearblog-table tbody tr:hover {
+	background: var(--pb-v7-light);
+}
+
+.pearblog-table-empty {
+	text-align: center;
+	padding: 32px !important;
+	color: var(--pb-v7-text-muted);
+}
+
+/* Add Expert Form */
+.pearblog-add-expert-form {
+	margin-top: 24px;
+	padding: 24px;
+	background: var(--pb-v7-light);
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+}
+
+.pearblog-add-expert-form h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 20px 0;
+}
+
+.pearblog-form-row {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 16px;
+	margin-bottom: 16px;
+}
+
+.pearblog-form-col label {
+	display: block;
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin-bottom: 6px;
+}
+
+.pearblog-form-actions {
+	display: flex;
+	gap: 12px;
+	margin-top: 20px;
+}
+
+/* Buttons */
+.pearblog-button {
+	padding: 10px 20px;
+	font-size: 14px;
+	font-weight: 500;
+	border: none;
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	display: inline-block;
+	text-decoration: none;
+}
+
+.pearblog-button-primary {
+	background: var(--pb-v7-primary);
+	color: #fff;
+}
+
+.pearblog-button-primary:hover {
+	background: var(--pb-v7-primary-hover);
+	color: #fff;
+	transform: translateY(-1px);
+	box-shadow: var(--pb-v7-shadow);
+}
+
+.pearblog-button-secondary {
+	background: #fff;
+	color: var(--pb-v7-primary);
+	border: 1px solid var(--pb-v7-border);
+}
+
+.pearblog-button-secondary:hover {
+	background: var(--pb-v7-light);
+	border-color: var(--pb-v7-primary);
+	transform: translateY(-1px);
+}
+
+.pearblog-button-link {
+	background: none;
+	color: var(--pb-v7-primary);
+	border: none;
+	padding: 4px 8px;
+	text-decoration: underline;
+}
+
+.pearblog-button-link:hover {
+	color: var(--pb-v7-primary-hover);
+}
+
+.pearblog-button-danger {
+	color: #dc2626 !important;
+}
+
+.pearblog-button-danger:hover {
+	color: #991b1b !important;
+}
+
+/* Lead Stats Cards */
+.pearblog-leads-stats {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 20px;
+	margin-bottom: 32px;
+}
+
+.pearblog-stat-card {
+	background: linear-gradient(135deg, var(--pb-v7-primary) 0%, var(--pb-v7-primary-hover) 100%);
+	padding: 24px;
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	text-align: center;
+	color: #fff;
+}
+
+.pearblog-stat-value {
+	font-size: 32px;
+	font-weight: 700;
+	margin-bottom: 8px;
+}
+
+.pearblog-stat-label {
+	font-size: 14px;
+	opacity: 0.9;
+}
+
+/* Status Badges */
+.pearblog-status-badge {
+	display: inline-block;
+	padding: 4px 12px;
+	font-size: 12px;
+	font-weight: 600;
+	border-radius: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.pearblog-status-new {
+	background: #dbeafe;
+	color: #1e40af;
+}
+
+.pearblog-status-contacted {
+	background: #fef3c7;
+	color: #92400e;
+}
+
+.pearblog-status-qualified {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.pearblog-status-converted {
+	background: #d1fae5;
+	color: #065f46;
+}
+
+.pearblog-status-closed {
+	background: #f3f4f6;
+	color: #6b7280;
+}
+
+/* Responsive Layout */
+@media (max-width: 768px) {
+	.pearblog-form-row {
+		grid-template-columns: 1fr;
+	}
+
+	.pearblog-leads-stats {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.pearblog-table {
+		font-size: 13px;
+	}
+
+	.pearblog-table th,
+	.pearblog-table td {
+		padding: 8px 12px;
+	}
+}
+
+/* ==========================================
+   SEO Engine Tab
+   ========================================== */
+.pearblog-v7-seo {
+	max-width: 1400px;
+}
+
+.pearblog-seo-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-seo-header h2 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-seo-header .description {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	margin: 0;
+}
+
+/* SEO Options Grid */
+.pearblog-seo-options-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+	margin-bottom: 24px;
+}
+
+.pearblog-seo-option-card {
+	background: #fff;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	padding: 24px;
+	position: relative;
+	transition: all 0.2s ease;
+}
+
+.pearblog-seo-option-card:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: var(--pb-v7-shadow);
+	transform: translateY(-2px);
+}
+
+.pearblog-option-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.pearblog-option-icon {
+	font-size: 32px;
+}
+
+.pearblog-option-header h4 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-option-description {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 16px;
+}
+
+/* Toggle Switch */
+.pearblog-switch {
+	position: relative;
+	display: inline-block;
+	width: 50px;
+	height: 26px;
+}
+
+.pearblog-switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.pearblog-switch-slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #ccc;
+	transition: 0.3s;
+	border-radius: 26px;
+}
+
+.pearblog-switch-slider:before {
+	position: absolute;
+	content: "";
+	height: 20px;
+	width: 20px;
+	left: 3px;
+	bottom: 3px;
+	background-color: white;
+	transition: 0.3s;
+	border-radius: 50%;
+}
+
+.pearblog-switch input:checked + .pearblog-switch-slider {
+	background-color: var(--pb-v7-primary);
+}
+
+.pearblog-switch input:checked + .pearblog-switch-slider:before {
+	transform: translateX(24px);
+}
+
+/* SEO Forms */
+.pearblog-seo-form {
+	max-width: 800px;
+}
+
+/* Info Card */
+.pearblog-info-card {
+	background: #e0f2fe;
+	border-left: 4px solid #0284c7;
+	padding: 16px 20px;
+	border-radius: var(--pb-v7-radius);
+	margin-bottom: 24px;
+}
+
+.pearblog-info-card p {
+	margin: 8px 0;
+	font-size: 14px;
+	color: #0c4a6e;
+}
+
+.pearblog-info-card p:first-child {
+	margin-top: 0;
+}
+
+.pearblog-info-card p:last-child {
+	margin-bottom: 0;
+}
+
+/* SEO Stats */
+.pearblog-seo-stats {
+	margin-top: 32px;
+}
+
+.pearblog-seo-stats h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+.pearblog-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+	gap: 20px;
+}
+
+.pearblog-stat-box {
+	background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+	padding: 24px;
+	border-radius: var(--pb-v7-radius);
+	border: 1px solid var(--pb-v7-border);
+	text-align: center;
+}
+
+.pearblog-stat-box.pearblog-stat-success {
+	background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
+	border-color: #10b981;
+}
+
+.pearblog-stat-box.pearblog-stat-warning {
+	background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+	border-color: #f59e0b;
+}
+
+.pearblog-stat-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.pearblog-stat-label {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 4px;
+}
+
+.pearblog-stat-note {
+	font-size: 12px;
+	color: var(--pb-v7-text-muted);
+	font-style: italic;
+}
+
+/* SEO Tools Grid */
+.pearblog-seo-tools-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: 20px;
+}
+
+.pearblog-tool-card {
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	padding: 24px;
+	text-align: center;
+	transition: all 0.2s ease;
+}
+
+.pearblog-tool-card:hover {
+	box-shadow: var(--pb-v7-shadow-lg);
+	transform: translateY(-2px);
+}
+
+.pearblog-tool-icon {
+	font-size: 48px;
+	display: block;
+	margin-bottom: 16px;
+}
+
+.pearblog-tool-card h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 8px 0;
+}
+
+.pearblog-tool-card p {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 16px;
+}
+
+.pearblog-tool-card .pearblog-button {
+	width: 100%;
+}
+
+/* SEO Responsive Layout */
+@media (max-width: 768px) {
+	.pearblog-seo-options-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.pearblog-stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.pearblog-seo-tools-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ==========================================
+   Automation Tab
+   ========================================== */
+.pearblog-v7-automation {
+	max-width: 1400px;
+}
+
+.pearblog-automation-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-automation-header h2 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-automation-header .description {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	margin: 0;
+}
+
+/* Automation Forms */
+.pearblog-automation-form {
+	max-width: 800px;
+}
+
+/* Hours Grid */
+.pearblog-hours-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
+	gap: 10px;
+	margin-bottom: 12px;
+}
+
+.pearblog-hour-checkbox {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px;
+	background: var(--pb-v7-light);
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.pearblog-hour-checkbox:hover {
+	border-color: var(--pb-v7-primary);
+	background: #e0f2fe;
+}
+
+.pearblog-hour-checkbox input[type="checkbox"] {
+	display: none;
+}
+
+.pearblog-hour-checkbox input[type="checkbox"]:checked + span {
+	color: #fff;
+}
+
+.pearblog-hour-checkbox:has(input:checked) {
+	background: var(--pb-v7-primary);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+}
+
+/* Queue Actions */
+.pearblog-queue-actions {
+	margin-bottom: 24px;
+}
+
+.pearblog-inline-form {
+	display: flex;
+	gap: 12px;
+	margin-bottom: 16px;
+}
+
+.pearblog-inline-form .pearblog-input {
+	flex: 1;
+}
+
+.pearblog-queue-bulk-actions {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* Priority Badges */
+.pearblog-priority-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	font-size: 11px;
+	font-weight: 700;
+	border-radius: 12px;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.pearblog-priority-high {
+	background: #fee2e2;
+	color: #991b1b;
+}
+
+.pearblog-priority-normal {
+	background: #e0f2fe;
+	color: #075985;
+}
+
+.pearblog-priority-low {
+	background: #f3f4f6;
+	color: #6b7280;
+}
+
+/* Cron Jobs */
+.pearblog-cron-status {
+	margin-top: 32px;
+}
+
+.pearblog-cron-status h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+.pearblog-cron-table {
+	margin-top: 16px;
+}
+
+/* Workflow Cards */
+.pearblog-workflows-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+}
+
+.pearblog-workflow-card {
+	background: #fff;
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	padding: 24px;
+	display: flex;
+	flex-direction: column;
+	transition: all 0.2s ease;
+}
+
+.pearblog-workflow-card:hover {
+	border-color: var(--pb-v7-primary);
+	box-shadow: var(--pb-v7-shadow);
+	transform: translateY(-2px);
+}
+
+.pearblog-workflow-header {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 12px;
+}
+
+.pearblog-workflow-icon {
+	font-size: 32px;
+}
+
+.pearblog-workflow-header h4 {
+	margin: 0;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-workflow-card p {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	line-height: 1.5;
+	margin-bottom: 16px;
+	flex: 1;
+}
+
+.pearblog-workflow-card .pearblog-switch {
+	align-self: flex-start;
+}
+
+/* Rate Selector */
+.pearblog-rate-selector {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+}
+
+/* Automation Responsive */
+@media (max-width: 768px) {
+	.pearblog-hours-grid {
+		grid-template-columns: repeat(auto-fill, minmax(60px, 1fr));
+	}
+
+	.pearblog-workflows-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.pearblog-inline-form {
+		flex-direction: column;
+	}
+
+	.pearblog-queue-bulk-actions {
+		flex-direction: column;
+	}
+
+	.pearblog-queue-bulk-actions .pearblog-button {
+		width: 100%;
+	}
+}
+
+/* ==========================================
+   Monetization Tab
+   ========================================== */
+.pearblog-v7-monetization {
+	max-width: 1400px;
+}
+
+.pearblog-monetization-header {
+	margin-bottom: 32px;
+}
+
+.pearblog-monetization-header h2 {
+	margin: 0 0 8px 0;
+	font-size: 24px;
+	color: var(--pb-v7-dark);
+}
+
+.pearblog-monetization-header .description {
+	font-size: 14px;
+	color: var(--pb-v7-text-muted);
+	margin: 0;
+}
+
+/* Revenue Cards */
+.pearblog-revenue-stats {
+	margin-bottom: 32px;
+}
+
+.pearblog-revenue-card {
+	background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	padding: 24px;
+	text-align: center;
+	transition: all 0.2s ease;
+}
+
+.pearblog-revenue-card:hover {
+	transform: translateY(-4px);
+	box-shadow: var(--pb-v7-shadow-lg);
+	border-color: var(--pb-v7-primary);
+}
+
+.pearblog-revenue-card-highlight {
+	background: linear-gradient(135deg, var(--pb-v7-primary) 0%, var(--pb-v7-primary-hover) 100%);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+}
+
+.pearblog-revenue-card-highlight .pearblog-revenue-amount,
+.pearblog-revenue-card-highlight .pearblog-revenue-label,
+.pearblog-revenue-card-highlight .pearblog-revenue-change {
+	color: #fff;
+}
+
+.pearblog-revenue-icon {
+	font-size: 40px;
+	margin-bottom: 12px;
+}
+
+.pearblog-revenue-amount {
+	font-size: 32px;
+	font-weight: 700;
+	color: var(--pb-v7-dark);
+	margin-bottom: 8px;
+}
+
+.pearblog-revenue-label {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.pearblog-revenue-change {
+	font-size: 14px;
+	color: #10b981;
+	font-weight: 600;
+}
+
+/* Monetization Forms */
+.pearblog-monetization-form {
+	max-width: 800px;
+}
+
+/* Ad Placements Grid */
+.pearblog-adsense-placements {
+	margin-top: 24px;
+}
+
+.pearblog-adsense-placements h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+.pearblog-placements-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+	gap: 16px;
+	margin-bottom: 24px;
+}
+
+.pearblog-placement-card {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	padding: 20px;
+	background: var(--pb-v7-light);
+	border: 2px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	cursor: pointer;
+	transition: all 0.2s ease;
+	text-align: center;
+}
+
+.pearblog-placement-card:hover {
+	border-color: var(--pb-v7-primary);
+	background: #e0f2fe;
+}
+
+.pearblog-placement-card input[type="checkbox"] {
+	display: none;
+}
+
+.pearblog-placement-card:has(input:checked) {
+	background: var(--pb-v7-primary);
+	border-color: var(--pb-v7-primary);
+	color: #fff;
+}
+
+.pearblog-placement-card:has(input:checked) .pearblog-placement-label {
+	color: #fff;
+}
+
+.pearblog-placement-icon {
+	font-size: 32px;
+	margin-bottom: 8px;
+}
+
+.pearblog-placement-label {
+	font-size: 13px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+/* Affiliate Programs */
+.pearblog-affiliate-programs {
+	margin-top: 32px;
+}
+
+.pearblog-affiliate-programs h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+	margin: 0 0 16px 0;
+}
+
+/* Top Earnings Table */
+.pearblog-earnings-table .pearblog-revenue-cell {
+	font-weight: 700;
+	color: #10b981;
+}
+
+/* Monetization Responsive */
+@media (max-width: 768px) {
+	.pearblog-placements-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+
+	.pearblog-revenue-stats .pearblog-stats-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/* ==========================================
+   Analytics Tab Styles
+   ========================================== */
+.pearblog-v7-analytics {
+	max-width: 1400px;
+}
+
+.pearblog-analytics-header {
+	margin-bottom: 30px;
+}
+
+/* Analytics Filters */
+.pearblog-analytics-filters {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 30px;
+}
+
+.pearblog-filter-row {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 20px;
+	align-items: end;
+}
+
+.pearblog-filter-group label {
+	display: block;
+	margin-bottom: 8px;
+	font-weight: 500;
+	color: #334155;
+	font-size: 14px;
+}
+
+.pearblog-input,
+.pearblog-select {
+	width: 100%;
+	padding: 10px 14px;
+	border: 1px solid #cbd5e1;
+	border-radius: 8px;
+	font-size: 14px;
+	transition: all 0.2s;
+}
+
+.pearblog-input:focus,
+.pearblog-select:focus {
+	outline: none;
+	border-color: #3b82f6;
+	box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Performance Metrics */
+.pearblog-analytics-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.pearblog-metric-card {
+	background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+	transition: all 0.3s;
+}
+
+.pearblog-metric-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+	border-color: #3b82f6;
+}
+
+.pearblog-metric-icon {
+	font-size: 32px;
+	margin-bottom: 12px;
+}
+
+.pearblog-metric-value {
+	font-size: 32px;
+	font-weight: 700;
+	color: #1e293b;
+	margin-bottom: 4px;
+}
+
+.pearblog-metric-label {
+	font-size: 14px;
+	color: #64748b;
+	margin-bottom: 12px;
+}
+
+.pearblog-metric-change {
+	font-size: 14px;
+	font-weight: 600;
+	padding: 4px 12px;
+	border-radius: 20px;
+	display: inline-block;
+}
+
+.pearblog-trend-up {
+	color: #10b981;
+	background: #d1fae5;
+}
+
+.pearblog-trend-down {
+	color: #ef4444;
+	background: #fee2e2;
+}
+
+/* Chart Container */
+.pearblog-chart-container {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+	height: 350px;
+	margin-bottom: 30px;
+}
+
+/* Content Performance Table */
+.pearblog-analytics-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid #e2e8f0;
+}
+
+.pearblog-analytics-table th {
+	background: #f8fafc;
+	padding: 16px;
+	text-align: left;
+	font-weight: 600;
+	color: #334155;
+	font-size: 14px;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.pearblog-analytics-table td {
+	padding: 16px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.pearblog-analytics-table tbody tr:hover {
+	background: #f8fafc;
+}
+
+.pearblog-progress-bar {
+	position: relative;
+	height: 24px;
+	background: #e2e8f0;
+	border-radius: 12px;
+	overflow: hidden;
+}
+
+.pearblog-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #3b82f6, #2563eb);
+	transition: width 0.3s;
+}
+
+.pearblog-progress-text {
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 12px;
+	font-weight: 600;
+	color: #1e293b;
+}
+
+.pearblog-revenue-cell {
+	color: #10b981;
+	font-weight: 600;
+	font-size: 16px;
+}
+
+.pearblog-performance-badge {
+	padding: 6px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	display: inline-block;
+}
+
+.pearblog-performance-excellent {
+	background: #d1fae5;
+	color: #10b981;
+}
+
+.pearblog-performance-good {
+	background: #dbeafe;
+	color: #3b82f6;
+}
+
+/* Engagement Metrics */
+.pearblog-engagement-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.pearblog-engagement-card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 20px;
+	text-align: center;
+}
+
+.pearblog-engagement-metric {
+	font-size: 14px;
+	color: #64748b;
+	margin-bottom: 8px;
+}
+
+.pearblog-engagement-value {
+	font-size: 28px;
+	font-weight: 700;
+	color: #1e293b;
+	margin-bottom: 8px;
+}
+
+.pearblog-engagement-status {
+	padding: 4px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	display: inline-block;
+}
+
+.pearblog-status-excellent {
+	background: #d1fae5;
+	color: #10b981;
+}
+
+.pearblog-status-good {
+	background: #dbeafe;
+	color: #3b82f6;
+}
+
+/* SEO Metrics */
+.pearblog-seo-metrics-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.pearblog-seo-metric-card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 20px;
+}
+
+.pearblog-seo-metric-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 12px;
+}
+
+.pearblog-seo-metric-name {
+	font-size: 14px;
+	color: #64748b;
+	font-weight: 500;
+}
+
+.pearblog-seo-metric-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+.pearblog-seo-progress {
+	margin-top: 8px;
+}
+
+.pearblog-seo-progress-bar {
+	height: 8px;
+	background: #e2e8f0;
+	border-radius: 4px;
+	overflow: hidden;
+	margin-bottom: 4px;
+}
+
+.pearblog-seo-progress-fill {
+	height: 100%;
+	background: linear-gradient(90deg, #10b981, #059669);
+	transition: width 0.3s;
+}
+
+.pearblog-seo-target {
+	font-size: 12px;
+	color: #94a3b8;
+}
+
+/* Export Options */
+.pearblog-export-options {
+	display: flex;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+/* ==========================================
+   Multisite/SaaS Tab Styles
+   ========================================== */
+.pearblog-v7-multisite {
+	max-width: 1400px;
+}
+
+.pearblog-multisite-header {
+	margin-bottom: 30px;
+}
+
+/* Network Stats */
+.pearblog-network-stats .pearblog-stats-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.pearblog-stat-box {
+	background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+	text-align: center;
+	transition: all 0.3s;
+}
+
+.pearblog-stat-box:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+	border-color: #3b82f6;
+}
+
+.pearblog-stat-icon {
+	font-size: 40px;
+	margin-bottom: 12px;
+}
+
+.pearblog-stat-value {
+	font-size: 36px;
+	font-weight: 700;
+	color: #1e293b;
+	margin-bottom: 8px;
+}
+
+.pearblog-stat-label {
+	font-size: 14px;
+	color: #64748b;
+}
+
+/* Sites Management Table */
+.pearblog-table {
+	width: 100%;
+	border-collapse: collapse;
+	background: #fff;
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid #e2e8f0;
+}
+
+.pearblog-table th {
+	background: #f8fafc;
+	padding: 16px;
+	text-align: left;
+	font-weight: 600;
+	color: #334155;
+	font-size: 14px;
+	border-bottom: 1px solid #e2e8f0;
+}
+
+.pearblog-table td {
+	padding: 16px;
+	border-bottom: 1px solid #f1f5f9;
+}
+
+.pearblog-table tbody tr:hover {
+	background: #f8fafc;
+}
+
+.pearblog-status-badge {
+	padding: 6px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	display: inline-block;
+}
+
+.pearblog-status-active {
+	background: #d1fae5;
+	color: #10b981;
+}
+
+.pearblog-status-inactive {
+	background: #fee2e2;
+	color: #ef4444;
+}
+
+.pearblog-button-link {
+	background: none;
+	border: none;
+	color: #3b82f6;
+	font-weight: 500;
+	cursor: pointer;
+	font-size: 14px;
+	padding: 0;
+	text-decoration: underline;
+}
+
+.pearblog-button-link:hover {
+	color: #2563eb;
+}
+
+/* SaaS Features Grid */
+.pearblog-saas-features-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.pearblog-feature-card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+	text-align: center;
+	transition: all 0.3s;
+}
+
+.pearblog-feature-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+	border-color: #3b82f6;
+}
+
+.pearblog-feature-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+}
+
+.pearblog-feature-card h4 {
+	font-size: 18px;
+	color: #1e293b;
+	margin-bottom: 8px;
+	font-weight: 600;
+}
+
+.pearblog-feature-card p {
+	font-size: 14px;
+	color: #64748b;
+	margin-bottom: 16px;
+	line-height: 1.6;
+}
+
+.pearblog-feature-status {
+	padding: 6px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: 600;
+	display: inline-block;
+}
+
+.pearblog-status-coming_soon {
+	background: #fef3c7;
+	color: #f59e0b;
+}
+
+/* Multisite Form */
+.pearblog-multisite-form {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+}
+
+.pearblog-form-section {
+	margin-bottom: 20px;
+}
+
+.pearblog-toggle-label {
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	padding: 16px;
+	background: #f8fafc;
+	border-radius: 8px;
+	transition: background 0.2s;
+}
+
+.pearblog-toggle-label:hover {
+	background: #f1f5f9;
+}
+
+.pearblog-toggle-label input[type="checkbox"] {
+	margin-right: 16px;
+	width: 20px;
+	height: 20px;
+	cursor: pointer;
+}
+
+.pearblog-toggle-text {
+	display: flex;
+	flex-direction: column;
+}
+
+.pearblog-toggle-text strong {
+	font-size: 16px;
+	color: #1e293b;
+	margin-bottom: 4px;
+}
+
+.pearblog-toggle-description {
+	font-size: 14px;
+	color: #64748b;
+}
+
+/* Code Block for Multisite Instructions */
+.pearblog-code-block {
+	background: #1e293b;
+	border-radius: 8px;
+	padding: 16px;
+	margin: 16px 0;
+}
+
+.pearblog-code-block code {
+	color: #10b981;
+	font-family: 'Monaco', 'Courier New', monospace;
+	font-size: 14px;
+}
+
+/* Responsive Styles for Analytics & Multisite */
+@media (max-width: 768px) {
+	.pearblog-filter-row {
+		grid-template-columns: 1fr;
+	}
+
+	.pearblog-analytics-grid,
+	.pearblog-engagement-grid,
+	.pearblog-seo-metrics-grid,
+	.pearblog-saas-features-grid {
+		grid-template-columns: 1fr;
+	}
+
+	.pearblog-chart-container {
+		height: 250px;
+	}
+
+	.pearblog-export-options {
+		flex-direction: column;
+	}
+
+	.pearblog-export-options button {
+		width: 100%;
+	}
+
+	.pearblog-network-stats .pearblog-stats-grid {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ==========================================
+   Settings Tab Styles
+   ========================================== */
+.pearblog-v7-settings {
+	max-width: 1400px;
+}
+
+.pearblog-settings-header {
+	margin-bottom: 30px;
+}
+
+/* System Information Grid */
+.pearblog-info-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	margin-bottom: 30px;
+}
+
+.pearblog-info-card {
+	background: linear-gradient(135deg, #fff 0%, #f8fafc 100%);
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 20px;
+	text-align: center;
+}
+
+.pearblog-info-label {
+	font-size: 14px;
+	color: #64748b;
+	margin-bottom: 8px;
+}
+
+.pearblog-info-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: #1e293b;
+}
+
+/* Settings Forms */
+.pearblog-settings-form {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+}
+
+.pearblog-form-group {
+	margin-bottom: 24px;
+}
+
+.pearblog-form-group label {
+	display: block;
+	margin-bottom: 8px;
+	color: #334155;
+}
+
+.pearblog-form-group .pearblog-description {
+	font-size: 13px;
+	color: #64748b;
+	margin-top: 6px;
+	line-height: 1.5;
+}
+
+/* Data Management Actions */
+.pearblog-data-actions {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+	gap: 20px;
+}
+
+.pearblog-action-card {
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+	text-align: center;
+	transition: all 0.3s;
+}
+
+.pearblog-action-card:hover {
+	transform: translateY(-4px);
+	box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+	border-color: #3b82f6;
+}
+
+.pearblog-action-card-danger {
+	border-color: #fecaca;
+}
+
+.pearblog-action-card-danger:hover {
+	border-color: #ef4444;
+	box-shadow: 0 12px 24px rgba(239, 68, 68, 0.2);
+}
+
+.pearblog-action-icon {
+	font-size: 48px;
+	margin-bottom: 16px;
+}
+
+.pearblog-action-card h4 {
+	font-size: 18px;
+	color: #1e293b;
+	margin-bottom: 8px;
+	font-weight: 600;
+}
+
+.pearblog-action-card p {
+	font-size: 14px;
+	color: #64748b;
+	margin-bottom: 16px;
+	line-height: 1.5;
+}
+
+.pearblog-button-danger {
+	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+	color: #fff;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s;
+}
+
+.pearblog-button-danger:hover {
+	background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+/* Version Information */
+.pearblog-version-info {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+	gap: 20px;
+	background: #fff;
+	border: 1px solid #e2e8f0;
+	border-radius: 12px;
+	padding: 24px;
+}
+
+.pearblog-version-card {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.pearblog-version-card strong {
+	font-size: 14px;
+	color: #64748b;
+}
+
+.pearblog-version-badge {
+	display: inline-block;
+	padding: 8px 16px;
+	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+	color: #fff;
+	border-radius: 20px;
+	font-size: 14px;
+	font-weight: 600;
+	text-align: center;
+}
+
+/* Responsive Styles for Settings */
+@media (max-width: 768px) {
+	.pearblog-info-grid,
+	.pearblog-data-actions,
+	.pearblog-version-info {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* ==========================================
+   Dark Mode Support (Future)
+   ========================================== */
+@media (prefers-color-scheme: dark) {
+	.pearblog-admin-v7 {
+		/* Dark mode styles will be added in future phase */
+	}
+}
