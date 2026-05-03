@@ -197,7 +197,7 @@ $deleted = $db_handler->prune_logs(30); // Keep last 30 days
 
 **Test Coverage Achieved**:
 - **48 new unit tests** for logging infrastructure
-- **Total: 777 tests** across entire codebase
+- **Total: 854 test methods** across 53 test files
 - **All tests passing** (100% pass rate)
 
 **Key Features Tested**:
@@ -288,7 +288,7 @@ $deleted = $db_handler->prune_logs(30); // Keep last 30 days
 **Total Files Created**: 20
 **Total Lines of Code**: ~8,500+
 **New Unit Tests**: 48
-**Total Test Count**: 777
+**Total Test Count**: 854 (across 53 test files)
 **Documentation Pages**: 2
 
 ---
