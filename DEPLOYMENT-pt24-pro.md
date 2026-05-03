@@ -1,8 +1,9 @@
 # 🚀 Deployment Guide: pt24.pro
 
 **Domain:** pt24.pro (www.pt24.pro)
-**Target:** Production deployment of PearBlog Engine v7.0
-**Purpose:** AI-powered content automation platform
+**Target:** Production deployment of PT24.PRO Local Services Platform
+**Purpose:** Local services directory connecting businesses with customers
+**Engine:** PearBlog Engine v7.0 + PT24 Platform v2.0
 
 ---
 
@@ -312,7 +313,7 @@ EOF
 ### Configure PearBlog Engine Settings
 ```bash
 # Set site profile via WP-CLI:
-wp option update pearblog_industry 'news' --allow-root
+wp option update pearblog_industry 'local_services' --allow-root
 wp option update pearblog_tone 'professional' --allow-root
 wp option update pearblog_language 'pl' --allow-root
 wp option update pearblog_publish_rate 2 --allow-root
@@ -321,13 +322,42 @@ wp option update pearblog_monetization 'adsense_booking' --allow-root
 # Enable v7 UI Kit:
 wp option update pearblog_homepage_version 'v7' --allow-root
 
-# Enable AI features:
-wp option update pearblog_enable_image_generation true --allow-root
+# Enable AI features (optional for content generation):
+wp option update pearblog_enable_image_generation false --allow-root
 wp option update pearblog_ai_provider 'openai' --allow-root
 wp option update pearblog_ai_model 'gpt-4o-mini' --allow-root
 
 # Generate API key for REST API:
 wp option update pearblog_api_key "$(openssl rand -hex 32)" --allow-root
+```
+
+### Initialize PT24 Platform
+```bash
+# Initialize PT24 data structures (REQUIRED):
+wp pt24 init --allow-root
+
+# This will:
+# - Create service categories (mechanik, hydraulik, elektryk, laweta, wulkanizacja)
+# - Create top 20 cities
+# - Initialize database tables
+# - Flush rewrite rules
+
+# Verify PT24 is initialized:
+wp pt24 stats --allow-root
+```
+
+### Copy PT24 MU Plugin
+```bash
+# Copy PT24 MU plugin to mu-plugins root:
+cd /var/www/pt24.pro/wp-content/mu-plugins
+cp pearblog-engine/mu-plugins/pt24-local-services.php ./
+
+# Set permissions:
+chown www-data:www-data pt24-local-services.php
+chmod 644 pt24-local-services.php
+
+# Verify it's loaded:
+wp plugin list --allow-root | grep pt24
 ```
 
 ### Set Up Cron for Autonomous Generation
@@ -376,7 +406,113 @@ wp search-replace 'http://pt24.pro' 'https://pt24.pro' --allow-root
 
 ---
 
-## 7. Testing & Verification
+## 7. PT24 Platform Setup
+
+### Generate Landing Pages
+```bash
+cd /var/www/pt24.pro
+
+# Generate initial landing pages (100 service/city combinations):
+wp pt24 generate-pages --batch=100 --allow-root
+
+# Generate specific service:
+wp pt24 generate-pages --service=mechanik --batch=50 --allow-root
+
+# Generate specific city:
+wp pt24 generate-pages --city=warszawa --allow-root
+
+# View generated pages:
+wp post list --post_type=pt24_landing --allow-root
+```
+
+### Create Homepage
+```bash
+# Create a page with PT24 homepage template:
+wp post create \
+  --post_type=page \
+  --post_title='PT24.PRO - Znajdź fachowca w okolicy' \
+  --post_status=publish \
+  --page_template=page-pt24-home.php \
+  --allow-root
+
+# Set as homepage:
+wp option update show_on_front 'page' --allow-root
+wp option update page_on_front $(wp post list --post_type=page --post_title='PT24.PRO*' --format=ids --allow-root) --allow-root
+```
+
+### Test PT24 API Endpoints
+```bash
+# Test businesses endpoint:
+curl https://pt24.pro/wp-json/pt24/v1/businesses
+
+# Test lead submission:
+curl -X POST https://pt24.pro/wp-json/pt24/v1/leads/submit \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Test User",
+    "email": "test@example.com",
+    "phone": "+48 123 456 789",
+    "city": "Warszawa",
+    "service": "mechanik",
+    "message": "Test message"
+  }'
+```
+
+### Add Test Business
+```bash
+# Create a test business profile:
+wp post create \
+  --post_type=pt24_business \
+  --post_title='Test Mechanik Warszawa' \
+  --post_content='Profesjonalny serwis samochodowy w Warszawie.' \
+  --post_status=publish \
+  --allow-root
+
+# Get the post ID:
+BUSINESS_ID=$(wp post list --post_type=pt24_business --format=ids --posts_per_page=1 --allow-root)
+
+# Add business meta:
+wp post meta update $BUSINESS_ID pt24_phone '+48 123 456 789' --allow-root
+wp post meta update $BUSINESS_ID pt24_email 'kontakt@example.com' --allow-root
+wp post meta update $BUSINESS_ID pt24_service_area 'Warszawa i okolice' --allow-root
+wp post meta update $BUSINESS_ID pt24_years_experience '10' --allow-root
+wp post meta update $BUSINESS_ID pt24_mobile_service '1' --allow-root
+wp post meta update $BUSINESS_ID pt24_plan 'free' --allow-root
+
+# Add service category:
+wp term create pt24_service_cat 'mechanik' --slug=mechanik --allow-root || true
+SERVICE_TERM=$(wp term list pt24_service_cat --slug=mechanik --field=term_id --allow-root)
+wp post term add $BUSINESS_ID pt24_service_cat $SERVICE_TERM --allow-root
+
+# Add city:
+wp term create pt24_city 'Warszawa' --slug=warszawa --allow-root || true
+CITY_TERM=$(wp term list pt24_city --slug=warszawa --field=term_id --allow-root)
+wp post term add $BUSINESS_ID pt24_city $CITY_TERM --allow-root
+```
+
+### Verify PT24 Platform
+```bash
+# Check platform statistics:
+wp pt24 stats --allow-root
+
+# Should show:
+# - Landing Pages: 100+
+# - Businesses: 1+
+# - Cities: 20+
+# - Service Categories: 5+
+
+# Test landing page URL:
+curl -I https://pt24.pro/mechanik/warszawa/
+# Should return: HTTP/2 200
+
+# Test business profile:
+curl -I https://pt24.pro/firma/test-mechanik-warszawa/
+# Should return: HTTP/2 200
+```
+
+---
+
+## 8. Testing & Verification
 
 ### Health Check
 ```bash
@@ -388,22 +524,29 @@ curl -I https://pt24.pro
 curl https://pt24.pro/wp-json/pearblog/v1/health
 # Should return: {"status":"ok",...}
 
+# Test PT24 API:
+curl https://pt24.pro/wp-json/pt24/v1/businesses
+# Should return: {"businesses":[...],...}
+
 # Verify admin access:
 # Visit: https://pt24.pro/wp-admin
 ```
 
-### Run Test Content Generation
+### Test PT24 Platform
 ```bash
 cd /var/www/pt24.pro
 
-# Add a test topic:
-wp pearblog queue add "Najnowsze wiadomości technologiczne" --allow-root
+# Test landing page generation:
+wp pt24 generate-pages --service=mechanik --city=krakow --allow-root
 
-# Generate test article:
-wp pearblog generate --allow-root
+# Verify page was created:
+wp post list --post_type=pt24_landing --s="mechanik krakow" --allow-root
 
-# Check results:
-wp post list --post_type=post --allow-root
+# Test form submission (manual):
+# Visit: https://pt24.pro/mechanik/warszawa/
+# Fill out the lead form and submit
+# Check database:
+wp db query "SELECT * FROM wp_pt24_leads ORDER BY id DESC LIMIT 1" --allow-root
 ```
 
 ### Performance Test
@@ -421,50 +564,68 @@ EOF
 
 ---
 
-## 8. Go Live
+## 9. Go Live
 
 ### Pre-Launch Checklist
 
 - [ ] DNS points to server (pt24.pro → server IP)
 - [ ] SSL certificate active and valid
 - [ ] WordPress admin accessible
-- [ ] PearBlog Engine configured with API keys
+- [ ] PearBlog Engine configured with API keys (optional for AI content)
 - [ ] Theme activated (pearblog-theme v7.0)
-- [ ] Test article generated successfully
-- [ ] Cron job configured for hourly generation
+- [ ] **PT24 Platform initialized (`wp pt24 init`)**
+- [ ] **PT24 landing pages generated (100+)**
+- [ ] **PT24 homepage created and set**
+- [ ] **PT24 API endpoints tested**
+- [ ] **Test business profile created**
+- [ ] **Lead form tested and working**
+- [ ] **Database tables created (wp_pt24_leads, wp_pt24_business_stats)**
+- [ ] Cron job configured (if using AI content generation)
 - [ ] Backup system in place
 - [ ] Monitoring configured
 
-### Start Autonomous Generation
+### PT24 Platform Launch
 ```bash
 cd /var/www/pt24.pro
 
-# Start autopilot mode:
-wp pearblog autopilot start --allow-root
+# Final platform check:
+wp pt24 stats --allow-root
 
-# Check autopilot status:
-wp pearblog autopilot status --allow-root
+# Verify all components:
+echo "=== PT24 Platform Status ==="
+echo "Landing Pages: $(wp post list --post_type=pt24_landing --format=count --allow-root)"
+echo "Businesses: $(wp post list --post_type=pt24_business --format=count --allow-root)"
+echo "Cities: $(wp term list pt24_city --format=count --allow-root)"
+echo "Services: $(wp term list pt24_service_cat --format=count --allow-root)"
 
-# View queue:
-wp pearblog queue list --allow-root
+# Test critical URLs:
+echo ""
+echo "=== Testing URLs ==="
+curl -I https://pt24.pro/ | grep "HTTP/"
+curl -I https://pt24.pro/mechanik/warszawa/ | grep "HTTP/"
+curl -I https://pt24.pro/wp-json/pt24/v1/businesses | grep "HTTP/"
 ```
 
-### Initial Content Seeding
+### Business Onboarding
 ```bash
-# Add initial topics to queue:
-wp pearblog queue add "Aktualne wiadomości ze świata" --allow-root
-wp pearblog queue add "Technologia i innowacje" --allow-root
-wp pearblog queue add "Biznes i finanse" --allow-root
-wp pearblog queue add "Sport i rozrywka" --allow-root
-wp pearblog queue add "Kultura i lifestyle" --allow-root
+# Create instructions for businesses to register:
+# 1. Visit: https://pt24.pro/dodaj-firme/
+# 2. Fill registration form
+# 3. Wait for admin approval
+# 4. Profile goes live
 
-# Generate first batch:
-wp pearblog generate --allow-root
+# Or manually add businesses:
+wp post create \
+  --post_type=pt24_business \
+  --post_title='Business Name' \
+  --post_content='Business description' \
+  --post_status=publish \
+  --allow-root
 ```
 
 ---
 
-## 9. Monitoring
+## 10. Monitoring
 
 ### WordPress Dashboard
 ```
@@ -474,16 +635,35 @@ Login: admin / [your password]
 Navigate to: PearBlog Engine → Dashboard
 ```
 
+### PT24 Platform Monitoring
+```bash
+# Check PT24 statistics:
+wp pt24 stats --allow-root
+
+# Monitor leads:
+wp db query "SELECT COUNT(*) as total_leads, status FROM wp_pt24_leads GROUP BY status" --allow-root
+
+# Monitor business stats:
+wp db query "SELECT business_id, SUM(views) as total_views, SUM(phone_clicks) as phone_clicks FROM wp_pt24_business_stats GROUP BY business_id ORDER BY total_views DESC LIMIT 10" --allow-root
+
+# Check recent leads:
+wp db query "SELECT * FROM wp_pt24_leads ORDER BY created_at DESC LIMIT 10" --allow-root
+```
+
 ### Performance Monitoring
 ```bash
-# Check pipeline statistics:
+# Check platform statistics:
+wp pt24 stats --allow-root
+
+# View landing pages:
+wp post list --post_type=pt24_landing --posts_per_page=10 --allow-root
+
+# View businesses:
+wp post list --post_type=pt24_business --posts_per_page=10 --allow-root
+
+# If using AI content generation:
 wp pearblog stats --allow-root
-
-# View recent articles:
 wp post list --post_type=post --posts_per_page=10 --allow-root
-
-# Check queue status:
-wp pearblog queue list --allow-root
 ```
 
 ### Log Monitoring
@@ -516,7 +696,7 @@ https://pt24.pro/wp-admin
 
 ---
 
-## 10. Troubleshooting
+## 11. Troubleshooting
 
 ### Common Issues
 
@@ -571,7 +751,73 @@ wp pearblog circuit status --allow-root
 wp pearblog circuit reset --allow-root
 ```
 
-#### Issue: SSL certificate issues
+#### Issue: PT24 landing pages not accessible
+```bash
+# Check rewrite rules:
+wp rewrite flush --allow-root
+
+# Verify PT24 is initialized:
+wp pt24 stats --allow-root
+
+# Check if pages exist:
+wp post list --post_type=pt24_landing --allow-root
+
+# Re-initialize if needed:
+wp pt24 init --allow-root
+```
+
+#### Issue: Lead forms not submitting
+```bash
+# Check if MU plugin is loaded:
+ls -la /var/www/pt24.pro/wp-content/mu-plugins/ | grep pt24
+
+# Verify database tables exist:
+wp db query "SHOW TABLES LIKE 'wp_pt24_%'" --allow-root
+
+# Check form handler is included:
+grep "pt24-form-handler" /var/www/pt24.pro/wp-content/themes/pearblog-theme/functions.php
+
+# Test AJAX endpoint:
+curl -X POST https://pt24.pro/wp-admin/admin-ajax.php \
+  -d "action=pt24_submit_lead" \
+  -d "name=Test" \
+  -d "email=test@test.com" \
+  -d "phone=123456789" \
+  -d "city=Test" \
+  -d "service=mechanik" \
+  -d "consent=1"
+```
+
+#### Issue: Business profiles not displaying
+```bash
+# Check if business exists:
+wp post list --post_type=pt24_business --allow-root
+
+# Verify template exists:
+ls -la /var/www/pt24.pro/wp-content/themes/pearblog-theme/single-pt24_business.php
+
+# Check business meta:
+BUSINESS_ID=$(wp post list --post_type=pt24_business --format=ids --posts_per_page=1 --allow-root)
+wp post meta list $BUSINESS_ID --allow-root
+
+# Flush rewrite rules:
+wp rewrite flush --allow-root
+```
+
+#### Issue: API endpoints returning 404
+```bash
+# Check if REST API is working:
+curl https://pt24.pro/wp-json/
+
+# Verify PT24 API routes are registered:
+wp rest route list | grep pt24
+
+# Check if API file is included:
+grep "pt24-api" /var/www/pt24.pro/wp-content/themes/pearblog-theme/functions.php
+
+# Flush rewrite rules:
+wp rewrite flush --allow-root
+```
 ```bash
 # Renew certificate manually:
 certbot renew --force-renewal
@@ -695,11 +941,59 @@ composer install --no-dev --optimize-autoloader
 # Clear all caches:
 wp cache flush --allow-root
 wp rewrite flush --allow-root
+
+# PT24 Platform maintenance:
+wp pt24 stats --allow-root  # Check platform health
+wp db optimize --allow-root  # Optimize database
 ```
 
 ---
 
-**Deployment Guide Version:** 1.0
+## PT24 Platform Commands Reference
+
+### WP-CLI Commands
+```bash
+# Initialize platform:
+wp pt24 init
+
+# Generate landing pages:
+wp pt24 generate-pages --batch=100
+wp pt24 generate-pages --service=mechanik --city=warszawa
+
+# View statistics:
+wp pt24 stats
+
+# List content:
+wp post list --post_type=pt24_landing
+wp post list --post_type=pt24_business
+
+# Database operations:
+wp db query "SELECT * FROM wp_pt24_leads ORDER BY created_at DESC LIMIT 10"
+wp db query "SELECT * FROM wp_pt24_business_stats WHERE business_id=123"
+```
+
+### REST API Endpoints
+```bash
+# List businesses:
+GET /wp-json/pt24/v1/businesses?service=mechanik&city=warszawa
+
+# Get business:
+GET /wp-json/pt24/v1/businesses/{id}
+
+# Submit lead:
+POST /wp-json/pt24/v1/leads/submit
+
+# Get leads (admin):
+GET /wp-json/pt24/v1/leads
+
+# Get business stats:
+GET /wp-json/pt24/v1/stats/{business_id}
+```
+
+---
+
+**Deployment Guide Version:** 2.0
 **Last Updated:** May 3, 2026
-**PearBlog Engine Version:** v7.0.0
-**Status:** Ready for Production
+**Platform Version:** PT24.PRO v2.0
+**Engine Version:** PearBlog Engine v7.0
+**Status:** Production Ready ✅
