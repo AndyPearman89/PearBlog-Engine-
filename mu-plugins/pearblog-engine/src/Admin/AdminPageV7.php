@@ -56,6 +56,10 @@ class AdminPageV7 {
 		add_action( 'admin_post_pearblog_save_strategy', [ 'PearBlogEngine\Admin\StrategyTab', 'handle_save' ] );
 		add_action( 'admin_post_pearblog_batch_generate', [ 'PearBlogEngine\Admin\ContentEngineTab', 'handle_batch_generate' ] );
 		add_action( 'admin_post_pearblog_set_template', [ 'PearBlogEngine\Admin\ContentEngineTab', 'handle_set_template' ] );
+		add_action( 'admin_post_pearblog_save_leads_config', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_save_leads_config' ] );
+		add_action( 'admin_post_pearblog_save_expert_routing', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_save_expert_routing' ] );
+		add_action( 'admin_post_pearblog_add_expert', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_add_expert' ] );
+		add_action( 'admin_post_pearblog_delete_expert', [ 'PearBlogEngine\Admin\LeadsTab', 'handle_delete_expert' ] );
 	}
 
 	/**
@@ -297,17 +301,7 @@ class AdminPageV7 {
 	 * Render Leads & Experts tab - Lead management.
 	 */
 	private function render_leads_tab(): void {
-		?>
-		<div class="pearblog-v7-leads">
-			<h2><?php echo esc_html__( 'Leads & Expert Management', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Capture leads and route to domain experts.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Coming in Phase 4 (v7.4 - September 2026)', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'Lead capture forms with automatic expert routing.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		LeadsTab::render();
 	}
 
 	/**
