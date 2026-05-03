@@ -9,29 +9,78 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Core;
 
+use PearBlogEngine\AI\FactChecker;
+use PearBlogEngine\AI\PodcastGenerator;
+use PearBlogEngine\AI\PromptOptimizer;
+use PearBlogEngine\AI\StreamingAIClient;
+use PearBlogEngine\AI\VideoScriptBuilder;
+use PearBlogEngine\Analytics\CohortEngine;
+use PearBlogEngine\Analytics\ContentROIEngine;
+use PearBlogEngine\Analytics\PredictiveEngine;
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
+use PearBlogEngine\Cache\QueryOptimizer;
+use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
+use PearBlogEngine\DecisionPlatform\PriceComparison;
+use PearBlogEngine\DecisionPlatform\QuizEngine;
+use PearBlogEngine\Distribution\AMPGenerator;
+use PearBlogEngine\Email\EmailDigest;
+use PearBlogEngine\Email\NewsletterBuilder;
+use PearBlogEngine\Integration\ZapierManager;
+use PearBlogEngine\Monetization\AffiliateDiscovery;
+use PearBlogEngine\Monetization\CROEngine;
+use PearBlogEngine\Monetization\PaywallEngine;
+use PearBlogEngine\Monetization\RevenueTracker;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
+use PearBlogEngine\Pipeline\ApprovalWorkflow;
+use PearBlogEngine\Pipeline\AsyncQueueManager;
 use PearBlogEngine\Pipeline\ContentImportExport;
 use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Scheduler\PublishScheduler;
+use PearBlogEngine\Security\ComplianceExporter;
+use PearBlogEngine\Security\ContentModerator;
+use PearBlogEngine\Security\PIIDetector;
+use PearBlogEngine\Security\RBACManager;
+use PearBlogEngine\SEO\CoreWebVitalsMonitor;
+use PearBlogEngine\SEO\HreflangManager;
+use PearBlogEngine\SEO\ProgrammaticSEO;
+use PearBlogEngine\SEO\SchemaManager;
+use PearBlogEngine\SEO\SearchConsoleClient;
+use PearBlogEngine\SEO\TopicalAuthorityEngine;
+use PearBlogEngine\Social\PushNotificationPublisher;
+use PearBlogEngine\Social\SocialPublisher;
+use PearBlogEngine\Tenant\BillingEngine;
+use PearBlogEngine\Tenant\TenantIsolator;
+use PearBlogEngine\Tenant\TenantOnboardingController;
+use PearBlogEngine\Testing\ABTestEngine;
+use PearBlogEngine\Admin\WhiteLabelManager;
+use PearBlogEngine\Analytics\AnalyticsDashboard;
+use PearBlogEngine\API\GraphQLController;
+use PearBlogEngine\Cache\CdnManager;
+use PearBlogEngine\Content\ContentRefreshEngine;
+use PearBlogEngine\Content\ReadabilityAnalyzer;
 use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\AdminPageV7;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
 use PearBlogEngine\Admin\OnboardingWizard;
-use PearBlogEngine\Content\ContentRefreshEngine;
-use PearBlogEngine\Email\EmailDigest;
-use PearBlogEngine\SEO\ProgrammaticSEO;
-use PearBlogEngine\SEO\SchemaManager;
-use PearBlogEngine\Social\SocialPublisher;
-use PearBlogEngine\Testing\ABTestEngine;
+use PearBlogEngine\Keywords\KeywordClusterEngine;
+use PearBlogEngine\Monitoring\SLAManager;
+use PearBlogEngine\Pipeline\BackgroundProcessor;
+use PearBlogEngine\Scheduler\TimeZoneScheduler;
+use PearBlogEngine\SEO\XmlSitemapManager;
+use PearBlogEngine\Social\SocialCalendar;
+use PearBlogEngine\AI\ContentRewriter;
+use PearBlogEngine\Analytics\ConversionTracker;
+use PearBlogEngine\Analytics\SearchIntentEngine;
+use PearBlogEngine\Content\GlossaryBuilder;
+use PearBlogEngine\Distribution\RSSFeedBuilder;
+use PearBlogEngine\Monitoring\ErrorTracker;
 use PearBlogEngine\Webhook\WebhookManager;
-use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -118,6 +167,204 @@ class Plugin {
 
 		// Decision Platform – Poradnik.pro Enterprise features.
 		( new DecisionPlatformManager() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.0 – P0 Modules
+		// ----------------------------------------------------------------
+
+		// Revenue ROI Dashboard.
+		( new ContentROIEngine() )->register();
+
+		// Content Approval Workflow.
+		( new ApprovalWorkflow() )->register();
+
+		// Google Search Console integration.
+		( new SearchConsoleClient() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.0 – P1 Modules
+		// ----------------------------------------------------------------
+
+		// AI Fact-Checker (hooks into pipeline via action).
+		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ): void {
+			$checker = new FactChecker();
+			if ( ! $checker->is_enabled() ) {
+				return;
+			}
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$checker->check_and_annotate( $post_id, $post->post_content );
+			}
+		}, 15 );
+
+		// Prompt Optimizer.
+		( new PromptOptimizer() )->register();
+
+		// Tenant Billing Engine.
+		( new BillingEngine() )->register();
+
+		// Push Notifications.
+		( new PushNotificationPublisher() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.0 – P2 Modules
+		// ----------------------------------------------------------------
+
+		// AI Streaming live preview.
+		( new StreamingAIClient() )->register();
+
+		// Video Script Builder.
+		( new VideoScriptBuilder() )->register();
+
+		// RBAC Manager.
+		( new RBACManager() )->register();
+
+		// Content Moderation (blocks harmful content before publish).
+		$moderator = new ContentModerator();
+		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ) use ( $moderator ): void {
+			if ( ! $moderator->is_enabled() ) {
+				return;
+			}
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$moderator->check( $post_id, $post->post_content );
+			}
+		}, 8 );
+
+		// PII Detection (scans before publish).
+		$pii_detector = new PIIDetector();
+		add_action( 'pearblog_pipeline_completed', static function ( int $post_id ) use ( $pii_detector ): void {
+			$post = get_post( $post_id );
+			if ( $post ) {
+				$pii_detector->scan_and_persist( $post_id, $post->post_content );
+			}
+		}, 9 );
+
+		// Compliance Exporter.
+		( new ComplianceExporter() )->register();
+
+		// Affiliate Discovery.
+		( new AffiliateDiscovery() )->register();
+
+		// Paywall Engine.
+		( new PaywallEngine() )->register();
+
+		// Topical Authority Engine.
+		( new TopicalAuthorityEngine() )->register();
+
+		// Core Web Vitals Monitor.
+		( new CoreWebVitalsMonitor() )->register();
+
+		// Zapier / Make.com Integration.
+		( new ZapierManager() )->register();
+
+		// Newsletter Builder.
+		( new NewsletterBuilder() )->register();
+
+		// AMP Generator.
+		( new AMPGenerator() )->register();
+
+		// Cohort & Funnel Analytics.
+		( new CohortEngine() )->register();
+
+		// Predictive Traffic Engine.
+		( new PredictiveEngine() )->register();
+
+		// Async Queue Manager.
+		( new AsyncQueueManager() )->register();
+
+		// Distributed Lock Manager (initialised globally for use by CronManager).
+		$GLOBALS['pearblog_lock_manager'] = new DistributedLockManager();
+
+		// Tenant Isolator (multisite data separation).
+		( new TenantIsolator() )->register();
+
+		// Decision Quiz Engine.
+		( new QuizEngine() )->register();
+
+		// Price Comparison Engine.
+		( new PriceComparison() )->register();
+
+		// Revenue Tracker.
+		( new RevenueTracker() )->register();
+
+		// CRO Engine (A/B testing for CTAs).
+		( new CROEngine() )->register();
+
+		// Podcast Generator.
+		( new PodcastGenerator() )->register();
+
+		// Hreflang Manager (international SEO).
+		( new HreflangManager() )->register();
+
+		// Tenant Onboarding Controller.
+		( new TenantOnboardingController() )->register();
+
+		// Query Optimizer (persistent cache + slow-query monitor).
+		( new QueryOptimizer() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.1 – Previously-unregistered modules
+		// ----------------------------------------------------------------
+
+		// GraphQL API endpoint (standalone + WPGraphQL extension).
+		( new GraphQLController() )->register();
+
+		// White-Label Manager (agency branding overrides).
+		( new WhiteLabelManager() )->register();
+
+		// Analytics Dashboard (GA4 sync + admin tab).
+		( new AnalyticsDashboard() )->register();
+
+		// CDN Manager (image offload to BunnyCDN / Cloudflare Images).
+		( new CdnManager() )->register();
+
+		// Keyword Cluster Engine (GA4 search-term clustering).
+		( new KeywordClusterEngine() )->register();
+
+		// SLA Manager (uptime / pipeline SLA targets + breach alerts).
+		( new SLAManager() )->register();
+
+		// Background Processor (WP-Cron-based async pipeline queue).
+		( new BackgroundProcessor() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.1 – New Modules
+		// ----------------------------------------------------------------
+
+		// Readability Analyzer (Flesch, FK grade, passive voice, meta box).
+		( new ReadabilityAnalyzer() )->register();
+
+		// Timezone Scheduler (publish at locally optimal hours per market).
+		( new TimeZoneScheduler() )->register();
+
+		// XML Sitemap Manager (images, video, news, index, SE pinging).
+		( new XmlSitemapManager() )->register();
+
+		// Social Calendar (multi-platform post scheduling).
+		( new SocialCalendar() )->register();
+
+		// ── Enterprise v8.2 ───────────────────────────────────────────────────
+
+		// Content Rewriter (AI-powered refresh & full-rewrite engine).
+		( new ContentRewriter() )->register();
+
+		// Search Intent Engine (classifies informational/commercial/transactional).
+		( new SearchIntentEngine() )->register();
+
+		// RSS Feed Builder (rich feeds: media, Dublin Core, podcast RSS).
+		( new RSSFeedBuilder() )->register();
+
+		// ── Enterprise v8.3 ───────────────────────────────────────────────────
+
+		// Glossary Builder (auto-generates SEO glossary pages for topic clusters).
+		( new GlossaryBuilder() )->register();
+
+		// Error Tracker (captures PHP errors with admin notices and REST log).
+		( new ErrorTracker() )->register();
+
+		// Conversion Tracker (funnel-aware page-view, CTA, email-signup tracking).
+		( new ConversionTracker() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
