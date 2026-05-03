@@ -1,9 +1,9 @@
 # ⚡ Quick Start Guide: po.beskidzku.pl
 
 **Domain:** po.beskidzku.pl
-**Industry:** Beskidy region – travel, tourism, hiking, local culture (Turystyka, wędrówki i kultura regionu Beskidów)
+**Industry:** Beskidy travel and local mountain guides (Beskidy, szlaki, atrakcje)
 **Server:** TBD - Update with your server IP
-**Goal:** Launch autonomous Beskidy travel and culture content site in <20 minutes
+**Goal:** Launch autonomous Beskidy travel content site in <20 minutes
 
 ---
 
@@ -14,7 +14,7 @@ ssh root@YOUR_SERVER_IP
 curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/scripts/deploy-po-beskidzku-pl.sh | bash
 ```
 
-**⚠️ Important:** Before running, update `SERVER_IP` in the script file.
+**⚠️ Important:** Before running, ensure DNS for `po.beskidzku.pl` points to your server.
 
 ---
 
@@ -32,7 +32,7 @@ curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/s
    - DNS A record: `www.po.beskidzku.pl` → YOUR_SERVER_IP
 
 3. **OpenAI API Key**
-   - Get from: https://platform.openai.com/api-keys
+   - Get from: [platform.openai.com/api-keys](https://platform.openai.com/api-keys)
    - Format: `sk-proj-...`
 
 4. **Email address**
@@ -56,11 +56,13 @@ curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/s
 ```
 
 The script will prompt you for:
+
 - MySQL root password
 - Admin email
-- Admin password
 - OpenAI API key
 - SSL certificate email
+
+Admin password is set by the script to: `admin1234`.
 
 ### Step 3: Verify (2 min)
 
@@ -69,9 +71,10 @@ The script will prompt you for:
 curl -I https://po.beskidzku.pl
 # Should return: HTTP/2 200
 
-# Check health endpoint:
-curl https://po.beskidzku.pl/wp-json/pearblog/v1/health
-# Should return: {"status":"ok",...}
+# Check health endpoint (secret-protected):
+HEALTH_SECRET=$(ssh root@YOUR_SERVER_IP "cd /var/www/po.beskidzku.pl && wp option get pearblog_health_secret --allow-root")
+curl -H "X-PearBlog-Health-Secret: ${HEALTH_SECRET}" https://po.beskidzku.pl/wp-json/pearblog/v1/health
+# Should return JSON with "overall":"ok"
 
 # Check autopilot:
 wp pearblog autopilot status --allow-root
@@ -83,16 +86,16 @@ wp pearblog autopilot status --allow-root
 
 ### Access Your Site
 
-- **Frontend:** https://po.beskidzku.pl
-- **Admin Panel:** https://po.beskidzku.pl/wp-admin
-- **Health API:** https://po.beskidzku.pl/wp-json/pearblog/v1/health
+- **Frontend:** [https://po.beskidzku.pl](https://po.beskidzku.pl)
+- **Admin Panel:** [https://po.beskidzku.pl/wp-admin](https://po.beskidzku.pl/wp-admin)
+- **Health API:** [https://po.beskidzku.pl/wp-json/pearblog/v1/health](https://po.beskidzku.pl/wp-json/pearblog/v1/health)
 
 ### Default Configuration
 
-```
-Industry: turystyka i kultura regionu Beskidów
-Tone: przyjazny, lokalny, dla miłośników Beskidów i górskiej turystyki
-Publish Rate: 0.5/hour (1 article every 2 hours = 12/day)
+```text
+Industry: beskidy mountains travel
+Tone: lokalny, praktyczny, pomocny, dla turystów górskich
+Publish Rate: 1/hour (24 articles per day)
 Language: pl (Polish)
 AI Images: Enabled (DALL-E 3)
 Autonomous Mode: Enabled
@@ -100,12 +103,13 @@ Autonomous Mode: Enabled
 
 ### Initial Topics Added (30 topics)
 
-The deployment automatically adds 30 Beskidy travel and culture topics to the queue:
-- Szlaki turystyczne i trekking w Beskidach
-- Schroniska górskie i noclegi
-- Kuchnia regionalna i lokalne produkty
-- Festiwale, tradycje i kultura góralska
-- Zimowe i letnie atrakcje w Beskidach
+The deployment automatically adds 30 Beskidy-specific topics to the queue:
+
+- Szlaki Beskidów, schroniska i trasy całoroczne
+- Warunki pogodowe, parkingi i dojazdy
+- Atrakcje rodzinne, punkty widokowe i lokalne trasy
+- Bezpieczeństwo na szlaku
+- Sprzęt trekkingowy i przygotowanie górskie
 
 ---
 
@@ -117,24 +121,24 @@ Go to: **Settings** → **Secrets and variables** → **Actions**
 
 ### Required Secrets
 
-- `BESKIDZKU_SSH_HOST` = YOUR_SERVER_IP
-- `BESKIDZKU_SSH_USER` = root
-- `BESKIDZKU_SSH_PRIVATE_KEY` = [Your SSH private key]
-- `BESKIDZKU_WP_PATH` = /var/www/po.beskidzku.pl
-- `BESKIDZKU_ROOT_PASSWORD` = [MySQL root password]
-- `BESKIDZKU_OPENAI_API_KEY` = sk-proj-...
+- `PO_BESKIDZKU_SSH_HOST` = YOUR_SERVER_IP
+- `PO_BESKIDZKU_SSH_USER` = root
+- `PO_BESKIDZKU_SSH_PRIVATE_KEY` = [Your SSH private key]
+- `PO_BESKIDZKU_WP_PATH` = /var/www/po.beskidzku.pl
+- `PO_BESKIDZKU_ROOT_PASSWORD` = [MySQL root password]
+- `PO_BESKIDZKU_OPENAI_API_KEY` = sk-proj-...
 
 ### Generate SSH Key (if needed)
 
 ```bash
 # On your local machine:
-ssh-keygen -t ed25519 -C "deploy-beskidzku" -f ~/.ssh/beskidzku_deploy
+ssh-keygen -t ed25519 -C "deploy-po-beskidzku" -f ~/.ssh/po_beskidzku_deploy
 
 # Copy public key to server:
-ssh-copy-id -i ~/.ssh/beskidzku_deploy.pub root@YOUR_SERVER_IP
+ssh-copy-id -i ~/.ssh/po_beskidzku_deploy.pub root@YOUR_SERVER_IP
 
 # Display private key (add to GitHub Secret):
-cat ~/.ssh/beskidzku_deploy
+cat ~/.ssh/po_beskidzku_deploy
 ```
 
 ---
@@ -183,16 +187,19 @@ wp pearblog autopilot resume --allow-root
 ### OpenAI API Costs
 
 **Per Article:**
+
 - Content (GPT-4o-mini): ~$0.05
 - Image (DALL-E 3): ~$0.04
 - Total: ~$0.09 per article
 
-**Monthly (0.5/hour rate):**
-- 12 articles/day × 30 days = 360 articles/month
-- 360 × $0.09 = **~$32/month**
+**Monthly (1/hour rate):**
+
+- 24 articles/day × 30 days = 720 articles/month
+- 720 × $0.09 = **~$65/month**
 
 **Set OpenAI usage limits:**
-- https://platform.openai.com/account/limits
+
+- [platform.openai.com/account/limits](https://platform.openai.com/account/limits)
 - Recommended: $50/month hard limit
 
 ---
@@ -240,7 +247,7 @@ chmod -R 755 /var/www/po.beskidzku.pl/wp-content
 
 1. **Add More Topics** (optional)
    - Add 20-50 more topics for better content variety
-   - Focus on: specific trails, local events, mountain huts, regional food
+   - Focus on: szlaki sezonowe, dojazdy, parkingi, schroniska, trasy rodzinne
 
 2. **Configure Monetization**
    - Admin → PearBlog Engine → Monetization
@@ -265,11 +272,11 @@ chmod -R 755 /var/www/po.beskidzku.pl/wp-content
 - **Documentation:** [DEPLOYMENT-po-beskidzku-pl.md](DEPLOYMENT-po-beskidzku-pl.md)
 - **GitHub Secrets:** [GITHUB-SECRETS-GUIDE.md](GITHUB-SECRETS-GUIDE.md)
 - **Troubleshooting:** [TROUBLESHOOTING.md](TROUBLESHOOTING.md)
-- **GitHub Issues:** https://github.com/AndyPearman89/PearBlog-Engine-/issues
+- **GitHub Issues:** [github.com/AndyPearman89/PearBlog-Engine-/issues](https://github.com/AndyPearman89/PearBlog-Engine-/issues)
 
 ---
 
-**Last Updated:** 2026-05-03
+**Last Updated:** 2026-05-02
 **Deployment Time:** ~20 minutes
-**Expected First Article:** Within 2 hours of deployment
-**Monthly Cost:** ~$32 (OpenAI API only)
+**Expected First Article:** Within 1 hour of deployment
+**Monthly Cost:** ~$65 (OpenAI API only)

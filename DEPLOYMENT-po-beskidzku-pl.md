@@ -4,7 +4,7 @@
 **Server:** TBD - Update with actual server IP
 **User:** root
 **Target:** Production deployment of PearBlog Engine v6.0
-**Industry:** Beskidy region – travel, tourism, hiking, local culture (Turystyka, wędrówki i kultura regionu Beskidów)
+**Industry:** Beskidy travel and local mountain guides (Beskidy, szlaki, atrakcje)
 
 ---
 
@@ -18,7 +18,7 @@ ssh root@YOUR_SERVER_IP
 curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/scripts/deploy-po-beskidzku-pl.sh | bash
 ```
 
-**⚠️ Note:** Before running the script, update `SERVER_IP` in `deploy-po-beskidzku-pl.sh` with your actual server IP address.
+**⚠️ Note:** Before running, make sure DNS for `po.beskidzku.pl` points to your actual server IP address.
 
 ---
 
@@ -40,6 +40,7 @@ curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/s
 ## 1. Prerequisites Check
 
 ### Server Access
+
 ```bash
 # Test SSH access:
 ssh root@YOUR_SERVER_IP
@@ -48,6 +49,7 @@ ssh root@YOUR_SERVER_IP
 ```
 
 ### Required Software
+
 ```bash
 # Check PHP version (need ≥8.1):
 php -v
@@ -66,6 +68,7 @@ mv wp-cli.phar /usr/local/bin/wp
 ```
 
 ### DNS Verification
+
 ```bash
 # Verify DNS is pointing to server:
 dig po.beskidzku.pl +short
@@ -79,6 +82,7 @@ nslookup po.beskidzku.pl
 ## 2. Initial Server Setup
 
 ### Install Required PHP Extensions
+
 ```bash
 # Connect to server:
 ssh root@YOUR_SERVER_IP
@@ -99,6 +103,7 @@ php -m | grep -E 'curl|json|mbstring|xml|zip|gd|intl|openssl'
 ```
 
 ### Configure PHP
+
 ```bash
 # Edit php.ini:
 nano /etc/php/8.1/fpm/php.ini
@@ -114,6 +119,7 @@ systemctl restart php8.1-fpm
 ```
 
 ### Create Directory Structure
+
 ```bash
 # Create WordPress directory:
 mkdir -p /var/www/po.beskidzku.pl
@@ -125,32 +131,35 @@ chown www-data:www-data /var/www/po.beskidzku.pl
 ## 3. WordPress Installation
 
 ### Download WordPress
+
 ```bash
 cd /var/www/po.beskidzku.pl
 wp core download --allow-root
 ```
 
 ### Database Setup
+
 ```bash
 # Login to MySQL:
 mysql -u root -p
 
 # Create database and user:
-CREATE DATABASE beskidzku_pl CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-CREATE USER 'beskidzku_user'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD_HERE';
-GRANT ALL PRIVILEGES ON beskidzku_pl.* TO 'beskidzku_user'@'localhost';
+CREATE DATABASE po_beskidzku_pl CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE USER 'po_beskidzku_user'@'localhost' IDENTIFIED BY 'STRONG_PASSWORD_HERE';
+GRANT ALL PRIVILEGES ON po_beskidzku_pl.* TO 'po_beskidzku_user'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
 
 ### Configure WordPress
+
 ```bash
 cd /var/www/po.beskidzku.pl
 
 # Create wp-config.php:
 wp config create \
-  --dbname=beskidzku_pl \
-  --dbuser=beskidzku_user \
+  --dbname=po_beskidzku_pl \
+  --dbuser=po_beskidzku_user \
   --dbpass=YOUR_DB_PASSWORD \
   --dbhost=localhost \
   --dbcharset=utf8mb4 \
@@ -161,16 +170,17 @@ wp config create \
 wp config set WP_MEMORY_LIMIT "512M" --allow-root
 wp config set DISABLE_WP_CRON false --raw --allow-root
 wp config set WP_DEBUG false --raw --allow-root
-wp config set table_prefix "bsk_" --allow-root
+wp config set table_prefix "pbk_" --allow-root
 ```
 
 ### Install WordPress
+
 ```bash
 wp core install \
   --url="http://po.beskidzku.pl" \
-  --title="Po Beskidzku - Turystyka, Wędrówki i Kultura Beskidów" \
+  --title="po.beskidzku.pl - Beskidy, Szlaki, Atrakcje" \
   --admin_user="admin" \
-  --admin_password="STRONG_ADMIN_PASSWORD" \
+  --admin_password="admin1234" \
   --admin_email="your-email@example.com" \
   --allow-root
 
@@ -184,6 +194,7 @@ wp rewrite flush --allow-root
 ## 4. PearBlog Engine Deployment
 
 ### Clone Repository
+
 ```bash
 cd /tmp
 git clone https://github.com/AndyPearman89/PearBlog-Engine-.git
@@ -191,6 +202,7 @@ cd PearBlog-Engine-
 ```
 
 ### Deploy MU-Plugin
+
 ```bash
 # Create mu-plugins directory:
 mkdir -p /var/www/po.beskidzku.pl/wp-content/mu-plugins
@@ -203,6 +215,7 @@ chown -R www-data:www-data /var/www/po.beskidzku.pl/wp-content/mu-plugins/pearbl
 ```
 
 ### Deploy Theme
+
 ```bash
 # Copy theme:
 cp -r theme/pearblog-theme /var/www/po.beskidzku.pl/wp-content/themes/
@@ -220,6 +233,7 @@ chown -R www-data:www-data /var/www/po.beskidzku.pl/wp-content/themes/pearblog-t
 ## 5. Configuration
 
 ### Configure PearBlog Engine
+
 ```bash
 cd /var/www/po.beskidzku.pl
 
@@ -227,12 +241,13 @@ cd /var/www/po.beskidzku.pl
 wp option update pearblog_openai_api_key "sk-proj-YOUR_KEY_HERE" --allow-root
 
 # Configure industry and niche:
-wp option update pearblog_industry "turystyka i kultura regionu Beskidów" --allow-root
-wp option update pearblog_tone "przyjazny, lokalny, dla miłośników Beskidów i górskiej turystyki" --allow-root
+wp option update pearblog_industry "beskidy mountains travel" --allow-root
+wp option update pearblog_tone "lokalny, praktyczny, pomocny, dla turystów górskich" --allow-root
 
 # Set content settings:
-wp option update pearblog_publish_rate "0.5" --allow-root  # 1 article every 2 hours
+wp option update pearblog_publish_rate "1" --allow-root  # 1 article every hour
 wp option update pearblog_language "pl" --allow-root
+wp option update pearblog_enable_image_generation "1" --allow-root
 wp option update pearblog_ai_images_enabled "1" --allow-root
 
 # Enable autonomous mode:
@@ -240,18 +255,19 @@ wp option update pearblog_autonomous_mode "1" --allow-root
 ```
 
 ### Add Initial Content Topics
+
 ```bash
-# Add Beskidy travel and culture topics:
-wp pearblog queue add "Najpiękniejsze szlaki turystyczne w Beskidach" --allow-root
-wp pearblog queue add "Babia Góra - jak zdobyć królową Beskidów" --allow-root
-wp pearblog queue add "Schroniska górskie w Beskidach - przewodnik" --allow-root
-wp pearblog queue add "Kuchnia regionalna Beskidów - co warto zjeść" --allow-root
-wp pearblog queue add "Beskid Śląski - atrakcje i szlaki dla rodzin" --allow-root
-wp pearblog queue add "Wędrówka przez Beskid Żywiecki - od czego zacząć" --allow-root
-wp pearblog queue add "Targi i festiwale folklorystyczne w Beskidach" --allow-root
-wp pearblog queue add "Najlepsze punkty widokowe w Beskidach" --allow-root
-wp pearblog queue add "Góralska tradycja i kultura regionu Beskidów" --allow-root
-wp pearblog queue add "Zima w Beskidach - gdzie na narty" --allow-root
+# Add Beskidy topics:
+wp pearblog queue add "Babia Góra szlaki turystyczne - przewodnik dla początkujących" --allow-root
+wp pearblog queue add "Skrzyczne z dziećmi - najlepsze trasy i czasy przejścia" --allow-root
+wp pearblog queue add "Turbacz zimą - jak bezpiecznie wejść i co zabrać" --allow-root
+wp pearblog queue add "Beskid Żywiecki - najpiękniejsze panoramy i punkty widokowe" --allow-root
+wp pearblog queue add "Schroniska w Beskidach otwarte cały rok - aktualna lista" --allow-root
+wp pearblog queue add "Beskidy pociągiem - jak dojechać bez samochodu" --allow-root
+wp pearblog queue add "Parking pod szlakiem - gdzie zostawić auto w Szczyrku i okolicy" --allow-root
+wp pearblog queue add "Beskidy z psem - zasady, trasy i bezpieczeństwo" --allow-root
+wp pearblog queue add "Ile kosztuje weekend w Beskidach - realny budżet 2026" --allow-root
+wp pearblog queue add "Bezpieczeństwo na szlaku zimą - lawiny, lód i hipotermia" --allow-root
 
 # Verify queue:
 wp pearblog queue list --allow-root
@@ -259,24 +275,24 @@ wp pearblog queue list --allow-root
 
 ### GitHub Secrets Configuration
 
-Go to: https://github.com/AndyPearman89/PearBlog-Engine-
+Go to: [github.com/AndyPearman89/PearBlog-Engine-](https://github.com/AndyPearman89/PearBlog-Engine-)
 Navigate to: **Settings** → **Secrets and variables** → **Actions**
 
 Add these secrets:
 
-**Name:** BESKIDZKU_SSH_HOST
+**Name:** PO_BESKIDZKU_SSH_HOST
 **Value:** YOUR_SERVER_IP
 
-**Name:** BESKIDZKU_SSH_USER
+**Name:** PO_BESKIDZKU_SSH_USER
 **Value:** root
 
-**Name:** BESKIDZKU_SSH_PRIVATE_KEY
+**Name:** PO_BESKIDZKU_SSH_PRIVATE_KEY
 **Value:** [Your SSH private key content]
 
-**Name:** BESKIDZKU_WP_PATH
+**Name:** PO_BESKIDZKU_WP_PATH
 **Value:** /var/www/po.beskidzku.pl
 
-**Name:** BESKIDZKU_ROOT_PASSWORD
+**Name:** PO_BESKIDZKU_ROOT_PASSWORD
 **Value:** [MySQL root password]
 
 ---
@@ -284,6 +300,7 @@ Add these secrets:
 ## 6. SSL Setup
 
 ### Install Certbot
+
 ```bash
 apt install -y certbot python3-certbot-apache  # for Apache
 # OR
@@ -291,6 +308,7 @@ apt install -y certbot python3-certbot-nginx   # for Nginx
 ```
 
 ### Obtain SSL Certificate
+
 ```bash
 # For Apache:
 certbot --apache -d po.beskidzku.pl -d www.po.beskidzku.pl \
@@ -308,6 +326,7 @@ certbot --nginx -d po.beskidzku.pl -d www.po.beskidzku.pl \
 ```
 
 ### Update WordPress URLs
+
 ```bash
 cd /var/www/po.beskidzku.pl
 wp option update home "https://po.beskidzku.pl" --allow-root
@@ -315,6 +334,7 @@ wp option update siteurl "https://po.beskidzku.pl" --allow-root
 ```
 
 ### Test SSL Auto-Renewal
+
 ```bash
 certbot renew --dry-run
 ```
@@ -324,6 +344,7 @@ certbot renew --dry-run
 ## 7. Testing & Verification
 
 ### Test Content Generation
+
 ```bash
 cd /var/www/po.beskidzku.pl
 
@@ -338,12 +359,15 @@ wp pearblog queue list --allow-root
 ```
 
 ### Test Health Endpoint
+
 ```bash
-curl https://po.beskidzku.pl/wp-json/pearblog/v1/health
-# Should return: {"status":"ok","timestamp":...}
+HEALTH_SECRET=$(wp option get pearblog_health_secret --allow-root)
+curl -H "X-PearBlog-Health-Secret: ${HEALTH_SECRET}" https://po.beskidzku.pl/wp-json/pearblog/v1/health
+# Should return JSON with "overall":"ok"
 ```
 
 ### Verify Autonomous Mode
+
 ```bash
 # Check autonomous mode status:
 wp option get pearblog_autonomous_mode --allow-root
@@ -354,6 +378,7 @@ wp cron event list --allow-root | grep pearblog
 ```
 
 ### Start Autopilot
+
 ```bash
 # Start Enterprise Autopilot:
 wp pearblog autopilot start --allow-root
@@ -367,6 +392,7 @@ wp pearblog autopilot status --allow-root
 ## 8. Go Live
 
 ### Final Checks
+
 ```bash
 # Verify site is accessible:
 curl -I https://po.beskidzku.pl
@@ -381,6 +407,7 @@ curl -I https://po.beskidzku.pl
 ```
 
 ### Performance Optimization
+
 ```bash
 # Enable object caching (if Redis installed):
 wp plugin install redis-cache --activate --allow-root
@@ -395,6 +422,7 @@ wp config get DISABLE_WP_CRON --allow-root
 ## 9. Monitoring
 
 ### Check Logs
+
 ```bash
 # PearBlog Engine logs:
 tail -f /var/www/po.beskidzku.pl/wp-content/pearblog-engine.log
@@ -408,6 +436,7 @@ tail -f /var/log/nginx/error.log    # Nginx
 ```
 
 ### Monitor Cron Jobs
+
 ```bash
 # List all cron events:
 wp cron event list --allow-root
@@ -417,6 +446,7 @@ wp cron event run pearblog_content_pipeline --allow-root
 ```
 
 ### Check API Costs
+
 ```bash
 # View OpenAI API costs:
 wp pearblog stats --allow-root
@@ -426,6 +456,7 @@ wp option get pearblog_ai_cost_cents --allow-root
 ```
 
 ### Monitor Autopilot
+
 ```bash
 # Check autopilot status:
 wp pearblog autopilot status --allow-root
@@ -443,6 +474,7 @@ wp option get pearblog_autopilot_state --format=json --allow-root
 **Problem:** Articles are not being generated automatically.
 
 **Solution:**
+
 ```bash
 # Check autonomous mode:
 wp option get pearblog_autonomous_mode --allow-root
@@ -462,6 +494,7 @@ wp pearblog generate --allow-root
 **Problem:** API requests failing.
 
 **Solution:**
+
 ```bash
 # Verify API key:
 wp option get pearblog_openai_api_key --allow-root
@@ -482,6 +515,7 @@ curl https://api.openai.com/v1/models \
 **Problem:** Files cannot be written.
 
 **Solution:**
+
 ```bash
 # Fix permissions:
 chown -R www-data:www-data /var/www/po.beskidzku.pl/wp-content
@@ -496,9 +530,10 @@ ls -la /var/www/po.beskidzku.pl/wp-content/
 **Problem:** WordPress cannot connect to database.
 
 **Solution:**
+
 ```bash
 # Test MySQL connection:
-mysql -u beskidzku_user -p beskidzku_pl
+mysql -u po_beskidzku_user -p po_beskidzku_pl
 
 # Check wp-config.php settings:
 wp config get DB_NAME --allow-root
@@ -514,6 +549,7 @@ mysql -u root -p -e "SHOW DATABASES;"
 **Problem:** SSL not working or expired.
 
 **Solution:**
+
 ```bash
 # Check certificate status:
 certbot certificates
@@ -576,13 +612,14 @@ tail -f wp-content/pearblog-engine.log
 wp pearblog autopilot status --allow-root
 
 # Health check:
-curl https://po.beskidzku.pl/wp-json/pearblog/v1/health
+HEALTH_SECRET=$(wp option get pearblog_health_secret --allow-root)
+curl -H "X-PearBlog-Health-Secret: ${HEALTH_SECRET}" https://po.beskidzku.pl/wp-json/pearblog/v1/health
 ```
 
 ---
 
-**Last Updated:** 2026-05-03
+**Last Updated:** 2026-05-02
 **Version:** 6.0.0
-**Industry:** Beskidy region – travel, tourism, hiking, local culture
-**Publish Rate:** 0.5/hour (1 article every 2 hours)
+**Industry:** Beskidy travel and local mountain guides
+**Publish Rate:** 1/hour (1 article every hour)
 **Language:** Polish (pl)

@@ -2,7 +2,7 @@
 #
 # PearBlog Engine - Automated Deployment Script for po.beskidzku.pl
 # Domain: po.beskidzku.pl
-# Server: TBD - Update with actual server IP
+# Server: detected at runtime
 # Version: 6.0.0
 #
 # Usage:
@@ -13,6 +13,9 @@
 
 set -euo pipefail
 
+# Give WP-CLI enough memory for downloads/extraction in constrained environments.
+export WP_CLI_PHP_ARGS="-d memory_limit=512M"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -22,11 +25,11 @@ NC='\033[0m' # No Color
 
 # Configuration
 DOMAIN="po.beskidzku.pl"
-SERVER_IP="TBD"  # TODO: Update with actual server IP
 WP_PATH="/var/www/po.beskidzku.pl"
-DB_NAME="beskidzku_pl"
-DB_USER="beskidzku_user"
+DB_NAME="po_beskidzku_pl"
+DB_USER="po_beskidzku_user"
 REPO_URL="https://github.com/AndyPearman89/PearBlog-Engine-.git"
+PHP_MAJOR_MINOR=""
 
 # Helper functions
 print_step() {
@@ -45,6 +48,14 @@ print_warning() {
     echo -e "${YELLOW}⚠${NC} ${1}"
 }
 
+if [[ -x "/usr/bin/php8.3" && -f "/usr/local/bin/wp" ]]; then
+    if /usr/bin/php8.3 -m | grep -qi '^mysqli$'; then
+        wp() {
+            /usr/bin/php8.3 /usr/local/bin/wp "$@"
+        }
+    fi
+fi
+
 check_root() {
     if [[ $EUID -ne 0 ]]; then
         print_error "This script must be run as root"
@@ -58,6 +69,10 @@ check_command() {
         return 1
     fi
     return 0
+}
+
+has_command() {
+    command -v "$1" >/dev/null 2>&1
 }
 
 # Main deployment steps
@@ -80,6 +95,8 @@ step_1_check_prerequisites() {
         PHP_VERSION=$(php -r "echo PHP_VERSION;")
         if [[ "$(printf '%s\n' "8.1" "$PHP_VERSION" | sort -V | head -n1)" == "8.1" ]]; then
             print_success "PHP $PHP_VERSION installed (≥8.1 required)"
+            PHP_MAJOR_MINOR=$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')
+            print_success "Using PHP package suffix: $PHP_MAJOR_MINOR"
         else
             print_error "PHP $PHP_VERSION is too old (need ≥8.1)"
             failed=1
@@ -98,7 +115,7 @@ step_1_check_prerequisites() {
     fi
 
     # Check web server
-    if check_command apache2 || check_command nginx; then
+    if has_command apache2 || has_command nginx; then
         print_success "Web server installed"
     else
         print_warning "No web server (Apache/Nginx) found"
@@ -118,18 +135,21 @@ step_2_install_php_extensions() {
 
     apt update -qq
 
+    if [[ -z "${PHP_MAJOR_MINOR}" ]]; then
+        PHP_MAJOR_MINOR=$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')
+    fi
+
     EXTENSIONS=(
-        "php8.1-cli"
-        "php8.1-fpm"
-        "php8.1-mysql"
-        "php8.1-curl"
-        "php8.1-json"
-        "php8.1-mbstring"
-        "php8.1-xml"
-        "php8.1-zip"
-        "php8.1-gd"
-        "php8.1-intl"
-        "php8.1-openssl"
+        "php${PHP_MAJOR_MINOR}-cli"
+        "php${PHP_MAJOR_MINOR}-fpm"
+        "php${PHP_MAJOR_MINOR}-mysql"
+        "php${PHP_MAJOR_MINOR}-curl"
+        "php${PHP_MAJOR_MINOR}-mbstring"
+        "php${PHP_MAJOR_MINOR}-xml"
+        "php${PHP_MAJOR_MINOR}-zip"
+        "php${PHP_MAJOR_MINOR}-gd"
+        "php${PHP_MAJOR_MINOR}-intl"
+        "php${PHP_MAJOR_MINOR}-common"
     )
 
     for ext in "${EXTENSIONS[@]}"; do
@@ -148,19 +168,33 @@ step_2_install_php_extensions() {
 step_3_configure_php() {
     print_step "Step 3: Configuring PHP..."
 
-    PHP_INI="/etc/php/8.1/fpm/php.ini"
-
-    if [[ -f "$PHP_INI" ]]; then
-        sed -i 's/^memory_limit = .*/memory_limit = 512M/' "$PHP_INI"
-        sed -i 's/^max_execution_time = .*/max_execution_time = 300/' "$PHP_INI"
-        sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 64M/' "$PHP_INI"
-        sed -i 's/^post_max_size = .*/post_max_size = 64M/' "$PHP_INI"
-
-        systemctl restart php8.1-fpm
-        print_success "PHP configured and restarted"
-    else
-        print_warning "PHP INI file not found at $PHP_INI"
+    if [[ -z "${PHP_MAJOR_MINOR}" ]]; then
+        PHP_MAJOR_MINOR=$(php -r 'echo PHP_MAJOR_VERSION . "." . PHP_MINOR_VERSION;')
     fi
+
+    PHP_FPM_INI="/etc/php/${PHP_MAJOR_MINOR}/fpm/php.ini"
+    PHP_CLI_INI="/etc/php/${PHP_MAJOR_MINOR}/cli/php.ini"
+
+    if [[ -f "$PHP_FPM_INI" ]]; then
+        sed -i 's/^memory_limit = .*/memory_limit = 512M/' "$PHP_FPM_INI"
+        sed -i 's/^max_execution_time = .*/max_execution_time = 300/' "$PHP_FPM_INI"
+        sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 64M/' "$PHP_FPM_INI"
+        sed -i 's/^post_max_size = .*/post_max_size = 64M/' "$PHP_FPM_INI"
+        systemctl restart "php${PHP_MAJOR_MINOR}-fpm" || true
+    else
+        print_warning "PHP FPM INI file not found at $PHP_FPM_INI"
+    fi
+
+    if [[ -f "$PHP_CLI_INI" ]]; then
+        sed -i 's/^memory_limit = .*/memory_limit = 512M/' "$PHP_CLI_INI"
+        sed -i 's/^max_execution_time = .*/max_execution_time = 300/' "$PHP_CLI_INI"
+        sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 64M/' "$PHP_CLI_INI"
+        sed -i 's/^post_max_size = .*/post_max_size = 64M/' "$PHP_CLI_INI"
+    else
+        print_warning "PHP CLI INI file not found at $PHP_CLI_INI"
+    fi
+
+    print_success "PHP configured"
 }
 
 step_4_install_wp_cli() {
@@ -175,14 +209,18 @@ step_4_install_wp_cli() {
         print_success "WP-CLI installed"
     fi
 
-    wp --info --allow-root | head -n1
+    # Avoid pipefail/SIGPIPE issues with `head` under set -euo pipefail.
+    wp --info --allow-root >/dev/null
 }
 
 step_5_setup_database() {
     print_step "Step 5: Setting up database..."
 
-    read -sp "Enter MySQL root password: " MYSQL_ROOT_PASS
-    echo
+    MYSQL_ROOT_PASS="${DEPLOY_MYSQL_ROOT_PASS:-}"
+    if [[ -z "$MYSQL_ROOT_PASS" ]]; then
+        read -sp "Enter MySQL root password: " MYSQL_ROOT_PASS
+        echo
+    fi
 
     # Generate random password for WordPress DB user
     DB_PASS=$(openssl rand -base64 32)
@@ -191,6 +229,7 @@ step_5_setup_database() {
     mysql -u root -p"$MYSQL_ROOT_PASS" <<EOF
 CREATE DATABASE IF NOT EXISTS ${DB_NAME} CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER IF NOT EXISTS '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
+    ALTER USER '${DB_USER}'@'localhost' IDENTIFIED BY '${DB_PASS}';
 GRANT ALL PRIVILEGES ON ${DB_NAME}.* TO '${DB_USER}'@'localhost';
 FLUSH PRIVILEGES;
 EOF
@@ -199,9 +238,9 @@ EOF
     print_success "Database user: $DB_USER"
 
     # Save password to secure file
-    echo "$DB_PASS" > /root/.beskidzku_db_pass
-    chmod 600 /root/.beskidzku_db_pass
-    print_success "Database password saved to /root/.beskidzku_db_pass"
+    echo "$DB_PASS" > /root/.po_beskidzku_db_pass
+    chmod 600 /root/.po_beskidzku_db_pass
+    print_success "Database password saved to /root/.po_beskidzku_db_pass"
 }
 
 step_6_download_wordpress() {
@@ -231,7 +270,7 @@ step_7_configure_wordpress() {
 
     cd "$WP_PATH"
 
-    DB_PASS=$(cat /root/.beskidzku_db_pass)
+    DB_PASS=$(cat /root/.po_beskidzku_db_pass)
 
     # Create wp-config.php
     wp config create \
@@ -250,7 +289,7 @@ step_7_configure_wordpress() {
     wp config set WP_DEBUG false --raw --allow-root
 
     # Change table prefix
-    wp config set table_prefix "bsk_" --allow-root
+    wp config set table_prefix "pbk_" --allow-root
 
     print_success "WordPress configured"
 }
@@ -260,13 +299,16 @@ step_8_install_wordpress() {
 
     cd "$WP_PATH"
 
-    read -p "Enter admin email: " ADMIN_EMAIL
-    read -sp "Enter admin password: " ADMIN_PASS
-    echo
+    ADMIN_EMAIL="${DEPLOY_ADMIN_EMAIL:-}"
+    if [[ -z "$ADMIN_EMAIL" ]]; then
+        read -p "Enter admin email: " ADMIN_EMAIL
+    fi
+    ADMIN_PASS="admin1234"
+    print_warning "Using fixed admin password from script configuration"
 
     wp core install \
         --url="http://${DOMAIN}" \
-        --title="Po Beskidzku - Turystyka, Wędrówki i Kultura Beskidów" \
+        --title="po.beskidzku.pl - Beskidy, Szlaki, Atrakcje" \
         --admin_user="admin" \
         --admin_password="$ADMIN_PASS" \
         --admin_email="$ADMIN_EMAIL" \
@@ -294,6 +336,13 @@ step_9_deploy_pearblog() {
     # Deploy MU-plugin
     mkdir -p "$WP_PATH/wp-content/mu-plugins"
     cp -r mu-plugins/pearblog-engine "$WP_PATH/wp-content/mu-plugins/"
+    cat > "$WP_PATH/wp-content/mu-plugins/pearblog-engine-loader.php" <<'EOF'
+<?php
+/**
+ * Loader shim so WordPress MU plugins can bootstrap PearBlog from subdirectory.
+ */
+require_once __DIR__ . '/pearblog-engine/pearblog-engine.php';
+EOF
     print_success "MU-plugin deployed"
 
     # Deploy theme
@@ -320,13 +369,17 @@ step_10_configure_pearblog() {
 
     cd "$WP_PATH"
 
-    read -p "Enter OpenAI API key (sk-proj-...): " OPENAI_KEY
+    OPENAI_KEY="${DEPLOY_OPENAI_KEY:-}"
+    if [[ -z "$OPENAI_KEY" ]]; then
+        read -p "Enter OpenAI API key (sk-proj-...): " OPENAI_KEY
+    fi
 
     wp option update pearblog_openai_api_key "$OPENAI_KEY" --allow-root
-    wp option update pearblog_industry "turystyka i kultura regionu Beskidów" --allow-root
-    wp option update pearblog_tone "przyjazny, lokalny, dla miłośników Beskidów i górskiej turystyki" --allow-root
-    wp option update pearblog_publish_rate "0.5" --allow-root
+    wp option update pearblog_industry "beskidy mountains travel" --allow-root
+    wp option update pearblog_tone "lokalny, praktyczny, pomocny, dla turystów górskich" --allow-root
+    wp option update pearblog_publish_rate "1" --allow-root
     wp option update pearblog_language "pl" --allow-root
+    wp option update pearblog_enable_image_generation "1" --allow-root
     wp option update pearblog_ai_images_enabled "1" --allow-root
 
     print_success "PearBlog Engine configured"
@@ -338,36 +391,36 @@ step_11_add_initial_topics() {
     cd "$WP_PATH"
 
     TOPICS=(
-        "Najpiękniejsze szlaki turystyczne w Beskidach"
-        "Babia Góra - jak zdobyć królową Beskidów"
-        "Schroniska górskie w Beskidach - przewodnik"
-        "Kuchnia regionalna Beskidów - co warto zjeść"
-        "Beskid Śląski - atrakcje i szlaki dla rodzin"
-        "Wędrówka przez Beskid Żywiecki - od czego zacząć"
-        "Targi i festiwale folklorystyczne w Beskidach"
-        "Najlepsze punkty widokowe w Beskidach"
-        "Lacka Góra i okolice - mniej znane szlaki"
-        "Góralska tradycja i kultura regionu Beskidów"
-        "Przełęcz Krowiarki - historia i widoki"
-        "Zima w Beskidach - gdzie na narty"
-        "Lokalne produkty i rękodzieło beskidzkie"
-        "Szlak architektury drewnianej w Beskidach"
-        "Rezerwaty przyrody w Beskidach - co zobaczyć"
-        "Pilsko - trek na szczyt krok po kroku"
-        "Kolej linowa na Szyndzielnię - atrakcja Bielska"
-        "Beskidzkie wsie - agroturystyka i wypoczynek"
-        "Festiwal Góralski w Wiśle - tradycje i muzyka"
-        "Jaskinie i formacje skalne w Beskidach"
-        "Rowery górskie w Beskidach - trasy dla MTB"
-        "Sery i oscypki - smaki beskidzkich hal"
-        "Park Narodowy w Beskidach - zasady i trasy"
-        "Bieszczady vs Beskidy - gdzie jechać na urlop"
-        "Sanktuarium w Kalwarii Zebrzydowskiej - pielgrzymki"
-        "Szczyrk - narty, trasy i atrakcje całoroczne"
-        "Beskidzkie legendy i podania ludowe"
-        "Wiosna w górach - kiedy ruszać na szlak"
-        "Noclegi i kwatery w Beskidach - jak wybrać"
-        "Fotografia górska w Beskidach - porady i miejsca"
+        "Babia Góra szlaki turystyczne - przewodnik dla początkujących"
+        "Skrzyczne z dziećmi - najlepsze trasy i czasy przejścia"
+        "Turbacz zimą - jak bezpiecznie wejść i co zabrać"
+        "Beskid Żywiecki - najpiękniejsze panoramy i punkty widokowe"
+        "Pilsko - która trasa jest najlepsza na pierwszy raz"
+        "Schroniska w Beskidach otwarte cały rok - aktualna lista"
+        "Co spakować w Beskidy na weekend - checklista turysty"
+        "Najlepsze szlaki na wschód słońca w Beskidach"
+        "Beskidy pociągiem - jak dojechać bez samochodu"
+        "Parking pod szlakiem - gdzie zostawić auto w Szczyrku i okolicy"
+        "Beskidy na majówkę - gotowe plany tras na 2 i 3 dni"
+        "Najłatwiejsze szlaki na jesień w Beskidach"
+        "Beskidy przy złej pogodzie - alternatywy i atrakcje pod dachem"
+        "Szlaki dla początkujących w Beskidzie Małym"
+        "Beskid Sądecki - trasy, schroniska i lokalne atrakcje"
+        "Jak przygotować się kondycyjnie do pierwszej trasy w Beskidach"
+        "Mapa offline w górach - najlepsze aplikacje i ustawienia"
+        "Beskidy z psem - zasady, trasy i bezpieczeństwo"
+        "Ile kosztuje weekend w Beskidach - realny budżet 2026"
+        "Beskidy poza sezonem - gdzie iść, żeby uniknąć tłumów"
+        "Najlepsze miejsca na zachód słońca w Beskidzie Śląskim"
+        "Beskidy z wózkiem - przyjazne trasy spacerowe"
+        "Szczyrk czy Wisła - co wybrać na aktywny weekend"
+        "Najciekawsze wieże widokowe w Beskidach"
+        "Beskidy dla rodzin - 10 tras na jednodniowe wycieczki"
+        "Bezpieczeństwo na szlaku zimą - lawiny, lód i hipotermia"
+        "Jak ubrać się warstwowo na trekking w Beskidach"
+        "Beskid Niski - spokojne trasy i mniej znane perełki"
+        "Beskidy na rowerze gravelowym - gdzie jechać"
+        "Plan tygodnia w Beskidach - gotowy itinerarz dzień po dniu"
     )
 
     for topic in "${TOPICS[@]}"; do
@@ -385,11 +438,14 @@ step_12_setup_ssl() {
         apt install -y certbot python3-certbot-apache python3-certbot-nginx &> /dev/null
     fi
 
-    read -p "Enter email for SSL certificate: " SSL_EMAIL
+    SSL_EMAIL="${DEPLOY_SSL_EMAIL:-}"
+    if [[ -z "$SSL_EMAIL" ]]; then
+        read -p "Enter email for SSL certificate: " SSL_EMAIL
+    fi
 
-    if check_command apache2; then
+    if has_command apache2; then
         certbot --apache -d "$DOMAIN" -d "www.$DOMAIN" --email "$SSL_EMAIL" --agree-tos --non-interactive --redirect
-    elif check_command nginx; then
+    elif has_command nginx; then
         certbot --nginx -d "$DOMAIN" -d "www.$DOMAIN" --email "$SSL_EMAIL" --agree-tos --non-interactive --redirect
     else
         print_error "No web server found for SSL setup"
@@ -416,9 +472,11 @@ step_13_test_deployment() {
     # Check statistics
     wp pearblog stats --allow-root
 
-    # Test health endpoint
+    # Test health endpoint (requires secret)
     print_step "Testing health endpoint..."
-    HEALTH_RESPONSE=$(curl -s "https://${DOMAIN}/wp-json/pearblog/v1/health" || echo '{"status":"error"}')
+    HEALTH_SECRET=$(openssl rand -hex 16)
+    wp option update pearblog_health_secret "$HEALTH_SECRET" --allow-root >/dev/null
+    HEALTH_RESPONSE=$(curl -s -H "X-PearBlog-Health-Secret: ${HEALTH_SECRET}" "https://${DOMAIN}/wp-json/pearblog/v1/health" || echo '{"status":"error"}')
     echo "$HEALTH_RESPONSE"
 
     print_success "Deployment tested"
@@ -430,9 +488,22 @@ step_14_enable_autonomous_mode() {
     cd "$WP_PATH"
 
     wp option update pearblog_autonomous_mode "1" --allow-root
+    wp option update pearblog_enable_image_generation "1" --allow-root
 
     print_step "Starting Autopilot..."
-    wp pearblog autopilot start --allow-root
+    AUTOPILOT_OUTPUT=$(wp pearblog autopilot start --allow-root 2>&1) || AUTOPILOT_EXIT=$?
+    AUTOPILOT_EXIT=${AUTOPILOT_EXIT:-0}
+
+    if [[ "$AUTOPILOT_EXIT" -eq 0 ]]; then
+        echo "$AUTOPILOT_OUTPUT"
+    elif [[ "$AUTOPILOT_OUTPUT" == *"Autopilot is already running."* ]]; then
+        echo "$AUTOPILOT_OUTPUT"
+        print_success "Autopilot is already running"
+    else
+        print_warning "WP-CLI autopilot subcommand failed, trying direct runner fallback"
+        echo "$AUTOPILOT_OUTPUT"
+        wp eval "var_export(\\PearBlogEngine\\CLI\\AutopilotRunner::start('enterprise', 'all'));" --allow-root
+    fi
 
     print_success "Autonomous mode enabled"
 }
@@ -442,31 +513,34 @@ main() {
     echo ""
     echo "╔═══════════════════════════════════════════════════════════╗"
     echo "║                                                           ║"
-    echo "║     PearBlog Engine Deployment for po.beskidzku.pl       ║"
+    echo "║      PearBlog Engine Deployment for po.beskidzku.pl      ║"
     echo "║                     Version 6.0.0                         ║"
-    echo "║         Turystyka, Wędrówki i Kultura Beskidów           ║"
+    echo "║            Beskidy, Szlaki, Atrakcje               ║"
     echo "║                                                           ║"
     echo "╚═══════════════════════════════════════════════════════════╝"
     echo ""
 
     check_root
 
+    SERVER_IP=$(hostname -I 2>/dev/null | awk '{print $1}')
+    if [[ -z "${SERVER_IP}" ]]; then
+        SERVER_IP="unknown"
+    fi
+
     print_step "Domain: $DOMAIN"
     print_step "Server: $SERVER_IP"
     print_step "Path: $WP_PATH"
     echo ""
 
-    if [[ "$SERVER_IP" == "TBD" ]]; then
-        print_error "ERROR: Server IP not configured!"
-        print_error "Please edit this script and update SERVER_IP variable."
-        exit 1
-    fi
-
-    read -p "Continue with deployment? (y/N): " -n 1 -r
-    echo
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        print_error "Deployment cancelled"
-        exit 1
+    if [[ "${DEPLOY_AUTO_CONFIRM:-0}" == "1" ]]; then
+        print_warning "Auto-confirm enabled via DEPLOY_AUTO_CONFIRM=1"
+    else
+        read -p "Continue with deployment? (y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            print_error "Deployment cancelled"
+            exit 1
+        fi
     fi
 
     step_1_check_prerequisites
