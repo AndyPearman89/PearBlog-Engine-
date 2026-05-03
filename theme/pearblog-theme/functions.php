@@ -59,6 +59,11 @@ require_once PEARBLOG_DIR . '/inc/poradnik-rpm-lead-fusion.php';
 // PT24.PRO Integration — Cross-Site Conversion Funnel
 require_once PEARBLOG_DIR . '/inc/pt24-integration.php';
 
+// PT24.PRO Landing Generator System V2
+require_once PEARBLOG_DIR . '/inc/pt24-landing-cpt.php';
+require_once PEARBLOG_DIR . '/inc/pt24-landing-cli.php';
+require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php';
+
 /**
  * Theme setup
  */
