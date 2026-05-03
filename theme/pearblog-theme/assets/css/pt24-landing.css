@@ -1,0 +1,637 @@
+/**
+ * PT24.PRO Landing Page Styles
+ *
+ * High-conversion landing page for PT24.pro local business directory
+ * Mobile-first responsive design with focus on conversions
+ *
+ * @package PearBlog
+ * @version 1.0.0
+ */
+
+/* ==========================================================================
+   Variables & Reset
+   ========================================================================== */
+
+:root {
+    --pt24-primary: #2563eb;
+    --pt24-primary-dark: #1e40af;
+    --pt24-secondary: #10b981;
+    --pt24-accent: #f59e0b;
+    --pt24-text: #1f2937;
+    --pt24-text-light: #6b7280;
+    --pt24-border: #e5e7eb;
+    --pt24-bg: #ffffff;
+    --pt24-bg-light: #f9fafb;
+    --pt24-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    --pt24-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.1);
+    --pt24-radius: 12px;
+    --pt24-spacing: 1rem;
+}
+
+.pt24-landing {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    color: var(--pt24-text);
+    line-height: 1.6;
+}
+
+/* ==========================================================================
+   Container
+   ========================================================================== */
+
+.pt24-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+@media (min-width: 768px) {
+    .pt24-container {
+        padding: 0 2rem;
+    }
+}
+
+/* ==========================================================================
+   Section Titles
+   ========================================================================== */
+
+.pt24-section-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+    color: var(--pt24-text);
+}
+
+.pt24-section-subtitle {
+    font-size: 1.125rem;
+    text-align: center;
+    color: var(--pt24-text-light);
+    margin-bottom: 2rem;
+}
+
+@media (min-width: 768px) {
+    .pt24-section-title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+.pt24-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--pt24-radius);
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    line-height: 1.5;
+}
+
+.pt24-btn--primary {
+    background: var(--pt24-primary);
+    color: white;
+}
+
+.pt24-btn--primary:hover {
+    background: var(--pt24-primary-dark);
+    transform: translateY(-2px);
+    box-shadow: var(--pt24-shadow-lg);
+}
+
+.pt24-btn--secondary {
+    background: var(--pt24-secondary);
+    color: white;
+}
+
+.pt24-btn--secondary:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: var(--pt24-shadow-lg);
+}
+
+.pt24-btn--accent {
+    background: var(--pt24-accent);
+    color: white;
+}
+
+.pt24-btn--accent:hover {
+    background: #d97706;
+    transform: translateY(-2px);
+    box-shadow: var(--pt24-shadow-lg);
+}
+
+.pt24-btn--large {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+.pt24-btn--full {
+    width: 100%;
+}
+
+/* ==========================================================================
+   HERO SECTION
+   ========================================================================== */
+
+.pt24-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0 3rem;
+    text-align: center;
+}
+
+.pt24-hero__content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.pt24-hero__title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.pt24-hero__subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+.pt24-hero__trust {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.pt24-trust-item {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+}
+
+.pt24-trust-icon {
+    color: #10b981;
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .pt24-hero {
+        padding: 6rem 0 5rem;
+    }
+
+    .pt24-hero__title {
+        font-size: 3rem;
+    }
+
+    .pt24-hero__subtitle {
+        font-size: 1.5rem;
+    }
+
+    .pt24-hero__trust {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+    }
+}
+
+/* ==========================================================================
+   FORM SECTION
+   ========================================================================== */
+
+.pt24-form-section {
+    padding: 3rem 0;
+    background: var(--pt24-bg-light);
+}
+
+.pt24-form-card {
+    background: white;
+    border-radius: var(--pt24-radius);
+    padding: 2rem;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: var(--pt24-shadow-lg);
+}
+
+.pt24-form__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.5rem;
+}
+
+.pt24-form__subtitle {
+    text-align: center;
+    color: var(--pt24-text-light);
+    margin-bottom: 2rem;
+}
+
+.pt24-form__field {
+    margin-bottom: 1.5rem;
+}
+
+.pt24-form__label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--pt24-text);
+}
+
+.pt24-form__input,
+.pt24-form__textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--pt24-border);
+    border-radius: 8px;
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+}
+
+.pt24-form__input:focus,
+.pt24-form__textarea:focus {
+    outline: none;
+    border-color: var(--pt24-primary);
+}
+
+.pt24-form__textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.pt24-form__checkbox {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    cursor: pointer;
+}
+
+.pt24-form__checkbox input[type="checkbox"] {
+    margin-top: 0.25rem;
+    flex-shrink: 0;
+}
+
+.pt24-form__note {
+    text-align: center;
+    font-size: 0.875rem;
+    color: var(--pt24-text-light);
+    margin-top: 1rem;
+}
+
+.pt24-form__note a {
+    color: var(--pt24-primary);
+    text-decoration: none;
+}
+
+.pt24-form__note a:hover {
+    text-decoration: underline;
+}
+
+@media (min-width: 768px) {
+    .pt24-form-card {
+        padding: 3rem;
+    }
+}
+
+/* ==========================================================================
+   MAP / PROOF SECTION
+   ========================================================================== */
+
+.pt24-map-section {
+    padding: 4rem 0;
+    background: white;
+}
+
+.pt24-map-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 2rem;
+    margin-top: 3rem;
+}
+
+.pt24-map-feature {
+    text-align: center;
+    padding: 2rem;
+    background: var(--pt24-bg-light);
+    border-radius: var(--pt24-radius);
+}
+
+.pt24-map-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.pt24-map-feature h3 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+}
+
+.pt24-map-feature p {
+    color: var(--pt24-text-light);
+}
+
+@media (min-width: 768px) {
+    .pt24-map-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+/* ==========================================================================
+   COST SECTION
+   ========================================================================== */
+
+.pt24-cost-section {
+    padding: 4rem 0;
+    background: var(--pt24-bg-light);
+}
+
+.pt24-cost-card {
+    background: white;
+    border-radius: var(--pt24-radius);
+    padding: 2rem;
+    max-width: 700px;
+    margin: 0 auto;
+    box-shadow: var(--pt24-shadow-lg);
+    text-align: center;
+}
+
+.pt24-cost__title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+}
+
+.pt24-cost__intro {
+    font-size: 1.125rem;
+    color: var(--pt24-text-light);
+    margin-bottom: 1rem;
+}
+
+.pt24-cost__factors {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0;
+    text-align: left;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.pt24-cost__factors li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    font-size: 1.125rem;
+}
+
+.pt24-check-icon {
+    color: var(--pt24-secondary);
+    flex-shrink: 0;
+}
+
+.pt24-cost__cta-text {
+    font-size: 1.125rem;
+    margin: 2rem 0 1.5rem;
+    color: var(--pt24-text);
+}
+
+@media (min-width: 768px) {
+    .pt24-cost-card {
+        padding: 3rem;
+    }
+
+    .pt24-cost__title {
+        font-size: 2.25rem;
+    }
+}
+
+/* ==========================================================================
+   RANKING SECTION
+   ========================================================================== */
+
+.pt24-ranking-section {
+    padding: 4rem 0;
+    background: white;
+}
+
+.pt24-ranking-criteria {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.pt24-ranking-criterion {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem;
+    background: var(--pt24-bg-light);
+    border-radius: 8px;
+    font-size: 1.125rem;
+}
+
+.pt24-ranking-placeholder {
+    text-align: center;
+    padding: 3rem 2rem;
+    background: var(--pt24-bg-light);
+    border-radius: var(--pt24-radius);
+    margin-top: 2rem;
+}
+
+.pt24-ranking-placeholder p {
+    font-size: 1.25rem;
+    color: var(--pt24-text-light);
+}
+
+@media (min-width: 768px) {
+    .pt24-ranking-criteria {
+        flex-direction: row;
+        justify-content: center;
+        gap: 2rem;
+    }
+}
+
+/* ==========================================================================
+   CTA SECTIONS
+   ========================================================================== */
+
+.pt24-cta-section {
+    padding: 4rem 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.pt24-cta-card {
+    text-align: center;
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.pt24-cta__title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+}
+
+.pt24-cta__text {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+@media (min-width: 768px) {
+    .pt24-cta__title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ==========================================================================
+   FAQ SECTION
+   ========================================================================== */
+
+.pt24-faq-section {
+    padding: 4rem 0;
+    background: var(--pt24-bg-light);
+}
+
+.pt24-faq-list {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.pt24-faq-item {
+    background: white;
+    border-radius: var(--pt24-radius);
+    margin-bottom: 1rem;
+    overflow: hidden;
+    box-shadow: var(--pt24-shadow);
+}
+
+.pt24-faq__question {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.25rem;
+    background: none;
+    border: none;
+    text-align: left;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--pt24-text);
+    transition: background-color 0.2s ease;
+}
+
+.pt24-faq__question:hover {
+    background: var(--pt24-bg-light);
+}
+
+.pt24-faq__question svg {
+    flex-shrink: 0;
+    transition: transform 0.3s ease;
+}
+
+.pt24-faq__question[aria-expanded="true"] svg {
+    transform: rotate(180deg);
+}
+
+.pt24-faq__answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.pt24-faq__answer.is-open {
+    max-height: 500px;
+    padding: 0 1.25rem 1.25rem;
+}
+
+.pt24-faq__answer p {
+    color: var(--pt24-text-light);
+    line-height: 1.7;
+}
+
+/* ==========================================================================
+   FINAL CTA SECTION
+   ========================================================================== */
+
+.pt24-final-cta {
+    padding: 5rem 0;
+    background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+    color: white;
+    text-align: center;
+}
+
+.pt24-final-cta__content {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.pt24-final-cta__title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+}
+
+.pt24-final-cta__subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+@media (min-width: 768px) {
+    .pt24-final-cta__title {
+        font-size: 2.75rem;
+    }
+}
+
+/* ==========================================================================
+   Smooth Scroll
+   ========================================================================== */
+
+.pt24-smooth-scroll {
+    scroll-behavior: smooth;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+/* ==========================================================================
+   Utility Classes
+   ========================================================================== */
+
+.pt24-text-center {
+    text-align: center;
+}
+
+.pt24-mt-1 {
+    margin-top: 1rem;
+}
+
+.pt24-mt-2 {
+    margin-top: 2rem;
+}
+
+.pt24-mb-1 {
+    margin-bottom: 1rem;
+}
+
+.pt24-mb-2 {
+    margin-bottom: 2rem;
+}

@@ -77,6 +77,10 @@ class PearBlog_PT24_Integration {
         // Register AJAX handlers
         add_action('wp_ajax_pt24_track_click', [__CLASS__, 'ajax_track_click']);
         add_action('wp_ajax_nopriv_pt24_track_click', [__CLASS__, 'ajax_track_click']);
+
+        // Register lead submission handler
+        add_action('wp_ajax_pt24_submit_lead', [__CLASS__, 'ajax_submit_lead']);
+        add_action('wp_ajax_nopriv_pt24_submit_lead', [__CLASS__, 'ajax_submit_lead']);
     }
 
     /**
@@ -421,6 +425,186 @@ class PearBlog_PT24_Integration {
         ), ARRAY_A);
 
         return $stats;
+    }
+
+    /**
+     * AJAX handler for lead submission from landing page
+     */
+    public static function ajax_submit_lead() {
+        // Verify nonce
+        if (!isset($_POST['pt24_nonce']) || !wp_verify_nonce($_POST['pt24_nonce'], 'pt24_lead_submit')) {
+            wp_send_json_error([
+                'message' => 'Błąd weryfikacji zabezpieczeń. Odśwież stronę i spróbuj ponownie.',
+            ]);
+        }
+
+        // Get and sanitize form data
+        $service = sanitize_text_field($_POST['service'] ?? '');
+        $city = sanitize_text_field($_POST['city'] ?? '');
+        $service_need = sanitize_textarea_field($_POST['service_need'] ?? '');
+        $city_input = sanitize_text_field($_POST['city_input'] ?? '');
+        $name = sanitize_text_field($_POST['name'] ?? '');
+        $phone = sanitize_text_field($_POST['phone'] ?? '');
+        $email = sanitize_email($_POST['email'] ?? '');
+        $consent = isset($_POST['consent']) ? 1 : 0;
+        $source_url = esc_url_raw($_POST['source_url'] ?? '');
+
+        // Validate required fields
+        if (empty($service_need) || empty($name) || empty($phone) || empty($email) || !$consent) {
+            wp_send_json_error([
+                'message' => 'Proszę wypełnić wszystkie wymagane pola.',
+            ]);
+        }
+
+        // Validate email
+        if (!is_email($email)) {
+            wp_send_json_error([
+                'message' => 'Proszę podać poprawny adres email.',
+            ]);
+        }
+
+        // Validate phone (Polish format)
+        $phone_clean = preg_replace('/[^0-9+]/', '', $phone);
+        if (strlen($phone_clean) < 9) {
+            wp_send_json_error([
+                'message' => 'Proszę podać poprawny numer telefonu.',
+            ]);
+        }
+
+        // Prepare lead data
+        $lead_data = [
+            'timestamp' => current_time('mysql'),
+            'service' => $service,
+            'city' => $city,
+            'service_need' => $service_need,
+            'city_input' => $city_input,
+            'name' => $name,
+            'phone' => $phone_clean,
+            'email' => $email,
+            'consent' => $consent,
+            'source_url' => $source_url,
+            'user_ip' => self::get_client_ip(),
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'] ?? '',
+        ];
+
+        // Save to database
+        global $wpdb;
+        $table_name = $wpdb->prefix . 'pt24_leads';
+
+        // Create table if it doesn't exist
+        if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") != $table_name) {
+            self::create_leads_table();
+        }
+
+        // Insert lead
+        $result = $wpdb->insert($table_name, $lead_data);
+
+        if ($result === false) {
+            wp_send_json_error([
+                'message' => 'Błąd zapisu danych. Spróbuj ponownie lub skontaktuj się z nami telefonicznie.',
+            ]);
+        }
+
+        $lead_id = $wpdb->insert_id;
+
+        // Send email notification to admin
+        self::send_lead_notification($lead_id, $lead_data);
+
+        // Send confirmation email to user
+        self::send_user_confirmation($email, $name);
+
+        // Track conversion
+        do_action('pt24_lead_submitted', $lead_id, $lead_data);
+
+        wp_send_json_success([
+            'message' => 'Dziękujemy! Twoje zgłoszenie zostało wysłane.',
+            'lead_id' => $lead_id,
+            'redirect_url' => home_url('/dziekujemy-pt24'),
+        ]);
+    }
+
+    /**
+     * Create leads table
+     */
+    private static function create_leads_table() {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'pt24_leads';
+        $charset_collate = $wpdb->get_charset_collate();
+
+        $sql = "CREATE TABLE IF NOT EXISTS $table_name (
+            id bigint(20) NOT NULL AUTO_INCREMENT,
+            timestamp datetime NOT NULL,
+            service varchar(100) NOT NULL,
+            city varchar(50) NOT NULL,
+            service_need text NOT NULL,
+            city_input varchar(100) NOT NULL,
+            name varchar(100) NOT NULL,
+            phone varchar(20) NOT NULL,
+            email varchar(100) NOT NULL,
+            consent tinyint(1) NOT NULL DEFAULT 0,
+            source_url text NOT NULL,
+            user_ip varchar(45) NOT NULL,
+            user_agent text NOT NULL,
+            status varchar(20) NOT NULL DEFAULT 'new',
+            PRIMARY KEY  (id),
+            KEY service (service),
+            KEY city (city),
+            KEY timestamp (timestamp),
+            KEY status (status)
+        ) $charset_collate;";
+
+        require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+        dbDelta($sql);
+    }
+
+    /**
+     * Send lead notification to admin
+     */
+    private static function send_lead_notification($lead_id, $lead_data) {
+        $admin_email = get_option('admin_email');
+        $subject = '[PT24 Lead] Nowe zgłoszenie: ' . $lead_data['service'] . ' - ' . $lead_data['city_input'];
+
+        $message = "Otrzymano nowe zgłoszenie z PT24.PRO:\n\n";
+        $message .= "ID zgłoszenia: #" . $lead_id . "\n";
+        $message .= "Data: " . $lead_data['timestamp'] . "\n\n";
+        $message .= "=== DANE KONTAKTOWE ===\n";
+        $message .= "Imię: " . $lead_data['name'] . "\n";
+        $message .= "Email: " . $lead_data['email'] . "\n";
+        $message .= "Telefon: " . $lead_data['phone'] . "\n\n";
+        $message .= "=== SZCZEGÓŁY ZAPYTANIA ===\n";
+        $message .= "Usługa: " . $lead_data['service'] . "\n";
+        $message .= "Miasto: " . $lead_data['city_input'] . "\n";
+        $message .= "Opis potrzeby:\n" . $lead_data['service_need'] . "\n\n";
+        $message .= "=== ŹRÓDŁO ===\n";
+        $message .= "URL źródłowy: " . $lead_data['source_url'] . "\n";
+        $message .= "IP: " . $lead_data['user_ip'] . "\n\n";
+        $message .= "Zarządzaj zgłoszeniami: " . admin_url('admin.php?page=pt24-leads') . "\n";
+
+        wp_mail($admin_email, $subject, $message);
+    }
+
+    /**
+     * Send confirmation email to user
+     */
+    private static function send_user_confirmation($email, $name) {
+        $subject = 'Potwierdzenie otrzymania zgłoszenia - PT24.PRO';
+
+        $message = "Witaj " . $name . ",\n\n";
+        $message .= "Dziękujemy za wysłanie zapytania przez PT24.PRO!\n\n";
+        $message .= "Otrzymaliśmy Twoje zgłoszenie i przekażemy je sprawdzonym firmom w Twojej okolicy.\n";
+        $message .= "W ciągu najbliższych 24 godzin otrzymasz oferty bezpośrednio od wykonawców.\n\n";
+        $message .= "Oferty otrzymasz:\n";
+        $message .= "- Na adres email: " . $email . "\n";
+        $message .= "- Telefonicznie (jeśli podano numer)\n\n";
+        $message .= "Pozdrawiamy,\n";
+        $message .= "Zespół PT24.PRO\n\n";
+        $message .= "---\n";
+        $message .= "Nie odpowiadaj na tę wiadomość. W razie pytań skontaktuj się z nami:\n";
+        $message .= "Email: kontakt@pt24.pro\n";
+        $message .= "Tel: +48 XXX XXX XXX\n";
+
+        wp_mail($email, $subject, $message);
     }
 }
 
