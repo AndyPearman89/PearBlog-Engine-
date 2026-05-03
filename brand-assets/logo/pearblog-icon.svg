@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PearBlog Icon</title>
+  <desc id="desc">Stylized pear with a leaf and inner signal rings.</desc>
+  <defs>
+    <linearGradient id="pearGradient" x1="120" y1="90" x2="390" y2="440" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="0.55" stop-color="#4ADE80"/>
+      <stop offset="1" stop-color="#16A34A"/>
+    </linearGradient>
+    <radialGradient id="shine" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(190 165) rotate(25) scale(160 120)">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <path d="M256 110C304 110 338 137 350 176C404 189 437 238 428 298C418 367 358 424 287 430C200 438 123 380 111 300C103 244 130 194 174 176C184 137 213 110 256 110Z" fill="url(#pearGradient)"/>
+  <ellipse cx="189" cy="173" rx="95" ry="82" fill="url(#shine)"/>
+
+  <path d="M248 106C258 77 284 57 316 57" stroke="#8B5E34" stroke-width="18" stroke-linecap="round"/>
+  <path d="M320 67C349 58 375 67 391 89C360 104 331 97 312 78" fill="#3FAE54"/>
+
+  <circle cx="256" cy="273" r="73" stroke="#F8FAFC" stroke-opacity="0.92" stroke-width="14"/>
+  <circle cx="256" cy="273" r="40" stroke="#F8FAFC" stroke-opacity="0.86" stroke-width="10"/>
+  <circle cx="256" cy="273" r="11" fill="#F8FAFC"/>
+</svg>

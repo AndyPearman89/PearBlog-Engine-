@@ -427,15 +427,39 @@ function pearblog_get_favicon($size = '32') {
  * @return string Social image URL
  */
 function pearblog_get_social_image($type = 'og') {
-    $base_path = PEARBLOG_URI . '/../../brand-assets/social/';
-
     $images = array(
-        'og' => $base_path . 'pearblog-og-default.png',
-        'twitter' => $base_path . 'pearblog-twitter-card.png',
-        'profile' => $base_path . 'pearblog-profile-default.png',
+        'og' => 'brand-assets/social/pearblog-og-default.png',
+        'twitter' => 'brand-assets/social/pearblog-twitter-card.png',
+        'profile' => 'brand-assets/social/pearblog-profile-default.png',
     );
 
-    return $images[$type] ?? $images['og'];
+    $selected = $images[$type] ?? $images['og'];
+    $absolute = WP_CONTENT_DIR . '/' . $selected;
+
+    if (file_exists($absolute)) {
+        return content_url($selected);
+    }
+
+    if ('og' === $type) {
+        $fallback_posts = get_posts(array(
+            'post_type' => 'post',
+            'post_status' => 'publish',
+            'posts_per_page' => 1,
+            'meta_key' => '_thumbnail_id',
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'fields' => 'ids',
+        ));
+
+        if (!empty($fallback_posts)) {
+            $fallback_image = get_the_post_thumbnail_url((int) $fallback_posts[0], 'full');
+            if (!empty($fallback_image)) {
+                return $fallback_image;
+            }
+        }
+    }
+
+    return '';
 }
 
 /**

@@ -1,0 +1,15 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PearBlog Monochrome Black Logo</title>
+  <desc id="desc">Monochrome black logo for print and watermark use.</desc>
+
+  <g transform="translate(20 26)">
+    <path d="M148 53C179 53 201 70 209 96C244 104 265 136 259 175C252 220 213 257 167 261C111 266 61 228 54 177C49 141 67 108 95 96C101 70 120 53 148 53Z" fill="#111111"/>
+    <path d="M143 51C149 32 166 19 187 19" stroke="#111111" stroke-width="10" stroke-linecap="round"/>
+    <path d="M190 25C208 19 225 25 236 39C217 49 199 45 187 32" fill="#111111"/>
+    <circle cx="148" cy="160" r="37" stroke="#FFFFFF" stroke-width="8"/>
+    <circle cx="148" cy="160" r="20" stroke="#FFFFFF" stroke-width="6"/>
+    <circle cx="148" cy="160" r="5" fill="#FFFFFF"/>
+  </g>
+
+  <text x="310" y="205" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="150" font-weight="800" fill="#111111" letter-spacing="0.2">PearBlog</text>
+</svg>

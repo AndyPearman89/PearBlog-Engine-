@@ -76,6 +76,15 @@ class TopicQueue {
 	}
 
 	/**
+	 * Backward-compatible alias used by legacy admin code.
+	 *
+	 * @return string[]
+	 */
+	public function get_all(): array {
+		return $this->all();
+	}
+
+	/**
 	 * Return the number of topics waiting in the queue.
 	 */
 	public function count(): int {

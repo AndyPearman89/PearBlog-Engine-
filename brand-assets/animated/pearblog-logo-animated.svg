@@ -1,0 +1,49 @@
+<svg width="1200" height="360" viewBox="0 0 1200 360" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PearBlog Animated Logo</title>
+  <desc id="desc">Animated SVG logo with pulsing signal rings.</desc>
+  <defs>
+    <linearGradient id="logoGradient" x1="220" y1="30" x2="950" y2="280" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#4ADE80"/>
+    </linearGradient>
+    <linearGradient id="pearGradient" x1="55" y1="42" x2="230" y2="287" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="0.58" stop-color="#4ADE80"/>
+      <stop offset="1" stop-color="#16A34A"/>
+    </linearGradient>
+    <filter id="glow" x="0" y="0" width="1200" height="360" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="360" fill="#0B1118"/>
+
+  <g transform="translate(20 26)" filter="url(#glow)">
+    <path d="M148 53C179 53 201 70 209 96C244 104 265 136 259 175C252 220 213 257 167 261C111 266 61 228 54 177C49 141 67 108 95 96C101 70 120 53 148 53Z" fill="url(#pearGradient)"/>
+    <path d="M143 51C149 32 166 19 187 19" stroke="#B08968" stroke-width="10" stroke-linecap="round"/>
+    <path d="M190 25C208 19 225 25 236 39C217 49 199 45 187 32" fill="#4ADE80"/>
+
+    <circle cx="148" cy="160" r="37" stroke="#F8FAFC" stroke-width="8">
+      <animate attributeName="r" values="34;39;34" dur="2.1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.7" dur="2.1s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="148" cy="160" r="20" stroke="#F8FAFC" stroke-width="6">
+      <animate attributeName="r" values="18;22;18" dur="1.6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.95;0.6" dur="1.6s" repeatCount="indefinite"/>
+    </circle>
+
+    <circle cx="148" cy="160" r="5" fill="#F8FAFC"/>
+  </g>
+
+  <text x="310" y="205" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="150" font-weight="800" fill="#F8FAFC" letter-spacing="0.2">Pear</text>
+  <text x="715" y="205" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="150" font-weight="800" fill="url(#logoGradient)" letter-spacing="0.2">Blog</text>
+
+  <rect x="312" y="230" width="615" height="9" rx="4.5" fill="url(#logoGradient)" opacity="0.45">
+    <animate attributeName="opacity" values="0.25;0.6;0.25" dur="2.5s" repeatCount="indefinite"/>
+  </rect>
+</svg>

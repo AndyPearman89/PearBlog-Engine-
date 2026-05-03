@@ -4,6 +4,23 @@
 
 This directory contains the complete professional brand identity system for PearBlog, including logos, icons, social media assets, and animated variations.
 
+## Generated Now (SVG)
+
+- `logo/pearblog-logo-primary.svg`
+- `logo/pearblog-logo-dark.svg`
+- `logo/pearblog-logo-light.svg`
+- `logo/pearblog-icon.svg`
+- `logo/pearblog-wordmark.svg`
+- `logo/pearblog-logo-mono-black.svg`
+- `logo/pearblog-logo-mono-white.svg`
+- `favicon/favicon.svg`
+- `favicon/safari-pinned-tab.svg`
+- `social/pearblog-og-default.svg`
+- `social/pearblog-twitter-card.svg`
+- `animated/pearblog-logo-animated.svg`
+
+PNG/ICO/Lottie variants can now be exported from these source graphics.
+
 ## 📁 Directory Structure
 
 ```
@@ -280,7 +297,7 @@ For questions about brand assets:
 ---
 
 **Version:** 1.0 ULTRA PRO
-**Status:** Awaiting Asset Creation
+**Status:** Core SVG Assets Created
 **Priority:** HIGH - Required for Production Launch
 **Quality Level:** Enterprise ($10k+ Value)
 

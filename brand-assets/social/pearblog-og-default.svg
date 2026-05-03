@@ -1,0 +1,42 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">PearBlog Open Graph Default</title>
+  <desc id="desc">Default social preview image for PearBlog.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1200" y2="630" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B1118"/>
+      <stop offset="0.55" stop-color="#122033"/>
+      <stop offset="1" stop-color="#0F1B2A"/>
+    </linearGradient>
+    <radialGradient id="blob" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(990 100) rotate(134) scale(350 280)">
+      <stop offset="0" stop-color="#60A5FA" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#60A5FA" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="accent" x1="220" y1="250" x2="760" y2="510" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#4ADE80"/>
+    </linearGradient>
+    <linearGradient id="pear" x1="130" y1="170" x2="300" y2="430" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#60A5FA"/>
+      <stop offset="1" stop-color="#4ADE80"/>
+    </linearGradient>
+  </defs>
+
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#blob)"/>
+
+  <g transform="translate(90 105)">
+    <path d="M140 68C171 68 193 85 201 111C236 119 257 151 251 190C244 235 205 272 159 276C103 281 53 243 46 192C41 156 59 123 87 111C93 85 112 68 140 68Z" fill="url(#pear)"/>
+    <path d="M135 66C141 47 158 34 179 34" stroke="#A67C52" stroke-width="10" stroke-linecap="round"/>
+    <path d="M182 40C200 34 217 40 228 54C209 64 191 60 179 47" fill="#4ADE80"/>
+    <circle cx="140" cy="175" r="37" stroke="#F8FAFC" stroke-width="8"/>
+    <circle cx="140" cy="175" r="20" stroke="#F8FAFC" stroke-width="6"/>
+    <circle cx="140" cy="175" r="5" fill="#F8FAFC"/>
+  </g>
+
+  <text x="380" y="270" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="130" font-weight="800" fill="#F8FAFC">Pear</text>
+  <text x="702" y="270" font-family="Poppins, Montserrat, Segoe UI, Arial, sans-serif" font-size="130" font-weight="800" fill="url(#accent)">Blog</text>
+  <text x="380" y="345" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="40" font-weight="500" fill="#D7E3F4">AI Content Engine for Traffic and Revenue Growth</text>
+
+  <rect x="380" y="385" width="560" height="10" rx="5" fill="url(#accent)" opacity="0.55"/>
+  <text x="380" y="450" font-family="Inter, Segoe UI, Arial, sans-serif" font-size="30" font-weight="500" fill="#98AEC8">Automated Publishing • SERP Intelligence • Enterprise Workflow</text>
+</svg>
