@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\Core;
 
 use PearBlogEngine\API\AutomationController;
+use PearBlogEngine\API\DashboardController;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
@@ -88,6 +89,7 @@ class Plugin {
 		add_action( 'rest_api_init', static function (): void {
 			( new AutomationController() )->register_routes();
 			( new HealthController() )->register_routes();
+			( new DashboardController() )->register_routes();
 		} );
 
 		// SEO: Schema.org structured data output.

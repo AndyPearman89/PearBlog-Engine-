@@ -239,68 +239,7 @@ class AdminPageV7 {
 	 * Render Dashboard tab - Revenue & Performance Overview.
 	 */
 	private function render_dashboard_tab(): void {
-		?>
-		<div class="pearblog-v7-dashboard">
-			<h2><?php echo esc_html__( 'Revenue & Performance Dashboard', 'pearblog-engine' ); ?></h2>
-
-			<!-- KPI Cards -->
-			<div class="pearblog-kpi-grid">
-				<div class="pearblog-kpi-card">
-					<div class="kpi-icon">💰</div>
-					<div class="kpi-label"><?php echo esc_html__( 'Total Revenue (30d)', 'pearblog-engine' ); ?></div>
-					<div class="kpi-value">$0.00</div>
-					<div class="kpi-trend">+0%</div>
-				</div>
-
-				<div class="pearblog-kpi-card">
-					<div class="kpi-icon">📝</div>
-					<div class="kpi-label"><?php echo esc_html__( 'Articles Published (30d)', 'pearblog-engine' ); ?></div>
-					<div class="kpi-value">0</div>
-					<div class="kpi-trend">+0%</div>
-				</div>
-
-				<div class="pearblog-kpi-card">
-					<div class="kpi-icon">👁️</div>
-					<div class="kpi-label"><?php echo esc_html__( 'Total Views (30d)', 'pearblog-engine' ); ?></div>
-					<div class="kpi-value">0</div>
-					<div class="kpi-trend">+0%</div>
-				</div>
-
-				<div class="pearblog-kpi-card">
-					<div class="kpi-icon">💵</div>
-					<div class="kpi-label"><?php echo esc_html__( 'RPM (Revenue per 1K)', 'pearblog-engine' ); ?></div>
-					<div class="kpi-value">$0.00</div>
-					<div class="kpi-trend">+0%</div>
-				</div>
-			</div>
-
-			<!-- Revenue Chart -->
-			<div class="pearblog-chart-container">
-				<h3><?php echo esc_html__( 'Revenue Over Time', 'pearblog-engine' ); ?></h3>
-				<canvas id="revenueChart" width="400" height="100"></canvas>
-			</div>
-
-			<!-- Top Performing Articles -->
-			<div class="pearblog-top-articles">
-				<h3><?php echo esc_html__( 'Top Revenue Generating Articles (30d)', 'pearblog-engine' ); ?></h3>
-				<table class="wp-list-table widefat fixed striped">
-					<thead>
-						<tr>
-							<th><?php echo esc_html__( 'Title', 'pearblog-engine' ); ?></th>
-							<th><?php echo esc_html__( 'Views', 'pearblog-engine' ); ?></th>
-							<th><?php echo esc_html__( 'Revenue', 'pearblog-engine' ); ?></th>
-							<th><?php echo esc_html__( 'RPM', 'pearblog-engine' ); ?></th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr>
-							<td colspan="4"><?php echo esc_html__( 'No data available yet. Enable revenue tracking in Monetization tab.', 'pearblog-engine' ); ?></td>
-						</tr>
-					</tbody>
-				</table>
-			</div>
-		</div>
-		<?php
+		DashboardTab::render();
 	}
 
 	/**

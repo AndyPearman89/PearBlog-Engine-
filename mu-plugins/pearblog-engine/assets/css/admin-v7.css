@@ -127,6 +127,79 @@
 }
 
 /* ==========================================
+   Dashboard Widgets
+   ========================================== */
+.dashboard-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+}
+
+.dashboard-period {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.dashboard-period-select {
+	padding: 6px 12px;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: 6px;
+	font-size: 14px;
+}
+
+/* ==========================================
+   Revenue Sources
+   ========================================== */
+.pearblog-revenue-sources {
+	margin-bottom: 32px;
+}
+
+.pearblog-revenue-sources h3 {
+	margin: 0 0 16px;
+	font-size: 16px;
+	font-weight: 600;
+	color: var(--pb-v7-dark);
+}
+
+.revenue-sources-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	gap: 16px;
+}
+
+.revenue-source-card {
+	padding: 20px;
+	background: #fff;
+	border: 1px solid var(--pb-v7-border);
+	border-radius: var(--pb-v7-radius);
+	box-shadow: var(--pb-v7-shadow);
+	text-align: center;
+}
+
+.revenue-source-card .source-name {
+	font-size: 12px;
+	font-weight: 600;
+	color: var(--pb-v7-text-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	margin-bottom: 8px;
+}
+
+.revenue-source-card .source-revenue {
+	font-size: 24px;
+	font-weight: 700;
+	color: var(--pb-v7-primary);
+	margin-bottom: 4px;
+}
+
+.revenue-source-card .source-transactions {
+	font-size: 13px;
+	color: var(--pb-v7-text-muted);
+}
+
+/* ==========================================
    KPI Cards (Dashboard)
    ========================================== */
 .pearblog-kpi-grid {

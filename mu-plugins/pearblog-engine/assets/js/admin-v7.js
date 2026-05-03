@@ -31,48 +31,43 @@
 		initDashboard: function() {
 			// Load dashboard data via AJAX
 			if ($('.pearblog-v7-dashboard').length) {
-				this.loadDashboardData();
+				this.initPeriodSelector();
+				this.loadDashboardData(30); // Default 30 days
 			}
+		},
+
+		/**
+		 * Initialize period selector
+		 */
+		initPeriodSelector: function() {
+			const self = this;
+			$('.dashboard-period-select').on('change', function() {
+				const days = parseInt($(this).val());
+				self.loadDashboardData(days);
+			});
 		},
 
 		/**
 		 * Load dashboard KPI data
 		 */
-		loadDashboardData: function() {
+		loadDashboardData: function(days) {
 			const self = this;
 
 			$.ajax({
-				url: pearblogAdminV7.restUrl + 'dashboard/kpis',
+				url: pearblogAdminV7.restUrl + 'dashboard/kpis?days=' + days,
 				method: 'GET',
 				beforeSend: function(xhr) {
 					xhr.setRequestHeader('X-WP-Nonce', pearblogAdminV7.restNonce);
 				},
 				success: function(data) {
-					self.updateKPIs(data);
+					// KPIs are already rendered server-side, just need to update chart
+					self.loadRevenueChart(days);
 				},
 				error: function(xhr, status, error) {
 					console.warn('[PearBlog v7] Dashboard data not yet available:', error);
 					// Gracefully degrade - show placeholder data
 				}
 			});
-		},
-
-		/**
-		 * Update KPI card values
-		 */
-		updateKPIs: function(data) {
-			if (data.revenue) {
-				$('.kpi-value').eq(0).text('$' + data.revenue.toFixed(2));
-			}
-			if (data.articles) {
-				$('.kpi-value').eq(1).text(data.articles);
-			}
-			if (data.views) {
-				$('.kpi-value').eq(2).text(data.views.toLocaleString());
-			}
-			if (data.rpm) {
-				$('.kpi-value').eq(3).text('$' + data.rpm.toFixed(2));
-			}
 		},
 
 		/**
@@ -95,6 +90,27 @@
 		},
 
 		/**
+		 * Load revenue chart data
+		 */
+		loadRevenueChart: function(days) {
+			const self = this;
+
+			$.ajax({
+				url: pearblogAdminV7.restUrl + 'dashboard/revenue-chart?days=' + days,
+				method: 'GET',
+				beforeSend: function(xhr) {
+					xhr.setRequestHeader('X-WP-Nonce', pearblogAdminV7.restNonce);
+				},
+				success: function(data) {
+					self.renderRevenueChart(data.labels, data.data);
+				},
+				error: function(xhr, status, error) {
+					console.warn('[PearBlog v7] Revenue chart data not available:', error);
+				}
+			});
+		},
+
+		/**
 		 * Initialize Chart.js visualizations
 		 */
 		initCharts: function() {
@@ -103,37 +119,39 @@
 				return;
 			}
 
-			this.renderRevenueChart();
+			// Chart will be loaded via AJAX in initDashboard
 		},
 
 		/**
 		 * Render revenue over time chart
 		 */
-		renderRevenueChart: function() {
+		renderRevenueChart: function(labels, data) {
+			if (typeof Chart === 'undefined') {
+				console.warn('[PearBlog v7] Chart.js not loaded');
+				return;
+			}
+
 			const canvas = document.getElementById('revenueChart');
 			if (!canvas) return;
 
 			const ctx = canvas.getContext('2d');
 
-			// Generate sample data for last 30 days
-			const labels = [];
-			const data = [];
-			const today = new Date();
-
-			for (let i = 29; i >= 0; i--) {
-				const date = new Date(today);
-				date.setDate(date.getDate() - i);
-				labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-				data.push(Math.random() * 10 + 5); // Random $5-$15
+			// Destroy existing chart if any
+			if (window.pearblogRevenueChart) {
+				window.pearblogRevenueChart.destroy();
 			}
 
-			new Chart(ctx, {
+			// Use real data from API or fallback to empty
+			const chartLabels = labels && labels.length > 0 ? labels : [];
+			const chartData = data && data.length > 0 ? data : [];
+
+			window.pearblogRevenueChart = new Chart(ctx, {
 				type: 'line',
 				data: {
-					labels: labels,
+					labels: chartLabels,
 					datasets: [{
 						label: 'Daily Revenue ($)',
-						data: data,
+						data: chartData,
 						borderColor: '#2563eb',
 						backgroundColor: 'rgba(37, 99, 235, 0.1)',
 						borderWidth: 2,
