@@ -56,13 +56,24 @@ use PearBlogEngine\Tenant\BillingEngine;
 use PearBlogEngine\Tenant\TenantIsolator;
 use PearBlogEngine\Tenant\TenantOnboardingController;
 use PearBlogEngine\Testing\ABTestEngine;
+use PearBlogEngine\Admin\WhiteLabelManager;
+use PearBlogEngine\Analytics\AnalyticsDashboard;
+use PearBlogEngine\API\GraphQLController;
+use PearBlogEngine\Cache\CdnManager;
 use PearBlogEngine\Content\ContentRefreshEngine;
+use PearBlogEngine\Content\ReadabilityAnalyzer;
 use PearBlogEngine\Content\TopicResearchEngine;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\AdminPageV7;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
 use PearBlogEngine\Admin\OnboardingWizard;
+use PearBlogEngine\Keywords\KeywordClusterEngine;
+use PearBlogEngine\Monitoring\SLAManager;
+use PearBlogEngine\Pipeline\BackgroundProcessor;
+use PearBlogEngine\Scheduler\TimeZoneScheduler;
+use PearBlogEngine\SEO\XmlSitemapManager;
+use PearBlogEngine\Social\SocialCalendar;
 use PearBlogEngine\Webhook\WebhookManager;
 
 /**
@@ -285,6 +296,47 @@ class Plugin {
 
 		// Query Optimizer (persistent cache + slow-query monitor).
 		( new QueryOptimizer() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.1 – Previously-unregistered modules
+		// ----------------------------------------------------------------
+
+		// GraphQL API endpoint (standalone + WPGraphQL extension).
+		( new GraphQLController() )->register();
+
+		// White-Label Manager (agency branding overrides).
+		( new WhiteLabelManager() )->register();
+
+		// Analytics Dashboard (GA4 sync + admin tab).
+		( new AnalyticsDashboard() )->register();
+
+		// CDN Manager (image offload to BunnyCDN / Cloudflare Images).
+		( new CdnManager() )->register();
+
+		// Keyword Cluster Engine (GA4 search-term clustering).
+		( new KeywordClusterEngine() )->register();
+
+		// SLA Manager (uptime / pipeline SLA targets + breach alerts).
+		( new SLAManager() )->register();
+
+		// Background Processor (WP-Cron-based async pipeline queue).
+		( new BackgroundProcessor() )->register();
+
+		// ----------------------------------------------------------------
+		// Enterprise v8.1 – New Modules
+		// ----------------------------------------------------------------
+
+		// Readability Analyzer (Flesch, FK grade, passive voice, meta box).
+		( new ReadabilityAnalyzer() )->register();
+
+		// Timezone Scheduler (publish at locally optimal hours per market).
+		( new TimeZoneScheduler() )->register();
+
+		// XML Sitemap Manager (images, video, news, index, SE pinging).
+		( new XmlSitemapManager() )->register();
+
+		// Social Calendar (multi-platform post scheduling).
+		( new SocialCalendar() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
