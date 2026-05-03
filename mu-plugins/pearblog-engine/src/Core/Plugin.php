@@ -29,6 +29,7 @@ use PearBlogEngine\SEO\SchemaManager;
 use PearBlogEngine\Social\SocialPublisher;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Webhook\WebhookManager;
+use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -103,6 +104,9 @@ class Plugin {
 
 		// A/B Testing Framework – split-test prompt variants.
 		( new ABTestEngine() )->register();
+
+		// Decision Platform – Poradnik.pro Enterprise features.
+		( new DecisionPlatformManager() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
