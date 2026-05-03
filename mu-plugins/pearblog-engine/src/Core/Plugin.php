@@ -24,6 +24,7 @@ use PearBlogEngine\Admin\AdminPageV7;
 use PearBlogEngine\Admin\ContentCalendar;
 use PearBlogEngine\Admin\DashboardWidget;
 use PearBlogEngine\Admin\OnboardingWizard;
+use PearBlogEngine\Admin\OnboardingWizardV2;
 use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Email\EmailDigest;
 use PearBlogEngine\SEO\ProgrammaticSEO;
@@ -71,6 +72,7 @@ class Plugin {
 		( new DashboardWidget() )->register();
 		( new ProgrammaticSEO() )->register();
 		( new OnboardingWizard() )->register();
+		( new OnboardingWizardV2() )->register();
 
 		// Performance monitoring.
 		( new PerformanceDashboard() )->register();
