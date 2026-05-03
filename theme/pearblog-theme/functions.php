@@ -85,7 +85,7 @@ function pearblog_setup() {
 add_action('after_setup_theme', 'pearblog_setup');
 
 /**
- * Enqueue scripts and styles - v2 PRO
+ * Enqueue scripts and styles - v3 PRO
  */
 function pearblog_enqueue_assets() {
     // Main stylesheet
@@ -96,6 +96,11 @@ function pearblog_enqueue_assets() {
 
     // Component styles
     wp_enqueue_style('pearblog-components', PEARBLOG_URI . '/assets/css/components.css', array('pearblog-base'), PEARBLOG_VERSION);
+
+    // V3 High-Conversion Components (enqueue if V3 layout is enabled)
+    if (get_option('pearblog_homepage_version', 'v3') === 'v3') {
+        wp_enqueue_style('pearblog-v3-components', PEARBLOG_URI . '/assets/css/v3-components.css', array('pearblog-components'), PEARBLOG_VERSION);
+    }
 
     // Utilities
     wp_enqueue_style('pearblog-utilities', PEARBLOG_URI . '/assets/css/utilities.css', array('pearblog-components'), PEARBLOG_VERSION);
