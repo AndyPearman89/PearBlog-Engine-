@@ -56,6 +56,14 @@ require_once PEARBLOG_DIR . '/inc/poradnik-ads-layout-pro.php';
 require_once PEARBLOG_DIR . '/inc/poradnik-affiliate-copy-generator.php';
 require_once PEARBLOG_DIR . '/inc/poradnik-rpm-lead-fusion.php';
 
+// PT24.PRO Integration — Cross-Site Conversion Funnel
+require_once PEARBLOG_DIR . '/inc/pt24-integration.php';
+
+// PT24.PRO Landing Generator System V2
+require_once PEARBLOG_DIR . '/inc/pt24-landing-cpt.php';
+require_once PEARBLOG_DIR . '/inc/pt24-landing-cli.php';
+require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php';
+
 /**
  * Theme setup
  */
@@ -134,6 +142,10 @@ function pearblog_enqueue_assets() {
     if (defined('PEARBLOG_AI_ENGINE') && PEARBLOG_AI_ENGINE) {
         wp_enqueue_script('pearblog-personalization', PEARBLOG_URI . '/assets/js/personalization.js', array('pearblog-app'), PEARBLOG_VERSION, true);
     }
+
+    // PT24.PRO Integration CSS & JS
+    wp_enqueue_style('pt24-cta', PEARBLOG_URI . '/assets/css/pt24-cta.css', array(), PEARBLOG_VERSION);
+    wp_enqueue_script('pt24-tracking', PEARBLOG_URI . '/assets/js/pt24-cta-tracking.js', array(), PEARBLOG_VERSION, true);
 
     // Google Fonts — Poppins (display) + Inter (UI)
     wp_enqueue_style(

@@ -22,6 +22,9 @@ define( 'PEARBLOG_ENGINE_VERSION', '6.0.0' );
 define( 'PEARBLOG_ENGINE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PEARBLOG_ENGINE_URL', plugin_dir_url( __FILE__ ) );
 
+// Enable full Enterprise V8 admin dashboard
+define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+
 // PSR-4 autoloader for src/ classes under the PearBlogEngine namespace.
 spl_autoload_register( function ( string $class ): void {
 	$prefix   = 'PearBlogEngine\\';
