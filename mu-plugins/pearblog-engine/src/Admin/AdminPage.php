@@ -207,6 +207,11 @@ class AdminPage {
 		// Content quality / duplicate detection settings.
 		register_setting( self::OPTION_GRP, 'pearblog_duplicate_check_enabled', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
 
+		// AdSense funnel strategy settings.
+		register_setting( self::OPTION_GRP, 'pearblog_adsense_enable_tofu', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+		register_setting( self::OPTION_GRP, 'pearblog_adsense_enable_mofu', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+		register_setting( self::OPTION_GRP, 'pearblog_adsense_enable_bofu', [ 'sanitize_callback' => [ $this, 'sanitize_checkbox' ] ] );
+
 		// Social media settings.
 		register_setting( self::OPTION_GRP, 'pearblog_social_enabled_channels',       [ 'sanitize_callback' => 'sanitize_text_field' ] );
 		register_setting( self::OPTION_GRP, 'pearblog_social_twitter_api_key',        [ 'sanitize_callback' => 'sanitize_text_field' ] );
@@ -1039,6 +1044,46 @@ class AdminPage {
 					</div>
 					<form method="post" action="options.php">
 						<?php settings_fields( self::OPTION_GRP ); ?>
+						<h2><?php esc_html_e( 'AdSense Funnel Strategy (v2)', 'pearblog-engine' ); ?></h2>
+						<p class="description"><?php esc_html_e( 'Configure intelligent AdSense placement based on content funnel stage (TOFU/MOFU/BOFU). Content is automatically analyzed and AdSense is enabled/disabled to maximize revenue while protecting conversions.', 'pearblog-engine' ); ?></p>
+						<table class="form-table" role="presentation">
+							<tr>
+								<th scope="row"><?php esc_html_e( 'TOFU (Top of Funnel)', 'pearblog-engine' ); ?></th>
+								<td>
+									<label>
+										<input type="checkbox" name="pearblog_adsense_enable_tofu" value="1" <?php checked( get_option( 'pearblog_adsense_enable_tofu', '1' ), '1' ); ?> />
+										<?php esc_html_e( 'Enable AdSense for informational content', 'pearblog-engine' ); ?>
+									</label>
+									<p class="description">
+										<?php esc_html_e( '✅ RECOMMENDED: Guides, tutorials, FAQs, educational articles. Full AdSense placement (2 ads per article).', 'pearblog-engine' ); ?>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><?php esc_html_e( 'MOFU (Middle of Funnel)', 'pearblog-engine' ); ?></th>
+								<td>
+									<label>
+										<input type="checkbox" name="pearblog_adsense_enable_mofu" value="1" <?php checked( get_option( 'pearblog_adsense_enable_mofu', '1' ), '1' ); ?> />
+										<?php esc_html_e( 'Enable AdSense for consideration content', 'pearblog-engine' ); ?>
+									</label>
+									<p class="description">
+										<?php esc_html_e( '⚠️ LIMITED: Comparison articles, reviews, light purchase intent. Single AdSense unit only.', 'pearblog-engine' ); ?>
+									</p>
+								</td>
+							</tr>
+							<tr>
+								<th scope="row"><?php esc_html_e( 'BOFU (Bottom of Funnel)', 'pearblog-engine' ); ?></th>
+								<td>
+									<label>
+										<input type="checkbox" name="pearblog_adsense_enable_bofu" value="1" <?php checked( get_option( 'pearblog_adsense_enable_bofu', '0' ), '1' ); ?> />
+										<?php esc_html_e( 'Enable AdSense for conversion content', 'pearblog-engine' ); ?>
+									</label>
+									<p class="description">
+										<?php esc_html_e( '🔴 NOT RECOMMENDED: Rankings, calculators, expert profiles, contact forms. Disabling maximizes lead generation.', 'pearblog-engine' ); ?>
+									</p>
+								</td>
+							</tr>
+						</table>
 						<h2><?php esc_html_e( 'SaaS CTA Monetisation (v3)', 'pearblog-engine' ); ?></h2>
 						<p class="description"><?php esc_html_e( 'Configure SaaS product recommendations. Articles are scanned for matching keywords and a CTA box is injected automatically. Set "Monetisation Strategy" in General to "SaaS (v3)" to activate.', 'pearblog-engine' ); ?></p>
 						<table class="form-table" role="presentation">
