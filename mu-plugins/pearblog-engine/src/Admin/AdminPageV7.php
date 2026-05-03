@@ -53,6 +53,7 @@ class AdminPageV7 {
 
 		// Admin POST handlers
 		add_action( 'admin_post_pearblog_v7_save_settings', [ $this, 'handle_save_settings' ] );
+		add_action( 'admin_post_pearblog_save_strategy', [ 'PearBlogEngine\Admin\StrategyTab', 'handle_save' ] );
 	}
 
 	/**
@@ -246,17 +247,7 @@ class AdminPageV7 {
 	 * Render Strategy (AI) tab - AI-driven content strategy.
 	 */
 	private function render_strategy_tab(): void {
-		?>
-		<div class="pearblog-v7-strategy">
-			<h2><?php echo esc_html__( 'AI Content Strategy', 'pearblog-engine' ); ?></h2>
-			<p><?php echo esc_html__( 'Configure AI-driven keyword discovery and content planning.', 'pearblog-engine' ); ?></p>
-
-			<div class="pearblog-notice pearblog-notice-info">
-				<p><strong><?php echo esc_html__( 'Coming in Phase 3 (v7.3 - August 2026)', 'pearblog-engine' ); ?></strong></p>
-				<p><?php echo esc_html__( 'AI Strategy tab will include keyword automation, intent priority, and autonomous topic discovery.', 'pearblog-engine' ); ?></p>
-			</div>
-		</div>
-		<?php
+		StrategyTab::render();
 	}
 
 	/**
