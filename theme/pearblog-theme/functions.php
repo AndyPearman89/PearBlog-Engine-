@@ -42,6 +42,9 @@ require_once PEARBLOG_DIR . '/inc/dashboard-widget.php';
 require_once PEARBLOG_DIR . '/inc/ab-testing-metabox.php';
 require_once PEARBLOG_DIR . '/inc/analytics-page.php';
 
+// Poradnik.pro V4 — Decision System
+require_once PEARBLOG_DIR . '/inc/poradnik-v4-helpers.php';
+
 /**
  * Theme setup
  */
