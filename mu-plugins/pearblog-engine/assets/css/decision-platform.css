@@ -1,0 +1,379 @@
+/**
+ * Decision Platform Styles
+ * Frontend CSS for Poradnik.pro features
+ */
+
+/* Decision Assistant Widget */
+.decision-assistant {
+    background: #f8f9fa;
+    border-radius: 8px;
+    padding: 24px;
+    margin: 32px 0;
+}
+
+.decision-assistant h3 {
+    margin-top: 0;
+    color: #2c3e50;
+}
+
+.decision-form textarea,
+.decision-form input {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+.decision-form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+
+.decision-result {
+    margin-top: 24px;
+    padding: 20px;
+    background: white;
+    border-radius: 6px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.recommendation h4,
+.recommendation h5 {
+    color: #2c3e50;
+}
+
+/* Lead Forms */
+.block-lead-form {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 40px;
+    border-radius: 12px;
+    margin: 40px 0;
+}
+
+.lead-form-container h3 {
+    margin-top: 0;
+    color: white;
+}
+
+.lead-form input,
+.lead-form textarea {
+    width: 100%;
+    padding: 12px;
+    margin-bottom: 12px;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+}
+
+/* Comparison Tables */
+.comparison-table {
+    overflow-x: auto;
+    margin: 24px 0;
+}
+
+.comparison-table table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.comparison-table th,
+.comparison-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.comparison-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Rankings */
+.ranking-list {
+    margin: 24px 0;
+}
+
+.ranking-items {
+    list-style: none;
+    padding: 0;
+    counter-reset: ranking;
+}
+
+.ranking-item {
+    display: flex;
+    padding: 20px;
+    margin-bottom: 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    counter-increment: ranking;
+}
+
+.ranking-item.premium {
+    border: 2px solid #ffd700;
+    background: linear-gradient(to right, #fff9e6, white);
+}
+
+.ranking-position {
+    font-size: 32px;
+    font-weight: bold;
+    color: #667eea;
+    margin-right: 20px;
+    min-width: 60px;
+}
+
+.ranking-position::before {
+    content: counter(ranking);
+}
+
+.ranking-content {
+    flex: 1;
+}
+
+.ranking-score {
+    margin-top: 12px;
+    color: #666;
+}
+
+/* Expert Cards */
+.experts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 24px;
+    margin: 24px 0;
+}
+
+.expert-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.expert-card.premium {
+    border: 2px solid #ffd700;
+}
+
+.expert-photo {
+    text-align: center;
+    margin-bottom: 16px;
+}
+
+.expert-photo img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.expert-rating {
+    color: #f39c12;
+    margin: 8px 0;
+}
+
+.badge {
+    display: inline-block;
+    padding: 4px 8px;
+    background: #e3e8ff;
+    color: #667eea;
+    border-radius: 4px;
+    font-size: 12px;
+    margin-right: 4px;
+}
+
+.badge-verified {
+    background: #2ecc71;
+    color: white;
+}
+
+/* Calculator Forms */
+.calculator-form {
+    background: #f8f9fa;
+    padding: 24px;
+    border-radius: 8px;
+    margin: 24px 0;
+}
+
+.calculator-form .form-group {
+    margin-bottom: 16px;
+}
+
+.calculator-form label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.calculator-form input,
+.calculator-form select {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+.calculator-result {
+    margin-top: 24px;
+    padding: 20px;
+    background: white;
+    border-radius: 6px;
+    text-align: center;
+}
+
+.result-value {
+    font-size: 32px;
+    color: #667eea;
+    font-weight: bold;
+}
+
+/* FAQ Accordion */
+.faq-items {
+    margin: 24px 0;
+}
+
+.faq-item {
+    margin-bottom: 12px;
+    border: 1px solid #eee;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.faq-question {
+    width: 100%;
+    background: white;
+    border: none;
+    padding: 16px;
+    text-align: left;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.faq-question:hover {
+    background: #f8f9fa;
+}
+
+.faq-icon {
+    font-size: 24px;
+    color: #667eea;
+}
+
+.faq-answer {
+    padding: 16px;
+    background: #f8f9fa;
+}
+
+/* Buttons */
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.3s ease;
+}
+
+.btn-primary {
+    background: #667eea;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #5568d3;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+/* Offer Cards */
+.offer-card {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    margin-bottom: 24px;
+}
+
+.offer-card.featured {
+    border: 2px solid #ffd700;
+}
+
+.offer-image img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+}
+
+.offer-content {
+    padding: 20px;
+}
+
+.offer-price {
+    font-size: 24px;
+    font-weight: bold;
+    color: #667eea;
+    margin: 16px 0;
+}
+
+/* Blocks */
+.block {
+    margin: 32px 0;
+}
+
+.block-intro {
+    font-size: 18px;
+    line-height: 1.6;
+    color: #555;
+}
+
+.block-steps .steps-list {
+    counter-reset: step;
+    list-style: none;
+    padding: 0;
+}
+
+.step-item {
+    counter-increment: step;
+    padding-left: 60px;
+    position: relative;
+    margin-bottom: 32px;
+}
+
+.step-item::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 40px;
+    height: 40px;
+    background: #667eea;
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .experts-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .ranking-item {
+        flex-direction: column;
+    }
+
+    .ranking-position {
+        margin-bottom: 16px;
+    }
+}
