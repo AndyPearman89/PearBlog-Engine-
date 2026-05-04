@@ -66,6 +66,56 @@ class PT24Bridge {
 
         // Lead lifecycle hooks
         add_action('pearblog_lead_created', [$this, 'on_lead_created'], 10, 1);
+
+        // Asset loading hooks
+        add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
+    }
+
+    /**
+     * Enqueue frontend CSS and JavaScript assets
+     *
+     * @return void
+     */
+    public function enqueue_frontend_assets(): void {
+        // Only load on single posts
+        if (!is_singular('post')) {
+            return;
+        }
+
+        $plugin_url = plugin_dir_url(dirname(dirname(__FILE__)));
+        $plugin_path = plugin_dir_path(dirname(dirname(__FILE__)));
+
+        // Enqueue CTA components CSS
+        wp_enqueue_style(
+            'pearblog-pt24-cta-components',
+            $plugin_url . 'assets/css/pt24-cta-components.css',
+            [],
+            filemtime($plugin_path . 'assets/css/pt24-cta-components.css')
+        );
+
+        // Enqueue CTA tracking JavaScript
+        wp_enqueue_script(
+            'pearblog-pt24-cta-tracking',
+            $plugin_url . 'assets/js/pt24-cta-tracking.js',
+            [],
+            filemtime($plugin_path . 'assets/js/pt24-cta-tracking.js'),
+            true
+        );
+
+        // Localize script with WordPress REST API settings
+        wp_localize_script('pearblog-pt24-cta-tracking', 'wpApiSettings', [
+            'root' => esc_url_raw(rest_url()),
+            'nonce' => wp_create_nonce('wp_rest')
+        ]);
+
+        // Add post ID to body for JavaScript tracking
+        add_filter('body_class', function($classes) {
+            global $post;
+            if ($post) {
+                return array_merge($classes, ['post-id-' . $post->ID]);
+            }
+            return $classes;
+        });
     }
 
     /**
