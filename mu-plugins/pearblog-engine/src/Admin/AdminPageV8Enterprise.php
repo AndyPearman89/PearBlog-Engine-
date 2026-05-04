@@ -28,6 +28,16 @@ use PearBlogEngine\AI\AIProviderFactory;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
 use PearBlogEngine\Tenant\TenantContext;
+use PearBlogEngine\Admin\StrategyTab;
+use PearBlogEngine\Admin\ContentEngineTab;
+use PearBlogEngine\Admin\SEOTab;
+use PearBlogEngine\Admin\MonetizationTab;
+use PearBlogEngine\Admin\LeadsTab;
+use PearBlogEngine\Admin\AutomationTab;
+use PearBlogEngine\Admin\AnalyticsTab;
+use PearBlogEngine\Admin\MultisiteTab;
+use PearBlogEngine\Admin\PerformanceDashboardTab;
+use PearBlogEngine\Admin\SettingsTab;
 
 /**
  * Admin Panel v8.0 ENTERPRISE MAX - Full rozbudowa
@@ -388,6 +398,33 @@ class AdminPageV8Enterprise {
 			case 'realtime':
 				$this->render_realtime_tab();
 				break;
+			case 'strategy':
+				StrategyTab::render();
+				break;
+			case 'content':
+				ContentEngineTab::render();
+				break;
+			case 'seo':
+				SEOTab::render();
+				break;
+			case 'monetization':
+				MonetizationTab::render();
+				break;
+			case 'leads':
+				LeadsTab::render();
+				break;
+			case 'automation':
+				AutomationTab::render();
+				break;
+			case 'analytics':
+				AnalyticsTab::render();
+				break;
+			case 'multisite':
+				MultisiteTab::render();
+				break;
+			case 'performance':
+				PerformanceDashboardTab::render();
+				break;
 			case 'security':
 				$this->render_security_tab();
 				break;
@@ -396,6 +433,9 @@ class AdminPageV8Enterprise {
 				break;
 			case 'integrations':
 				$this->render_integrations_tab();
+				break;
+			case 'settings':
+				SettingsTab::render();
 				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
