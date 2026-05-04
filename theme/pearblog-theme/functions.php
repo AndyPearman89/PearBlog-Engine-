@@ -64,6 +64,11 @@ require_once PEARBLOG_DIR . '/inc/pt24-landing-cpt.php';
 require_once PEARBLOG_DIR . '/inc/pt24-landing-cli.php';
 require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php';
 
+// PT24.PRO Complete Platform System
+require_once PEARBLOG_DIR . '/inc/pt24-form-handler.php';
+require_once PEARBLOG_DIR . '/inc/pt24-api.php';
+require_once PEARBLOG_DIR . '/inc/pt24-cli-commands.php';
+
 /**
  * Theme setup
  */

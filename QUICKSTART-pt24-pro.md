@@ -1,8 +1,8 @@
 # ⚡ Quick Start: pt24.pro
 
 **Domain:** pt24.pro (www.pt24.pro)
-**Engine:** PearBlog v7.0
-**Purpose:** AI-powered news & content platform
+**Engine:** PearBlog v7.0 + PT24 Platform
+**Purpose:** Local services directory platform
 
 ---
 
@@ -33,8 +33,8 @@ Before running the deployment:
 - Point `www.pt24.pro` → Your server IP
 - Wait for DNS propagation (can take up to 24 hours)
 
-✅ **API Keys Ready:**
-- OpenAI API key (for GPT-4o)
+✅ **API Keys Ready (Optional):**
+- OpenAI API key (optional, for AI content generation)
 - Anthropic API key (optional, for Claude)
 - Google API key (optional, for Gemini)
 
@@ -116,41 +116,52 @@ wp theme activate pearblog-theme --allow-root
 echo "define('PEARBLOG_OPENAI_API_KEY', 'sk-YOUR_KEY');" >> wp-config.php
 
 # Set site profile:
-wp option update pearblog_industry 'news' --allow-root
+wp option update pearblog_industry 'local_services' --allow-root
 wp option update pearblog_language 'pl' --allow-root
-wp option update pearblog_publish_rate 2 --allow-root
 wp option update pearblog_homepage_version 'v7' --allow-root
 
 # Generate API key:
 wp option update pearblog_api_key "$(openssl rand -hex 32)" --allow-root
 ```
 
-### 6. Start Content Generation
+### 6. Initialize PT24 Platform
 
 ```bash
-# Add topics:
-wp pearblog queue add "Wiadomości technologiczne" --allow-root
-wp pearblog queue add "Biznes i finanse" --allow-root
+# Initialize PT24 data (REQUIRED):
+wp pt24 init --allow-root
 
-# Generate first article:
-wp pearblog generate --allow-root
+# This creates:
+# - Service categories (mechanik, hydraulik, elektryk, laweta, wulkanizacja)
+# - Top 20 cities (Warszawa, Kraków, Wrocław, etc.)
+# - Database tables for leads, stats, subscriptions
+# - Custom rewrite rules
 
-# Start autopilot:
-wp pearblog autopilot start --allow-root
+# Generate landing pages (service + city combinations):
+wp pt24 generate-pages --batch=10 --allow-root
+
+# Create homepage:
+# In WP Admin: Pages → Add New
+# Template: PT24.PRO - Homepage
+# Publish
+
+# Check platform status:
+wp pt24 stats --allow-root
 ```
 
 ---
 
 ## ✅ Verification
 
-### Check Installation
+### Check PT24 Platform
 
 ```bash
-# Test health endpoint:
-curl https://pt24.pro/wp-json/pearblog/v1/health
+# Test PT24 API:
+curl https://pt24.pro/wp-json/pt24/v1/businesses
 
-# Should return:
-# {"status":"ok","timestamp":"...","checks":{...}}
+# Should return business listings
+
+# Check platform health:
+curl https://pt24.pro/wp-json/pearblog/v1/health
 ```
 
 ### Access Admin
@@ -159,61 +170,79 @@ curl https://pt24.pro/wp-json/pearblog/v1/health
 URL: https://pt24.pro/wp-admin
 Login: admin / [your password]
 
-Check: PearBlog Engine → Dashboard
+Check: PT24 Landing Pages (in sidebar)
 ```
 
-### Verify Content Generation
+### Verify Landing Pages
 
 ```bash
-# Check stats:
-wp pearblog stats --allow-root
+# Check platform stats:
+wp pt24 stats --allow-root
 
-# List posts:
-wp post list --allow-root
+# List landing pages:
+wp post list --post_type=pt24_landing --allow-root
 
-# Check queue:
-wp pearblog queue list --allow-root
-```
-
----
-
-## 🔧 Essential WP-CLI Commands
-
-```bash
-# Content generation:
-wp pearblog generate              # Generate one article
-wp pearblog queue add "Topic"     # Add topic to queue
-wp pearblog queue list            # View queue
-
-# Autopilot control:
-wp pearblog autopilot start       # Start autonomous mode
-wp pearblog autopilot status      # Check status
-wp pearblog autopilot pause       # Pause generation
-
-# Statistics:
-wp pearblog stats                 # View pipeline stats
-wp pearblog quality --post_id=123 # Check article quality
-
-# System management:
-wp pearblog circuit status        # Check circuit breaker
-wp pearblog circuit reset         # Reset if needed
+# Test URL structure:
+curl https://pt24.pro/mechanik/warszawa/
 ```
 
 ---
 
-## 🎨 Enable v7 Dark UI Kit
-
-The v7 Dark UI Kit provides a modern, dark-themed interface:
+## 🔧 Essential PT24 WP-CLI Commands
 
 ```bash
-# Enable v7 UI:
-wp option update pearblog_homepage_version 'v7' --allow-root
+# Platform initialization:
+wp pt24 init                      # Initialize platform data
+wp pt24 stats                     # View platform statistics
 
-# Clear cache:
-wp cache flush --allow-root
+# Landing page generation:
+wp pt24 generate-pages            # Generate all combinations
+wp pt24 generate-pages --service=mechanik --city=warszawa
+wp pt24 generate-pages --batch=10 # Generate in batches
 
-# Verify at:
-# https://pt24.pro (frontend should show v7 design)
+# Business management:
+# Add businesses via WP Admin → PT24 Businesses
+
+# Lead management:
+# View leads in database:
+# SELECT * FROM wp_pt24_leads ORDER BY created_at DESC;
+
+# API testing:
+# List businesses:
+curl https://pt24.pro/wp-json/pt24/v1/businesses
+
+# Get business by ID:
+curl https://pt24.pro/wp-json/pt24/v1/businesses/123
+
+# Business stats:
+curl https://pt24.pro/wp-json/pt24/v1/stats/123
+```
+
+---
+
+## 🎨 Create Homepage
+
+The PT24 platform uses a custom homepage template:
+
+```bash
+# In WP Admin:
+# 1. Go to Pages → Add New
+# 2. Title: "Strona główna" or "Homepage"
+# 3. Template: Select "PT24.PRO - Homepage"
+# 4. Publish
+# 5. Settings → Reading → Set as homepage
+
+# Or via WP-CLI:
+wp post create \
+  --post_type=page \
+  --post_title="Homepage" \
+  --post_status=publish \
+  --page_template=page-pt24-home.php \
+  --allow-root
+
+# Set as front page:
+wp option update show_on_front 'page' --allow-root
+wp option update page_on_front [PAGE_ID] --allow-root
 ```
 
 ---
@@ -287,16 +316,19 @@ php -v
 cd /var/www/pt24.pro && wp core verify-checksums --allow-root
 ```
 
-### Content not generating?
+### Landing pages not working?
 ```bash
-# Check API key:
-wp option get pearblog_openai_api_key --allow-root
+# Flush rewrite rules:
+wp rewrite flush --allow-root
 
-# Test generation:
-wp pearblog generate --allow-root
+# Re-initialize PT24:
+wp pt24 init --allow-root
 
-# Check circuit breaker:
-wp pearblog circuit status --allow-root
+# Check if landing pages exist:
+wp post list --post_type=pt24_landing --allow-root
+
+# Test URL:
+curl -I https://pt24.pro/mechanik/warszawa/
 ```
 
 ### Database errors?
@@ -328,30 +360,38 @@ wp db optimize --allow-root
 
 After successful deployment:
 
-1. **Customize Branding**
-   - Update site title and tagline
+1. **Add Businesses**
+   - Go to WP Admin → PT24 Businesses → Add New
+   - Fill in: name, phone, email, services, cities
+   - Add descriptions and specializations
+   - Set subscription plan (Free, PRO, Premium)
+
+2. **Generate Landing Pages**
+   - Run: `wp pt24 generate-pages --allow-root`
+   - This creates service + city combinations
+   - Example: /mechanik/warszawa/, /hydraulik/krakow/
+
+3. **Customize Branding**
+   - Update site title: "PT24 - Fachowcy w Twojej Okolicy"
    - Add logo in WordPress Customizer
-   - Configure colors (PearBlog Engine → Settings)
-
-2. **Configure Monetization**
-   - Add AdSense Publisher ID
-   - Configure affiliate settings (Booking, Airbnb)
-   - Set up revenue tracking
-
-3. **Optimize Content Strategy**
-   - Define topic categories
-   - Set content tone and style
-   - Configure publishing schedule
+   - Customize colors in PT24 CSS files
 
 4. **Set Up Analytics**
    - Connect Google Analytics 4
-   - Configure conversion tracking
-   - Enable heatmap tools
+   - Track phone clicks via pt24-cta-tracking.js
+   - Monitor conversions (leads, business views)
+   - Check business stats via API
 
-5. **Scale Up**
-   - Increase publish rate gradually
-   - Add more topics to queue
-   - Monitor performance metrics
+5. **Enable Lead Notifications**
+   - Configure email in pt24-form-handler.php:76
+   - Test lead submission via frontend forms
+   - Check leads in database: wp_pt24_leads
+
+6. **Scale Up**
+   - Add more cities and services
+   - Onboard more businesses
+   - Generate more landing pages
+   - Monitor performance via `wp pt24 stats`
 
 ---
 
