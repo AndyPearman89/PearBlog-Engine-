@@ -12,6 +12,7 @@ namespace PearBlogEngine\Core;
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
 use PearBlogEngine\API\TopicsController;
+use PearBlogEngine\API\PoradnikV3API;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
@@ -40,6 +41,8 @@ use PearBlogEngine\Social\SocialPublisher;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Webhook\WebhookManager;
 use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
+use PearBlogEngine\Analytics\ConversionFlowTracker;
+use PearBlogEngine\Database\PoradnikV3Schema;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -109,6 +112,7 @@ class Plugin {
 			( new HealthController() )->register_routes();
 			( new DashboardController() )->register_routes();
 			( new TopicsController() )->register_routes();
+			( new PoradnikV3API() )->register_routes();
 		} );
 
 		// SEO: Schema.org structured data output.
@@ -137,6 +141,15 @@ class Plugin {
 
 		// Decision Platform – Poradnik.pro Enterprise features.
 		( new DecisionPlatformManager() )->register();
+
+		// Poradnik V3 – Conversion tracking and analytics.
+		ConversionFlowTracker::init();
+
+		// Create V3 database tables on activation.
+		register_activation_hook( PEARBLOG_PLUGIN_FILE, static function (): void {
+			PoradnikV3Schema::create_tables();
+			PoradnikV3Schema::update_version( '3.0.0' );
+		} );
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
