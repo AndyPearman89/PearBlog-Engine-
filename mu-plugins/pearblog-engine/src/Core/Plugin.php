@@ -11,6 +11,7 @@ namespace PearBlogEngine\Core;
 
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
+use PearBlogEngine\API\TopicsController;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
@@ -19,6 +20,11 @@ use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Scheduler\PublishScheduler;
 use PearBlogEngine\Content\TopicResearchEngine;
+use PearBlogEngine\Content\TopicCPT;
+use PearBlogEngine\Content\FAQBlockCPT;
+use PearBlogEngine\Content\CTABlockCPT;
+use PearBlogEngine\Content\RelatedEntityManager;
+use PearBlogEngine\Content\PostMetaManager;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\AdminPageV7;
 use PearBlogEngine\Admin\AdminPageV8Enterprise;
@@ -59,6 +65,13 @@ class Plugin {
 	 * Attach WordPress hooks and initialise sub-systems.
 	 */
 	public function boot(): void {
+		// Core architecture CPTs and entities.
+		( new TopicCPT() )->register();
+		( new FAQBlockCPT() )->register();
+		( new CTABlockCPT() )->register();
+		( new RelatedEntityManager() )->register();
+		( new PostMetaManager() )->register();
+
 		// Core pipeline & admin.
 		( new CronManager() )->register();
 
@@ -95,6 +108,7 @@ class Plugin {
 			( new AutomationController() )->register_routes();
 			( new HealthController() )->register_routes();
 			( new DashboardController() )->register_routes();
+			( new TopicsController() )->register_routes();
 		} );
 
 		// SEO: Schema.org structured data output.
