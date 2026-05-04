@@ -7,6 +7,13 @@
  *
  * @package PearBlog
  * @version 4.0.0
+ *
+ * SECURITY NOTE: When adding dynamic content to this template, always use proper escaping:
+ * - esc_html() for HTML content (text nodes)
+ * - esc_attr() for HTML attributes
+ * - esc_url() for URLs
+ * - esc_js() for inline JavaScript
+ * - wp_kses_post() for HTML content that should allow some tags
  */
 
 wp_enqueue_style('pt24-home-v4', get_template_directory_uri() . '/assets/css/pt24-home-v4.css', array(), '4.0.0');
@@ -14,8 +21,9 @@ wp_enqueue_script('pt24-home-v4', get_template_directory_uri() . '/assets/js/pt2
 
 // Localize script for AJAX
 wp_localize_script('pt24-home-v4', 'pt24Data', array(
-    'ajaxurl' => admin_url('admin-ajax.php'),
+    'ajaxurl' => esc_url(admin_url('admin-ajax.php')),
     'nonce' => wp_create_nonce('pt24_nonce'),
+    'siteUrl' => esc_url(home_url('/')),
 ));
 
 get_header('minimal');
