@@ -70,6 +70,8 @@ require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php';
 require_once PEARBLOG_DIR . '/inc/pt24-form-handler.php';
 require_once PEARBLOG_DIR . '/inc/pt24-api.php';
 require_once PEARBLOG_DIR . '/inc/pt24-cli-commands.php';
+require_once PEARBLOG_DIR . '/inc/pt24-database.php';
+require_once PEARBLOG_DIR . '/inc/pt24-seo-meta.php';
 
 /**
  * Theme setup
