@@ -13,6 +13,7 @@ use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
 use PearBlogEngine\API\TopicsController;
 use PearBlogEngine\API\PoradnikV3API;
+use PearBlogEngine\API\SearchSuggestAPI;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
@@ -113,6 +114,7 @@ class Plugin {
 			( new DashboardController() )->register_routes();
 			( new TopicsController() )->register_routes();
 			( new PoradnikV3API() )->register_routes();
+			SearchSuggestAPI::register_routes();
 		} );
 
 		// SEO: Schema.org structured data output.
