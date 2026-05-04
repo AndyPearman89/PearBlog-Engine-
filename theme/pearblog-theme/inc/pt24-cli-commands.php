@@ -291,6 +291,124 @@ class PT24_CLI_Commands {
 
         WP_CLI::success("\nPT24 platform initialized!");
     }
+
+    /**
+     * List all PT24 landing pages
+     *
+     * ## OPTIONS
+     *
+     * [--format=<format>]
+     * : Output format (table, csv, json)
+     * ---
+     * default: table
+     * options:
+     *   - table
+     *   - csv
+     *   - json
+     * ---
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24 list
+     *     wp pt24 list --format=csv
+     *
+     * @when after_wp_load
+     */
+    public function list($args, $assoc_args) {
+        $format = $assoc_args['format'] ?? 'table';
+
+        $posts = get_posts([
+            'post_type' => 'pt24_landing',
+            'posts_per_page' => -1,
+            'post_status' => 'any',
+        ]);
+
+        $items = [];
+
+        foreach ($posts as $post) {
+            $service = get_post_meta($post->ID, 'pt24_service', true);
+            $city = get_post_meta($post->ID, 'pt24_city', true);
+            $url = home_url("/$city/$service/");
+
+            $items[] = [
+                'ID' => $post->ID,
+                'Service' => $service,
+                'City' => $city,
+                'URL' => $url,
+                'Status' => $post->post_status,
+            ];
+        }
+
+        if (empty($items)) {
+            WP_CLI::warning('No PT24 landing pages found');
+            return;
+        }
+
+        WP_CLI\Utils\format_items($format, $items, ['ID', 'Service', 'City', 'URL', 'Status']);
+    }
+
+    /**
+     * Delete all PT24 landing pages
+     *
+     * ## OPTIONS
+     *
+     * [--yes]
+     * : Skip confirmation
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24 delete-all
+     *     wp pt24 delete-all --yes
+     *
+     * @when after_wp_load
+     */
+    public function delete_all($args, $assoc_args) {
+        $posts = get_posts([
+            'post_type' => 'pt24_landing',
+            'posts_per_page' => -1,
+            'post_status' => 'any',
+        ]);
+
+        if (empty($posts)) {
+            WP_CLI::warning('No PT24 landing pages found');
+            return;
+        }
+
+        WP_CLI::line('Found ' . count($posts) . ' landing pages');
+
+        if (!isset($assoc_args['yes'])) {
+            WP_CLI::confirm('Delete all PT24 landing pages?');
+        }
+
+        $progress = \WP_CLI\Utils\make_progress_bar('Deleting landing pages', count($posts));
+
+        $deleted = 0;
+
+        foreach ($posts as $post) {
+            if (wp_delete_post($post->ID, true)) {
+                $deleted++;
+            }
+            $progress->tick();
+        }
+
+        $progress->finish();
+
+        WP_CLI::success("Deleted $deleted landing pages");
+    }
+
+    /**
+     * Flush rewrite rules for PT24 landings
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24 flush-rewrites
+     *
+     * @when after_wp_load
+     */
+    public function flush_rewrites($args, $assoc_args) {
+        flush_rewrite_rules();
+        WP_CLI::success('Rewrite rules flushed');
+    }
 }
 
 WP_CLI::add_command('pt24', 'PT24_CLI_Commands');
