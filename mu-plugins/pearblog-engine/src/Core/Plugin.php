@@ -159,6 +159,9 @@ class Plugin {
 
 			// SEO Keyword Generator CLI commands
 			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
+
+			// SEO Keyword Generator V3 Enterprise CLI commands
+			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorV3CLI.php';
 		}
 	}
 
