@@ -403,7 +403,186 @@ class ContentLinker {
                 FROM {$table_name}
                 GROUP BY target_type",
                 ARRAY_A
-            )
+            ),
+            'top_performing_links' => $this->get_top_performing_links(10),
+            'total_clicks' => $wpdb->get_var(
+                "SELECT SUM(click_count) FROM {$table_name}"
+            ) ?? 0,
+            'total_conversions' => $wpdb->get_var(
+                "SELECT SUM(conversion_count) FROM {$table_name}"
+            ) ?? 0
         ];
+    }
+
+    /**
+     * Get top performing links by clicks
+     *
+     * @param int $limit Limit
+     * @return array Top links
+     */
+    public function get_top_performing_links(int $limit = 10): array {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'pearblog_content_links';
+
+        return $wpdb->get_results($wpdb->prepare(
+            "SELECT content_id, target_type, target_id, link_text,
+                    click_count, conversion_count,
+                    (conversion_count / GREATEST(click_count, 1) * 100) as conversion_rate
+            FROM {$table_name}
+            WHERE click_count > 0
+            ORDER BY click_count DESC
+            LIMIT %d",
+            $limit
+        ), ARRAY_A);
+    }
+
+    /**
+     * Track link click
+     *
+     * @param int $link_id Link ID
+     * @return bool Success
+     */
+    public function track_click(int $link_id): bool {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'pearblog_content_links';
+
+        $result = $wpdb->query($wpdb->prepare(
+            "UPDATE {$table_name}
+            SET click_count = click_count + 1
+            WHERE id = %d",
+            $link_id
+        ));
+
+        return $result !== false;
+    }
+
+    /**
+     * Track link conversion
+     *
+     * @param int $link_id Link ID
+     * @return bool Success
+     */
+    public function track_conversion(int $link_id): bool {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'pearblog_content_links';
+
+        $result = $wpdb->query($wpdb->prepare(
+            "UPDATE {$table_name}
+            SET conversion_count = conversion_count + 1
+            WHERE id = %d",
+            $link_id
+        ));
+
+        return $result !== false;
+    }
+
+    /**
+     * Get link by target
+     *
+     * @param int $content_id Content ID
+     * @param string $target_type Target type
+     * @param string $target_id Target ID
+     * @return array|null Link data
+     */
+    public function get_link_by_target(int $content_id, string $target_type, string $target_id): ?array {
+        global $wpdb;
+
+        $table_name = $wpdb->prefix . 'pearblog_content_links';
+
+        $link = $wpdb->get_row($wpdb->prepare(
+            "SELECT * FROM {$table_name}
+            WHERE content_id = %d
+            AND target_type = %s
+            AND target_id = %s
+            LIMIT 1",
+            $content_id,
+            $target_type,
+            $target_id
+        ), ARRAY_A);
+
+        return $link ?: null;
+    }
+
+    /**
+     * Register WordPress hooks for automatic link injection
+     *
+     * @return void
+     */
+    public function register_hooks(): void {
+        // Automatically inject links into content display
+        add_filter('the_content', [$this, 'filter_content'], 20);
+
+        // Track link clicks via AJAX
+        add_action('wp_ajax_pearblog_track_link_click', [$this, 'ajax_track_click']);
+        add_action('wp_ajax_nopriv_pearblog_track_link_click', [$this, 'ajax_track_click']);
+    }
+
+    /**
+     * Filter content to inject PT24 links
+     *
+     * @param string $content Post content
+     * @return string Modified content
+     */
+    public function filter_content(string $content): string {
+        // Only apply on single post pages
+        if (!is_singular('post')) {
+            return $content;
+        }
+
+        global $post;
+
+        if (!$post) {
+            return $content;
+        }
+
+        // Check if PT24 integration is enabled
+        if (!get_option('pearblog_pt24_integration_enabled', false)) {
+            return $content;
+        }
+
+        // Check if this post already has links injected
+        $has_links = get_post_meta($post->ID, '_pt24_linked', true);
+
+        if (!$has_links) {
+            return $content;
+        }
+
+        // Get links for this post
+        $links = $this->get_links($post->ID);
+
+        if (empty($links)) {
+            return $content;
+        }
+
+        // Inject links into content
+        return $this->inject_links_into_content($content, $links);
+    }
+
+    /**
+     * AJAX handler for tracking link clicks
+     *
+     * @return void
+     */
+    public function ajax_track_click(): void {
+        // Verify nonce
+        check_ajax_referer('pearblog_pt24_track', 'nonce');
+
+        $link_id = isset($_POST['link_id']) ? intval($_POST['link_id']) : 0;
+
+        if (!$link_id) {
+            wp_send_json_error(['message' => 'Invalid link ID']);
+            return;
+        }
+
+        $success = $this->track_click($link_id);
+
+        if ($success) {
+            wp_send_json_success(['message' => 'Click tracked']);
+        } else {
+            wp_send_json_error(['message' => 'Failed to track click']);
+        }
     }
 }

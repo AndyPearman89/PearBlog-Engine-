@@ -69,6 +69,10 @@ class PT24Bridge {
 
         // Asset loading hooks
         add_action('wp_enqueue_scripts', [$this, 'enqueue_frontend_assets']);
+
+        // Initialize ContentLinker hooks
+        $content_linker = new ContentLinker();
+        $content_linker->register_hooks();
     }
 
     /**
@@ -170,6 +174,48 @@ class PT24Bridge {
                     'required' => true,
                     'type' => 'string',
                     'enum' => ['click', 'view', 'lead']
+                ]
+            ]
+        ]);
+
+        // Track link click endpoint
+        register_rest_route('pearblog/v1', '/pt24/track-click', [
+            'methods' => 'POST',
+            'callback' => [$this, 'track_link_click'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'content_id' => [
+                    'required' => true,
+                    'type' => 'integer'
+                ],
+                'link_type' => [
+                    'required' => true,
+                    'type' => 'string'
+                ],
+                'link_url' => [
+                    'required' => true,
+                    'type' => 'string'
+                ]
+            ]
+        ]);
+
+        // Track pageview endpoint
+        register_rest_route('pearblog/v1', '/pt24/track-pageview', [
+            'methods' => 'POST',
+            'callback' => [$this, 'track_pageview'],
+            'permission_callback' => '__return_true',
+            'args' => [
+                'post_id' => [
+                    'required' => true,
+                    'type' => 'integer'
+                ],
+                'pageviews' => [
+                    'required' => true,
+                    'type' => 'integer'
+                ],
+                'funnel_stage' => [
+                    'required' => true,
+                    'type' => 'string'
                 ]
             ]
         ]);
@@ -277,6 +323,90 @@ class PT24Bridge {
             'success' => true,
             'event_type' => $event_type
         ], 200);
+    }
+
+    /**
+     * Track link click
+     *
+     * @param \WP_REST_Request $request Request object
+     * @return \WP_REST_Response
+     */
+    public function track_link_click(\WP_REST_Request $request): \WP_REST_Response {
+        $content_id = intval($request->get_param('content_id'));
+        $link_type = sanitize_text_field($request->get_param('link_type'));
+        $link_url = esc_url_raw($request->get_param('link_url'));
+
+        $linker = new ContentLinker();
+
+        // Extract target_id from URL or link type
+        $target_id = $this->extract_target_id_from_url($link_url, $link_type);
+
+        // Get link from database
+        $link = $linker->get_link_by_target($content_id, $link_type, $target_id);
+
+        if ($link && isset($link['id'])) {
+            $linker->track_click(intval($link['id']));
+
+            return new \WP_REST_Response([
+                'success' => true,
+                'link_id' => $link['id'],
+                'clicks' => intval($link['click_count']) + 1
+            ], 200);
+        }
+
+        return new \WP_REST_Response([
+            'success' => false,
+            'message' => 'Link not found'
+        ], 404);
+    }
+
+    /**
+     * Track pageview
+     *
+     * @param \WP_REST_Request $request Request object
+     * @return \WP_REST_Response
+     */
+    public function track_pageview(\WP_REST_Request $request): \WP_REST_Response {
+        $post_id = intval($request->get_param('post_id'));
+        $pageviews = intval($request->get_param('pageviews'));
+        $funnel_stage = sanitize_text_field($request->get_param('funnel_stage'));
+
+        // Store pageview data (could be extended to store in database)
+        do_action('pearblog_pt24_pageview_tracked', $post_id, $pageviews, $funnel_stage);
+
+        return new \WP_REST_Response([
+            'success' => true,
+            'post_id' => $post_id,
+            'pageviews' => $pageviews,
+            'funnel_stage' => $funnel_stage
+        ], 200);
+    }
+
+    /**
+     * Extract target ID from URL
+     *
+     * @param string $url URL
+     * @param string $link_type Link type
+     * @return string Target ID
+     */
+    private function extract_target_id_from_url(string $url, string $link_type): string {
+        // Parse URL to extract target ID
+        $path = parse_url($url, PHP_URL_PATH);
+        $parts = array_filter(explode('/', $path));
+
+        if ($link_type === 'category' && count($parts) >= 1) {
+            return $parts[0];
+        }
+
+        if ($link_type === 'city' && count($parts) >= 2) {
+            return $parts[0] . '_' . $parts[1];
+        }
+
+        if ($link_type === 'listing') {
+            return implode('_', $parts) . '_ranking';
+        }
+
+        return 'unknown';
     }
 
     /**
