@@ -14,6 +14,7 @@ use PearBlogEngine\Database\PT24IntegrationSchema;
 use PearBlogEngine\Integration\PT24Bridge;
 use PearBlogEngine\Integration\ContentLinker;
 use PearBlogEngine\Integration\LeadAttributor;
+use PearBlogEngine\Integration\RankingSyncer;
 
 class IntegrationCommand {
 
@@ -428,5 +429,83 @@ class IntegrationCommand {
         $progress->finish();
 
         \WP_CLI::success("Synced {$synced} posts");
+    }
+
+    /**
+     * Generate ranking articles from PT24 data
+     *
+     * ## OPTIONS
+     *
+     * --category=<category>
+     * : Service category (e.g., mechanik, hydraulik)
+     *
+     * --cities=<cities>
+     * : Comma-separated list of cities
+     *
+     * [--limit=<number>]
+     * : Number of listings per ranking (default: 10)
+     *
+     * [--publish]
+     * : Automatically publish rankings (default: draft)
+     *
+     * ## EXAMPLES
+     *
+     *     wp pearblog integration generate-rankings --category=mechanik --cities=warszawa,krakow
+     *     wp pearblog integration generate-rankings --category=hydraulik --cities=warszawa --limit=15 --publish
+     *
+     * @when after_wp_load
+     */
+    public function generate_rankings($args, $assoc_args): void {
+        if (empty($assoc_args['category'])) {
+            \WP_CLI::error('--category parameter is required');
+            return;
+        }
+
+        if (empty($assoc_args['cities'])) {
+            \WP_CLI::error('--cities parameter is required');
+            return;
+        }
+
+        $category = sanitize_text_field($assoc_args['category']);
+        $cities = array_map('trim', explode(',', $assoc_args['cities']));
+        $limit = isset($assoc_args['limit']) ? intval($assoc_args['limit']) : 10;
+        $auto_publish = isset($assoc_args['publish']);
+
+        // Set auto-publish option temporarily
+        $original_setting = get_option('pearblog_pt24_auto_publish_rankings');
+        update_option('pearblog_pt24_auto_publish_rankings', $auto_publish);
+
+        $syncer = new RankingSyncer();
+
+        $combinations = array_map(function($city) use ($category, $limit) {
+            return ['category' => $category, 'city' => $city, 'limit' => $limit];
+        }, $cities);
+
+        \WP_CLI::log("Generating {count($combinations)} ranking articles...");
+        $progress = \WP_CLI\Utils\make_progress_bar('Generating rankings', count($combinations));
+
+        $results = $syncer->bulk_generate_rankings($combinations);
+
+        $progress->finish();
+
+        // Restore original setting
+        update_option('pearblog_pt24_auto_publish_rankings', $original_setting);
+
+        \WP_CLI::success("Generated {$results['generated']} rankings, {$results['failed']} failed");
+
+        // Show generated articles
+        if (!empty($results['articles'])) {
+            $table = [];
+            foreach ($results['articles'] as $article) {
+                $table[] = [
+                    'ID' => $article['post_id'],
+                    'Title' => $article['title'],
+                    'Category' => $article['category'],
+                    'City' => $article['city']
+                ];
+            }
+
+            \WP_CLI\Utils\format_items('table', $table, ['ID', 'Title', 'Category', 'City']);
+        }
     }
 }
