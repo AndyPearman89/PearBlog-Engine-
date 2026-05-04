@@ -1,73 +1,64 @@
-# 🚀 NEXT STEPS — PearBlog Engine v7.0
+# 🚀 NEXT STEPS — PearBlog Engine v8.0
 
-> **Current state:** v6.0 complete (218 tests · 440 assertions · 25+ docs · all milestones ✅)  
-> **Goal:** Public launch v7.0 — Target: **2026-05-10**  
+> **Current state:** v8.0.0 released (Enterprise Admin Complete · PT24 V2 · Poradnik V2 · 15 tabs)
+> **Status:** Post-Launch Phase — Monitoring & Iteration
+> **Release Date:** 2026-05-04
 > **Owner:** @AndyPearman89
 
 ---
 
-## ✅ What's Done (v6.0)
+## ✅ What's Done (v8.0.0)
 
-All 26 enterprise tasks across 7 phases are complete:
+**Enterprise V8 Admin Complete** — All features integrated and released:
 
-| Phase | Status |
-|-------|--------|
-| Phase 1 — Production Hardening | ✅ Complete |
-| Phase 2 — Testing Expansion | ✅ Complete |
-| Phase 3 — Monitoring & Operations | ✅ Complete |
-| Phase 4 — Documentation & UX | ✅ Complete |
-| Phase 5 — Advanced Features | ✅ Complete |
-| Phase 6 — Polish & Optimization | ✅ Complete |
-| Phase 7 — Launch Preparation | ✅ Complete |
-
----
-
-## 📅 Immediate Next Actions (Now → 2026-05-10)
-
-### Week 1 (2026-04-13 – 2026-04-18): Beta Launch
-
-- [ ] **Publish the beta announcement** on GitHub Discussions using the template in [BETA-TESTING-PROGRAM.md](BETA-TESTING-PROGRAM.md)
-- [ ] **Share on social media** — tweet/post about beta opening with link to GitHub repo
-- [ ] **Set up staging environment** for beta testers (recommend Cloudways or WP Engine staging)
-- [ ] **Create GitHub Discussion categories:** Beta Applications, Beta Feedback, Q&A
-- [ ] **Tag `v6.0.0-beta` release** on GitHub with `Release → Create new release`
-- [ ] **Build the plugin zip** for beta testers: `cd mu-plugins/pearblog-engine && composer install --no-dev && zip -r pearblog-engine-v6.0.0-beta.zip .`
-
-### Week 2 (2026-04-19 – 2026-04-25): Beta Week 1 Support
-
-- [ ] Triage all beta feedback from GitHub Discussions
-- [ ] Fix any `beta: blocker` issues immediately
-- [ ] Weekly summary post in GitHub Discussions
-- [ ] Run the full test suite on staging to confirm CI passes
-- [ ] Monitor error_log and AlertManager on the staging site
-
-### Week 3 (2026-04-26 – 2026-05-02): Beta Week 2 + Final Polish
-
-- [ ] Apply fixes from Week 2 triage
-- [ ] Cut `v6.0.0-rc1` (Release Candidate) on GitHub
-- [ ] Update [CHANGELOG.md](CHANGELOG.md) with v6.0.0 full release notes
-- [x] Add `examples/postman/PearBlog-Engine-v6.postman_collection.json` to the repo ✅
-- [ ] Verify all links in [DOCUMENTATION-INDEX.md](DOCUMENTATION-INDEX.md) are live
-
-### Week 4 (2026-05-03 – 2026-05-09): Pre-Launch Sign-off
-
-- [ ] Final run-through of [PRE-LAUNCH-CHECKLIST.md](PRE-LAUNCH-CHECKLIST.md)
-- [ ] Confirm monitoring stack is live (AlertManager Slack/Discord webhooks configured)
-- [ ] Write the public launch blog post / press release
-- [ ] Prepare the [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) hour-by-hour runbook
-- [ ] Brief any support team members
-
-### Launch Day (2026-05-10): 🚀 v7.0.0
-
-- [x] Merge to `main` and tag `v7.0.0` ✅ (Completed 2026-05-03)
-- [ ] Publish GitHub Release with full changelog
-- [ ] Send launch announcement email
-- [ ] Post on all channels (Twitter/X, LinkedIn, Reddit r/Wordpress)
-- [ ] Submit to WordPress.org plugin directory (if applicable)
+| Feature | Status |
+|---------|--------|
+| Enterprise Admin Dashboard V8 | ✅ Complete (15 tabs) |
+| PT24 AI Lead Engine V2 | ✅ Complete (9 DB tables) |
+| Poradnik Engine V2 | ✅ Complete (Revenue-focused) |
+| Dark Mode & i18n | ✅ Complete |
+| Quick Start Documentation | ✅ Complete |
+| Version 8.0.0 Release | ✅ Published |
+| Release Package (556KB) | ✅ Created |
 
 ---
 
-## 🗺️ v7.1 Feature Roadmap (2026-06-01)
+## 📅 Immediate Post-Launch Actions (2026-05-04 → 2026-05-11)
+
+### Phase 1: Release Completion ✅ DONE
+- [x] Update plugin version to 8.0.0
+- [x] Create v8.0.0 release package (556KB ZIP)
+- [x] Update CHANGELOG.md with v8.0.0 notes
+- [x] Create GITHUB-RELEASE-v8.0.0.md
+
+### Phase 2: Quality Assurance (Week 1)
+- [ ] Run full PHPUnit test suite (target: 743+ tests passing)
+- [ ] Verify Enterprise V8 admin dashboard functionality
+- [ ] Test PT24 Lead Engine V2 integration
+- [ ] Test Poradnik Engine V2 content generation
+- [ ] Document any issues in GitHub Issues
+
+### Phase 3: Documentation Review (Week 1)
+- [ ] Review all documentation for v8.0 accuracy
+- [ ] Update any references to v6.0 or v7.0
+- [ ] Ensure ENTERPRISE-V8-QUICKSTART.md is accurate
+- [ ] Verify all internal links work
+
+### Phase 4: GitHub Release Publication (Week 1)
+- [ ] Create GitHub Release v8.0.0 using GITHUB-RELEASE-v8.0.0.md
+- [ ] Upload pearblog-engine-v8.0.0.zip to release
+- [ ] Publish release notes
+- [ ] Tag release as "Latest"
+
+### Phase 5: Community Engagement (Optional)
+- [ ] **Decision needed:** Public launch announcement?
+- [ ] **If yes:** Prepare social media posts
+- [ ] **If yes:** Submit to relevant communities
+- [ ] **If no:** Document internal-only release decision
+
+---
+
+## 🗺️ v8.1 Feature Roadmap (2026-06-01)
 
 These are the next-generation features planned for the first post-launch release:
 

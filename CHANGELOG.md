@@ -2,6 +2,41 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [8.0.0] — 2026-05-04
+
+### Added — v8.0 Enterprise Admin Complete
+
+#### Enterprise Admin Dashboard V8
+- **`AdminPageV8Enterprise`** (`src/Admin/AdminPageV8Enterprise.php`) — Complete 15-tab enterprise admin interface with integrated legacy tabs
+- **15 Specialized Tabs** — Strategy, Content Engine, SEO, Monetization, Leads, Automation, Analytics, Multisite, Performance Dashboard, Settings, plus 5 custom Enterprise V8 tabs
+- **Dark Mode Support** — Full theme toggle with persistent user preferences
+- **Internationalization** — Complete i18n support with text domain integration
+- **Real-time Analytics** — Live dashboard metrics and performance monitoring
+
+#### PT24 AI Lead Engine V2
+- **DDD Architecture** — Domain-driven design with clear separation of concerns
+- **Intelligent Lead Management** — Advanced lead scoring and qualification
+- **9 Database Tables** — Dedicated schema for lead storage, events, notifications, and analytics
+
+#### Poradnik Engine V2
+- **Revenue-focused Content** — Optimized content generation for monetization
+- **Enhanced SEO** — Advanced meta optimization and keyword targeting
+
+#### Quick Start Documentation
+- **ENTERPRISE-V8-QUICKSTART.md** — Complete 30-minute setup guide with step-by-step instructions
+- **Comprehensive Feature Documentation** — All 31 PHP files, 13 REST APIs, and 15 admin tabs documented
+
+### Changed
+- **Version Bump** — Updated plugin version from 6.0.0 to 8.0.0
+- **Admin Access** — Enterprise dashboard accessible at `/wp-admin/admin.php?page=pearblog-enterprise-v8`
+- **Package Size** — Release ZIP optimized to 556KB
+
+### Release Artifacts
+- **Release Package** — `releases/pearblog-engine-v8.0.0.zip` (556KB)
+- **GitHub Tag** — v8.0.0 with full release notes
+
+---
+
 ## [7.8.0] — 2026-04-13
 
 ### Added — v7.8 Smart Content Planning
