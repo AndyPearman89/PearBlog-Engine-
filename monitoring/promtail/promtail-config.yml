@@ -1,0 +1,82 @@
+# Promtail Configuration for PT24.PRO
+# Log shipper - sends logs to Loki
+
+server:
+  http_listen_port: 9080
+  grpc_listen_port: 0
+
+positions:
+  filename: /tmp/positions.yaml
+
+clients:
+  - url: http://loki:3100/loki/api/v1/push
+
+scrape_configs:
+  # System logs
+  - job_name: system
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: varlogs
+          host: pt24-production
+          __path__: /var/log/*log
+
+  # Apache/Nginx access logs
+  - job_name: apache
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: apache
+          host: pt24-production
+          __path__: /var/log/apache2/*.log
+
+  # Apache/Nginx error logs
+  - job_name: apache_error
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: apache_error
+          host: pt24-production
+          log_level: error
+          __path__: /var/log/apache2/error.log
+
+  # PHP-FPM logs
+  - job_name: php
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: php
+          host: pt24-production
+          __path__: /var/log/php*.log
+
+  # MySQL logs
+  - job_name: mysql
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: mysql
+          host: pt24-production
+          __path__: /var/log/mysql/*.log
+
+  # WordPress debug.log
+  - job_name: wordpress
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: wordpress
+          host: pt24-production
+          __path__: /var/log/wordpress/debug.log
+    pipeline_stages:
+      - match:
+          selector: '{job="wordpress"}'
+          stages:
+            - regex:
+                expression: '^\[(?P<timestamp>.*?)\] (?P<level>\w+): (?P<message>.*)'
+            - labels:
+                level:

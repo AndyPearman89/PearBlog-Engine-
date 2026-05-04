@@ -1,0 +1,121 @@
+# Alertmanager Configuration for PT24.PRO
+# Route alerts to appropriate notification channels
+
+global:
+  resolve_timeout: 5m
+  smtp_from: 'alerts@pt24.pro'
+  smtp_smarthost: 'smtp.gmail.com:587'
+  smtp_auth_username: 'alerts@pt24.pro'
+  smtp_auth_password: '${SMTP_PASSWORD}'
+  smtp_require_tls: true
+
+# Alert routing tree
+route:
+  # Default receiver for all alerts
+  receiver: 'pt24-team'
+
+  # Group alerts by alertname and instance
+  group_by: ['alertname', 'instance']
+
+  # Wait before sending initial notification
+  group_wait: 10s
+
+  # Wait before sending updates for same group
+  group_interval: 10s
+
+  # Wait before re-sending alert if not resolved
+  repeat_interval: 3h
+
+  # Child routes for specific alert types
+  routes:
+    # Critical alerts - immediate notification via multiple channels
+    - match:
+        severity: critical
+      receiver: 'pt24-critical'
+      group_wait: 10s
+      repeat_interval: 5m
+      continue: true
+
+    # Warning alerts - standard notification
+    - match:
+        severity: warning
+      receiver: 'pt24-team'
+      group_wait: 30s
+      repeat_interval: 1h
+
+# Inhibition rules - suppress certain alerts when others fire
+inhibit_rules:
+  # If site is down, don't alert on high response time
+  - source_match:
+      alertname: 'PT24SiteDown'
+    target_match:
+      alertname: 'PT24HighResponseTime'
+    equal: ['instance']
+
+  # If critical CPU, don't alert on warning CPU
+  - source_match:
+      severity: 'critical'
+    target_match:
+      severity: 'warning'
+    equal: ['alertname', 'instance']
+
+# Notification receivers
+receivers:
+  # Default team notifications (email)
+  - name: 'pt24-team'
+    email_configs:
+      - to: 'team@pt24.pro'
+        headers:
+          Subject: '[PT24 Alert] {{ .GroupLabels.alertname }}'
+        html: |
+          <h2>PT24.PRO Alert</h2>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+          <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><strong>Time:</strong> {{ .StartsAt.Format "2006-01-02 15:04:05" }}</p>
+
+  # Critical alerts (email + SMS + Slack)
+  - name: 'pt24-critical'
+    email_configs:
+      - to: 'oncall@pt24.pro'
+        headers:
+          Subject: '[PT24 CRITICAL] {{ .GroupLabels.alertname }}'
+        html: |
+          <h1 style="color: red;">🚨 CRITICAL ALERT</h1>
+          <p><strong>Alert:</strong> {{ .GroupLabels.alertname }}</p>
+          <p><strong>Summary:</strong> {{ .CommonAnnotations.summary }}</p>
+          <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+          <p><strong>Instance:</strong> {{ .CommonLabels.instance }}</p>
+          <p><strong>Time:</strong> {{ .StartsAt.Format "2006-01-02 15:04:05" }}</p>
+          <hr>
+          <p><strong>ACTION REQUIRED:</strong> Investigate immediately.</p>
+
+    # Slack webhook (configure with your Slack webhook URL)
+    slack_configs:
+      - api_url: '${SLACK_WEBHOOK_URL}'
+        channel: '#pt24-alerts'
+        title: '🚨 CRITICAL: {{ .CommonAnnotations.summary }}'
+        text: |
+          *Alert:* {{ .GroupLabels.alertname }}
+          *Severity:* {{ .CommonLabels.severity }}
+          *Description:* {{ .CommonAnnotations.description }}
+          *Instance:* {{ .CommonLabels.instance }}
+          *Time:* {{ .StartsAt.Format "15:04:05" }}
+        short_fields: true
+        color: 'danger'
+
+    # PagerDuty integration (optional)
+    # pagerduty_configs:
+    #   - service_key: '${PAGERDUTY_SERVICE_KEY}'
+    #     description: '{{ .CommonAnnotations.summary }}'
+
+    # Webhook for custom integrations (SMS gateway, etc.)
+    webhook_configs:
+      - url: 'https://pt24.pro/api/alerts'
+        send_resolved: true
+        http_config:
+          bearer_token: '${WEBHOOK_BEARER_TOKEN}'
+
+  # Null receiver (for silenced alerts)
+  - name: 'null'
