@@ -86,9 +86,39 @@ get_post_meta( $post_id, 'pearblog_funnel_stage', true );
 
 ## ⚙️ Configuration
 
+### WP-CLI Configuration (Quick Start)
+
+Configure AdSense via WP-CLI for automated deployments or quick setup:
+
+```bash
+# Set your AdSense publisher ID
+wp option update pearblog_adsense_publisher_id 'ca-pub-YOUR_ID_HERE' --allow-root
+
+# Enable AdSense
+wp option update pearblog_adsense_enabled 1 --allow-root
+
+# Set monetization strategy to funnel-aware
+wp option update pearblog_adsense_strategy 'funnel_aware' --allow-root
+```
+
+**Available Strategies:**
+- `aggressive` — Maximum revenue (all placements enabled)
+- `balanced` — Revenue + user experience (default)
+- `conservative` — User experience first (minimal ads)
+- `funnel_aware` — Adaptive based on content intent (recommended)
+
+**Configure funnel-aware behavior** (optional):
+
+```bash
+# Enable/disable AdSense per funnel stage
+wp option update pearblog_adsense_enable_tofu 1 --allow-root    # TOFU: full ads
+wp option update pearblog_adsense_enable_mofu 1 --allow-root    # MOFU: limited ads
+wp option update pearblog_adsense_enable_bofu 0 --allow-root    # BOFU: ads disabled
+```
+
 ### WordPress Admin UI
 
-**Settings → PearBlog Engine → Monetization Tab**
+**Settings → PearBlog Engine → Monetization Tab → Google AdSense**
 
 Configure AdSense enablement per funnel stage:
 
@@ -295,6 +325,6 @@ For questions or issues:
 
 ---
 
-**Last Updated**: 2026-05-03
-**Version**: 2.0.0
+**Last Updated**: 2026-05-04
+**Version**: 2.0.1
 **Author**: PearBlog Engine Team
