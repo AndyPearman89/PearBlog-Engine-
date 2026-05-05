@@ -1,46 +1,24 @@
-# GitHub Release v6.0.0 - Creation Instructions
+# GitHub Release v8.0.0 - Creation Instructions
 
-**Date:** 2026-05-04
-**Status:** Ready to create
-**Target:** T-3 Days (2026-05-07) for v7.0.0 launch (2026-05-10)
+**Date:** 2026-05-05 (Updated)
+**Status:** Ready to publish
+**Target:** Public Launch (2026-05-10)
 
 ---
 
 ## Pre-Flight Checklist
 
-- [x] Plugin ZIP packaged: `releases/pearblog-engine-v6.0.0.zip` (589 KB)
-- [x] Release notes prepared: `GITHUB-RELEASE-v7.0.0.md`
-- [x] Launch announcement ready: `LAUNCH-ANNOUNCEMENT.md`
-- [ ] Git tag created
-- [ ] GitHub Release published
-- [ ] ZIP uploaded to release assets
+- [x] Plugin ZIP packaged: `releases/pearblog-engine-v8.0.0.zip` (556 KB)
+- [x] Release notes prepared: `GITHUB-RELEASE-v8.0.0.md`
+- [x] Technical release completed: v8.0.0 (2026-05-04)
+- [ ] Upload ZIP to GitHub Releases
+- [ ] Publish GitHub Release publicly (2026-05-10)
 
 ---
 
-## Step 1: Create Git Tag
+## Step 1: Upload to GitHub Releases
 
-From your local machine or GitHub Actions environment:
-
-```bash
-# Option A: Annotated tag (recommended)
-git tag -a v6.0.0 -m "PearBlog Engine v6.0.0 - Production Release
-
-- v7 Dark UI Kit complete design system
-- Multi-model AI support (OpenAI, Anthropic, Google)
-- Enterprise autopilot with 26 automated tasks
-- 743/743 tests passing (100%)
-- Production-ready with zero security vulnerabilities"
-
-# Option B: Lightweight tag
-git tag v6.0.0
-
-# Push tag to origin
-git push origin v6.0.0
-```
-
----
-
-## Step 2: Create GitHub Release
+The v8.0.0 tag was already created on 2026-05-04. Now we need to publish the public release.
 
 ### Via GitHub Web Interface
 
@@ -49,17 +27,16 @@ git push origin v6.0.0
    - Click: **"Draft a new release"**
 
 2. **Configure Release:**
-   - **Choose a tag:** Select `v6.0.0` (or create it if it doesn't exist)
+   - **Choose a tag:** Select `v8.0.0` (already exists)
    - **Target:** `main` branch
-   - **Release title:** `🚀 PearBlog Engine v6.0.0 - Production Release`
+   - **Release title:** `🚀 PearBlog Engine v8.0.0 - Enterprise Edition`
 
 3. **Release Description:**
-   - Copy content from `GITHUB-RELEASE-v7.0.0.md`
-   - OR use the abbreviated version below
+   - Copy content from `GITHUB-RELEASE-v8.0.0.md`
 
 4. **Upload Assets:**
    - Click **"Attach binaries by dropping them here or selecting them"**
-   - Upload: `releases/pearblog-engine-v6.0.0.zip`
+   - Upload: `releases/pearblog-engine-v8.0.0.zip` (556KB)
 
 5. **Publish Options:**
    - [ ] Set as pre-release (leave unchecked for production)
@@ -72,16 +49,10 @@ git push origin v6.0.0
 
 ```bash
 # Create release with notes from file
-gh release create v6.0.0 \
-  --title "🚀 PearBlog Engine v6.0.0 - Production Release" \
-  --notes-file GITHUB-RELEASE-v7.0.0.md \
-  releases/pearblog-engine-v6.0.0.zip
-
-# Or with inline notes (abbreviated)
-gh release create v6.0.0 \
-  --title "🚀 PearBlog Engine v6.0.0 - Production Release" \
-  --notes "See full release notes: https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/GITHUB-RELEASE-v7.0.0.md" \
-  releases/pearblog-engine-v6.0.0.zip
+gh release create v8.0.0 \
+  --title "🚀 PearBlog Engine v8.0.0 - Enterprise Edition" \
+  --notes-file GITHUB-RELEASE-v8.0.0.md \
+  releases/pearblog-engine-v8.0.0.zip
 ```
 
 ---
@@ -91,57 +62,44 @@ gh release create v6.0.0 \
 If you need a shorter version for the GitHub Release page:
 
 ```markdown
-# 🚀 PearBlog Engine v6.0.0 - Production Release
+# 🚀 PearBlog Engine v8.0.0 - Enterprise Edition
 
-**Release Date:** May 3, 2026
+**Release Date:** May 4, 2026
 **Status:** Production Ready ✅
-**Target Launch:** May 10, 2026
+**Public Launch:** May 10, 2026
 
-## ✨ Highlights
+## ✨ What's New in v8.0.0
 
-### 🎨 v7 Dark UI Kit
-Complete design system with dark-first theme, vibrant accents (#4ADE80 green, #60A5FA blue), and 18px typography optimized for readability.
+### 🎯 Enterprise Admin V8
+Complete 15-tab admin interface with Dashboard, Real-time Monitoring, Security, Reporting, and Integrations.
 
-**Enable:** `wp option update pearblog_homepage_version v7`
+### 🤖 PT24 LeadAI V2
+Advanced lead management system with 9 database tables, REST API, and real-time analytics.
 
-### 🤖 Multi-Model AI
-- **OpenAI**: GPT-4o, GPT-4o-mini
-- **Anthropic**: Claude 3.5 Sonnet
-- **Google**: Gemini 1.5 Pro
+### 📝 Poradnik Engine V2
+Revenue-focused content engine with clean structure and natural PT24 linking.
 
 ### ✅ Production Verified
-- **743/743 tests passing** (100%)
-- **Zero security vulnerabilities**
-- **<30s pipeline, <200ms API**
-- **Load tested: 1000 concurrent users**
-
-### 🎯 Enterprise Features
-- Topic Research Engine (GA4 + SERP + keyword clusters)
-- Smart Scheduler (optimal publish times)
-- A/B Testing Framework
-- Advanced Analytics Dashboard
-- 38+ WP-CLI commands
+- **1120 tests run** with 1075 passing (96% pass rate)
+- **Zero critical security vulnerabilities**
+- **Production-ready deployment**
 
 ## 📦 Installation
 
 ```bash
 # Download
-wget https://github.com/AndyPearman89/PearBlog-Engine-/releases/download/v6.0.0/pearblog-engine-v6.0.0.zip
+wget https://github.com/AndyPearman89/PearBlog-Engine-/releases/download/v8.0.0/pearblog-engine-v8.0.0.zip
 
 # Install
-unzip pearblog-engine-v6.0.0.zip
+unzip pearblog-engine-v8.0.0.zip
 cp -r mu-plugins/pearblog-engine /path/to/wp-content/mu-plugins/
-
-# Configure
-wp option update pearblog_homepage_version v7
 ```
 
 ## 📚 Documentation
 
-- **[Complete Release Notes](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/GITHUB-RELEASE-v7.0.0.md)**
-- **[Installation Guide](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/DEPLOYMENT.md)**
-- **[API Documentation](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/API-DOCUMENTATION.md)**
-- **[Documentation Index](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/DOCUMENTATION-INDEX.md)**
+- **[Complete Release Notes](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/GITHUB-RELEASE-v8.0.0.md)**
+- **[Test Results](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/TEST-RESULTS-v8.0.0.md)**
+- **[Post-Launch Summary](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/POST-LAUNCH-ACTIONS-SUMMARY.md)**
 
 ## 🎯 Requirements
 
@@ -153,22 +111,22 @@ wp option update pearblog_homepage_version v7
 
 **Full Changelog**: https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/CHANGELOG.md
 
-🚀 **Happy Blogging with PearBlog Engine v6.0!**
+🚀 **Happy Blogging with PearBlog Engine v8.0!**
 ```
 
 ---
 
-## Step 3: Verify Release
+## Step 2: Verify Release
 
 After publishing:
 
 1. **Check release page:**
-   - https://github.com/AndyPearman89/PearBlog-Engine-/releases/tag/v6.0.0
+   - https://github.com/AndyPearman89/PearBlog-Engine-/releases/tag/v8.0.0
 
 2. **Verify ZIP download:**
    ```bash
-   wget https://github.com/AndyPearman89/PearBlog-Engine-/releases/download/v6.0.0/pearblog-engine-v6.0.0.zip
-   unzip -t pearblog-engine-v6.0.0.zip
+   wget https://github.com/AndyPearman89/PearBlog-Engine-/releases/download/v8.0.0/pearblog-engine-v8.0.0.zip
+   unzip -t pearblog-engine-v8.0.0.zip
    ```
 
 3. **Test installation:**
@@ -194,10 +152,8 @@ After successful release:
 
 ### Tag already exists
 ```bash
-# Delete and recreate
-git tag -d v6.0.0
-git push origin :refs/tags/v6.0.0
-# Then recreate tag
+# v8.0.0 tag already exists (created 2026-05-04)
+# No action needed
 ```
 
 ### Release already published
@@ -207,21 +163,22 @@ git push origin :refs/tags/v6.0.0
 
 ### ZIP upload failed
 - Try uploading via web interface instead of CLI
-- Ensure file size < 2GB (current: 589 KB ✓)
+- Ensure file size < 2GB (current: 556 KB ✓)
 - Check GitHub status: https://www.githubstatus.com/
 
 ---
 
 ## Related Files
 
-- `releases/pearblog-engine-v6.0.0.zip` - Plugin package
-- `GITHUB-RELEASE-v7.0.0.md` - Full release notes
-- `LAUNCH-ANNOUNCEMENT.md` - Launch day announcement
+- `releases/pearblog-engine-v8.0.0.zip` - Plugin package (556KB)
+- `GITHUB-RELEASE-v8.0.0.md` - Full release notes
+- `TEST-RESULTS-v8.0.0.md` - Test results summary
+- `POST-LAUNCH-ACTIONS-SUMMARY.md` - Post-launch checklist
 - `LAUNCH-DAY-PLAN.md` - Hour-by-hour runbook
 - `PRE-LAUNCH-CHECKLIST.md` - Final verification checklist
 
 ---
 
-**Created:** 2026-05-04
-**For:** v6.0.0 / v7.0.0 Launch
-**Status:** Instructions ready, awaiting execution
+**Updated:** 2026-05-05
+**For:** v8.0.0 Public Launch (2026-05-10)
+**Status:** Ready to publish

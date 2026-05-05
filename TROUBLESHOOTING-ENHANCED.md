@@ -511,7 +511,7 @@ wp option get pearblog_affiliate_disclosure
 
 1. **Verify multisite is enabled**:
 ```bash
-wp eval "echo defined('MULTISITE') && MULTISITE ? 'yes' : 'no';"
+wp eval 'if (defined("MULTISITE") && MULTISITE) { echo "yes"; } else { echo "no"; }'
 # Should return: yes
 ```
 

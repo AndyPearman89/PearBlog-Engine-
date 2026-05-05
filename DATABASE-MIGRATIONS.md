@@ -1,7 +1,8 @@
 # PearBlog Engine — Database Migrations Strategy
 
-> **Version:** 6.0.0  
-> **Audience:** DevOps engineers, WordPress developers, system administrators  
+> **Version:** 8.0.0
+> **Last Updated:** 2026-05-05
+> **Audience:** DevOps engineers, WordPress developers, system administrators
 > **Related:** [DEPLOYMENT.md](DEPLOYMENT.md) · [DISASTER-RECOVERY.md](DISASTER-RECOVERY.md)
 
 ---

@@ -1,9 +1,9 @@
-# Launch Day Plan — PearBlog Engine v7.0
+# Launch Day Plan — PearBlog Engine v8.0.0
 
 > **Launch Date:** 2026-05-10 ✅ CONFIRMED
 > **Launch Time:** 10:00 UTC
 > **Owner:** @AndyPearman89
-> **Status:** T-7 Days Complete, On Track for Launch
+> **Status:** v8.0.0 Released (2026-05-04), T-5 Days to Public Launch
 
 ---
 
@@ -24,8 +24,8 @@
 
 ## T-3 Days (2026-05-07)
 
-- [x] Create git tag `v7.0.0` and GitHub Release draft ✅ (Completed early on 2026-05-03)
-- [ ] Package plugin ZIP (`pearblog-engine-v7.0.0.zip`)
+- [x] Create git tag `v8.0.0` and GitHub Release draft ✅ (v8.0.0 released 2026-05-04)
+- [x] Package plugin ZIP (`pearblog-engine-v8.0.0.zip`) ✅ (556KB, created 2026-05-04)
 - [ ] Upload ZIP to GitHub Releases
 - [ ] Record demo video / screen recording for ProductHunt (Moved from T-7)
 - [ ] Final penetration test (manual security review)
@@ -51,7 +51,7 @@
 ## Launch Day (2026-05-10)
 
 ### 08:00–09:00 UTC — Pre-Launch
-- [ ] Deploy v7.0.0 to production
+- [ ] Deploy v8.0.0 to production
 - [ ] Run health check: `curl https://your-site.com/wp-json/pearblog/v1/health`
 - [ ] Verify monitoring dashboard is green
 - [ ] Smoke test: generate 1 article in production
@@ -59,7 +59,7 @@
 
 ### 10:00 UTC — 🚀 LAUNCH
 
-- [ ] Publish GitHub Release (v7.0.0) — Use GITHUB-RELEASE-v7.0.0.md as template
+- [ ] Publish GitHub Release (v8.0.0) — Use GITHUB-RELEASE-v8.0.0.md as template
 - [ ] Announce on Twitter/X — Use LAUNCH-ANNOUNCEMENT.md for copy
 - [ ] Announce on LinkedIn — Use LAUNCH-ANNOUNCEMENT.md for copy
 - [ ] Announce on WordPress.org forum (if submitted)
@@ -81,8 +81,8 @@
 
 ### 14:00–18:00 UTC — Stabilisation
 
-- [ ] Triage all reported issues (tag: `bug`, `v6.0`)
-- [ ] Fix P0/critical issues and release `v6.0.1` patch if needed
+- [ ] Triage all reported issues (tag: `bug`, `v8.0`)
+- [ ] Fix P0/critical issues and release `v8.0.1` patch if needed
 - [ ] Update Known Issues section of README.md
 - [ ] Share launch metrics (posts generated, installs, uptime) on social
 
@@ -102,8 +102,8 @@ If a critical issue is discovered after launch:
 
 3. **Deploy previous version:**
    ```bash
-   git checkout v5.2.0
-   wp plugin install pearblog-engine-v5.2.0.zip --force --activate
+   git checkout v7.9.0
+   wp plugin install pearblog-engine-v7.9.0.zip --force --activate
    ```
 
 4. **Notify users** — post status update to GitHub Discussions and social
@@ -141,8 +141,8 @@ If a critical issue is discovered after launch:
 
 - [ ] Publish "How we built PearBlog Engine" blog post
 - [ ] Respond to all remaining GitHub Issues
-- [ ] Release v6.0.1 patch with any Day 1 fixes
+- [ ] Release v8.0.1 patch with any Day 1 fixes
 - [ ] Collect testimonials from early adopters
-- [ ] Update CHANGELOG.md with v6.0.1 if applicable
+- [ ] Update CHANGELOG.md with v8.0.1 if applicable
 - [ ] Share preliminary metrics in launch retrospective
-- [ ] Plan v6.5 roadmap based on user feedback
+- [ ] Plan v8.1 roadmap based on user feedback
