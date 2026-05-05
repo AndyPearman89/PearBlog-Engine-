@@ -1,0 +1,535 @@
+/**
+ * PT24.PRO Homepage V4 Styles
+ *
+ * High-conversion V4 design with purple gradient hero
+ * Modern, clean aesthetics optimized for conversions
+ *
+ * @package PearBlog
+ * @version 4.0.0
+ */
+
+/* ================================================== */
+/* ROOT VARIABLES */
+/* ================================================== */
+
+:root {
+    --pt24-v4-primary: #2563eb;
+    --pt24-v4-primary-dark: #1e40af;
+    --pt24-v4-secondary: #64748b;
+    --pt24-v4-accent: #f59e0b;
+    --pt24-v4-success: #10b981;
+    --pt24-v4-text: #1e293b;
+    --pt24-v4-text-secondary: #64748b;
+    --pt24-v4-text-light: #94a3b8;
+    --pt24-v4-bg: #ffffff;
+    --pt24-v4-bg-secondary: #f8fafc;
+    --pt24-v4-border: #e2e8f0;
+    --pt24-v4-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+    --pt24-v4-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+    --pt24-v4-radius: 0.5rem;
+    --pt24-v4-radius-lg: 1rem;
+    --pt24-v4-spacing: 2rem;
+    --pt24-v4-spacing-lg: 4rem;
+}
+
+/* ================================================== */
+/* MAIN CONTAINER */
+/* ================================================== */
+
+.pt24-home-v4 {
+    background: var(--pt24-v4-bg);
+    color: var(--pt24-v4-text);
+    line-height: 1.6;
+}
+
+.pt24-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+}
+
+/* ================================================== */
+/* SECTION TITLES */
+/* ================================================== */
+
+.pt24-v4-section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 0.75rem;
+    color: var(--pt24-v4-text);
+}
+
+.pt24-v4-section-subtitle {
+    font-size: 1.125rem;
+    text-align: center;
+    color: var(--pt24-v4-text-secondary);
+    margin-bottom: var(--pt24-v4-spacing);
+}
+
+.pt24-v4-section-cta {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--pt24-v4-spacing);
+}
+
+@media (min-width: 768px) {
+    .pt24-v4-section-title {
+        font-size: 2.5rem;
+    }
+
+    .pt24-v4-section-subtitle {
+        font-size: 1.25rem;
+    }
+}
+
+/* ================================================== */
+/* BUTTONS */
+/* ================================================== */
+
+.pt24-v4-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--pt24-v4-radius);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    border: 2px solid transparent;
+}
+
+.pt24-v4-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    border: none;
+}
+
+.pt24-v4-btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--pt24-v4-shadow-lg);
+    opacity: 0.95;
+}
+
+.pt24-v4-btn-outline {
+    background: transparent;
+    border-color: var(--pt24-v4-border);
+    color: var(--pt24-v4-text);
+}
+
+.pt24-v4-btn-outline:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+}
+
+.pt24-v4-btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+}
+
+/* ================================================== */
+/* [1] HERO SECTION */
+/* ================================================== */
+
+.pt24-v4-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #ffffff;
+    padding: 4rem 0;
+    text-align: center;
+}
+
+.pt24-v4-hero__content {
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.pt24-v4-hero__title {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.pt24-v4-hero__subtitle {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+    line-height: 1.5;
+}
+
+.pt24-v4-hero__search {
+    max-width: 600px;
+    margin: 2rem auto;
+}
+
+.pt24-v4-hero__search form {
+    display: flex;
+    gap: 0.5rem;
+    background: white;
+    padding: 0.5rem;
+    border-radius: var(--pt24-v4-radius-lg);
+    box-shadow: var(--pt24-v4-shadow-lg);
+}
+
+.pt24-v4-search-input {
+    flex: 1;
+    padding: 0.75rem 1rem;
+    border: none;
+    border-radius: var(--pt24-v4-radius);
+    font-size: 1rem;
+    color: var(--pt24-v4-text);
+}
+
+.pt24-v4-search-input:focus {
+    outline: none;
+}
+
+.pt24-v4-search-btn {
+    padding: 0.75rem 1.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: var(--pt24-v4-radius);
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.pt24-v4-search-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.pt24-v4-hero__trust {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.pt24-v4-trust-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.95rem;
+    opacity: 0.95;
+}
+
+.pt24-v4-trust-icon {
+    flex-shrink: 0;
+}
+
+@media (min-width: 768px) {
+    .pt24-v4-hero {
+        padding: 5rem 0;
+    }
+
+    .pt24-v4-hero__title {
+        font-size: 3rem;
+    }
+
+    .pt24-v4-hero__subtitle {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .pt24-v4-hero__search form {
+        flex-direction: column;
+    }
+
+    .pt24-v4-search-btn {
+        width: 100%;
+    }
+}
+
+/* ================================================== */
+/* [2] SERVICES GRID */
+/* ================================================== */
+
+.pt24-v4-services {
+    padding: var(--pt24-v4-spacing-lg) 0;
+    background: var(--pt24-v4-bg);
+}
+
+.pt24-v4-services-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: var(--pt24-v4-spacing);
+}
+
+.pt24-v4-service-card {
+    display: flex;
+    flex-direction: column;
+    padding: 2rem;
+    background: var(--pt24-v4-bg);
+    border: 2px solid var(--pt24-v4-border);
+    border-radius: var(--pt24-v4-radius-lg);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.pt24-v4-service-card:hover {
+    border-color: #667eea;
+    transform: translateY(-4px);
+    box-shadow: var(--pt24-v4-shadow-lg);
+}
+
+.pt24-v4-service-card__icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+}
+
+.pt24-v4-service-card__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--pt24-v4-text);
+}
+
+.pt24-v4-service-card__description {
+    color: var(--pt24-v4-text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 1rem;
+    flex: 1;
+}
+
+.pt24-v4-service-card__arrow {
+    color: #667eea;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* ================================================== */
+/* [3] HOW IT WORKS */
+/* ================================================== */
+
+.pt24-v4-how-it-works {
+    padding: var(--pt24-v4-spacing-lg) 0;
+    background: var(--pt24-v4-bg-secondary);
+}
+
+.pt24-v4-steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-top: var(--pt24-v4-spacing);
+}
+
+.pt24-v4-step {
+    text-align: center;
+}
+
+.pt24-v4-step__number {
+    width: 60px;
+    height: 60px;
+    margin: 0 auto 1rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.pt24-v4-step__title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: var(--pt24-v4-text);
+}
+
+.pt24-v4-step__description {
+    color: var(--pt24-v4-text-secondary);
+}
+
+.pt24-v4-how-it-works__note {
+    text-align: center;
+    margin-top: 2rem;
+    color: var(--pt24-v4-text-secondary);
+    font-size: 1.125rem;
+}
+
+/* ================================================== */
+/* [4] POPULAR CITIES */
+/* ================================================== */
+
+.pt24-v4-cities {
+    padding: var(--pt24-v4-spacing-lg) 0;
+    background: var(--pt24-v4-bg);
+}
+
+.pt24-v4-cities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 0.75rem;
+    margin-top: var(--pt24-v4-spacing);
+}
+
+.pt24-v4-city-link {
+    display: block;
+    padding: 1rem;
+    background: var(--pt24-v4-bg);
+    border: 1px solid var(--pt24-v4-border);
+    border-radius: var(--pt24-v4-radius);
+    text-align: center;
+    text-decoration: none;
+    color: var(--pt24-v4-text);
+    transition: all 0.2s ease;
+    font-weight: 500;
+}
+
+.pt24-v4-city-link:hover {
+    border-color: #667eea;
+    color: #667eea;
+    background: rgba(102, 126, 234, 0.05);
+    transform: translateY(-2px);
+}
+
+/* ================================================== */
+/* [5] BUSINESS SECTION */
+/* ================================================== */
+
+.pt24-v4-business {
+    padding: var(--pt24-v4-spacing-lg) 0;
+    background: var(--pt24-v4-bg-secondary);
+}
+
+.pt24-v4-business-card {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 3rem;
+    background: var(--pt24-v4-bg);
+    border: 2px solid var(--pt24-v4-border);
+    border-radius: var(--pt24-v4-radius-lg);
+    text-align: center;
+}
+
+.pt24-v4-business__title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+    color: var(--pt24-v4-text);
+}
+
+.pt24-v4-business-benefits {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.pt24-v4-benefit {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.pt24-v4-check-icon {
+    flex-shrink: 0;
+    color: var(--pt24-v4-success);
+    stroke: currentColor;
+}
+
+.pt24-v4-business-cta {
+    margin-top: 2rem;
+}
+
+.pt24-v4-business-note {
+    margin-top: 1rem;
+    color: var(--pt24-v4-text-secondary);
+    font-size: 0.95rem;
+}
+
+@media (max-width: 768px) {
+    .pt24-v4-business-card {
+        padding: 2rem 1.5rem;
+    }
+
+    .pt24-v4-business__title {
+        font-size: 1.5rem;
+    }
+}
+
+/* ================================================== */
+/* [6] FINAL CTA */
+/* ================================================== */
+
+.pt24-v4-final-cta {
+    padding: var(--pt24-v4-spacing-lg) 0;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.pt24-v4-final-cta__content {
+    text-align: center;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.pt24-v4-final-cta__title {
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 2rem;
+}
+
+.pt24-v4-final-cta__buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.pt24-v4-final-cta .pt24-v4-btn-outline {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.3);
+    color: white;
+}
+
+.pt24-v4-final-cta .pt24-v4-btn-outline:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: white;
+}
+
+.pt24-v4-final-cta .pt24-v4-btn-primary {
+    background: white;
+    color: #667eea;
+}
+
+.pt24-v4-final-cta .pt24-v4-btn-primary:hover {
+    background: rgba(255, 255, 255, 0.95);
+}
+
+@media (min-width: 768px) {
+    .pt24-v4-final-cta__title {
+        font-size: 2.5rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .pt24-v4-final-cta__buttons {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .pt24-v4-final-cta__buttons .pt24-v4-btn {
+        width: 100%;
+    }
+}
+
+/* ================================================== */
+/* SMOOTH SCROLLING */
+/* ================================================== */
+
+html {
+    scroll-behavior: smooth;
+}

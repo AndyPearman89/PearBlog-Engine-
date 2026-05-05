@@ -56,6 +56,11 @@ class DashboardWidget {
 	 * Render the widget HTML.
 	 */
 	public function render(): void {
+		// Security: Verify user has dashboard access
+		if ( ! current_user_can( 'edit_posts' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this widget.', 'pearblog-engine' ) );
+		}
+
 		$queue        = new TopicQueue( get_current_blog_id() );
 		$img_analyzer = new ImageAnalyzer();
 		$img_summary  = $img_analyzer->get_summary();

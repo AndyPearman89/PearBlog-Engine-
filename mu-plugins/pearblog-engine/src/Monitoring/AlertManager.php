@@ -558,7 +558,8 @@ class AlertManager {
 	 */
 	private function is_duplicate( string $title, string $level ): bool {
 		$window = (int) get_option( 'pearblog_alert_dedup_seconds', self::DEFAULT_DEDUP_SECONDS );
-		$key    = self::DEDUP_TRANSIENT_PREFIX . substr( md5( $title . $level ), 0, 16 );
+		// Security: Use SHA-256 instead of MD5 for hashing
+		$key    = self::DEDUP_TRANSIENT_PREFIX . substr( hash( 'sha256', $title . $level ), 0, 16 );
 		if ( get_transient( $key ) !== false ) {
 			return true;
 		}
@@ -638,7 +639,8 @@ class AlertManager {
 				continue;
 			}
 			// Count occurrences in the last hour.
-			$count_key = 'pb_alert_count_' . substr( md5( $title . $level ), 0, 16 );
+			// Security: Use SHA-256 instead of MD5 for hashing
+			$count_key = 'pb_alert_count_' . substr( hash( 'sha256', $title . $level ), 0, 16 );
 			$count     = (int) get_transient( $count_key );
 			set_transient( $count_key, $count + 1, HOUR_IN_SECONDS );
 			if ( $count + 1 >= (int) $threshold['max_per_hour'] ) {

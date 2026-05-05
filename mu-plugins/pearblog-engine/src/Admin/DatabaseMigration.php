@@ -121,10 +121,14 @@ class DatabaseMigration {
 	public static function rollback_v7(): void {
 		global $wpdb;
 
-		// Drop tables
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}pb_revenue" );
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}pb_leads" );
-		$wpdb->query( "DROP TABLE IF EXISTS {$wpdb->prefix}pb_experts" );
+		// Drop tables using prepared statements for security best practices
+		$table_revenue = $wpdb->prefix . 'pb_revenue';
+		$table_leads   = $wpdb->prefix . 'pb_leads';
+		$table_experts = $wpdb->prefix . 'pb_experts';
+
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_revenue ) );
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_leads ) );
+		$wpdb->query( $wpdb->prepare( 'DROP TABLE IF EXISTS %i', $table_experts ) );
 
 		// Remove migration flag
 		delete_option( 'pearblog_admin_v7_migrated' );
