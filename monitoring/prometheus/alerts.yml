@@ -1,0 +1,178 @@
+# Prometheus Alert Rules for PT24.PRO
+# Define alert conditions for critical metrics
+
+groups:
+  - name: pt24_site_alerts
+    interval: 30s
+    rules:
+      # Site Down Alert
+      - alert: PT24SiteDown
+        expr: probe_success{job="blackbox"} == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "PT24.PRO site is down"
+          description: "{{ $labels.instance }} has been down for more than 2 minutes."
+
+      # High Response Time
+      - alert: PT24HighResponseTime
+        expr: probe_duration_seconds{job="blackbox"} > 5
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "PT24.PRO slow response time"
+          description: "{{ $labels.instance }} response time is {{ $value }}s (threshold: 5s)"
+
+      # SSL Certificate Expiring
+      - alert: PT24SSLCertificateExpiringSoon
+        expr: probe_ssl_earliest_cert_expiry{job="blackbox"} - time() < 86400 * 7
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "SSL certificate expiring soon"
+          description: "SSL certificate for {{ $labels.instance }} expires in less than 7 days."
+
+  - name: pt24_server_alerts
+    interval: 30s
+    rules:
+      # High CPU Usage
+      - alert: PT24HighCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% (threshold: 80%)"
+
+      # Critical CPU Usage
+      - alert: PT24CriticalCPUUsage
+        expr: 100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 95
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL CPU usage on {{ $labels.instance }}"
+          description: "CPU usage is {{ $value }}% (threshold: 95%)"
+
+      # High Memory Usage
+      - alert: PT24HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High memory usage on {{ $labels.instance }}"
+          description: "Memory usage is {{ $value }}% (threshold: 85%)"
+
+      # Disk Space Low
+      - alert: PT24DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 20
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value }}% disk space remaining (threshold: 20%)"
+
+      # Disk Space Critical
+      - alert: PT24DiskSpaceCritical
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 10
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "CRITICAL low disk space on {{ $labels.instance }}"
+          description: "Only {{ $value }}% disk space remaining (threshold: 10%)"
+
+  - name: pt24_database_alerts
+    interval: 30s
+    rules:
+      # MySQL Down
+      - alert: PT24MySQLDown
+        expr: mysql_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "MySQL is down"
+          description: "MySQL database on {{ $labels.instance }} is not responding."
+
+      # High MySQL Connections
+      - alert: PT24HighMySQLConnections
+        expr: mysql_global_status_threads_connected / mysql_global_variables_max_connections * 100 > 80
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High MySQL connection usage"
+          description: "MySQL connections are at {{ $value }}% of max (threshold: 80%)"
+
+      # Slow MySQL Queries
+      - alert: PT24SlowMySQLQueries
+        expr: rate(mysql_global_status_slow_queries[5m]) > 5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High number of slow MySQL queries"
+          description: "{{ $value }} slow queries per second detected."
+
+  - name: pt24_redis_alerts
+    interval: 30s
+    rules:
+      # Redis Down
+      - alert: PT24RedisDown
+        expr: redis_up == 0
+        for: 2m
+        labels:
+          severity: critical
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache on {{ $labels.instance }} is not responding."
+
+      # High Redis Memory Usage
+      - alert: PT24RedisHighMemory
+        expr: redis_memory_used_bytes / redis_memory_max_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Redis memory usage high"
+          description: "Redis memory usage is {{ $value }}% (threshold: 90%)"
+
+  - name: pt24_application_alerts
+    interval: 30s
+    rules:
+      # High Error Rate
+      - alert: PT24HighErrorRate
+        expr: rate(pt24_errors_total[5m]) > 0.05
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "High application error rate"
+          description: "Error rate is {{ $value }} errors/second (threshold: 0.05)"
+
+      # No Leads in Last Hour
+      - alert: PT24NoLeadsGenerated
+        expr: increase(pt24_leads_total[1h]) == 0
+        for: 1h
+        labels:
+          severity: warning
+        annotations:
+          summary: "No leads generated in last hour"
+          description: "No new leads have been submitted in the last hour. Check form functionality."
+
+      # High Lead Submission Rate (Possible Spam)
+      - alert: PT24SuspiciousLeadVolume
+        expr: rate(pt24_leads_total[5m]) > 10
+        for: 5m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Suspiciously high lead submission rate"
+          description: "{{ $value }} leads/second detected. Possible spam or bot activity."

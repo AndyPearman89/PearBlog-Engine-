@@ -21,6 +21,11 @@ class AnalyticsTab {
 	 * Render the Analytics tab content.
 	 */
 	public static function render(): void {
+		// Security: Verify user has admin access
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'pearblog-engine' ) );
+		}
+
 		?>
 		<div class="pearblog-v7-analytics">
 			<div class="pearblog-analytics-header">

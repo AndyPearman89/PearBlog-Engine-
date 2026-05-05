@@ -1,0 +1,399 @@
+/**
+ * PT24 Landing - Minimal CTA
+ * Ultra-minimal, conversion-focused landing page
+ * @version 1.0.0
+ */
+
+/* ================================================== */
+/* RESET & BASE */
+/* ================================================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+.pt24-landing-minimal {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    line-height: 1.5;
+    color: #1f2937;
+    background-color: #ffffff;
+}
+
+/* ================================================== */
+/* CONTAINER */
+/* ================================================== */
+.pt24-mini-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+/* ================================================== */
+/* MINIMAL HEADER */
+/* ================================================== */
+.pt24-mini-header {
+    background: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 0.75rem 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.pt24-mini-header__inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pt24-mini-logo {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #7c3aed;
+}
+
+.pt24-mini-phone {
+    color: #7c3aed;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.pt24-mini-phone:hover {
+    color: #6d28d9;
+}
+
+@media (max-width: 640px) {
+    .pt24-mini-phone {
+        font-size: 0.875rem;
+    }
+}
+
+/* ================================================== */
+/* HERO */
+/* ================================================== */
+.pt24-mini-hero {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 3rem 0;
+    text-align: center;
+    color: #ffffff;
+}
+
+.pt24-mini-hero__title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+.pt24-mini-hero__text {
+    font-size: 1.25rem;
+    margin-bottom: 2rem;
+    opacity: 0.95;
+}
+
+@media (min-width: 768px) {
+    .pt24-mini-hero {
+        padding: 4rem 0;
+    }
+
+    .pt24-mini-hero__title {
+        font-size: 2.5rem;
+    }
+
+    .pt24-mini-hero__text {
+        font-size: 1.375rem;
+    }
+}
+
+/* ================================================== */
+/* BUTTONS */
+/* ================================================== */
+.pt24-mini-btn {
+    display: inline-block;
+    padding: 1rem 2rem;
+    font-size: 1.125rem;
+    font-weight: 700;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+    text-align: center;
+    cursor: pointer;
+}
+
+.pt24-mini-btn--primary {
+    background: #ffffff;
+    color: #7c3aed;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.pt24-mini-btn--primary:hover {
+    background: #f9fafb;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+.pt24-mini-btn--cta {
+    background: #f59e0b;
+    color: #ffffff;
+    font-size: 1.25rem;
+}
+
+.pt24-mini-btn--cta:hover {
+    background: #d97706;
+}
+
+.pt24-mini-btn--final {
+    background: #7c3aed;
+    color: #ffffff;
+    font-size: 1.5rem;
+    padding: 1.25rem 2.5rem;
+}
+
+.pt24-mini-btn--final:hover {
+    background: #6d28d9;
+    transform: scale(1.05);
+}
+
+/* ================================================== */
+/* PROBLEM SECTION */
+/* ================================================== */
+.pt24-mini-problem {
+    padding: 2.5rem 0;
+    background: #f9fafb;
+    text-align: center;
+}
+
+.pt24-mini-problem__list {
+    list-style: none;
+    font-size: 1.125rem;
+    margin-bottom: 1.5rem;
+}
+
+.pt24-mini-problem__list li {
+    padding: 0.5rem 0;
+    color: #6b7280;
+}
+
+.pt24-mini-problem__solution {
+    font-size: 1.25rem;
+    color: #1f2937;
+    margin: 0;
+}
+
+.pt24-mini-problem__solution strong {
+    color: #7c3aed;
+}
+
+/* ================================================== */
+/* SERVICES */
+/* ================================================== */
+.pt24-mini-services {
+    padding: 2.5rem 0;
+    background: #ffffff;
+}
+
+.pt24-mini-services__list {
+    list-style: none;
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.pt24-mini-services__list li {
+    padding: 0.75rem 0;
+    border-bottom: 1px solid #e5e7eb;
+    color: #1f2937;
+}
+
+.pt24-mini-services__list li:last-child {
+    border-bottom: none;
+}
+
+/* ================================================== */
+/* CTA BAR */
+/* ================================================== */
+.pt24-mini-cta-bar {
+    background: #7c3aed;
+    padding: 2rem 0;
+    text-align: center;
+}
+
+.pt24-mini-cta-bar__text {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin-bottom: 1.5rem;
+}
+
+@media (min-width: 768px) {
+    .pt24-mini-cta-bar__text {
+        font-size: 1.5rem;
+    }
+}
+
+/* ================================================== */
+/* TRUST */
+/* ================================================== */
+.pt24-mini-trust {
+    padding: 2.5rem 0;
+    background: #f9fafb;
+}
+
+.pt24-mini-trust__list {
+    list-style: none;
+    font-size: 1.125rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.pt24-mini-trust__list li {
+    padding: 0.75rem 0;
+    color: #1f2937;
+}
+
+/* ================================================== */
+/* FINAL CTA */
+/* ================================================== */
+.pt24-mini-final-cta {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 4rem 0;
+    text-align: center;
+    color: #ffffff;
+}
+
+.pt24-mini-final-cta__title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 2rem;
+    line-height: 1.2;
+}
+
+.pt24-mini-final-cta__note {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+@media (min-width: 768px) {
+    .pt24-mini-final-cta {
+        padding: 5rem 0;
+    }
+
+    .pt24-mini-final-cta__title {
+        font-size: 2.5rem;
+    }
+}
+
+/* ================================================== */
+/* FOOTER */
+/* ================================================== */
+.pt24-mini-footer {
+    background: #1f2937;
+    color: #9ca3af;
+    padding: 2rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.pt24-mini-footer a {
+    color: #d1d5db;
+    text-decoration: none;
+    margin: 0 0.5rem;
+}
+
+.pt24-mini-footer a:hover {
+    color: #ffffff;
+}
+
+/* ================================================== */
+/* MOBILE OPTIMIZATION */
+/* ================================================== */
+@media (max-width: 640px) {
+    .pt24-mini-hero {
+        padding: 2rem 0;
+    }
+
+    .pt24-mini-hero__title {
+        font-size: 1.75rem;
+    }
+
+    .pt24-mini-hero__text {
+        font-size: 1.125rem;
+    }
+
+    .pt24-mini-btn {
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+    }
+
+    .pt24-mini-btn--final {
+        font-size: 1.25rem;
+        padding: 1rem 2rem;
+    }
+
+    .pt24-mini-problem,
+    .pt24-mini-services,
+    .pt24-mini-trust {
+        padding: 2rem 0;
+    }
+
+    .pt24-mini-final-cta {
+        padding: 3rem 0;
+    }
+
+    .pt24-mini-final-cta__title {
+        font-size: 1.75rem;
+    }
+}
+
+/* ================================================== */
+/* PRINT OPTIMIZATION */
+/* ================================================== */
+@media print {
+    .pt24-mini-header,
+    .pt24-mini-footer {
+        display: none;
+    }
+
+    .pt24-mini-hero,
+    .pt24-mini-final-cta {
+        background: #ffffff;
+        color: #000000;
+    }
+
+    .pt24-mini-btn {
+        border: 2px solid #000000;
+    }
+}
+
+/* ================================================== */
+/* ACCESSIBILITY */
+/* ================================================== */
+.pt24-mini-btn:focus {
+    outline: 3px solid #f59e0b;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* ================================================== */
+/* HIGH CONTRAST MODE */
+/* ================================================== */
+@media (prefers-contrast: high) {
+    .pt24-mini-btn--primary {
+        border: 2px solid #7c3aed;
+    }
+
+    .pt24-mini-btn--cta,
+    .pt24-mini-btn--final {
+        border: 2px solid #ffffff;
+    }
+}

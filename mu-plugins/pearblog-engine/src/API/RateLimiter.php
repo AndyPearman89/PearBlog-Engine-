@@ -69,7 +69,8 @@ class RateLimiter {
 	 * @return array{allowed: bool, remaining: int, limit: int, reset: int}
 	 */
 	public function check( string $client_id, string $endpoint, int $limit ): array {
-		$transient_key = self::TRANSIENT_PREFIX . substr( md5( $client_id . $endpoint ), 0, 16 );
+		// Security: Use SHA-256 instead of MD5 for hashing
+		$transient_key = self::TRANSIENT_PREFIX . substr( hash( 'sha256', $client_id . $endpoint ), 0, 16 );
 		$reset_key     = $transient_key . '_reset';
 
 		$reset_ts = (int) get_option( $reset_key, 0 );
@@ -105,7 +106,8 @@ class RateLimiter {
 	public function get_client_id( \WP_REST_Request $request ): string {
 		$auth = (string) $request->get_header( 'Authorization' );
 		if ( str_starts_with( $auth, 'Bearer ' ) ) {
-			return 'bearer_' . substr( md5( substr( $auth, 7 ) ), 0, 16 );
+			// Security: Use SHA-256 instead of MD5 for hashing
+			return 'bearer_' . substr( hash( 'sha256', substr( $auth, 7 ) ), 0, 16 );
 		}
 
 		// Fall back to IP address.  When REMOTE_ADDR is absent (e.g. CLI),

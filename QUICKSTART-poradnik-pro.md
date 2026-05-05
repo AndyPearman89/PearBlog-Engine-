@@ -2,7 +2,7 @@
 
 **Domain:** poradnik.pro
 **Server:** root@204.48.27.118
-**Version:** PearBlog Engine v6.0
+**Version:** PearBlog Engine v8.0
 
 ---
 

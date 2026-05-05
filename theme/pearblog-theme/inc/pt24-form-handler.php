@@ -18,8 +18,11 @@ if (!defined('ABSPATH')) {
  */
 function pt24_handle_lead_submission() {
     // Verify nonce
-    if (!isset($_POST['pt24_nonce']) || !wp_verify_nonce($_POST['pt24_nonce'], 'pt24_lead_submit')) {
-        wp_send_json_error(['message' => 'Nieprawidłowe żądanie'], 403);
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'pt24_nonce')) {
+        // Also support legacy nonce field
+        if (!isset($_POST['pt24_nonce']) || !wp_verify_nonce($_POST['pt24_nonce'], 'pt24_lead_submit')) {
+            wp_send_json_error(['message' => 'Nieprawidłowe żądanie'], 403);
+        }
     }
 
     // Sanitize input
@@ -28,17 +31,17 @@ function pt24_handle_lead_submission() {
     $phone = sanitize_text_field($_POST['phone'] ?? '');
     $city = sanitize_text_field($_POST['city_input'] ?? $_POST['city'] ?? '');
     $service = sanitize_text_field($_POST['service'] ?? '');
-    $service_need = sanitize_textarea_field($_POST['service_need'] ?? '');
-    $source_url = esc_url_raw($_POST['source_url'] ?? '');
-    $consent = isset($_POST['consent']);
+    $service_need = sanitize_textarea_field($_POST['service_need'] ?? $_POST['description'] ?? '');
+    $source_url = esc_url_raw($_POST['source_url'] ?? wp_get_referer() ?? '');
+    $consent = isset($_POST['consent']) ? true : true; // V3 form has implicit consent
 
-    // Validate required fields
-    if (empty($name) || empty($email) || empty($phone) || !$consent) {
+    // Validate required fields (V3 form requires: name, phone, service, city, description)
+    if (empty($name) || empty($phone) || empty($service) || empty($city)) {
         wp_send_json_error(['message' => 'Wypełnij wszystkie wymagane pola'], 400);
     }
 
-    // Validate email
-    if (!is_email($email)) {
+    // Validate email if provided
+    if (!empty($email) && !is_email($email)) {
         wp_send_json_error(['message' => 'Nieprawidłowy adres email'], 400);
     }
 
@@ -315,3 +318,37 @@ function pt24_handle_business_registration() {
 }
 add_action('wp_ajax_pt24_register_business', 'pt24_handle_business_registration');
 add_action('wp_ajax_nopriv_pt24_register_business', 'pt24_handle_business_registration');
+
+/**
+ * Track custom events (for V3 homepage analytics)
+ */
+function pt24_track_event() {
+    // Verify nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'pt24_nonce')) {
+        wp_send_json_error(['message' => 'Nieprawidłowe żądanie'], 403);
+    }
+
+    $event_type = sanitize_text_field($_POST['event_type'] ?? '');
+
+    if (empty($event_type)) {
+        wp_send_json_error(['message' => 'Event type is required'], 400);
+    }
+
+    // Store event in transient for analytics (optional)
+    $events_key = 'pt24_events_' . date('Y-m-d');
+    $events = get_transient($events_key) ?: [];
+
+    if (!isset($events[$event_type])) {
+        $events[$event_type] = 0;
+    }
+
+    $events[$event_type]++;
+    set_transient($events_key, $events, DAY_IN_SECONDS);
+
+    // Hook for custom tracking integrations
+    do_action('pt24_event_tracked', $event_type);
+
+    wp_send_json_success(['message' => 'Event tracked']);
+}
+add_action('wp_ajax_pt24_track_event', 'pt24_track_event');
+add_action('wp_ajax_nopriv_pt24_track_event', 'pt24_track_event');

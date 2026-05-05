@@ -11,6 +11,9 @@ namespace PearBlogEngine\Core;
 
 use PearBlogEngine\API\AutomationController;
 use PearBlogEngine\API\DashboardController;
+use PearBlogEngine\API\TopicsController;
+use PearBlogEngine\API\PoradnikV3API;
+use PearBlogEngine\API\SearchSuggestAPI;
 use PearBlogEngine\Monitoring\AlertManager;
 use PearBlogEngine\Monitoring\HealthController;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
@@ -19,6 +22,11 @@ use PearBlogEngine\Pipeline\PipelineAuditLog;
 use PearBlogEngine\Scheduler\CronManager;
 use PearBlogEngine\Scheduler\PublishScheduler;
 use PearBlogEngine\Content\TopicResearchEngine;
+use PearBlogEngine\Content\TopicCPT;
+use PearBlogEngine\Content\FAQBlockCPT;
+use PearBlogEngine\Content\CTABlockCPT;
+use PearBlogEngine\Content\RelatedEntityManager;
+use PearBlogEngine\Content\PostMetaManager;
 use PearBlogEngine\Admin\AdminPage;
 use PearBlogEngine\Admin\AdminPageV7;
 use PearBlogEngine\Admin\AdminPageV8Enterprise;
@@ -34,6 +42,9 @@ use PearBlogEngine\Social\SocialPublisher;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Webhook\WebhookManager;
 use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
+use PearBlogEngine\Analytics\ConversionFlowTracker;
+use PearBlogEngine\Database\PoradnikV3Schema;
+use PearBlogEngine\Integration\PT24Bridge;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -59,6 +70,13 @@ class Plugin {
 	 * Attach WordPress hooks and initialise sub-systems.
 	 */
 	public function boot(): void {
+		// Core architecture CPTs and entities.
+		( new TopicCPT() )->register();
+		( new FAQBlockCPT() )->register();
+		( new CTABlockCPT() )->register();
+		( new RelatedEntityManager() )->register();
+		( new PostMetaManager() )->register();
+
 		// Core pipeline & admin.
 		( new CronManager() )->register();
 
@@ -95,6 +113,9 @@ class Plugin {
 			( new AutomationController() )->register_routes();
 			( new HealthController() )->register_routes();
 			( new DashboardController() )->register_routes();
+			( new TopicsController() )->register_routes();
+			( new PoradnikV3API() )->register_routes();
+			SearchSuggestAPI::register_routes();
 		} );
 
 		// SEO: Schema.org structured data output.
@@ -124,10 +145,27 @@ class Plugin {
 		// Decision Platform – Poradnik.pro Enterprise features.
 		( new DecisionPlatformManager() )->register();
 
+		// Poradnik V3 – Conversion tracking and analytics.
+		ConversionFlowTracker::init();
+
+		// Create V3 database tables on activation.
+		register_activation_hook( PEARBLOG_PLUGIN_FILE, static function (): void {
+			PoradnikV3Schema::create_tables();
+			PoradnikV3Schema::update_version( '3.0.0' );
+		} );
+
+		// PT24 Integration – Content-to-Lead bridge.
+		( new PT24Bridge() )->init();
+
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'pearblog', \PearBlogEngine\CLI\PearBlogCommand::class );
+
 			\WP_CLI::add_command( 'pearblog seo-v3', \PearBlogEngine\CLI\SEOV3Command::class );
+			// SEO Keyword Generator CLI commands
+			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
+			\WP_CLI::add_command( 'pearblog integration', \PearBlogEngine\CLI\IntegrationCommand::class );
+			\WP_CLI::add_command( 'pearblog security', \PearBlogEngine\CLI\SecurityCommand::class );
 		}
 	}
 

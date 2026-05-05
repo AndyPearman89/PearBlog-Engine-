@@ -48,6 +48,9 @@ require_once PEARBLOG_DIR . '/inc/poradnik-v4-helpers.php';
 // Poradnik.pro Landing V5 — Conversion System
 require_once PEARBLOG_DIR . '/inc/poradnik-landing-v5-handler.php';
 
+// Poradnik.pro V3 — Front Hub Scripts
+require_once PEARBLOG_DIR . '/inc/poradnik-v3-scripts.php';
+
 // Poradnik.pro Landing V5 — Admin Dashboard
 require_once PEARBLOG_DIR . '/inc/poradnik-landing-v5-admin.php';
 
@@ -59,6 +62,9 @@ require_once PEARBLOG_DIR . '/inc/poradnik-rpm-lead-fusion.php';
 // PT24.PRO Integration — Cross-Site Conversion Funnel
 require_once PEARBLOG_DIR . '/inc/pt24-integration.php';
 
+// PearBlog × PT24 Integration Helper Functions
+require_once PEARBLOG_DIR . '/inc/pearblog-integration.php';
+
 // PT24.PRO Landing Generator System V2
 require_once PEARBLOG_DIR . '/inc/pt24-landing-cpt.php';
 require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php';
@@ -67,6 +73,8 @@ require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php';
 require_once PEARBLOG_DIR . '/inc/pt24-form-handler.php';
 require_once PEARBLOG_DIR . '/inc/pt24-api.php';
 require_once PEARBLOG_DIR . '/inc/pt24-cli-commands.php';
+require_once PEARBLOG_DIR . '/inc/pt24-database.php';
+require_once PEARBLOG_DIR . '/inc/pt24-seo-meta.php';
 
 /**
  * Theme setup
