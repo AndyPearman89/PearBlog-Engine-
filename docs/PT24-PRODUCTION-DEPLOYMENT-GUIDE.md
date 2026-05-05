@@ -492,7 +492,7 @@ curl -s https://pt24.pro | grep -i 'og:title'
 **Check:**
 ```bash
 # Verify Enterprise V8 is enabled
-wp eval "echo defined('PEARBLOG_ADMIN_VERSION') ? PEARBLOG_ADMIN_VERSION : 'NOT DEFINED';"
+wp eval 'if (defined("PEARBLOG_ADMIN_VERSION")) { echo PEARBLOG_ADMIN_VERSION; } else { echo "NOT DEFINED"; }'
 # Should return: v8-enterprise
 
 # Check plugin is active
