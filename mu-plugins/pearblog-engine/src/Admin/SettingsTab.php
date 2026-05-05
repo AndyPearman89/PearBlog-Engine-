@@ -507,9 +507,15 @@ class SettingsTab {
 
 		check_admin_referer( 'pearblog_clear_cache', 'pearblog_cache_nonce' );
 
-		// Clear WordPress transients
+		// Clear WordPress transients using prepared statement for security best practices
 		global $wpdb;
-		$wpdb->query( "DELETE FROM {$wpdb->options} WHERE option_name LIKE '_transient_pearblog_%' OR option_name LIKE '_transient_timeout_pearblog_%'" );
+		$wpdb->query(
+			$wpdb->prepare(
+				"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
+				'_transient_pearblog_%',
+				'_transient_timeout_pearblog_%'
+			)
+		);
 
 		wp_safe_redirect(
 			add_query_arg(
