@@ -1,8 +1,9 @@
 # PearBlog Engine — Disaster Recovery Plan
 
-> **Version:** 6.0.0  
-> **Classification:** Operations Critical  
-> **Audience:** DevOps, system administrators, site owners  
+> **Version:** 8.0.0
+> **Last Updated:** 2026-05-05
+> **Classification:** Operations Critical
+> **Audience:** DevOps, system administrators, site owners
 > **Related:** [DEPLOYMENT.md](DEPLOYMENT.md) · [DATABASE-MIGRATIONS.md](DATABASE-MIGRATIONS.md)
 
 ---

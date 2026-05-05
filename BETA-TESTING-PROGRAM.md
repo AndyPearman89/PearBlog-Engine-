@@ -1,15 +1,15 @@
-# Beta Testing Program — PearBlog Engine v6.0
+# Beta Testing Program — PearBlog Engine v8.0
 
-> **Status:** Open for applications  
-> **Program dates:** 2026-04-15 – 2026-05-09  
-> **Coordinator:** @AndyPearman89  
+> **Status:** Open for applications
+> **Program dates:** 2026-04-15 – 2026-05-09
+> **Coordinator:** @AndyPearman89
 > **Feedback channel:** GitHub Discussions → [Beta Feedback](https://github.com/AndyPearman89/PearBlog-Engine-/discussions)
 
 ---
 
 ## Overview
 
-The PearBlog Engine v6.0 beta program invites real-world bloggers and developers to test the
+The PearBlog Engine v8.0 beta program invites real-world bloggers and developers to test the
 plugin before public launch. Beta testers get **early access**, a chance to shape the final
 release, and recognition in the changelog.
 
@@ -150,7 +150,7 @@ All accepted beta testers who submit at least 3 feedback reports will receive:
 # Use a fresh staging WordPress install — DO NOT test on production.
 
 # 1. Install the beta plugin
-wp plugin install https://github.com/AndyPearman89/PearBlog-Engine-/releases/download/v6.0.0-beta/pearblog-engine-v6.0.0-beta.zip --activate
+wp plugin install https://github.com/AndyPearman89/PearBlog-Engine-/releases/download/v8.0.0/pearblog-engine-v8.0.0.zip --activate
 
 # 2. Set your OpenAI API key
 wp option update pearblog_openai_api_key 'sk-...'
