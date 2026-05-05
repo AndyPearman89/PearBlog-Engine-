@@ -251,10 +251,10 @@ cd wp-content/mu-plugins
 git clone https://github.com/AndyPearman89/PearBlog-Engine-.git pearblog-engine
 
 # Or download release:
-wget https://github.com/AndyPearman89/PearBlog-Engine-/archive/refs/tags/v7.0.0.tar.gz
-tar -xzf v7.0.0.tar.gz
-mv PearBlog-Engine--7.0.0/mu-plugins/pearblog-engine ./
-rm -rf PearBlog-Engine--7.0.0 v7.0.0.tar.gz
+wget https://github.com/AndyPearman89/PearBlog-Engine-/archive/refs/tags/v8.0.0.tar.gz
+tar -xzf v8.0.0.tar.gz
+mv PearBlog-Engine--8.0.0/mu-plugins/pearblog-engine ./
+rm -rf PearBlog-Engine--8.0.0 v8.0.0.tar.gz
 ```
 
 ### Install Composer Dependencies

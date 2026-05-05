@@ -1,7 +1,7 @@
 # PT24.PRO Pre-Launch Infrastructure — COMPLETE ✅
 
 **Completed:** 2026-05-04
-**Version:** v7.0.0-ready
+**Version:** v8.0.0-ready
 **Launch Date:** May 10, 2026 at 10:00 AM CEST
 
 ---
@@ -205,12 +205,12 @@ docker-compose ps
 ```bash
 # Tag final release
 git checkout main
-git tag -a v7.0.0 -m "PT24.PRO Public Launch - May 10, 2026"
-git push origin v7.0.0
+git tag -a v8.0.0 -m "PT24.PRO Public Launch - May 10, 2026"
+git push origin v8.0.0
 
 # Create rollback tag
-git tag -a v7.0.0-rollback -m "Rollback point for v7.0.0"
-git push origin v7.0.0-rollback
+git tag -a v8.0.0-rollback -m "Rollback point for v8.0.0"
+git push origin v8.0.0-rollback
 ```
 
 #### 5. Final Backups
@@ -233,12 +233,12 @@ tar -czf /backups/pt24-files-2026-05-09.tar.gz /var/www/html/wp-content/
 - Verify backups exist
 - Make GO/NO-GO call
 
-#### 10:00 AM - Deploy v7.0.0
+#### 10:00 AM - Deploy v8.0.0
 ```bash
 ssh pt24-production
 cd /var/www/html
 git fetch origin
-git checkout v7.0.0
+git checkout v8.0.0
 
 # Clear caches
 wp cache flush

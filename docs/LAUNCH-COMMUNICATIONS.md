@@ -117,7 +117,7 @@ PT24.PRO officially launched this morning at 10:00 AM. And you're one of the fir
 
 As a beta tester, you've been instrumental in shaping PT24.PRO into what it is today. Your feedback, bug reports, and feature suggestions have made this platform better for everyone.
 
-What's New in v7.0.0:
+What's New in v8.0.0:
 ✅ Auto-location detection — no need to type your city
 ✅ Live activity feed — see real-time lead activity
 ✅ Enhanced search — handles typos and Polish characters
@@ -242,13 +242,13 @@ Phone: [Phone Number]
 ```
 @channel 🚀🚀🚀
 
-WE'RE LIVE! PT24.PRO v7.0.0 just deployed to production.
+WE'RE LIVE! PT24.PRO v8.0.0 just deployed to production.
 
 Homepage: https://pt24.pro
 Status: All systems green ✅
 
 Launch checklist completed:
-✅ Code deployed (v7.0.0)
+✅ Code deployed (v8.0.0)
 ✅ Database migrated
 ✅ Monitoring active
 ✅ Backups verified
