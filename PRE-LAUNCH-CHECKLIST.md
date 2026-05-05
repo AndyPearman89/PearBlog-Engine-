@@ -1,8 +1,9 @@
-# Pre-Launch Checklist — PearBlog Engine v6.0
+# Pre-Launch Checklist — PearBlog Engine v8.0.0
 
-> **Target Launch:** 2026-05-10  
-> Complete every item before announcing public availability.  
+> **Target Launch:** 2026-05-10
+> Complete every item before announcing public availability.
 > Mark each item `[x]` when verified.
+> **Status:** v8.0.0 Released (2026-05-04), Public Launch T-5 Days
 
 ---
 
