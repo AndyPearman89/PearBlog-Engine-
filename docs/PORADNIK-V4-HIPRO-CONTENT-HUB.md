@@ -420,4 +420,4 @@ For issues or questions:
 
 ## License
 
-Part of PearBlog Theme v7.0.0
+Part of PearBlog Theme v8.0.0

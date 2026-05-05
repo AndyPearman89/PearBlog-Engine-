@@ -2,14 +2,14 @@
 
 **Launch Date:** Saturday, May 10, 2026
 **Launch Time:** 10:00 AM CEST (08:00 UTC)
-**Version:** v7.0.0
+**Version:** v8.0.0
 **Team:** On-call engineers, product owner, customer support
 
 ---
 
 ## 📋 Overview
 
-This runbook provides a step-by-step guide for launching PT24.PRO v7.0.0 on May 10, 2026. It includes pre-launch preparation, launch execution, monitoring procedures, and rollback plans.
+This runbook provides a step-by-step guide for launching PT24.PRO v8.0.0 on May 10, 2026. It includes pre-launch preparation, launch execution, monitoring procedures, and rollback plans.
 
 **Launch Philosophy:** Controlled, monitored, reversible.
 
@@ -39,7 +39,7 @@ This runbook provides a step-by-step guide for launching PT24.PRO v7.0.0 on May 
 - [ ] Go/No-Go poll
 
 ### **T-0 (May 10, 10:00 AM) — LAUNCH**
-- [ ] Deploy v7.0.0 to production
+- [ ] Deploy v8.0.0 to production
 - [ ] Verify deployment success
 - [ ] Enable public access
 - [ ] Publish launch communications
@@ -80,12 +80,12 @@ This runbook provides a step-by-step guide for launching PT24.PRO v7.0.0 on May 
 # Tag the final release
 git checkout main
 git pull origin main
-git tag -a v7.0.0 -m "PT24.PRO Public Launch - May 10, 2026"
-git push origin v7.0.0
+git tag -a v8.0.0 -m "PT24.PRO Public Launch - May 10, 2026"
+git push origin v8.0.0
 
 # Create a rollback tag pointing to previous stable version
-git tag -a v7.0.0-rollback -m "Rollback point for v7.0.0"
-git push origin v7.0.0-rollback
+git tag -a v8.0.0-rollback -m "Rollback point for v8.0.0"
+git push origin v8.0.0-rollback
 ```
 
 ### 2. Final Backups (T-12 Hours)
