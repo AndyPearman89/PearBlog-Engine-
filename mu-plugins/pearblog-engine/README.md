@@ -1,4 +1,4 @@
-# ⚙️ PearBlog Engine — WordPress MU-Plugin v6.0
+# ⚙️ PearBlog Engine — WordPress MU-Plugin v8.0
 
 > Autonomous AI content production engine for WordPress.
 

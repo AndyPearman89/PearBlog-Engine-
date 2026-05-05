@@ -156,6 +156,11 @@ function pearblog_enqueue_assets() {
     wp_enqueue_style('pt24-cta', PEARBLOG_URI . '/assets/css/pt24-cta.css', array(), PEARBLOG_VERSION);
     wp_enqueue_script('pt24-tracking', PEARBLOG_URI . '/assets/js/pt24-cta-tracking.js', array(), PEARBLOG_VERSION, true);
 
+    // Poradnik V4 HI-PRO Content Hub
+    if (is_page_template('page-poradnik-v4-hipro.php')) {
+        wp_enqueue_style('poradnik-v4-hipro', PEARBLOG_URI . '/assets/css/poradnik-v4-hipro.css', array('pearblog-style'), PEARBLOG_VERSION);
+    }
+
     // Google Fonts — Poppins (display) + Inter (UI)
     wp_enqueue_style(
         'pearblog-fonts',

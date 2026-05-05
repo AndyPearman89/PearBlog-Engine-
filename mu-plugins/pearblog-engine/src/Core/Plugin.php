@@ -157,11 +157,10 @@ class Plugin {
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'pearblog', \PearBlogEngine\CLI\PearBlogCommand::class );
 
+			\WP_CLI::add_command( 'pearblog seo-v3', \PearBlogEngine\CLI\SEOV3Command::class );
+
 			// SEO Keyword Generator CLI commands
 			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
-
-			// SEO Keyword Generator V3 Enterprise CLI commands
-			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorV3CLI.php';
 		}
 	}
 
