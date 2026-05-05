@@ -2,7 +2,7 @@
 
 **PearBlog Engine v8.0.0 — Complete Enterprise Admin Interface**
 
-The Enterprise v8 Admin is a revolutionary, ultra-advanced control center providing comprehensive management for all aspects of your PearBlog-powered site. With 15 specialized tabs, real-time analytics, and a modern glassmorphism UI, it delivers enterprise-grade functionality in an intuitive interface.
+The Enterprise v8 Admin is a comprehensive control center for managing all aspects of your PearBlog-powered site. It provides 15 specialized tabs, real-time analytics, and a modern glassmorphism UI designed to meet enterprise-grade operational requirements.
 
 ## Table of Contents
 
@@ -63,7 +63,7 @@ Or click **🚀 PearBlog v8** in the WordPress admin menu (top position).
 
 - **Desktop**: 1920×1080 or higher
 - **Tablet**: 1024×768 or higher
-- **Not optimized for mobile** (use desktop/tablet for best experience)
+- **Not optimized for mobile** — the admin interface uses complex multi-column layouts and data-dense tables that require a minimum 1024px viewport width.
 
 ---
 
@@ -286,7 +286,7 @@ wp option update pearblog_adsense_enable_bofu 1
 
 **Features**:
 - Lead capture from Landing V5 forms
-- Custom database table queries (`${wpdb->prefix}poradnik_leads`)
+- Custom database table queries (`{$wpdb->prefix}poradnik_leads`)
 - Lead scoring and qualification
 - Conversion funnel analysis
 - Export to CSV/Excel
@@ -421,7 +421,7 @@ $industry = $context->get_industry(); // e.g., "poradnik"
 **Purpose**: Security scoring and audit logging
 
 **Features**:
-- **Security Score**: 0-100 rating (currently 98/100)
+- **Security Score**: 0-100 rating (dynamically calculated based on current configuration)
 - **Failed Login Tracking**: Monitor suspicious login attempts
 - **Blocked IP Addresses**: Auto-block after failed attempts
 - **Audit Log**: All admin actions with timestamp, user, action, IP
@@ -571,6 +571,8 @@ Real-time notification system with categories:
 mu-plugins/pearblog-engine/
 ├── src/Admin/
 │   ├── AdminPageV8Enterprise.php    # Main admin class
+│   ├── DashboardTab.php             # Dashboard tab
+│   ├── RealtimeAnalyticsTab.php     # Real-Time Analytics tab
 │   ├── StrategyTab.php              # AI Strategy tab
 │   ├── ContentEngineTab.php         # Content Engine tab
 │   ├── SEOTab.php                   # SEO Advanced tab
@@ -580,6 +582,9 @@ mu-plugins/pearblog-engine/
 │   ├── AnalyticsTab.php             # Analytics Deep tab
 │   ├── MultisiteTab.php             # Multisite/SaaS tab
 │   ├── PerformanceDashboardTab.php  # Performance tab
+│   ├── SecurityAuditTab.php         # Security & Audit tab
+│   ├── AdvancedReportsTab.php       # Advanced Reports tab
+│   ├── IntegrationsTab.php          # Integrations tab
 │   └── SettingsTab.php              # Settings Enterprise tab
 ├── assets/
 │   ├── css/admin-v8-enterprise.css  # Styles (18.5 KB)
@@ -687,6 +692,8 @@ case 'strategy':
 ```html
 <script src="https://cdn.jsdelivr.net/npm/alpinejs@3.13.3/dist/cdn.min.js"></script>
 ```
+
+> **Security Note for Enterprise Deployments**: When loading Chart.js and Alpine.js from a CDN in production, use Subresource Integrity (SRI) hashes to prevent supply-chain attacks (e.g., add `integrity="sha384-..."` and `crossorigin="anonymous"` attributes to each `<script>` tag). Alternatively, bundle these libraries locally and serve them from your own infrastructure to eliminate the external dependency entirely.
 
 ---
 

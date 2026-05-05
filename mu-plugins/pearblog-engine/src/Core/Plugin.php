@@ -44,6 +44,7 @@ use PearBlogEngine\Webhook\WebhookManager;
 use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 use PearBlogEngine\Analytics\ConversionFlowTracker;
 use PearBlogEngine\Database\PoradnikV3Schema;
+use PearBlogEngine\Integration\PT24Bridge;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -153,14 +154,18 @@ class Plugin {
 			PoradnikV3Schema::update_version( '3.0.0' );
 		} );
 
+		// PT24 Integration – Content-to-Lead bridge.
+		( new PT24Bridge() )->init();
+
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'pearblog', \PearBlogEngine\CLI\PearBlogCommand::class );
 
 			\WP_CLI::add_command( 'pearblog seo-v3', \PearBlogEngine\CLI\SEOV3Command::class );
-
 			// SEO Keyword Generator CLI commands
 			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
+			\WP_CLI::add_command( 'pearblog integration', \PearBlogEngine\CLI\IntegrationCommand::class );
+			\WP_CLI::add_command( 'pearblog security', \PearBlogEngine\CLI\SecurityCommand::class );
 		}
 	}
 

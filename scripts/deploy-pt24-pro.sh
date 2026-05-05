@@ -1,9 +1,9 @@
 #!/bin/bash
 
 ################################################################################
-# PearBlog Engine v7.0 - Automated Deployment Script for pt24.pro
+# PearBlog Engine v8.0 - Automated Deployment Script for pt24.pro
 #
-# This script automates the complete deployment of PearBlog Engine v7.0
+# This script automates the complete deployment of PearBlog Engine v8.0
 # on a fresh Ubuntu/Debian server for the pt24.pro domain.
 #
 # Usage:
@@ -40,7 +40,7 @@ DB_PASS=$(openssl rand -base64 32)
 ADMIN_EMAIL="admin@pt24.pro"
 ADMIN_USER="admin"
 ADMIN_PASS=$(openssl rand -base64 16)
-PEARBLOG_VERSION="v7.0.0"
+PEARBLOG_VERSION="v8.0.0"
 
 # Logging
 LOG_FILE="/var/log/pearblog-deploy-pt24.log"
@@ -102,7 +102,7 @@ check_distro() {
 # Main Deployment Steps
 ################################################################################
 
-print_header "PearBlog Engine v7.0 - Deployment for pt24.pro"
+print_header "PearBlog Engine v8.0 - Deployment for pt24.pro"
 print_info "Starting automated deployment..."
 print_info "Domain: $DOMAIN"
 print_info "Web Root: $WEB_ROOT"
@@ -259,7 +259,7 @@ print_header "Step 11: Configuring PearBlog Engine"
 # Add PearBlog configuration to wp-config.php
 cat >> $WEB_ROOT/wp-config.php <<'EOF'
 
-/* PearBlog Engine v7.0 Configuration */
+/* PearBlog Engine v8.0 Configuration */
 define('PEARBLOG_OPENAI_API_KEY', getenv('PEARBLOG_OPENAI_API_KEY') ?: 'YOUR_OPENAI_KEY_HERE');
 define('PEARBLOG_ANTHROPIC_API_KEY', getenv('PEARBLOG_ANTHROPIC_API_KEY') ?: '');
 define('PEARBLOG_GOOGLE_API_KEY', getenv('PEARBLOG_GOOGLE_API_KEY') ?: '');

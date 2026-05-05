@@ -281,6 +281,11 @@ class DashboardTab {
 	 * Render the dashboard tab HTML.
 	 */
 	public static function render(): void {
+		// Security: Verify user has admin access
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'pearblog-engine' ) );
+		}
+
 		$kpis = self::get_kpis( 30 );
 		$top_articles = self::get_top_articles( 10, 30 );
 		$revenue_by_source = self::get_revenue_by_source( 30 );

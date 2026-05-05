@@ -1,0 +1,476 @@
+/**
+ * PT24 CTA Components - Styling for call-to-action elements
+ *
+ * @package PearBlogEngine
+ * @subpackage Integration
+ */
+
+/* ================================================== */
+/* Inline CTA Box */
+/* ================================================== */
+
+.pearblog-cta-inline {
+    margin: 2rem 0;
+    padding: 1.5rem;
+    background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
+    border-left: 4px solid #7c3aed;
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.pearblog-cta-inline:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+.pearblog-cta-inline .cta-content h3 {
+    margin: 0 0 0.75rem 0;
+    color: #1f2937;
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.4;
+}
+
+.pearblog-cta-inline .cta-content p {
+    margin: 0 0 1rem 0;
+    color: #4b5563;
+    line-height: 1.6;
+    font-size: 1rem;
+}
+
+.pearblog-cta-inline .cta-button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: #7c3aed;
+    color: #ffffff;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+}
+
+.pearblog-cta-inline .cta-button:hover {
+    background: #6d28d9;
+    transform: translateX(4px);
+    box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
+}
+
+/* ================================================== */
+/* Compact CTA */
+/* ================================================== */
+
+.pearblog-cta-compact {
+    margin: 1.5rem 0;
+    padding: 1rem;
+    background: #f9fafb;
+    border: 2px solid #7c3aed;
+    border-radius: 0.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.pearblog-cta-compact:hover {
+    background: #f3f4f6;
+    border-color: #6d28d9;
+}
+
+.pearblog-cta-compact p {
+    margin: 0;
+    line-height: 1.6;
+}
+
+.pearblog-cta-compact strong {
+    color: #7c3aed;
+    font-size: 1.1rem;
+}
+
+.pearblog-cta-compact a {
+    color: #7c3aed;
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.pearblog-cta-compact a:hover {
+    color: #6d28d9;
+    text-decoration: underline;
+}
+
+/* ================================================== */
+/* Sticky Bottom CTA Bar */
+/* ================================================== */
+
+.pearblog-cta-sticky {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    padding: 1rem;
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 9999;
+    display: none;
+    animation: slideUp 0.4s ease-out;
+}
+
+.pearblog-cta-sticky.visible {
+    display: block;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+.pearblog-cta-sticky .sticky-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.pearblog-cta-sticky .sticky-text {
+    color: #ffffff;
+    font-weight: 600;
+    font-size: 1rem;
+    flex: 1;
+    min-width: 200px;
+}
+
+.pearblog-cta-sticky .sticky-phone {
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 1.25rem;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.pearblog-cta-sticky .sticky-phone:hover {
+    transform: scale(1.05);
+}
+
+.pearblog-cta-sticky .sticky-close {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: #ffffff;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.3s ease;
+    font-size: 1.25rem;
+    line-height: 1;
+}
+
+.pearblog-cta-sticky .sticky-close:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+/* ================================================== */
+/* Exit Intent Popup */
+/* ================================================== */
+
+.pearblog-cta-exit-intent {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.pearblog-cta-exit-intent.visible {
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.pearblog-cta-exit-intent .exit-modal {
+    background: #ffffff;
+    max-width: 500px;
+    width: 90%;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    position: relative;
+    animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        transform: translateY(-50px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.pearblog-cta-exit-intent .exit-close {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    color: #6b7280;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: background 0.3s ease;
+}
+
+.pearblog-cta-exit-intent .exit-close:hover {
+    background: #f3f4f6;
+    color: #1f2937;
+}
+
+.pearblog-cta-exit-intent h2 {
+    margin: 0 0 1rem 0;
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.pearblog-cta-exit-intent p {
+    margin: 0 0 1.5rem 0;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+.pearblog-cta-exit-intent .exit-button {
+    display: block;
+    width: 100%;
+    padding: 1rem;
+    background: #7c3aed;
+    color: #ffffff;
+    text-decoration: none;
+    text-align: center;
+    border-radius: 0.5rem;
+    font-weight: 600;
+    font-size: 1.1rem;
+    transition: background 0.3s ease;
+}
+
+.pearblog-cta-exit-intent .exit-button:hover {
+    background: #6d28d9;
+}
+
+/* ================================================== */
+/* Footer CTA */
+/* ================================================== */
+
+.pearblog-cta-footer {
+    margin: 3rem 0 2rem;
+    padding: 2.5rem;
+    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    border-radius: 1rem;
+    text-align: center;
+    color: #ffffff;
+    box-shadow: 0 4px 16px rgba(124, 58, 237, 0.3);
+}
+
+.pearblog-cta-footer h2 {
+    margin: 0 0 1rem 0;
+    color: #ffffff;
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.pearblog-cta-footer p {
+    margin: 0 0 1.5rem 0;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.pearblog-cta-footer .footer-button {
+    display: inline-block;
+    padding: 1rem 2rem;
+    background: #ffffff;
+    color: #7c3aed;
+    text-decoration: none;
+    border-radius: 0.5rem;
+    font-weight: 700;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.pearblog-cta-footer .footer-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+}
+
+.pearblog-cta-footer .footer-phone {
+    display: block;
+    margin-top: 1rem;
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.pearblog-cta-footer .footer-phone:hover {
+    text-decoration: underline;
+}
+
+/* ================================================== */
+/* PT24 Links */
+/* ================================================== */
+
+.pearblog-pt24-link {
+    color: #7c3aed;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 2px solid transparent;
+    transition: all 0.3s ease;
+}
+
+.pearblog-pt24-link:hover {
+    color: #6d28d9;
+    border-bottom-color: #6d28d9;
+}
+
+/* ================================================== */
+/* Expert Tips Section */
+/* ================================================== */
+
+.pearblog-expert-tips {
+    margin: 3rem 0;
+    padding: 2rem;
+    background: #f9fafb;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.pearblog-expert-tips h2 {
+    margin: 0 0 1.5rem 0;
+    color: #1f2937;
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+.pearblog-expert-tips p {
+    margin: 0 0 1rem 0;
+    color: #4b5563;
+    line-height: 1.6;
+}
+
+/* ================================================== */
+/* Responsive Design */
+/* ================================================== */
+
+@media (max-width: 768px) {
+    .pearblog-cta-inline {
+        padding: 1.25rem;
+        margin: 1.5rem 0;
+    }
+
+    .pearblog-cta-inline .cta-content h3 {
+        font-size: 1.1rem;
+    }
+
+    .pearblog-cta-inline .cta-button {
+        padding: 0.65rem 1.25rem;
+        font-size: 0.95rem;
+    }
+
+    .pearblog-cta-sticky .sticky-container {
+        flex-direction: column;
+        text-align: center;
+    }
+
+    .pearblog-cta-sticky .sticky-text {
+        font-size: 0.9rem;
+    }
+
+    .pearblog-cta-sticky .sticky-phone {
+        font-size: 1.1rem;
+    }
+
+    .pearblog-cta-exit-intent .exit-modal {
+        padding: 1.5rem;
+    }
+
+    .pearblog-cta-footer {
+        padding: 2rem 1.5rem;
+    }
+
+    .pearblog-cta-footer h2 {
+        font-size: 1.5rem;
+    }
+
+    .pearblog-cta-footer p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .pearblog-cta-inline {
+        padding: 1rem;
+        border-left-width: 3px;
+    }
+
+    .pearblog-cta-inline .cta-content h3 {
+        font-size: 1rem;
+    }
+
+    .pearblog-cta-inline .cta-button {
+        width: 100%;
+        text-align: center;
+    }
+
+    .pearblog-cta-footer .footer-button {
+        width: 100%;
+        display: block;
+    }
+}
+
+/* ================================================== */
+/* Print Styles */
+/* ================================================== */
+
+@media print {
+    .pearblog-cta-inline,
+    .pearblog-cta-compact,
+    .pearblog-cta-sticky,
+    .pearblog-cta-exit-intent,
+    .pearblog-cta-footer {
+        display: none !important;
+    }
+}
