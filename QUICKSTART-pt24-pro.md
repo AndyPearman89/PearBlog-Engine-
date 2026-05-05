@@ -1,7 +1,7 @@
 # ⚡ Quick Start: pt24.pro
 
 **Domain:** pt24.pro (www.pt24.pro)
-**Engine:** PearBlog v7.0 + PT24 Platform
+**Engine:** PearBlog v8.0 + PT24 Platform
 **Purpose:** Local services directory platform
 
 ---
@@ -72,10 +72,10 @@ EOF
 ```bash
 cd /var/www/pt24.pro/wp-content/mu-plugins
 
-# Download v7.0.0:
-wget https://github.com/AndyPearman89/PearBlog-Engine-/archive/refs/tags/v7.0.0.tar.gz
-tar -xzf v7.0.0.tar.gz
-mv PearBlog-Engine--7.0.0/mu-plugins/pearblog-engine ./
+# Download v8.0.0:
+wget https://github.com/AndyPearman89/PearBlog-Engine-/archive/refs/tags/v8.0.0.tar.gz
+tar -xzf v8.0.0.tar.gz
+mv PearBlog-Engine--8.0.0/mu-plugins/pearblog-engine ./
 
 # Install dependencies:
 cd pearblog-engine
