@@ -133,6 +133,7 @@ class Plugin {
 			\WP_CLI::add_command( 'pearblog', \PearBlogEngine\CLI\PearBlogCommand::class );
 			\WP_CLI::add_command( 'pearblog seo-v3', \PearBlogEngine\CLI\SEOV3Command::class );
 			\WP_CLI::add_command( 'pearblog integration', \PearBlogEngine\CLI\IntegrationCommand::class );
+			\WP_CLI::add_command( 'pearblog security', \PearBlogEngine\CLI\SecurityCommand::class );
 		}
 	}
 
