@@ -3,7 +3,7 @@
 **Domain:** pt24.pro (www.pt24.pro)
 **Target:** Production deployment of PT24.PRO Local Services Platform
 **Purpose:** Local services directory connecting businesses with customers
-**Engine:** PearBlog Engine v7.0 + PT24 Platform v2.0
+**Engine:** PearBlog Engine v8.0 + PT24 Platform v2.0
 
 ---
 

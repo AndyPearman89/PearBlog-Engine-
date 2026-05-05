@@ -3,7 +3,7 @@
 # PearBlog Engine - Automated Deployment Script for poradnik.pro
 # Domain: poradnik.pro
 # Server: 204.48.27.118
-# Version: 6.0.0
+# Version: 8.0.0
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/scripts/deploy-poradnik-pro.sh | bash
@@ -423,7 +423,7 @@ main() {
     echo "╔═══════════════════════════════════════════════════════════╗"
     echo "║                                                           ║"
     echo "║        PearBlog Engine Deployment for poradnik.pro       ║"
-    echo "║                     Version 6.0.0                         ║"
+    echo "║                     Version 8.0.0                         ║"
     echo "║                                                           ║"
     echo "╚═══════════════════════════════════════════════════════════╝"
     echo ""

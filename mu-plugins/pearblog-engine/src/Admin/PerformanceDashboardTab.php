@@ -32,6 +32,11 @@ class PerformanceDashboardTab {
 	 * Render the Performance Dashboard tab content.
 	 */
 	public static function render(): void {
+		// Security: Verify user has admin access
+		if ( ! current_user_can( 'manage_options' ) ) {
+			wp_die( esc_html__( 'You do not have sufficient permissions to access this page.', 'pearblog-engine' ) );
+		}
+
 		$dashboard = new PerformanceDashboard();
 		$summary   = $dashboard->get_summary();
 		$recent    = $dashboard->get_recent_runs( 20 );
