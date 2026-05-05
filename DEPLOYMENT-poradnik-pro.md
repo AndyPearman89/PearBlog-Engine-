@@ -3,7 +3,7 @@
 **Domain:** poradnik.pro
 **Server:** 204.48.27.118
 **User:** root
-**Target:** Production deployment of PearBlog Engine v6.0
+**Target:** Production deployment of PearBlog Engine v8.0
 
 ---
 
