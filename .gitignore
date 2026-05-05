@@ -23,6 +23,14 @@ ENV/
 # Environment secrets
 .env
 .env.*
+!.env.example
+*.env.local
+
+# Keys and credentials
+*.pem
+*.key
+*.p12
+*.pfx
 
 # OS
 .DS_Store
