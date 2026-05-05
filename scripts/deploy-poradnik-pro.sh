@@ -118,27 +118,33 @@ step_2_install_php_extensions() {
 
     apt update -qq
 
-    EXTENSIONS=(
-        "php8.1-cli"
-        "php8.1-fpm"
-        "php8.1-mysql"
-        "php8.1-curl"
-        "php8.1-json"
-        "php8.1-mbstring"
-        "php8.1-xml"
-        "php8.1-zip"
-        "php8.1-gd"
-        "php8.1-intl"
-        "php8.1-openssl"
+    local php_mm
+    php_mm="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
+
+    local extensions=(
+        "php${php_mm}-cli"
+        "php${php_mm}-fpm"
+        "php${php_mm}-mysql"
+        "php${php_mm}-curl"
+        "php${php_mm}-mbstring"
+        "php${php_mm}-xml"
+        "php${php_mm}-zip"
+        "php${php_mm}-gd"
+        "php${php_mm}-intl"
     )
 
-    for ext in "${EXTENSIONS[@]}"; do
-        if dpkg -l | grep -q "^ii.*$ext"; then
-            print_success "$ext already installed"
+    for ext in "${extensions[@]}"; do
+        if dpkg -l | grep -q "^ii.*${ext}"; then
+            print_success "${ext} already installed"
+            continue
+        fi
+
+        if apt-cache show "${ext}" > /dev/null 2>&1; then
+            print_step "Installing ${ext}..."
+            apt install -y "${ext}" > /dev/null
+            print_success "${ext} installed"
         else
-            print_step "Installing $ext..."
-            apt install -y "$ext" &> /dev/null
-            print_success "$ext installed"
+            print_warning "${ext} not available in apt repositories, skipping"
         fi
     done
 
@@ -148,18 +154,26 @@ step_2_install_php_extensions() {
 step_3_configure_php() {
     print_step "Step 3: Configuring PHP..."
 
-    PHP_INI="/etc/php/8.1/fpm/php.ini"
+    local php_mm
+    php_mm="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
 
-    if [[ -f "$PHP_INI" ]]; then
-        sed -i 's/^memory_limit = .*/memory_limit = 512M/' "$PHP_INI"
-        sed -i 's/^max_execution_time = .*/max_execution_time = 300/' "$PHP_INI"
-        sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 64M/' "$PHP_INI"
-        sed -i 's/^post_max_size = .*/post_max_size = 64M/' "$PHP_INI"
+    local php_ini="/etc/php/${php_mm}/fpm/php.ini"
+    local fpm_service="php${php_mm}-fpm"
 
-        systemctl restart php8.1-fpm
-        print_success "PHP configured and restarted"
+    if [[ -f "$php_ini" ]]; then
+        sed -i 's/^memory_limit = .*/memory_limit = 512M/' "$php_ini"
+        sed -i 's/^max_execution_time = .*/max_execution_time = 300/' "$php_ini"
+        sed -i 's/^upload_max_filesize = .*/upload_max_filesize = 64M/' "$php_ini"
+        sed -i 's/^post_max_size = .*/post_max_size = 64M/' "$php_ini"
+
+        if systemctl list-unit-files | grep -q "^${fpm_service}.service"; then
+            systemctl restart "${fpm_service}"
+            print_success "PHP configured and ${fpm_service} restarted"
+        else
+            print_warning "${fpm_service} service not found, skipped restart"
+        fi
     else
-        print_warning "PHP INI file not found at $PHP_INI"
+        print_warning "PHP INI file not found at ${php_ini}"
     fi
 }
 
@@ -181,8 +195,10 @@ step_4_install_wp_cli() {
 step_5_setup_database() {
     print_step "Step 5: Setting up database..."
 
-    read -sp "Enter MySQL root password: " MYSQL_ROOT_PASS
-    echo
+    if [[ -z "${MYSQL_ROOT_PASS:-}" ]]; then
+        read -sp "Enter MySQL root password: " MYSQL_ROOT_PASS
+        echo
+    fi
 
     # Generate random password for WordPress DB user
     DB_PASS=$(openssl rand -base64 32)
@@ -208,15 +224,8 @@ step_6_download_wordpress() {
     print_step "Step 6: Downloading WordPress..."
 
     if [[ -d "$WP_PATH" ]]; then
-        print_warning "Directory $WP_PATH already exists"
-        read -p "Remove and reinstall? (y/N): " -n 1 -r
-        echo
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            rm -rf "$WP_PATH"
-        else
-            print_error "Aborted"
-            exit 1
-        fi
+        print_warning "Directory $WP_PATH already exists, reinstalling..."
+        rm -rf "$WP_PATH"
     fi
 
     mkdir -p "$WP_PATH"
@@ -260,9 +269,15 @@ step_8_install_wordpress() {
 
     cd "$WP_PATH"
 
-    read -p "Enter admin email: " ADMIN_EMAIL
-    read -sp "Enter admin password: " ADMIN_PASS
-    echo
+    if [[ -z "${ADMIN_EMAIL:-}" ]]; then
+        read -p "Enter admin email: " ADMIN_EMAIL
+    fi
+    if [[ -z "${WP_ADMIN_PASS:-}" ]]; then
+        read -sp "Enter admin password: " ADMIN_PASS
+        echo
+    else
+        ADMIN_PASS="$WP_ADMIN_PASS"
+    fi
 
     wp core install \
         --url="http://${DOMAIN}" \
