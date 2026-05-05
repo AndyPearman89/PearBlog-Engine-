@@ -1,8 +1,10 @@
 # PearBlog Engine — Production Deployment Guide
 
-> **Version:** 6.0.0  
-> **Audience:** System administrators, DevOps engineers, WordPress developers  
+> **Version:** 8.0.0
+> **Last Updated:** 2026-05-05
+> **Audience:** System administrators, DevOps engineers, WordPress developers
 > **Prerequisites:** Root or sudo access to the web server, SSH access
+> **Security Status:** ✅ OWASP Top 10 Audited (Risk Score: 24/100 - Medium Risk)
 
 ---
 
@@ -135,12 +137,34 @@ Complete every item before deploying to production.
 - [ ] (Optional) Social media app credentials (Twitter/X, Facebook, LinkedIn)
 - [ ] (Optional) Slack/Discord webhook URLs for monitoring alerts
 
-### Security
+### Security (NEW in v8.0.0)
 
-- [ ] `wp-config.php` is outside the web root or protected by server rules
-- [ ] WordPress database table prefix changed from default `wp_`
-- [ ] File permissions correct (see §11)
+- [ ] **CRITICAL:** Run security audit: `wp pearblog security audit`
+- [ ] Verify risk score is below 30/100 (Medium Risk or lower)
+- [ ] All CRITICAL and HIGH severity issues resolved
+- [ ] Review SECURITY-AUDIT-REPORT-DETAILED.md
+- [ ] Admin user accounts use strong passwords (16+ characters)
+- [ ] Two-factor authentication enabled for admin accounts (recommended)
+- [ ] Unused admin accounts removed
+- [ ] File permissions set correctly (644 for files, 755 for directories)
+- [ ] wp-config.php is not publicly accessible
+- [ ] WordPress database table prefix changed from default `wp_` (recommended)
 - [ ] `WP_DEBUG` disabled (`define('WP_DEBUG', false)`)
+
+### PT24 Integration (NEW in v8.0.0)
+
+**Skip this section if not using PT24 Integration features**
+
+- [ ] PT24 database schema installed: `wp pearblog integration install`
+- [ ] Schema verification passed: `wp pearblog integration status`
+- [ ] PT24 environment variables configured (PT24_API_KEY, PT24_API_SECRET, etc.)
+- [ ] PT24 API credentials secured (not in version control)
+- [ ] Existing content linked to PT24: `wp pearblog integration link-content`
+- [ ] Content linking verified: `wp pearblog integration stats`
+- [ ] Lead attribution tested and working
+- [ ] Ranking sync configured and functional
+- [ ] PT24 API connectivity verified
+- [ ] PT24 monitoring and alerts configured
 
 ---
 
@@ -165,6 +189,23 @@ PearBlog Engine reads its sensitive values from WordPress options (set via the A
 | `pearblog_mailchimp_api_key` | Mailchimp API key | No |
 | `pearblog_convertkit_api_key` | ConvertKit API key | No |
 
+### PT24 Integration Options (NEW in v8.0.0)
+
+**Only required if using PT24 Integration features**
+
+| Option Key | Description | Required |
+|------------|-------------|----------|
+| `pearblog_pt24_api_key` | PT24 API key | **Yes** |
+| `pearblog_pt24_api_secret` | PT24 API secret | **Yes** |
+| `pearblog_pt24_api_url` | PT24 API endpoint URL | **Yes** |
+| `pearblog_pt24_enabled` | Enable PT24 integration (`1`/`0`) | **Yes** |
+| `pearblog_pt24_content_linking` | Enable automatic content linking | No |
+| `pearblog_pt24_lead_attribution` | Enable lead attribution tracking | No |
+| `pearblog_pt24_ranking_sync` | Enable ranking synchronization | No |
+| `pearblog_pt24_cache_ttl` | Cache TTL in seconds (default: 3600) | No |
+| `pearblog_pt24_batch_size` | Content linking batch size (default: 100) | No |
+| `pearblog_pt24_rate_limit` | API rate limit per hour (default: 100) | No |
+
 ### wp-config.php Constants (alternative / override)
 
 Placing API keys directly in `wp-config.php` takes precedence over the Admin UI values and keeps secrets out of the database:
@@ -174,6 +215,12 @@ Placing API keys directly in `wp-config.php` takes precedence over the Admin UI 
 define( 'PEARBLOG_OPENAI_API_KEY',   getenv( 'PEARBLOG_OPENAI_API_KEY' ) ?: '' );
 define( 'PEARBLOG_ALERT_EMAIL',      'ops@example.com' );
 define( 'PEARBLOG_ALERT_SLACK',      getenv( 'PEARBLOG_ALERT_SLACK' ) ?: '' );
+
+// ── PT24 Integration Secrets (NEW in v8.0.0) ─────────────────────────────────
+define( 'PEARBLOG_PT24_API_KEY',     getenv( 'PT24_API_KEY' ) ?: '' );
+define( 'PEARBLOG_PT24_API_SECRET',  getenv( 'PT24_API_SECRET' ) ?: '' );
+define( 'PEARBLOG_PT24_API_URL',     getenv( 'PT24_API_URL' ) ?: 'https://api.pt24.example.com/v1' );
+define( 'PEARBLOG_PT24_ENABLED',     getenv( 'PT24_API_ENABLED' ) ?: false );
 ```
 
 > **Security note:** Never commit real API keys to version control. Use environment variables injected at runtime (e.g., via systemd `EnvironmentFile`, Docker env files, or your hosting panel's environment variable manager).
@@ -1040,6 +1087,356 @@ wp pearblog queue add --topic="Best travel destinations 2026"
 
 # Run pipeline immediately (bypass cron)
 wp pearblog generate
+```
+
+---
+
+## 10.5 Security Audit & Vulnerability Scanning (NEW in v8.0.0)
+
+PearBlog Engine v8.0.0 includes comprehensive security audit tooling based on OWASP Top 10 2021 standards.
+
+### Running Security Audit
+
+**Before every production deployment:**
+
+```bash
+# Full security audit (generates detailed markdown report)
+wp pearblog security audit
+
+# Quick security scan (terminal output only)
+wp pearblog security scan
+
+# Export audit results as JSON
+wp pearblog security audit --format=json --output=security-audit.json
+
+# Filter by severity
+wp pearblog security audit --severity=high
+```
+
+**Standalone script (no WordPress required):**
+
+```bash
+# Useful for CI/CD pipelines
+php scripts/run-security-audit.php
+```
+
+### Interpreting Audit Results
+
+**Risk Score Guidelines:**
+
+| Score | Risk Level | Action Required |
+|-------|------------|-----------------|
+| 0-19 | 🟢 Low Risk | Proceed to production |
+| 20-39 | 🟡 Medium Risk | Review and address HIGH severity issues |
+| 40-69 | 🟠 High Risk | Fix CRITICAL issues before deployment |
+| 70-100 | 🔴 Critical Risk | **DO NOT DEPLOY** - Fix immediately |
+
+**Current Status (v8.0.0):**
+- Risk Score: 24/100 (Medium Risk) 🟡
+- Critical Issues: 0 ✅
+- High Severity: 4 (weak hashing, nonce verification)
+- **Deployment Status:** Safe for production with monitoring
+
+### Security Audit Reports
+
+After running the audit, review these generated files:
+
+1. **SECURITY-AUDIT-REPORT-DETAILED.md** - Complete findings with line numbers
+2. **SECURITY-AUDIT-REMEDIATION-SUMMARY.md** - Remediation tracking
+3. **SECURITY-AUDIT-REPORT.md** - Executive summary
+
+### OWASP Top 10 Coverage
+
+The security auditor checks for:
+
+- ✅ **A01: Broken Access Control** - Permission callbacks, capability checks
+- ✅ **A02: Cryptographic Failures** - Weak hashing, hardcoded credentials
+- ✅ **A03: Injection** - SQL injection, XSS vulnerabilities
+- ✅ **A04: Insecure Design** - CSRF protection, nonce verification
+- ✅ **A05: Security Misconfiguration** - Debug mode, security headers
+- ✅ **A06: Vulnerable Components** - Dependency versions
+- ✅ **A07: Authentication Failures** - Weak authentication patterns
+- ✅ **A08: Integrity Failures** - Unsafe deserialization
+- ✅ **A09: Logging Failures** - Security event logging
+- ✅ **A10: SSRF** - Server-side request forgery
+
+### Production Deployment Criteria
+
+**Minimum security requirements:**
+
+- [ ] Security audit completed within last 7 days
+- [ ] Risk score below 40/100
+- [ ] Zero CRITICAL severity issues
+- [ ] All HIGH severity issues reviewed and documented
+- [ ] SECURITY-AUDIT-REPORT-DETAILED.md reviewed by team lead
+- [ ] Known issues have mitigation plans
+- [ ] Monitoring alerts configured for suspicious activity
+
+### Quarterly Security Maintenance
+
+Schedule these tasks every 3 months:
+
+1. Run full security audit: `wp pearblog security audit`
+2. Update WordPress core to latest stable version
+3. Update all plugins (including PearBlog Engine)
+4. Review and rotate API keys
+5. Audit admin user accounts
+6. Review file permissions
+7. Check for WordPress security advisories
+8. Update security runbook with new findings
+
+### Emergency Security Response
+
+If critical vulnerability discovered in production:
+
+1. **Immediate:** Take site offline or enable maintenance mode
+2. **Assessment:** Run security audit to confirm issue
+3. **Fix:** Apply patches from SECURITY-AUDIT-REMEDIATION-SUMMARY.md
+4. **Verify:** Re-run audit to confirm fix
+5. **Deploy:** Push fixed code to production
+6. **Monitor:** Watch logs for 24 hours post-deployment
+7. **Document:** Update security incident log
+
+---
+
+## 10.6 PT24 Integration Setup (NEW in v8.0.0)
+
+PearBlog Engine v8.0.0 includes **PT24 Integration** - a content-to-lead marketplace system that links your content to lead generation opportunities.
+
+### Pre-Deployment Requirements
+
+Before deploying PT24 Integration features, ensure:
+
+1. **Database Schema Ready:** PT24 custom tables must be installed
+2. **Environment Variables Configured:** PT24 API credentials set
+3. **Content Migration Plan:** Strategy for linking existing content
+4. **Analytics Ready:** Tracking systems configured for lead attribution
+
+### Install PT24 Database Schema
+
+Run the schema installation command:
+
+```bash
+# Install PT24 integration tables
+wp pearblog integration install
+
+# Output:
+# Installing PT24 integration schema...
+# Success: Table pearblog_content_meta created successfully
+# Success: Table pearblog_content_links created successfully
+# Success: Table pearblog_lead_attribution created successfully
+# Success: Table pearblog_rankings created successfully
+# Success: Schema installation completed successfully!
+```
+
+**Tables Created:**
+- `pearblog_content_meta` - Content metadata and PT24 mappings
+- `pearblog_content_links` - Internal content links with click tracking
+- `pearblog_lead_attribution` - Lead-to-content attribution records
+- `pearblog_rankings` - Content ranking calculations
+
+### Verify Schema Installation
+
+```bash
+# Check integration status
+wp pearblog integration status
+
+# Output:
+# PT24 Integration Status
+# ========================
+# Version: 1.0.0
+# Installed: 2026-05-05 12:30:45
+#
+# Tables:
+#   ✓ pearblog_content_meta: 0 rows
+#   ✓ pearblog_content_links: 0 rows
+#   ✓ pearblog_lead_attribution: 0 rows
+#   ✓ pearblog_rankings: 0 rows
+```
+
+### PT24 Environment Variables
+
+Add these to your `.env` or hosting environment:
+
+```bash
+# PT24 API Configuration
+PT24_API_ENABLED=true
+PT24_API_URL=https://api.pt24.example.com/v1
+PT24_API_KEY=your_api_key_here
+PT24_API_SECRET=your_api_secret_here
+
+# PT24 Features
+PT24_CONTENT_LINKING_ENABLED=true
+PT24_LEAD_ATTRIBUTION_ENABLED=true
+PT24_RANKING_SYNC_ENABLED=true
+
+# PT24 Performance
+PT24_CACHE_TTL=3600
+PT24_BATCH_SIZE=100
+PT24_RATE_LIMIT=100
+```
+
+**Important:** Never commit API credentials to version control. Use environment-specific configuration.
+
+### Link Existing Content to PT24
+
+After schema installation, link your existing content:
+
+```bash
+# Link first 100 published posts
+wp pearblog integration link-content
+
+# Link 50 posts at a time
+wp pearblog integration link-content --batch=50
+
+# Re-link all content (force)
+wp pearblog integration link-content --force
+```
+
+**Progress output:**
+```
+Processing 100 posts...
+Progress: [=========================] 100/100 (100%)
+Success: Linked 100 posts to PT24 marketplace
+```
+
+### Verify Content Linking
+
+```bash
+# Check integration statistics
+wp pearblog integration stats
+
+# Output:
+# Integration Statistics
+# ======================
+# Content pieces: 250
+# Internal links: 1,450
+# Lead attributions: 0
+# Total clicks: 0
+# Total conversions: 0
+# Conversion rate: 0.00%
+```
+
+### Test Lead Attribution
+
+After deployment, test the attribution flow:
+
+1. **Visit Content Page:** Navigate to a post with PT24 links
+2. **Click Internal Link:** Click a PT24-tracked content link
+3. **Submit Lead Form:** Complete a lead generation form
+4. **Verify Attribution:** Check attribution was recorded
+
+```bash
+# Check attribution after test
+wp pearblog integration stats
+
+# Should show:
+# Lead attributions: 1
+# Total clicks: 1
+# Total conversions: 1
+# Conversion rate: 100.00%
+```
+
+### Enable Ranking Sync
+
+PT24 rankings track content performance in the marketplace:
+
+```bash
+# Sync rankings from PT24 API
+wp pearblog integration sync-rankings
+
+# Generate local rankings (if API unavailable)
+wp pearblog integration generate-rankings
+```
+
+### Post-Deployment Monitoring
+
+Monitor PT24 integration health:
+
+**Daily Checks:**
+- Verify content linking is processing new posts automatically
+- Check lead attribution is recording conversions
+- Monitor ranking sync job status
+
+**Weekly Reviews:**
+- Review conversion rate trends
+- Identify top-performing content
+- Optimize low-performing content links
+
+**Monthly Analysis:**
+- Full integration statistics report
+- ROI analysis on lead generation
+- Content strategy adjustments
+
+### Troubleshooting PT24 Integration
+
+**Schema installation fails:**
+```bash
+# Check WordPress database permissions
+wp db check
+
+# Verify table prefix
+wp db prefix
+
+# Re-attempt installation
+wp pearblog integration install
+```
+
+**Content linking not processing:**
+```bash
+# Check for unlinked content
+wp post list --post_type=post --meta_key=_pt24_linked --meta_compare=NOT_EXISTS --format=count
+
+# Manual linking
+wp pearblog integration link-content --batch=10
+```
+
+**Attribution not recording:**
+```bash
+# Verify schema exists
+wp pearblog integration status
+
+# Check PT24 API connectivity
+curl -H "Authorization: Bearer $PT24_API_KEY" $PT24_API_URL/health
+
+# Review error logs
+tail -f /var/www/html/wp-content/debug.log | grep PT24
+```
+
+**Ranking sync failures:**
+```bash
+# Check API credentials
+wp option get pearblog_pt24_api_key
+
+# Test API connection
+wp pearblog integration test-connection
+
+# Force sync
+wp pearblog integration sync-rankings --force
+```
+
+### Rollback PT24 Integration
+
+If issues occur, you can disable PT24 features without data loss:
+
+```bash
+# Disable PT24 in environment
+export PT24_API_ENABLED=false
+
+# Or in wp-config.php
+define('PT24_API_ENABLED', false);
+
+# Schema remains intact for future re-enablement
+```
+
+To fully uninstall:
+
+```bash
+# ⚠️ WARNING: This deletes all PT24 data
+wp pearblog integration uninstall --yes
+
+# Confirm deletion
+# Success: PT24 schema uninstalled. All data removed.
 ```
 
 ---
