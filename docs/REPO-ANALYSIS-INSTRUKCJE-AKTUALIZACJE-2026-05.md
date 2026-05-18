@@ -34,7 +34,7 @@ Ten dokument zbiera stan repozytorium `PearBlog-Engine-` w jednym miejscu: archi
 
 ## 2) Instrukcje operacyjne (praktyczny standard pracy)
 
-## A. Start lokalny (dev)
+### A. Start lokalny (dev)
 
 1. Sklonuj repo i przejdź do katalogu projektu.
 2. Dla testów pluginu:
@@ -44,20 +44,20 @@ Ten dokument zbiera stan repozytorium `PearBlog-Engine-` w jednym miejscu: archi
    - w root repo: `pip install -r scripts/requirements.txt` (jeśli plik istnieje)
    - `pip install pytest pytest-mock`
 
-## B. Walidacja minimalna przed wdrożeniem
+### B. Walidacja minimalna przed wdrożeniem
 
 1. **PHP syntax check** (co najmniej obszar zmieniany)
 2. **PHPUnit** (plugin)
 3. **pytest** (`tests/python/`)
 4. W przypadku zmian workflow/deploy: manualny przegląd `.github/workflows/*.yml`
 
-## C. Deploy
+### C. Deploy
 
 - Produkcyjny deploy pluginu i motywu realizuje `deploy.yml`.
 - Wymagane sekrety/zmienne: `SSH_HOST`, `SSH_USER`, `WP_PATH` oraz `SSH_PRIVATE_KEY` lub `SSH_PASSWORD`.
 - Po deployu wykonywany jest flush cache + smoke test klasy/menu Enterprise V8.
 
-## D. Dokumentowanie zmian
+### D. Dokumentowanie zmian
 
 - Przy zmianie funkcjonalnej aktualizuj co najmniej:
   - `README.md` (wejście dla użytkownika)
@@ -83,12 +83,12 @@ Wniosek: repo zawiera istniejące problemy testowe/jakościowe niezależne od te
 
 ## 4) Aktualizacje do wykonania (priorytety)
 
-## P0 (krytyczne)
+### P0 (krytyczne)
 
 1. Naprawić błędy składni PHP w plikach wskazanych przez lint.
 2. Ustabilizować failing tests w PHPUnit (szczególnie moduły SEO/REST i testy zależne od funkcji WordPress).
 
-## P1 (wysokie)
+### P1 (wysokie)
 
 1. Ujednolicić wersjonowanie dokumentacji (część plików opisuje v5/v6, podczas gdy README jest v8.0).
 2. Ograniczyć duplikację dokumentów i wskazać jeden “source of truth” per domena:
@@ -98,7 +98,7 @@ Wniosek: repo zawiera istniejące problemy testowe/jakościowe niezależne od te
    - Poradnik
    - Enterprise
 
-## P2 (organizacyjne)
+### P2 (organizacyjne)
 
 1. Dodać cykliczny audyt dokumentacji (np. kwartalnie).
 2. Wprowadzić krótkie “runbooki” operacyjne dla:
@@ -116,4 +116,3 @@ Wniosek: repo zawiera istniejące problemy testowe/jakościowe niezależne od te
    - aktualizacją dokumentacji operacyjnej
    - wpisem do changelogu
    - potwierdzoną walidacją (test/lint adekwatny do zmiany)
-
