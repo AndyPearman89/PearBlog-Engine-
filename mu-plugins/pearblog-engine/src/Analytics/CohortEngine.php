@@ -103,7 +103,7 @@ class CohortEngine {
 		endpoint: '" . esc_js( rest_url( 'pearblog/v1/cohort/event' ) ) . "',
 		nonce: '{$nonce}',
 		post_id: " . (int) get_the_ID() . ",
-		source: '" . esc_js( isset( \$_SERVER['HTTP_REFERER'] ) ? 'referral' : 'direct' ) . "',
+		source: '" . esc_js( isset( $_SERVER['HTTP_REFERER'] ) ? 'referral' : 'direct' ) . "',
 		track: function(stage, meta) {
 			if (!navigator.sendBeacon) return;
 			var data = new FormData();
