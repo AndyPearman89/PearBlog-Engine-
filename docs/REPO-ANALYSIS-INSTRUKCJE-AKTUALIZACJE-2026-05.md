@@ -73,7 +73,7 @@ Ten dokument zbiera stan repozytorium `PearBlog-Engine-` w jednym miejscu: archi
 
 - Python tests: **PASS** (`12 passed, 11 skipped`)
 - PHPUnit: **NIEPASS** (istniejące błędy/failures w repo)
-- PHP syntax check: wykryte błędy składni m.in.:
+- PHP syntax check: wykryto błędy składni m.in.:
   - `mu-plugins/pearblog-engine/src/Integration/ContentLinker.php`
   - `mu-plugins/pearblog-engine/src/Analytics/CohortEngine.php`
 
