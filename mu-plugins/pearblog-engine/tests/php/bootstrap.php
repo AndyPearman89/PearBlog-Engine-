@@ -103,8 +103,8 @@ if ( ! function_exists( 'get_bloginfo' ) ) {
 }
 
 if ( ! function_exists( 'get_site_url' ) ) {
-	function get_site_url(): string {
-		return 'https://example.com';
+	function get_site_url( ?int $blog_id = null, string $path = '', ?string $scheme = null ): string {
+		return 'https://example.com' . $path;
 	}
 }
 
@@ -146,12 +146,18 @@ if ( ! function_exists( 'wp_json_encode' ) ) {
 
 if ( ! function_exists( 'apply_filters' ) ) {
 	function apply_filters( string $hook, $value, ...$args ) {
+		foreach ( $GLOBALS['_filters'][ $hook ] ?? [] as $callback ) {
+			$value = $callback( $value, ...$args );
+		}
 		return $value;
 	}
 }
 
 if ( ! function_exists( 'do_action' ) ) {
 	function do_action( string $hook, ...$args ): void {
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) && is_callable( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			$GLOBALS['_action_handlers'][ $hook ]( ...$args );
+		}
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
@@ -335,7 +341,25 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
+		$GLOBALS['_rest_routes'][ "{$namespace}{$route}" ] = $args;
 		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+	function wp_create_nonce( string $action = '-1' ): string {
+		$nonce = 'nonce_' . bin2hex( random_bytes( 16 ) );
+		$GLOBALS['_nonces'][ $nonce ] = $action;
+		return $nonce;
+	}
+}
+
+if ( ! function_exists( 'wp_verify_nonce' ) ) {
+	function wp_verify_nonce( string $nonce, string $action = '-1' ) {
+		if ( isset( $GLOBALS['_nonces'][ $nonce ] ) && $GLOBALS['_nonces'][ $nonce ] === $action ) {
+			return 1;
+		}
+		return false;
 	}
 }
 
@@ -515,6 +539,75 @@ if ( ! function_exists( 'home_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ): string {
+		if ( isset( $GLOBALS['_post_type'] ) ) {
+			return (string) $GLOBALS['_post_type'];
+		}
+		if ( is_object( $post ) && isset( $post->post_type ) ) {
+			return (string) $post->post_type;
+		}
+		if ( is_int( $post ) || ctype_digit( (string) $post ) ) {
+			$item = $GLOBALS['_posts'][ (int) $post ] ?? null;
+			return $item->post_type ?? 'post';
+		}
+		return 'post';
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post', string $perm = '' ) {
+		$publish = isset( $GLOBALS['_post_list'] ) ? count( (array) $GLOBALS['_post_list'] ) : 0;
+		return (object) [ 'publish' => $publish ];
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $query, string $after = 'bottom' ): bool {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $query, $after ];
+		return true;
+	}
+}
+
+if ( ! function_exists( 'flush_rewrite_rules' ) ) {
+	function flush_rewrite_rules( bool $hard = true ): void {
+		$GLOBALS['_rewrite_flushed'] = true;
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, string $more = null ): string {
+		$words = preg_split( '/\s+/', trim( wp_strip_all_tags( $text ) ) );
+		if ( false === $words ) {
+			$words = [];
+		}
+		if ( count( $words ) <= $num_words ) {
+			return implode( ' ', $words );
+		}
+		$suffix = $more ?? '…';
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . $suffix;
+	}
+}
+
+if ( ! function_exists( 'wp_hash' ) ) {
+	function wp_hash( string $data, string $scheme = 'auth' ): string {
+		return hash( 'sha256', $scheme . '|' . $data );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( int $post_id = 0 ) {
+		return $GLOBALS['_post_tags'][ $post_id ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null, bool $translate = false ) {
+		$timestamp = time();
+		return 'U' === $format ? $timestamp : gmdate( $format, $timestamp );
+	}
+}
+
 if ( ! function_exists( 'get_home_url' ) ) {
 	function get_home_url( ?int $blog_id = null, string $path = '', string $scheme = 'http' ): string {
 		return 'https://example.com' . $path;
@@ -588,6 +681,9 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
+		if ( is_object( $post_id ) && isset( $post_id->ID ) ) {
+			$post_id = $post_id->ID;
+		}
 		return 'https://example.com/post/' . (int) $post_id . '/';
 	}
 }
@@ -876,6 +972,16 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 // Define ABSPATH if not already defined
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', '/tmp/' );
+}
+
+// Ensure wp-admin/includes/upgrade.php exists for require_once in tested code.
+$upgrade_file = ABSPATH . 'wp-admin/includes/upgrade.php';
+if ( ! file_exists( $upgrade_file ) ) {
+	$upgrade_dir = dirname( $upgrade_file );
+	if ( ! is_dir( $upgrade_dir ) ) {
+		mkdir( $upgrade_dir, 0755, true );
+	}
+	file_put_contents( $upgrade_file, "<?php\n" );
 }
 
 // dbDelta function stub

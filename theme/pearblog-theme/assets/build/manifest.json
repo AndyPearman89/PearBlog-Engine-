@@ -1,0 +1,14 @@
+{
+    "generated": "2026-05-15T23:32:12Z",
+    "version": "4.0.0",
+    "css": {
+        "pt24-cta.min.css": { "size": 6728 },
+        "pt24-home-v4.min.css": { "size": 7804 },
+        "pt24-landing.min.css": { "size": 10304 }
+    },
+    "js": {
+        "pt24-cta-tracking.min.js": { "size": 5522 },
+        "pt24-home-v4.min.js": { "size": 8769 },
+        "pt24-landing.min.js": { "size": 4225 }
+    }
+}

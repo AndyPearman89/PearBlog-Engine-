@@ -1,6 +1,6 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress — **v6.0**
+> Autonomous AI content production for WordPress — **v8.0**
 
 ---
 
@@ -9,6 +9,7 @@
 1. **[README.md](README.md)** — Project overview and architecture
 2. **[SETUP.md](SETUP.md)** — Installation & configuration (5 min)
 3. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
+4. **[docs/REPO-ANALYSIS-INSTRUKCJE-AKTUALIZACJE-2026-05.md](docs/REPO-ANALYSIS-INSTRUKCJE-AKTUALIZACJE-2026-05.md)** — Aktualny snapshot repo, instrukcje operacyjne i priorytety aktualizacji
 
 ---
 
@@ -241,6 +242,5 @@ Topic Queue
 
 ---
 
-*PearBlog Engine v6.0 — Enterprise-ready autonomous content system*  
-*Documentation last updated: 2026-04-12*
-
+*PearBlog Engine v8.0 — Enterprise-ready autonomous content system*  
+*Documentation last updated: 2026-05-18*
