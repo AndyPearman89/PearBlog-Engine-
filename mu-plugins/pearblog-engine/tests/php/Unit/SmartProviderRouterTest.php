@@ -10,6 +10,9 @@ declare(strict_types=1);
 namespace PearBlogEngine\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use PearBlogEngine\AI\AnthropicProvider;
+use PearBlogEngine\AI\GeminiProvider;
+use PearBlogEngine\AI\OpenAIProvider;
 use PearBlogEngine\AI\SmartProviderRouter;
 
 class SmartProviderRouterTest extends TestCase {
@@ -141,5 +144,42 @@ class SmartProviderRouterTest extends TestCase {
 		$stats = $this->router->get_stats();
 		$this->assertArrayHasKey( 'openai', $stats );
 		$this->assertSame( 1, $stats['openai']['requests'] );
+	}
+
+	// -----------------------------------------------------------------------
+	// route
+	// -----------------------------------------------------------------------
+
+	public function test_route_article_defaults_to_openai(): void {
+		$provider = $this->router->route( 'article', 1000 );
+		$this->assertInstanceOf( OpenAIProvider::class, $provider );
+	}
+
+	public function test_route_article_skips_open_circuit_and_falls_to_anthropic(): void {
+		update_option( 'pearblog_circuit_openai', [ 'open' => true ] );
+		$provider = $this->router->route( 'article', 1000 );
+		$this->assertInstanceOf( AnthropicProvider::class, $provider );
+	}
+
+	public function test_route_respects_custom_rules_order(): void {
+		update_option( SmartProviderRouter::OPTION_RULES, wp_json_encode( [
+			'article' => [ 'gemini', 'openai', 'anthropic' ],
+		] ) );
+		$provider = $this->router->route( 'article', 1000 );
+		$this->assertInstanceOf( GeminiProvider::class, $provider );
+	}
+
+	public function test_route_uses_configured_chain_for_unknown_content_type(): void {
+		update_option( SmartProviderRouter::OPTION_PRIMARY,   'anthropic' );
+		update_option( SmartProviderRouter::OPTION_SECONDARY, 'gemini' );
+		update_option( SmartProviderRouter::OPTION_TERTIARY,  'openai' );
+		$provider = $this->router->route( 'unknown-type', 1000 );
+		$this->assertInstanceOf( AnthropicProvider::class, $provider );
+	}
+
+	public function test_route_with_zero_budget_uses_last_provider_fallback(): void {
+		update_option( SmartProviderRouter::OPTION_BUDGET, 0 );
+		$provider = $this->router->route( 'article', 1000 );
+		$this->assertInstanceOf( GeminiProvider::class, $provider );
 	}
 }

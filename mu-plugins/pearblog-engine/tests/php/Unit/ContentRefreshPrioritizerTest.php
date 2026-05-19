@@ -12,6 +12,7 @@ declare(strict_types=1);
 namespace PearBlogEngine\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
+use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Content\ContentRefreshPrioritizer;
 
 class ContentRefreshPrioritizerTest extends TestCase {
@@ -202,5 +203,68 @@ class ContentRefreshPrioritizerTest extends TestCase {
 		foreach ( $ids as $id ) {
 			$this->assertIsInt( $id );
 		}
+	}
+
+	public function test_get_priority_queue_orders_by_score_descending(): void {
+		$GLOBALS['_post_list'] = [ 1, 2 ];
+		$GLOBALS['_posts'][1] = new \WP_Post( [ 'ID' => 1, 'post_date' => gmdate( 'Y-m-d H:i:s', time() - 60 * DAY_IN_SECONDS ) ] );
+		$GLOBALS['_posts'][2] = new \WP_Post( [ 'ID' => 2, 'post_date' => gmdate( 'Y-m-d H:i:s', time() - 60 * DAY_IN_SECONDS ) ] );
+
+		$GLOBALS['_post_meta'][1] = [
+			ContentRefreshEngine::META_REFRESHED_AT => [ gmdate( 'Y-m-d H:i:s', time() - 60 * DAY_IN_SECONDS ) ],
+			ContentRefreshEngine::META_TRAFFIC_TREND => [ 'growing' ],
+			'_pearblog_quality_score' => [ 90.0 ],
+			'_pearblog_ga4_views_30d' => [ 100 ],
+		];
+		$GLOBALS['_post_meta'][2] = [
+			ContentRefreshEngine::META_REFRESHED_AT => [ gmdate( 'Y-m-d H:i:s', time() - 60 * DAY_IN_SECONDS ) ],
+			ContentRefreshEngine::META_TRAFFIC_TREND => [ 'declining' ],
+			'_pearblog_quality_score' => [ 20.0 ],
+			'_pearblog_ga4_views_30d' => [ 1000 ],
+		];
+
+		$queue = $this->prioritizer->get_priority_queue( 30, 10, 0 );
+		$this->assertSame( 2, $queue[0]['post_id'] );
+	}
+
+	public function test_get_priority_queue_respects_min_score_filter(): void {
+		$GLOBALS['_post_list'] = [ 10, 11 ];
+		$GLOBALS['_posts'][10] = new \WP_Post( [ 'ID' => 10, 'post_date' => gmdate( 'Y-m-d H:i:s', time() - 90 * DAY_IN_SECONDS ) ] );
+		$GLOBALS['_posts'][11] = new \WP_Post( [ 'ID' => 11, 'post_date' => gmdate( 'Y-m-d H:i:s', time() - 10 * DAY_IN_SECONDS ) ] );
+
+		$GLOBALS['_post_meta'][10] = [
+			ContentRefreshEngine::META_TRAFFIC_TREND => [ 'declining' ],
+			'_pearblog_quality_score' => [ 10.0 ],
+			'_pearblog_ga4_views_30d' => [ 1000 ],
+		];
+		$GLOBALS['_post_meta'][11] = [
+			ContentRefreshEngine::META_TRAFFIC_TREND => [ 'growing' ],
+			'_pearblog_quality_score' => [ 95.0 ],
+			'_pearblog_ga4_views_30d' => [ 10 ],
+		];
+
+		$queue = $this->prioritizer->get_priority_queue( 1, 10, 70 );
+		$this->assertCount( 1, $queue );
+		$this->assertSame( 10, $queue[0]['post_id'] );
+	}
+
+	public function test_score_post_falls_back_to_post_date_when_refresh_meta_missing(): void {
+		$GLOBALS['_posts'][55] = new \WP_Post( [
+			'ID'        => 55,
+			'post_date' => gmdate( 'Y-m-d H:i:s', time() - 14 * DAY_IN_SECONDS ),
+		] );
+		$GLOBALS['_post_meta'][55] = [
+			'_pearblog_quality_score' => [ 70.0 ],
+			'_pearblog_traffic_trend' => [ 'stable' ],
+			'_pearblog_ga4_views_30d' => [ 200 ],
+		];
+
+		$entry = $this->prioritizer->score_post( 55 );
+		$this->assertGreaterThanOrEqual( 13, $entry['age_days'] );
+	}
+
+	public function test_score_post_uses_default_stale_days_when_dates_unavailable(): void {
+		$entry = $this->prioritizer->score_post( 99999 );
+		$this->assertSame( ContentRefreshEngine::DEFAULT_STALE_DAYS, $entry['age_days'] );
 	}
 }
