@@ -45,15 +45,21 @@ class TenantContext {
 
 		$domain = \get_site_url( $site_id );
 		$get_option = static function ( string $key, mixed $default ) use ( $site_id ) {
-			if ( \function_exists( 'is_multisite' ) ) {
-				$multisite = \is_multisite();
-			} else {
-				$multisite = \function_exists( 'get_blog_option' );
+			$has_blog_option = \function_exists( 'get_blog_option' );
+			$multisite       = \function_exists( 'is_multisite' ) ? \is_multisite() : $has_blog_option;
+
+			if ( $multisite && $has_blog_option ) {
+				return \get_blog_option( $site_id, $key, $default );
 			}
 
-			return $multisite
-				? \get_blog_option( $site_id, $key, $default )
-				: \get_option( $key, $default );
+			if ( $has_blog_option ) {
+				$site_value = \get_blog_option( $site_id, $key, null );
+				if ( null !== $site_value ) {
+					return $site_value;
+				}
+			}
+
+			return \get_option( $key, $default );
 		};
 
 		$profile = new SiteProfile(
