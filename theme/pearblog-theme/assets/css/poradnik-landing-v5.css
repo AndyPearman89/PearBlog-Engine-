@@ -694,3 +694,151 @@
         transition: none;
     }
 }
+
+/* ============================================================
+   TRUST BAR V2 — Tagline System V5
+   ============================================================ */
+
+.plv5-trust-bar-v2 {
+    background: linear-gradient(135deg, var(--plv5-teal) 0%, var(--plv5-teal-dark) 100%);
+    color: #fff;
+    padding: 1.6rem 1rem;
+}
+
+.plv5-trust-bar__grid {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+}
+
+.plv5-trust-bar__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 0.5rem 2.8rem;
+}
+
+.plv5-trust-bar__number {
+    font-family: var(--plv5-font-display);
+    font-size: clamp(1.7rem, 3.5vw, 2.4rem);
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: #fff;
+}
+
+.plv5-trust-bar__label {
+    margin-top: 0.3rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.plv5-trust-bar__sep {
+    width: 1px;
+    height: 3rem;
+    background: rgba(255, 255, 255, 0.25);
+    flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+    .plv5-trust-bar__sep { display: none; }
+    .plv5-trust-bar__item { padding: 0.6rem 1.2rem; }
+}
+
+/* ============================================================
+   CONTENT CATEGORIES — Conversion Headlines V5
+   ============================================================ */
+
+.plv5-categories {
+    padding: clamp(2.8rem, 5vw, 5.5rem) 1rem;
+    background: var(--plv5-paper-2);
+}
+
+.plv5-cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1.4rem;
+    margin-top: 2.2rem;
+}
+
+.plv5-cat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    padding: 1.6rem 1.4rem 1.4rem;
+    border: 1px solid var(--plv5-line);
+    border-radius: var(--plv5-radius-md);
+    background: #fff;
+    box-shadow: var(--plv5-shadow-1);
+    transition: box-shadow var(--plv5-transition), transform var(--plv5-transition);
+}
+
+.plv5-cat-card:hover {
+    box-shadow: var(--plv5-shadow-2);
+    transform: translateY(-3px);
+}
+
+.plv5-cat-card__icon {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.plv5-cat-card h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: var(--plv5-ink);
+}
+
+.plv5-cat-card__headline {
+    margin: 0;
+    font-size: 0.97rem;
+    font-weight: 600;
+    color: var(--plv5-teal-dark);
+    line-height: 1.45;
+    flex: 1;
+}
+
+.plv5-cat-card__link {
+    display: inline-flex;
+    align-items: center;
+    margin-top: 0.6rem;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--plv5-teal);
+    text-decoration: none;
+    text-underline-offset: 3px;
+    transition: color var(--plv5-transition);
+}
+
+.plv5-cat-card__link:hover {
+    color: var(--plv5-teal-dark);
+    text-decoration: underline;
+}
+
+/* CTA alternate action links */
+.plv5-cta-alt-actions {
+    display: flex;
+    gap: 1.2rem;
+    flex-wrap: wrap;
+    margin-top: 0.5rem;
+}
+
+.plv5-cta-alt-link {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--plv5-teal-dark);
+    text-decoration: none;
+    text-underline-offset: 3px;
+    transition: color var(--plv5-transition);
+}
+
+.plv5-cta-alt-link:hover {
+    color: var(--plv5-coral-dark);
+    text-decoration: underline;
+}

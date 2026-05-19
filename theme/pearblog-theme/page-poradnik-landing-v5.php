@@ -3,9 +3,10 @@
  * Template Name: Poradnik.pro Landing V5
  *
  * Full adaptive conversion landing for Poradnik.pro
+ * Decision Engine Platform — Tagline System V5
  *
  * @package PearBlog
- * @version 5.2.0
+ * @version 5.3.0
  */
 
 $ab_param = isset($_GET['ab']) ? sanitize_key(wp_unslash($_GET['ab'])) : '';
@@ -29,12 +30,12 @@ $industry_candidate = $industry_param ?: $industry_param_alt;
 
 $industry_copy_map = [
     'general' => [
-        'hero_title' => 'Od pytania do najlepszej oferty w 60 sekund',
-        'hero_subtitle' => 'Opisujesz potrzebę, my znajdujemy sprawdzonych specjalistów. Porównujesz i wybierasz bez presji, bez opłat i bez zobowiązań.',
-        'hero_placeholder' => 'Np. remont łazienki, kredyt hipoteczny, instalacja fotowoltaiki',
-        'cta_placeholder' => 'Np. projekt domu, audyt prawny, instalacja pompy ciepła',
-        'panel_title' => 'Co dostajesz po zgłoszeniu?',
-        'pills' => ['50 000+ użytkowników', '100% darmowe dla klientów', 'Pierwsze oferty nawet w 2h'],
+        'hero_title' => 'Od problemu do decyzji.',
+        'hero_subtitle' => 'Porównania, rankingi, koszty i specjaliści w jednym miejscu.',
+        'hero_placeholder' => 'np. koszt remontu łazienki, pompa ciepła czy gaz, dobry prawnik Katowice',
+        'cta_placeholder' => 'Np. ile kosztuje budowa domu, najlepszy hydraulik Kraków',
+        'panel_title' => 'Co dostajesz na Poradnik.pro?',
+        'pills' => ['+100 000 porad', '+20 000 specjalistów', '+500 000 decyzji miesięcznie'],
     ],
     'budownictwo' => [
         'hero_title' => 'Znajdź solidną ekipę budowlaną bez przepłacania',
@@ -75,22 +76,22 @@ $industry_copy = $industry_copy_map[$industry_key];
 
 $ab_copy = [
     'a' => [
-        'kicker' => 'Poradnik.pro dla decyzji bez chaosu',
-        'hero_button' => 'Znajdź ekspertów',
-        'cta_kicker' => 'Ostatni krok',
-        'cta_title' => 'Opisz temat i odbierz najlepsze oferty',
-        'cta_subtitle' => 'Nie trać kolejnych dni na szukanie po omacku. Jedno zgłoszenie i pełne porównanie na tacy.',
-        'cta_button' => 'Wyślij zgłoszenie',
-        'mobile_cta' => 'Zacznij teraz',
+        'kicker' => 'Decision Engine Platform',
+        'hero_button' => '🔎 Znajdź rozwiązanie',
+        'cta_kicker' => 'Zamknij research dziś',
+        'cta_title' => 'Opisz problem. Znajdziemy rozwiązanie.',
+        'cta_subtitle' => 'Porównania, rankingi i eksperci w jednym miejscu — bez chaosu i godzin szukania.',
+        'cta_button' => '🔎 Znajdź rozwiązanie',
+        'mobile_cta' => 'Znajdź rozwiązanie',
     ],
     'b' => [
-        'kicker' => 'Poradnik.pro: szybkie porównanie, świadoma decyzja',
-        'hero_button' => 'Porównaj oferty',
-        'cta_kicker' => 'Zamknij temat dziś',
-        'cta_title' => 'Jedno zgłoszenie. Kilka ofert. Lepsza decyzja.',
-        'cta_subtitle' => 'Wypełnij formularz i zobacz konkretne propozycje od zweryfikowanych specjalistów bez zobowiązań.',
-        'cta_button' => 'Chcę oferty',
-        'mobile_cta' => 'Porównaj oferty',
+        'kicker' => 'Tu kończy się research.',
+        'hero_button' => '🔎 Znajdź rozwiązanie',
+        'cta_kicker' => 'Decyduj teraz',
+        'cta_title' => 'Tu kończy się research. Zaczyna się działanie.',
+        'cta_subtitle' => 'Poradniki, porównania, kalkulatory i eksperci — w jednym systemie. Decyduj w minutach.',
+        'cta_button' => '🔎 Znajdź rozwiązanie',
+        'mobile_cta' => 'Decyduj teraz',
     ],
 ];
 
@@ -102,7 +103,7 @@ $hero_subtitle = get_option('plv5_hero_subtitle', $industry_copy['hero_subtitle'
 get_header('minimal');
 ?>
 
-<main class="poradnik-landing-v5" data-ab-variant="<?php echo esc_attr($ab_variant); ?>" data-industry="<?php echo esc_attr($industry_key); ?>" data-landing-version="5.2.0">
+<main class="poradnik-landing-v5" data-ab-variant="<?php echo esc_attr($ab_variant); ?>" data-industry="<?php echo esc_attr($industry_key); ?>" data-landing-version="5.3.0">
     <section class="plv5-hero" id="top">
         <div class="plv5-hero__noise" aria-hidden="true"></div>
         <div class="pb-container plv5-grid">
@@ -120,9 +121,9 @@ get_header('minimal');
                 <form id="plv5HeroForm" class="plv5-form" novalidate>
                     <input type="hidden" name="ab_variant" value="<?php echo esc_attr($ab_variant); ?>">
                     <input type="hidden" name="industry" value="<?php echo esc_attr($industry_key); ?>">
-                    <input type="hidden" name="landing_version" value="5.2.0">
+                    <input type="hidden" name="landing_version" value="5.3.0">
 
-                    <label class="plv5-form__label" for="plv5-service">Jakiej usługi szukasz?</label>
+                    <label class="plv5-form__label" for="plv5-service">Czego szukasz lub jaki masz problem?</label>
                     <div class="plv5-form__row">
                         <input
                             id="plv5-service"
@@ -157,47 +158,45 @@ get_header('minimal');
             <aside class="plv5-hero__panel" data-reveal>
                 <h2><?php echo esc_html($industry_copy['panel_title']); ?></h2>
                 <ul class="plv5-checklist">
-                    <li>Krótki briefing potrzeb i budżetu</li>
-                    <li>Do 5 dopasowanych ofert od zweryfikowanych firm</li>
-                    <li>Porównanie cen, terminów i opinii w jednym miejscu</li>
-                    <li>Wsparcie zespołu Poradnik.pro przy wyborze</li>
+                    <li>Tłumaczymy problem i porównujemy opcje</li>
+                    <li>Pokazujemy realne koszty przed decyzją</li>
+                    <li>Łączymy z właściwym specjalistą w Twojej okolicy</li>
+                    <li>Prowadzenie od problemu do gotowego działania</li>
                 </ul>
 
                 <div class="plv5-mini-stats">
                     <div>
-                        <strong class="plv5-stat__number" data-count="50000">0</strong>
-                        <span>klientów</span>
+                        <strong class="plv5-stat__number" data-count="100000">0</strong>
+                        <span>porad</span>
                     </div>
                     <div>
-                        <strong class="plv5-stat__number" data-count="5000">0</strong>
-                        <span>ekspertów</span>
+                        <strong class="plv5-stat__number" data-count="20000">0</strong>
+                        <span>specjalistów</span>
                     </div>
                     <div>
-                        <strong class="plv5-stat__number" data-count="4.8">0</strong>
-                        <span>średnia ocena</span>
+                        <strong class="plv5-stat__number" data-count="500000">0</strong>
+                        <span>decyzji/mies.</span>
                     </div>
                 </div>
             </aside>
         </div>
     </section>
 
-    <section class="plv5-trust-strip" data-reveal>
-        <div class="pb-container">
-            <p class="plv5-trust-strip__title">Wspominani w mediach i branży:</p>
-            <div class="plv5-trust-strip__logos">
-                <?php
-                $logos = get_option('plv5_partner_logos', [
-                    ['name' => 'Forbes'],
-                    ['name' => 'Business Insider'],
-                    ['name' => 'Rzeczpospolita'],
-                    ['name' => 'Money.pl'],
-                    ['name' => 'Gazeta Wyborcza'],
-                ]);
-
-                foreach ($logos as $logo):
-                ?>
-                    <span><?php echo esc_html($logo['name']); ?></span>
-                <?php endforeach; ?>
+    <section class="plv5-trust-strip plv5-trust-bar-v2" data-reveal>
+        <div class="pb-container plv5-trust-bar__grid">
+            <div class="plv5-trust-bar__item">
+                <strong class="plv5-trust-bar__number">+100 000</strong>
+                <span class="plv5-trust-bar__label">porad</span>
+            </div>
+            <div class="plv5-trust-bar__sep" aria-hidden="true"></div>
+            <div class="plv5-trust-bar__item">
+                <strong class="plv5-trust-bar__number">+20 000</strong>
+                <span class="plv5-trust-bar__label">specjalistów</span>
+            </div>
+            <div class="plv5-trust-bar__sep" aria-hidden="true"></div>
+            <div class="plv5-trust-bar__item">
+                <strong class="plv5-trust-bar__number">+500 000</strong>
+                <span class="plv5-trust-bar__label">decyzji miesięcznie</span>
             </div>
         </div>
     </section>
@@ -205,26 +204,77 @@ get_header('minimal');
     <section class="plv5-how" id="jak-to-dziala">
         <div class="pb-container">
             <div class="plv5-section-head" data-reveal>
-                <p class="plv5-kicker">Proces</p>
+                <p class="plv5-kicker">Content → Decision → Lead</p>
                 <h2>Jak działa Poradnik.pro?</h2>
-                <p>Minimalny wysiłek z Twojej strony. Maksymalna kontrola nad wyborem wykonawcy.</p>
+                <p>Od wyszukiwania do wykonania — bez chaosu i godzin szukania.</p>
             </div>
 
             <div class="plv5-steps">
                 <article class="plv5-step" data-reveal>
                     <span class="plv5-step__index">01</span>
-                    <h3>Opisz potrzebę</h3>
-                    <p>Napisz czego szukasz, gdzie i na kiedy. Formularz zajmuje około minuty.</p>
+                    <h3>Zrozum temat</h3>
+                    <p>Wpadasz z SEO lub wyszukiwania. Dostajesz analizę, porównanie i rankingi — bez chaosu.</p>
                 </article>
                 <article class="plv5-step" data-reveal>
                     <span class="plv5-step__index">02</span>
-                    <h3>Odbierz oferty</h3>
-                    <p>Zweryfikowane firmy odpowiadają konkretną ceną, terminem i zakresem realizacji.</p>
+                    <h3>Porównaj i policz</h3>
+                    <p>Przeglądasz opcje, widzisz koszty w kalkulatorach i wybierasz najlepsze rozwiązanie.</p>
                 </article>
                 <article class="plv5-step" data-reveal>
                     <span class="plv5-step__index">03</span>
-                    <h3>Porównaj i wybierz</h3>
-                    <p>Masz pełny obraz rynku i wybierasz na swoich warunkach, bez presji sprzedażowej.</p>
+                    <h3>Działaj ze specjalistą</h3>
+                    <p>Decyzja to początek. Wysyłasz lead, specjalista kontaktuje się z Tobą. Czas na realizację.</p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- ================================================== -->
+    <!-- CONTENT CATEGORIES — Conversion Headlines V5       -->
+    <!-- ================================================== -->
+    <section class="plv5-categories" id="kategorie">
+        <div class="pb-container">
+            <div class="plv5-section-head" data-reveal>
+                <p class="plv5-kicker">Platforma decyzji</p>
+                <h2>Wszystko, czego potrzebujesz do decyzji</h2>
+            </div>
+
+            <div class="plv5-cat-grid">
+                <article class="plv5-cat-card" data-reveal>
+                    <span class="plv5-cat-card__icon" aria-hidden="true">📖</span>
+                    <h3>Poradniki</h3>
+                    <p class="plv5-cat-card__headline">Zrozum temat zanim wydasz pieniądze.</p>
+                    <a href="<?php echo esc_url(home_url('/poradniki/')); ?>" class="plv5-cat-card__link">Przeglądaj poradniki</a>
+                </article>
+                <article class="plv5-cat-card" data-reveal>
+                    <span class="plv5-cat-card__icon" aria-hidden="true">⚖️</span>
+                    <h3>Porównania</h3>
+                    <p class="plv5-cat-card__headline">Najważniejszy moment to wybór.</p>
+                    <a href="<?php echo esc_url(home_url('/porownania/')); ?>" class="plv5-cat-card__link">Zobacz porównania</a>
+                </article>
+                <article class="plv5-cat-card" data-reveal>
+                    <span class="plv5-cat-card__icon" aria-hidden="true">🏆</span>
+                    <h3>Rankingi</h3>
+                    <p class="plv5-cat-card__headline">Nie szukasz. Wybierasz sprawdzonych.</p>
+                    <a href="<?php echo esc_url(home_url('/rankingi/')); ?>" class="plv5-cat-card__link">Przeglądaj rankingi</a>
+                </article>
+                <article class="plv5-cat-card" data-reveal>
+                    <span class="plv5-cat-card__icon" aria-hidden="true">🧮</span>
+                    <h3>Kalkulatory</h3>
+                    <p class="plv5-cat-card__headline">Liczby przed decyzją.</p>
+                    <a href="<?php echo esc_url(home_url('/kalkulatory/')); ?>" class="plv5-cat-card__link">Oblicz koszty</a>
+                </article>
+                <article class="plv5-cat-card" data-reveal>
+                    <span class="plv5-cat-card__icon" aria-hidden="true">🤖</span>
+                    <h3>AI Doradca</h3>
+                    <p class="plv5-cat-card__headline">Powiedz czego potrzebujesz. Resztę analizujemy za Ciebie.</p>
+                    <a href="<?php echo esc_url(home_url('/ai-doradca/')); ?>" class="plv5-cat-card__link">Zapytaj AI</a>
+                </article>
+                <article class="plv5-cat-card" data-reveal>
+                    <span class="plv5-cat-card__icon" aria-hidden="true">🧑‍💼</span>
+                    <h3>Eksperci</h3>
+                    <p class="plv5-cat-card__headline">Decyzja to początek. Teraz czas na wykonanie.</p>
+                    <a href="<?php echo esc_url(home_url('/eksperci/')); ?>" class="plv5-cat-card__link">Znajdź specjalistę</a>
                 </article>
             </div>
         </div>
@@ -233,26 +283,26 @@ get_header('minimal');
     <section class="plv5-advantage">
         <div class="pb-container plv5-advantage__grid">
             <div class="plv5-advantage__copy" data-reveal>
-                <p class="plv5-kicker">Pełna adaptacja decyzji</p>
-                <h2>Front, który prowadzi użytkownika od problemu do decyzji</h2>
+                <p class="plv5-kicker">Decision Engine Platform</p>
+                <h2>Nie czytasz godzinami. Decydujesz w minutach.</h2>
                 <p>
-                    Przebudowaliśmy doświadczenie tak, aby użytkownik zawsze wiedział, co zrobić dalej.
-                    Czytelna hierarchia informacji, szybkie formularze i konkretne argumenty zamiast marketingowego szumu.
+                    Poradnik.pro upraszcza decyzje, skraca research i pokazuje najlepsze opcje.
+                    AI + wiedza + porównania + wykonawcy — połączone w jednym flow.
                 </p>
-                <a href="#plv5CtaForm" class="plv5-btn plv5-btn--ghost plv5-smooth-scroll">Rozpocznij teraz</a>
+                <a href="#plv5CtaForm" class="plv5-btn plv5-btn--ghost plv5-smooth-scroll">🔎 Znajdź rozwiązanie</a>
             </div>
             <div class="plv5-advantage__cards">
                 <article class="plv5-adv-card" data-reveal>
-                    <h3>Weryfikacja firm</h3>
-                    <p>Sprawdzenie danych i wiarygodności przed dopuszczeniem do platformy.</p>
+                    <h3>Marketplace decyzji</h3>
+                    <p>Porównania, rankingi i kalkulatory razem — wybierasz na podstawie faktów, nie domysłów.</p>
                 </article>
                 <article class="plv5-adv-card" data-reveal>
-                    <h3>Realne opinie</h3>
-                    <p>Oceny od klientów po zakończonych współpracach, bez sztucznych recenzji.</p>
+                    <h3>AI-assisted search</h3>
+                    <p>Inteligentne rekomendacje, które tłumaczą problem i prowadzą do najlepszej opcji.</p>
                 </article>
                 <article class="plv5-adv-card" data-reveal>
-                    <h3>Lepsze warunki</h3>
-                    <p>Konkurencyjne oferty i większa szansa na oszczędność czasu oraz budżetu.</p>
+                    <h3>Lead engine</h3>
+                    <p>Gotowy do działania? Specjalista z Twoją okolicy odbierze zgłoszenie i wróci w godzinach.</p>
                 </article>
             </div>
         </div>
@@ -262,15 +312,15 @@ get_header('minimal');
         <div class="pb-container plv5-stats-grid">
             <div class="plv5-stat">
                 <strong class="plv5-stat__number" data-count="100000">0</strong>
-                <span>Zrealizowanych projektów</span>
+                <span>porad na platformie</span>
             </div>
             <div class="plv5-stat">
-                <strong class="plv5-stat__number" data-count="98">0</strong>
-                <span>% pozytywnych rekomendacji</span>
+                <strong class="plv5-stat__number" data-count="20000">0</strong>
+                <span>specjalistów</span>
             </div>
             <div class="plv5-stat">
-                <strong class="plv5-stat__number" data-count="24">0</strong>
-                <span>godziny maks. na pierwszą odpowiedź</span>
+                <strong class="plv5-stat__number" data-count="500000">0</strong>
+                <span>decyzji miesięcznie</span>
             </div>
             <div class="plv5-stat">
                 <strong class="plv5-stat__number" data-count="4.8">0</strong>
@@ -397,9 +447,9 @@ get_header('minimal');
             <form id="plv5CtaForm" class="plv5-form" novalidate>
                 <input type="hidden" name="ab_variant" value="<?php echo esc_attr($ab_variant); ?>">
                 <input type="hidden" name="industry" value="<?php echo esc_attr($industry_key); ?>">
-                <input type="hidden" name="landing_version" value="5.2.0">
+                <input type="hidden" name="landing_version" value="5.3.0">
 
-                <label class="plv5-form__label" for="plv5-cta-service">Temat zapytania</label>
+                <label class="plv5-form__label" for="plv5-cta-service">Opisz problem lub czego szukasz</label>
                 <input
                     id="plv5-cta-service"
                     type="text"
@@ -422,6 +472,11 @@ get_header('minimal');
                 <button type="submit" class="plv5-btn plv5-btn--primary plv5-btn--full">
                     <?php echo esc_html($variant_copy['cta_button']); ?>
                 </button>
+
+                <div class="plv5-cta-alt-actions">
+                    <a href="<?php echo esc_url(home_url('/zapytaj/')); ?>" class="plv5-cta-alt-link">❓ Zadaj pytanie</a>
+                    <a href="<?php echo esc_url(home_url('/eksperci/')); ?>" class="plv5-cta-alt-link">🧑‍💼 Znajdź specjalistę</a>
+                </div>
             </form>
         </div>
     </section>
