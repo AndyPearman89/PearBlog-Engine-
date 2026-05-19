@@ -45,6 +45,17 @@ use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 use PearBlogEngine\Analytics\ConversionFlowTracker;
 use PearBlogEngine\Database\PoradnikV3Schema;
 use PearBlogEngine\Integration\PT24Bridge;
+// V6 new modules.
+use PearBlogEngine\Core\EventBus;
+use PearBlogEngine\Core\FeatureFlags;
+use PearBlogEngine\Core\ModuleRegistry;
+use PearBlogEngine\Rankings\RankingService;
+use PearBlogEngine\Rankings\RankingsController;
+use PearBlogEngine\Specialists\SpecialistsModule;
+use PearBlogEngine\Local\LocalHubManager;
+use PearBlogEngine\Search\SearchEngine;
+use PearBlogEngine\Revenue\SubscriptionEngine;
+use PearBlogEngine\Revenue\SponsoredPlacement;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -147,6 +158,27 @@ class Plugin {
 
 		// Poradnik V3 – Conversion tracking and analytics.
 		ConversionFlowTracker::init();
+
+		// ── V6 Platform Modules ──────────────────────────────────────────────
+
+		// Rankings V6: weighted scoring + sponsor engine + REST /pearblog/v1/rankings.
+		add_action( 'rest_api_init', static function (): void {
+			( new RankingsController() )->register_routes();
+		} );
+		ModuleRegistry::add( 'rankings_v6', 'Rankings V6 (Score + Sponsor)', '1.0.0', 'PearBlogEngine\\Rankings' );
+
+		// Specialists Marketplace: profiles, reviews, badges, verification.
+		( new SpecialistsModule() )->register();
+
+		// Local Hub Network: vertical hubs, programmatic pages, local SEO.
+		( new LocalHubManager() )->register();
+
+		// Search Engine: WP + Meilisearch/Typesense abstraction + autocomplete.
+		( new SearchEngine() )->register();
+
+		// Revenue: subscriptions + sponsored placements.
+		( new SubscriptionEngine() )->register();
+		( new SponsoredPlacement() )->register();
 
 		// Create V3 database tables on activation.
 		register_activation_hook( PEARBLOG_PLUGIN_FILE, static function (): void {
