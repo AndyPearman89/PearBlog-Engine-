@@ -2,6 +2,55 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [Unreleased] — V6 Platform Continuation
+
+### Added — V6 Platform: REST APIs, CLI, GraphQL extensions
+
+#### A/B Test REST Controller
+- **`ABTestController`** (`src/Testing/ABTestController.php`) — Full REST API for the A/B Testing Framework
+  - `GET /pearblog/v1/abtests` — list all tests with computed averages and leading-variant indicator
+  - `POST /pearblog/v1/abtests` — create a new split-test (topic, modifier_a, modifier_b)
+  - `GET /pearblog/v1/abtests/{id}` — retrieve a specific test
+  - `DELETE /pearblog/v1/abtests/{id}` — delete a test
+  - `POST /pearblog/v1/abtests/{id}/promote` — force-elect winner on demand
+  - `GET /pearblog/v1/abtests/{id}/results` — statistical summary (avg scores, relative lift %, maturity countdown)
+  - `POST /pearblog/v1/abtests/promote-all` — bulk-promote all mature tests
+
+#### Analytics REST Controller
+- **`AnalyticsController`** (`src/Analytics/AnalyticsController.php`) — REST API exposing AnalyticsDashboard data
+  - `GET /pearblog/v1/analytics/summary` — site-wide GA4 summary + published post count
+  - `GET /pearblog/v1/analytics/top-posts?limit=N` — top N posts by blended performance score, enriched with permalink
+  - `POST /pearblog/v1/analytics/sync` — trigger full GA4 sync for all published posts
+  - `POST /pearblog/v1/analytics/sync/{post_id}` — sync a single post's GA4 view counters
+  - `GET /pearblog/v1/analytics/predictive` — AI predictive signals: trending (momentum ≥ 1.5×), at-risk (momentum < 0.5), refresh candidates (>90 days stale)
+  - `GET /pearblog/v1/analytics/export?limit=N` — full analytics dataset as JSON (views, quality, refresh history, traffic trend)
+
+#### V6 WP-CLI Command (`wp pearblog v6`)
+- **`V6Command`** (`src/CLI/V6Command.php`) — comprehensive V6 platform CLI
+  - `wp pearblog v6 stats` — module registry overview, A/B test counts, analytics sync status, refresh totals
+  - `wp pearblog v6 ab-tests list [--status=running|completed|all]` — tabular A/B test report
+  - `wp pearblog v6 ab-tests create <topic> --modifier-a=... --modifier-b=...` — create split-test
+  - `wp pearblog v6 ab-tests promote` — promote all mature tests
+  - `wp pearblog v6 analytics sync` — trigger GA4 bulk sync
+  - `wp pearblog v6 analytics top [--limit=N]` — top posts by performance
+  - `wp pearblog v6 analytics predictive` — three-section predictive report (trending / at-risk / refresh-needed)
+  - `wp pearblog v6 compare list [--limit=N]` — list stored comparisons
+  - `wp pearblog v6 calc list [--limit=N]` — list stored calculators
+  - `wp pearblog v6 refresh batch [--stale-days=N] [--batch=N]` — trigger content-refresh batch
+
+#### GraphQL V6 Extensions
+- **`GraphQLController`** (`src/API/GraphQLController.php`) — extended with 5 V6 query resolvers
+  - `rankings(limit: Int)` — top specialist/service rankings by final score
+  - `abTests(status: String)` — A/B tests list (all | running | completed)
+  - `analyticsTop(limit: Int)` — top posts enriched with GA4 + performance scores
+  - `comparisons(limit: Int)` — comparison records from `pearblog_comparisons` table
+  - `calculators(limit: Int)` — calculator records from `pearblog_calculators` table
+
+#### Plugin Wiring
+- **`Plugin::boot()`** — wires `ABTestController`, `AnalyticsController`, and `GraphQLController` into `rest_api_init`; registers `wp pearblog v6` WP-CLI command
+
+---
+
 ## [8.0.0] — 2026-05-04
 
 ### Added — v8.0 Enterprise Admin Complete

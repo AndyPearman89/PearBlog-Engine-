@@ -62,6 +62,10 @@ use PearBlogEngine\Compare\ComparisonSchema;
 use PearBlogEngine\Calculators\CalculatorController;
 use PearBlogEngine\Calculators\CalculatorsSchema;
 use PearBlogEngine\AI\DecisionAssistant;
+// V6 REST controllers.
+use PearBlogEngine\Testing\ABTestController;
+use PearBlogEngine\Analytics\AnalyticsController;
+use PearBlogEngine\API\GraphQLController;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -201,6 +205,15 @@ class Plugin {
 		// AI Decision Layer: RecommendationEngine + DecisionAssistant advisor + FAQ generator.
 		add_action( 'rest_api_init', static function (): void {
 			( new DecisionAssistant() )->register_routes();
+			// V6 A/B Testing REST API.
+			( new ABTestController() )->register_routes();
+			// V6 Analytics REST API.
+			( new AnalyticsController() )->register_routes();
+			// GraphQL endpoint (standalone + WPGraphQL extension).
+			( new GraphQLController() )->register_rest_route();
+		} );
+		add_action( 'graphql_register_types', static function (): void {
+			( new GraphQLController() )->register_graphql_types();
 		} );
 		ModuleRegistry::add( 'ai_decision_v6', 'AI Decision Assistant V6', '1.0.0', 'PearBlogEngine\\AI' );
 
@@ -224,6 +237,7 @@ class Plugin {
 			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
 			\WP_CLI::add_command( 'pearblog integration', \PearBlogEngine\CLI\IntegrationCommand::class );
 			\WP_CLI::add_command( 'pearblog security', \PearBlogEngine\CLI\SecurityCommand::class );
+			\WP_CLI::add_command( 'pearblog v6', \PearBlogEngine\CLI\V6Command::class );
 		}
 	}
 

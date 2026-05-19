@@ -13,6 +13,12 @@
  *   - `stats`         – pipeline stats (articles today, total, success rate)
  *   - `topPosts`      – top N posts by quality score (id, title, score, views)
  *   - `health`        – system health summary (api_ok, circuit_open, queue_size)
+ *   V6 additions:
+ *   - `rankings`      – top N specialist/service rankings
+ *   - `abTests`       – list A/B tests with scores
+ *   - `analyticsTop`  – top posts by performance score (GA4-enriched)
+ *   - `comparisons`   – list comparisons by category
+ *   - `calculators`   – list available calculators
  *
  * Authentication:
  *   Same bearer-token mechanism as the REST AutomationController:
@@ -28,6 +34,7 @@ namespace PearBlogEngine\API;
 use PearBlogEngine\Content\QualityScorer;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Analytics\AnalyticsDashboard;
+use PearBlogEngine\Testing\ABTestEngine;
 
 /**
  * Registers and resolves PearBlog GraphQL queries.
@@ -212,6 +219,17 @@ class GraphQLController {
 				return $this->resolve_top_posts( (int) ( $args['limit'] ?? 10 ) );
 			case 'health':
 				return $this->resolve_health();
+			// V6 queries.
+			case 'rankings':
+				return $this->resolve_rankings( (int) ( $args['limit'] ?? 10 ) );
+			case 'abTests':
+				return $this->resolve_ab_tests( $args['status'] ?? 'all' );
+			case 'analyticsTop':
+				return $this->resolve_analytics_top( (int) ( $args['limit'] ?? 10 ) );
+			case 'comparisons':
+				return $this->resolve_comparisons( (int) ( $args['limit'] ?? 10 ) );
+			case 'calculators':
+				return $this->resolve_calculators( (int) ( $args['limit'] ?? 20 ) );
 			default:
 				return null;
 		}
@@ -288,5 +306,151 @@ class GraphQLController {
 			'queueSize'       => count( $queue->all() ),
 			'lastPipelineRun' => (string) get_option( 'pearblog_last_pipeline_run', 'never' ),
 		];
+	}
+
+	// -----------------------------------------------------------------------
+	// V6 Resolvers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Resolve `rankings` — top N ranking entries.
+	 *
+	 * @param int $limit
+	 * @return array<int, array{id: int, slug: string, title: string, score: float}>
+	 */
+	public function resolve_rankings( int $limit = 10 ): array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pearblog_rankings';
+		if ( ! $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) ) {
+			return [];
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, slug, title, final_score FROM `{$table}` ORDER BY final_score DESC LIMIT %d",
+				$limit
+			),
+			ARRAY_A
+		);
+
+		return array_map( fn( $r ) => [
+			'id'    => (int)   $r['id'],
+			'slug'  => (string)$r['slug'],
+			'title' => (string)$r['title'],
+			'score' => (float) $r['final_score'],
+		], $rows ?: [] );
+	}
+
+	/**
+	 * Resolve `abTests` — list of A/B tests.
+	 *
+	 * @param string $status 'all' | 'running' | 'completed'
+	 * @return array
+	 */
+	public function resolve_ab_tests( string $status = 'all' ): array {
+		$engine = new ABTestEngine();
+		$tests  = $engine->list_tests();
+
+		if ( 'running' === $status ) {
+			$tests = array_filter( $tests, fn( $t ) => null === $t['winner'] );
+		} elseif ( 'completed' === $status ) {
+			$tests = array_filter( $tests, fn( $t ) => null !== $t['winner'] );
+		}
+
+		$out = [];
+		foreach ( $tests as $test_id => $test ) {
+			$out[] = [
+				'id'      => $test_id,
+				'topic'   => $test['topic'],
+				'status'  => null !== $test['winner'] ? 'completed' : 'running',
+				'winner'  => $test['winner'],
+				'runsA'   => $test['variants']['a']['runs'],
+				'runsB'   => $test['variants']['b']['runs'],
+				'avgA'    => $engine->get_average_score( $test_id, 'a' ),
+				'avgB'    => $engine->get_average_score( $test_id, 'b' ),
+			];
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Resolve `analyticsTop` — top posts enriched with GA4 data.
+	 *
+	 * @param int $limit
+	 * @return array
+	 */
+	public function resolve_analytics_top( int $limit = 10 ): array {
+		$dashboard = new AnalyticsDashboard();
+		$raw       = $dashboard->get_top_performing_posts( $limit );
+
+		return array_map( fn( $p ) => [
+			'postId'       => $p['post_id'],
+			'title'        => $p['title'],
+			'url'          => get_permalink( $p['post_id'] ) ?: '',
+			'views30d'     => $p['views_30d'],
+			'qualityScore' => $p['quality_score'],
+			'performScore' => $p['performance_score'],
+		], $raw );
+	}
+
+	/**
+	 * Resolve `comparisons` — list comparison records.
+	 *
+	 * @param int $limit
+	 * @return array
+	 */
+	public function resolve_comparisons( int $limit = 10 ): array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pearblog_comparisons';
+		if ( ! $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) ) {
+			return [];
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, slug, title, category, created_at FROM `{$table}` ORDER BY created_at DESC LIMIT %d",
+				$limit
+			),
+			ARRAY_A
+		);
+
+		return array_map( fn( $r ) => [
+			'id'        => (int)   $r['id'],
+			'slug'      => (string)$r['slug'],
+			'title'     => (string)$r['title'],
+			'category'  => (string)$r['category'],
+			'createdAt' => (string)$r['created_at'],
+		], $rows ?: [] );
+	}
+
+	/**
+	 * Resolve `calculators` — list available calculators.
+	 *
+	 * @param int $limit
+	 * @return array
+	 */
+	public function resolve_calculators( int $limit = 20 ): array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pearblog_calculators';
+		if ( ! $wpdb->get_var( $wpdb->prepare( "SHOW TABLES LIKE %s", $table ) ) ) {
+			return [];
+		}
+		// phpcs:ignore WordPress.DB.DirectDatabaseQuery, WordPress.DB.PreparedSQL.NotPrepared
+		$rows = $wpdb->get_results(
+			$wpdb->prepare(
+				"SELECT id, slug, title, category, created_at FROM `{$table}` ORDER BY created_at DESC LIMIT %d",
+				$limit
+			),
+			ARRAY_A
+		);
+
+		return array_map( fn( $r ) => [
+			'id'        => (int)   $r['id'],
+			'slug'      => (string)$r['slug'],
+			'title'     => (string)$r['title'],
+			'category'  => (string)$r['category'],
+			'createdAt' => (string)$r['created_at'],
+		], $rows ?: [] );
 	}
 }
