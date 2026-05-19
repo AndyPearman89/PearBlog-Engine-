@@ -681,6 +681,9 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
+		if ( is_object( $post_id ) && isset( $post_id->ID ) ) {
+			$post_id = $post_id->ID;
+		}
 		return 'https://example.com/post/' . (int) $post_id . '/';
 	}
 }
