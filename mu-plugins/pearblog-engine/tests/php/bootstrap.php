@@ -155,6 +155,9 @@ if ( ! function_exists( 'apply_filters' ) ) {
 
 if ( ! function_exists( 'do_action' ) ) {
 	function do_action( string $hook, ...$args ): void {
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) && is_callable( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			$GLOBALS['_action_handlers'][ $hook ]( ...$args );
+		}
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
@@ -538,6 +541,9 @@ if ( ! function_exists( 'home_url' ) ) {
 
 if ( ! function_exists( 'get_post_type' ) ) {
 	function get_post_type( $post = null ): string {
+		if ( isset( $GLOBALS['_post_type'] ) ) {
+			return (string) $GLOBALS['_post_type'];
+		}
 		if ( is_object( $post ) && isset( $post->post_type ) ) {
 			return (string) $post->post_type;
 		}
@@ -558,7 +564,7 @@ if ( ! function_exists( 'wp_count_posts' ) ) {
 
 if ( ! function_exists( 'add_rewrite_rule' ) ) {
 	function add_rewrite_rule( string $regex, string $query, string $after = 'bottom' ): bool {
-		$GLOBALS['_rewrite_rules'][] = compact( 'regex', 'query', 'after' );
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $query, $after ];
 		return true;
 	}
 }
@@ -583,6 +589,19 @@ if ( ! function_exists( 'wp_trim_words' ) ) {
 if ( ! function_exists( 'wp_hash' ) ) {
 	function wp_hash( string $data, string $scheme = 'auth' ): string {
 		return hash( 'sha256', $scheme . '|' . $data );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( int $post_id = 0 ) {
+		return $GLOBALS['_post_tags'][ $post_id ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null, bool $translate = false ) {
+		$timestamp = time();
+		return 'U' === $format ? $timestamp : gmdate( $format, $timestamp );
 	}
 }
 
@@ -947,6 +966,16 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 // Define ABSPATH if not already defined
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', '/tmp/' );
+}
+
+// Ensure wp-admin/includes/upgrade.php exists for require_once in tested code.
+$upgrade_file = ABSPATH . 'wp-admin/includes/upgrade.php';
+if ( ! file_exists( $upgrade_file ) ) {
+	$upgrade_dir = dirname( $upgrade_file );
+	if ( ! is_dir( $upgrade_dir ) ) {
+		mkdir( $upgrade_dir, 0777, true );
+	}
+	file_put_contents( $upgrade_file, "<?php\n" );
 }
 
 // dbDelta function stub

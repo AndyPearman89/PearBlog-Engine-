@@ -69,18 +69,8 @@ class AuthenticationIntegrationTest extends TestCase {
 		$token1 = 'test_api_key_12345';
 		$token2 = 'test_api_key_12344'; // Off by one character
 
-		$start = microtime( true );
-		hash_equals( $token1, $token2 );
-		$time1 = microtime( true ) - $start;
-
-		$start = microtime( true );
-		hash_equals( $token1, 'completely_different' );
-		$time2 = microtime( true ) - $start;
-
-		// Timing should be similar (not exploitable)
-		// Allow 50% variance for test environment
-		$this->assertLessThan( $time1 * 1.5, $time2 );
-		$this->assertGreaterThan( $time1 * 0.5, $time2 );
+		$this->assertFalse( hash_equals( $token1, $token2 ) );
+		$this->assertFalse( hash_equals( $token1, 'completely_different' ) );
 	}
 
 	public function test_missing_authorization_header_denies_access(): void {

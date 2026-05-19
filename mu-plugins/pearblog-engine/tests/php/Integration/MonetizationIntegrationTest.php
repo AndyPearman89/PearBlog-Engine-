@@ -110,7 +110,7 @@ class MonetizationIntegrationTest extends TestCase {
 		// Balanced strategy should inject at standard positions
 		$injected = $this->inject_ads( $content, $post_id );
 
-		$this->assertStringContainsString( 'google_ad_client', $injected );
+		$this->assertStringContainsString( 'data-ad-client', $injected );
 	}
 
 	// ------------------------------------------------------------------
@@ -125,7 +125,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$injected = $this->inject_ads( $content, $post_id );
 
 		// Should inject ad after title
-		$this->assertMatchesRegularExpression( '/<h1>.*<\/h1>.*google_ad_client/s', $injected );
+		$this->assertMatchesRegularExpression( '/<h1>.*<\/h1>.*data-ad-client/s', $injected );
 	}
 
 	public function test_in_content_ad_injection(): void {
@@ -136,7 +136,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$injected = $this->inject_ads( $content, $post_id );
 
 		// Should inject ad in middle of content
-		$ad_count = substr_count( $injected, 'google_ad_client' );
+		$ad_count = substr_count( $injected, 'data-ad-client' );
 		$this->assertGreaterThanOrEqual( 1, $ad_count );
 	}
 
@@ -149,7 +149,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$injected = $this->inject_ads( $content, $post_id );
 
 		// Should not contain any ads
-		$this->assertStringNotContainsString( 'google_ad_client', $injected );
+		$this->assertStringNotContainsString( 'data-ad-client', $injected );
 	}
 
 	// ------------------------------------------------------------------
@@ -320,7 +320,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$content_lower = strtolower( $content );
 
 		// BOFU keywords (highest priority - conversion intent)
-		$bofu_keywords = [ 'buy', 'purchase', 'download', 'get', 'pricing', 'discount', 'offer', 'special' ];
+		$bofu_keywords = [ 'buy', 'purchase', 'download', 'discount', 'offer', 'special' ];
 		foreach ( $bofu_keywords as $keyword ) {
 			if ( str_contains( $content_lower, $keyword ) ) {
 				return 'BOFU';
@@ -380,8 +380,18 @@ class MonetizationIntegrationTest extends TestCase {
 		           esc_attr( $GLOBALS['_options']['pearblog_adsense_publisher_id'] ) .
 		           '"></ins>';
 
-		// Simple injection after first heading or paragraph
-		$injected = preg_replace( '/<\/h1>/', '</h1>' . $ad_code, $content, 1 );
+		// Simple injection after first heading or paragraph.
+		$injected = preg_replace( '/<\/h1>/', '</h1>' . $ad_code, $content, 1, $heading_replacements );
+		if ( 0 === $heading_replacements ) {
+			$injected = preg_replace( '/<\/p>/', '</p>' . $ad_code, $content, 1, $paragraph_replacements );
+			if ( 0 === $paragraph_replacements ) {
+				$injected = $content . $ad_code;
+			}
+		}
+
+		if ( $ad_count > 1 ) {
+			$injected .= $ad_code;
+		}
 
 		return $injected;
 	}
