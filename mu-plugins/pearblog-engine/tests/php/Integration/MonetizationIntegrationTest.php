@@ -320,6 +320,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$content_lower = strtolower( $content );
 
 		// BOFU keywords (highest priority - conversion intent)
+		// Keep BOFU strictly transactional so mixed comparison content can still resolve to MOFU.
 		$bofu_keywords = [ 'buy', 'purchase', 'download', 'discount', 'offer', 'special' ];
 		foreach ( $bofu_keywords as $keyword ) {
 			if ( str_contains( $content_lower, $keyword ) ) {

@@ -348,7 +348,7 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 
 if ( ! function_exists( 'wp_create_nonce' ) ) {
 	function wp_create_nonce( string $action = '-1' ): string {
-		$nonce = 'nonce_' . md5( $action );
+		$nonce = 'nonce_' . hash( 'sha256', $action );
 		$GLOBALS['_nonces'][ $nonce ] = $action;
 		return $nonce;
 	}
