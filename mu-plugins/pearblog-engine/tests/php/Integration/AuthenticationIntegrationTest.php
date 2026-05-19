@@ -18,6 +18,7 @@ use PHPUnit\Framework\TestCase;
  * Integration test suite for authentication and authorization flows.
  */
 class AuthenticationIntegrationTest extends TestCase {
+	private const TIMING_RATIO_THRESHOLD = 3.0;
 
 	protected function setUp(): void {
 		parent::setUp();
@@ -85,7 +86,8 @@ class AuthenticationIntegrationTest extends TestCase {
 		$this->assertGreaterThan( 0.0, $time1 );
 		$this->assertGreaterThan( 0.0, $time2 );
 		$ratio = $time1 > $time2 ? $time1 / $time2 : $time2 / $time1;
-		$this->assertLessThan( 3.0, $ratio );
+		// Keep a loose threshold to avoid CI noise from CPU scheduling jitter.
+		$this->assertLessThan( self::TIMING_RATIO_THRESHOLD, $ratio );
 	}
 
 	public function test_missing_authorization_header_denies_access(): void {

@@ -348,7 +348,7 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 
 if ( ! function_exists( 'wp_create_nonce' ) ) {
 	function wp_create_nonce( string $action = '-1' ): string {
-		$nonce = 'nonce_' . hash( 'sha256', $action );
+		$nonce = 'nonce_' . bin2hex( random_bytes( 16 ) );
 		$GLOBALS['_nonces'][ $nonce ] = $action;
 		return $nonce;
 	}
@@ -577,7 +577,10 @@ if ( ! function_exists( 'flush_rewrite_rules' ) ) {
 
 if ( ! function_exists( 'wp_trim_words' ) ) {
 	function wp_trim_words( string $text, int $num_words = 55, string $more = null ): string {
-		$words = preg_split( '/\s+/', trim( wp_strip_all_tags( $text ) ) ) ?: [];
+		$words = preg_split( '/\s+/', trim( wp_strip_all_tags( $text ) ) );
+		if ( false === $words ) {
+			$words = [];
+		}
 		if ( count( $words ) <= $num_words ) {
 			return implode( ' ', $words );
 		}
@@ -973,7 +976,7 @@ $upgrade_file = ABSPATH . 'wp-admin/includes/upgrade.php';
 if ( ! file_exists( $upgrade_file ) ) {
 	$upgrade_dir = dirname( $upgrade_file );
 	if ( ! is_dir( $upgrade_dir ) ) {
-		mkdir( $upgrade_dir, 0777, true );
+		mkdir( $upgrade_dir, 0755, true );
 	}
 	file_put_contents( $upgrade_file, "<?php\n" );
 }
