@@ -114,7 +114,8 @@ class SearchIndexer {
 		match ( $driver ) {
 			'meilisearch' => $this->push_to_meilisearch( $document ),
 			'typesense'   => $this->push_to_typesense( $document ),
-			default       => null,
+			'wordpress'   => null, // WordPress native search — no external index needed.
+			default       => error_log( "[PearBlogEngine] SearchIndexer: unknown driver '{$driver}', skipping index push for post {$post->ID}." ),
 		};
 	}
 
@@ -129,7 +130,8 @@ class SearchIndexer {
 		match ( $driver ) {
 			'meilisearch' => $this->delete_from_meilisearch( $post_id ),
 			'typesense'   => $this->delete_from_typesense( $post_id ),
-			default       => null,
+			'wordpress'   => null,
+			default       => error_log( "[PearBlogEngine] SearchIndexer: unknown driver '{$driver}', skipping delete for post {$post_id}." ),
 		};
 	}
 

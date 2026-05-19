@@ -28,8 +28,10 @@ use PearBlogEngine\DecisionPlatform\RankingEngine as BaseRankingEngine;
  */
 class RankingService {
 
-	private const CACHE_PREFIX = 'pearblog_ranking_';
-	private const CACHE_TTL    = 3600; // 1 hour
+	private const CACHE_PREFIX        = 'pearblog_ranking_';
+	private const CACHE_TTL           = 3600; // 1 hour
+	/** Default response rate used when per-specialist tracking is not yet active. */
+	private const DEFAULT_RESPONSE_RATE = 0.0;
 
 	private BaseRankingEngine      $generator;
 	private RankingScoreCalculator $scorer;
@@ -244,7 +246,7 @@ class RankingService {
 			$metrics          = [
 				'avg_rating'         => $entry['avg_rating'] ?? 0,
 				'review_count'       => $entry['review_count'] ?? 0,
-				'response_rate'      => 80.0, // default until response tracking available
+				'response_rate'      => self::DEFAULT_RESPONSE_RATE,
 				'verification_level' => $entry['verification'] ?? 'none',
 				'last_active_days'   => 14,   // default
 				'is_premium'         => $entry['is_premium'] ?? false,

@@ -29,6 +29,12 @@ class SubscriptionEngine {
 	private const OPTION_PREFIX = 'pearblog_sub_';
 
 	/**
+	 * Sentinel value meaning this tier has no lead quota limit.
+	 * Used instead of PHP_INT_MAX for clarity and safe UI display.
+	 */
+	private const UNLIMITED_LEADS = -1;
+
+	/**
 	 * Tier definitions.
 	 *
 	 * @var array<string, array<string, mixed>>
@@ -64,7 +70,7 @@ class SubscriptionEngine {
 		'enterprise' => [
 			'label'          => 'Enterprise',
 			'price_pln'      => 99900,
-			'leads_month'    => PHP_INT_MAX,
+			'leads_month'    => self::UNLIMITED_LEADS,
 			'is_premium'     => true,
 			'analytics'      => true,
 			'api_access'     => true,
@@ -186,8 +192,8 @@ class SubscriptionEngine {
 		$tier        = $sub['tier'] ?? 'free';
 		$monthly_max = (int) ( self::$tiers[ $tier ]['leads_month'] ?? 3 );
 
-		if ( $monthly_max === PHP_INT_MAX ) {
-			return PHP_INT_MAX;
+		if ( $monthly_max === self::UNLIMITED_LEADS ) {
+			return PHP_INT_MAX; // unlimited
 		}
 
 		$used_this_month = (int) get_post_meta( $specialist_id, '_pearblog_leads_this_month', true );

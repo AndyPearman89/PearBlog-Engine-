@@ -201,7 +201,7 @@ class LocalHubManager {
 	 */
 	private function generate_single_page( string $vertical, array $hub, string $city ): ?array {
 		$slug     = sanitize_title( "{$vertical}-{$city}" );
-		$title    = "Najlepszy {$hub['label']} - {$city} | Ranking {$this->current_year()}";
+		$title    = 'Najlepszy ' . esc_html( $hub['label'] ) . ' - ' . esc_html( $city ) . ' | Ranking ' . $this->current_year();
 		$content  = $this->build_hub_page_content( $hub, $city );
 
 		// Check if page exists.

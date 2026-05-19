@@ -58,8 +58,9 @@ class ReviewSystem {
 			return null;
 		}
 
-		// Anti-fraud: hash IP so we never store PII.
-		$ip_hash = hash( 'sha256', $_SERVER['REMOTE_ADDR'] ?? '' );
+		// Anti-fraud: hash the client IP so we never store PII.
+		// Respect trusted proxy headers when available.
+		$ip_hash = hash( 'sha256', $this->client_ip() );
 
 		// Rate-limit: max 1 review per specialist per IP per 24 h.
 		if ( $this->has_recent_review( $specialist_id, $ip_hash ) ) {
@@ -211,5 +212,32 @@ class ReviewSystem {
 				$ip_hash
 			)
 		) > 0;
+	}
+
+	/**
+	 * Resolve the client IP address, respecting trusted proxy headers.
+	 *
+	 * Priority: X-Forwarded-For (first IP) → HTTP_CLIENT_IP → REMOTE_ADDR.
+	 * The resolved IP is used only for rate-limiting and is SHA-256-hashed
+	 * before storage — the raw IP is never persisted.
+	 *
+	 * @return string
+	 */
+	private function client_ip(): string {
+		// X-Forwarded-For may be a comma-separated list; take the leftmost (client) IP.
+		$forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? '';
+		if ( $forwarded ) {
+			$first = trim( explode( ',', $forwarded )[0] );
+			if ( filter_var( $first, FILTER_VALIDATE_IP ) ) {
+				return $first;
+			}
+		}
+
+		$client_ip = $_SERVER['HTTP_CLIENT_IP'] ?? '';
+		if ( $client_ip && filter_var( $client_ip, FILTER_VALIDATE_IP ) ) {
+			return $client_ip;
+		}
+
+		return $_SERVER['REMOTE_ADDR'] ?? '';
 	}
 }
