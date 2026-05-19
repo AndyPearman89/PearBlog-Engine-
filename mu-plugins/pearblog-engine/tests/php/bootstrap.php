@@ -886,6 +886,58 @@ if ( ! function_exists( 'dbDelta' ) ) {
 	}
 }
 
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+	function sanitize_textarea_field( string $str ): string {
+		return htmlspecialchars( strip_tags( $str ), ENT_QUOTES, 'UTF-8' );
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post', string $perm = '' ): \stdClass {
+		$counts           = new \stdClass();
+		$counts->publish  = count( $GLOBALS['_post_list'] ?? [] );
+		$counts->draft    = 0;
+		$counts->trash    = 0;
+		return $counts;
+	}
+}
+
+if ( ! function_exists( 'get_post_field' ) ) {
+	function get_post_field( string $field, $post, string $context = 'display' ) {
+		$post_id = is_object( $post ) ? $post->ID : (int) $post;
+		$p       = $GLOBALS['_posts'][ $post_id ] ?? null;
+		if ( null === $p ) {
+			return '';
+		}
+		return $p->$field ?? '';
+	}
+}
+
+if ( ! function_exists( 'get_posts' ) ) {
+	function get_posts( array $args = [] ): array {
+		$posts = array_values( $GLOBALS['_post_list'] ?? [] );
+		if ( isset( $args['fields'] ) && 'ids' === $args['fields'] ) {
+			return array_column( $posts, 'ID' );
+		}
+		return $posts;
+	}
+}
+
+if ( ! function_exists( 'get_the_title' ) ) {
+	function get_the_title( $post = 0 ): string {
+		$post_id = is_object( $post ) ? $post->ID : (int) $post;
+		$p       = $GLOBALS['_posts'][ $post_id ] ?? null;
+		return $p ? (string) $p->post_title : '';
+	}
+}
+
+if ( ! function_exists( 'get_permalink' ) ) {
+	function get_permalink( $post = 0 ): string {
+		$post_id = is_object( $post ) ? $post->ID : (int) $post;
+		return "https://example.com/?p={$post_id}";
+	}
+}
+
 // PSR-4 autoloader for src/ classes.
 spl_autoload_register( function ( string $class ): void {
 	$prefix   = 'PearBlogEngine\\';

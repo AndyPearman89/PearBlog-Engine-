@@ -66,6 +66,9 @@ use PearBlogEngine\AI\DecisionAssistant;
 use PearBlogEngine\Testing\ABTestController;
 use PearBlogEngine\Analytics\AnalyticsController;
 use PearBlogEngine\API\GraphQLController;
+// V9.0 modules.
+use PearBlogEngine\AI\SmartProviderRouter;
+use PearBlogEngine\Content\ContentRefreshPrioritizer;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -216,6 +219,13 @@ class Plugin {
 			( new GraphQLController() )->register_graphql_types();
 		} );
 		ModuleRegistry::add( 'ai_decision_v6', 'AI Decision Assistant V6', '1.0.0', 'PearBlogEngine\\AI' );
+
+		// V9.0: Smart Provider Router — budget-aware multi-provider AI orchestration.
+		( new SmartProviderRouter() )->register();
+		ModuleRegistry::add( 'smart_router_v9', 'Smart Provider Router V9', '1.0.0', 'PearBlogEngine\\AI' );
+
+		// V9.0: Content Refresh Prioritizer — priority-scored refresh queue (no hooks, consumed by V6 CLI).
+		ModuleRegistry::add( 'refresh_prioritizer_v9', 'Content Refresh Prioritizer V9', '1.0.0', 'PearBlogEngine\\Content' );
 
 		// Create V3 database tables on activation.
 		register_activation_hook( PEARBLOG_PLUGIN_FILE, static function (): void {

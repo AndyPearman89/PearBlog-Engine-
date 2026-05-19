@@ -2,6 +2,49 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [Unreleased] — V9.0 Smart Orchestration Layer
+
+### Added — V9.0: Tests, Smart Provider Router (F7), Content Refresh Prioritizer (F6)
+
+#### PHPUnit Test Coverage (+83 tests)
+- **`ABTestControllerTest`** (`tests/php/Unit/ABTestControllerTest.php`) — 23 unit tests covering all 7 REST endpoints: list, create, get, delete, promote, get_results, promote_all; plus permission checking
+- **`AnalyticsControllerTest`** (`tests/php/Unit/AnalyticsControllerTest.php`) — 20 unit tests covering all 6 REST endpoints: summary, top_posts, sync_all, sync_post, predictive, export_data; plus permission checking
+- **`SmartProviderRouterTest`** (`tests/php/Unit/SmartProviderRouterTest.php`) — 17 unit tests: provider chain defaults, budget tracking, stats accumulation, error tracking, reset, status
+- **`ContentRefreshPrioritizerTest`** (`tests/php/Unit/ContentRefreshPrioritizerTest.php`) — 23 unit tests: all four scoring components (age, traffic, quality, trend), score_post integration, priority queue/prioritized IDs
+
+#### Test Bootstrap Stubs
+- Added `sanitize_textarea_field()`, `wp_count_posts()`, `get_post_field()`, `get_posts()`, `get_the_title()`, `get_permalink()` stubs — fixes 3 pre-existing test errors and supports new controller tests
+
+#### Smart Provider Router (F7 — Multi-Provider AI Orchestration)
+- **`SmartProviderRouter`** (`src/AI/SmartProviderRouter.php`) — budget-aware multi-provider AI orchestration
+  - Routes generation requests to the optimal provider based on content type, daily budget, and circuit-breaker state
+  - Provider chain: primary → secondary → tertiary; each configurable via WP option
+  - Content-type defaults: `article` (quality first: openai→anthropic→gemini), `summarize`/`classify` (cost first: gemini→openai→anthropic), `faq` (structured: openai→gemini→anthropic)
+  - Custom routing rules stored as JSON in `pearblog_router_routing_rules` option
+  - `record_result()` — tracks per-provider requests, tokens, cost, and error counts
+  - `get_status()` — summary for admin UI / REST consumers
+  - `reset_stats()` — clears stats and daily spend
+  - Daily spend resets automatically at midnight; budget ceiling defaults to $50/day
+
+#### Content Refresh Prioritizer (F6 — Smart Content Refresh Automation)
+- **`ContentRefreshPrioritizer`** (`src/Content/ContentRefreshPrioritizer.php`) — priority-scored refresh queue
+  - Composite 0–100 urgency score: age (35%) + traffic (25%) + quality (25%) + trend (15%)
+  - `age_score()` — 0 (fresh) → 100 (≥365 days stale)
+  - `traffic_score()` — 0 (no traffic) → 100 (≥1000 views/30d); high-traffic posts prioritised for SEO impact
+  - `quality_urgency_score()` — inverted quality (low quality = high urgency); 80-point sentinel for unscored posts
+  - `trend_score()` — declining 100, stable 50, growing 0
+  - `get_priority_queue()` — returns scored+ranked post entries up to configurable limit/min_score
+  - `get_prioritized_ids()` — convenience wrapper returning IDs for ContentRefreshEngine
+
+#### V6 WP-CLI Additions
+- `wp pearblog v6 router-status [--reset]` — show/reset Smart Provider Router status: chain, budget, spend, per-provider table
+- `wp pearblog v6 refresh-score [--stale-days=N] [--limit=N] [--min-score=N]` — tabular refresh priority report
+
+#### Plugin Wiring
+- `Plugin::boot()` — registers `SmartProviderRouter` (hooks `pearblog_router_record` action) and adds both new modules to `ModuleRegistry`
+
+---
+
 ## [Unreleased] — V6 Platform Continuation
 
 ### Added — V6 Platform: REST APIs, CLI, GraphQL extensions

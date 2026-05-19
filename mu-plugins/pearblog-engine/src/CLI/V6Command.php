@@ -494,4 +494,115 @@ class V6Command {
 		);
 		return (int) $sum;
 	}
+
+	// -----------------------------------------------------------------------
+	// Smart Provider Router commands  (wp pearblog v6 router *)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Show Smart Provider Router status: chain, budget, spend, per-provider stats.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--reset]
+	 * : Reset all router stats and daily spend.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp pearblog v6 router status
+	 *     wp pearblog v6 router status --reset
+	 *
+	 * @subcommand router-status
+	 */
+	public function router_status( array $args, array $assoc_args ): void {
+		$router = new \PearBlogEngine\AI\SmartProviderRouter();
+
+		if ( \WP_CLI\Utils\get_flag_value( $assoc_args, 'reset', false ) ) {
+			$router->reset_stats();
+			\WP_CLI::success( 'Router stats and daily spend reset.' );
+		}
+
+		$status = $router->get_status();
+
+		\WP_CLI::line( '== Smart Provider Router Status ==' );
+		\WP_CLI::line( 'Provider chain : ' . implode( ' → ', $status['chain'] ) );
+		\WP_CLI::line( sprintf(
+			'Budget         : %d ¢ / day  |  Spent today: %d ¢  |  Remaining: %d ¢',
+			$status['budget_cents'],
+			$status['spend_today_cents'],
+			$status['remaining_cents']
+		) );
+		\WP_CLI::line( '' );
+
+		if ( empty( $status['stats'] ) ) {
+			\WP_CLI::line( 'No routing stats recorded yet.' );
+			return;
+		}
+
+		$rows = [];
+		foreach ( $status['stats'] as $slug => $s ) {
+			$rows[] = [
+				'Provider' => $slug,
+				'Requests' => $s['requests'],
+				'Tokens'   => $s['tokens'],
+				'Cost(¢)'  => $s['cost_cents'],
+				'Errors'   => $s['errors'],
+			];
+		}
+		\WP_CLI\Utils\format_items( 'table', $rows, [ 'Provider', 'Requests', 'Tokens', 'Cost(¢)', 'Errors' ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// Refresh Prioritizer command  (wp pearblog v6 refresh score)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Show posts ranked by refresh urgency using ContentRefreshPrioritizer.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--stale-days=<days>]
+	 * : Minimum days since last refresh to qualify. Default: 30.
+	 *
+	 * [--limit=<n>]
+	 * : Number of posts to display. Default: 20.
+	 *
+	 * [--min-score=<score>]
+	 * : Minimum priority score (0-100) to include. Default: 10.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *     wp pearblog v6 refresh score
+	 *     wp pearblog v6 refresh score --stale-days=60 --limit=50
+	 *
+	 * @subcommand refresh-score
+	 */
+	public function refresh_score( array $args, array $assoc_args ): void {
+		$stale_days = (int) \WP_CLI\Utils\get_flag_value( $assoc_args, 'stale-days', 30 );
+		$limit      = (int) \WP_CLI\Utils\get_flag_value( $assoc_args, 'limit', 20 );
+		$min_score  = (int) \WP_CLI\Utils\get_flag_value( $assoc_args, 'min-score', 10 );
+
+		$prioritizer = new \PearBlogEngine\Content\ContentRefreshPrioritizer();
+		$queue       = $prioritizer->get_priority_queue( $stale_days, $limit, $min_score );
+
+		if ( empty( $queue ) ) {
+			\WP_CLI::success( "No posts meet the refresh criteria (stale_days={$stale_days}, min_score={$min_score})." );
+			return;
+		}
+
+		$rows = [];
+		foreach ( $queue as $entry ) {
+			$rows[] = [
+				'ID'       => $entry['post_id'],
+				'Score'    => number_format( $entry['score'], 1 ),
+				'Age(d)'   => $entry['age_days'],
+				'Quality'  => number_format( $entry['quality'], 1 ),
+				'Trend'    => $entry['trend'],
+				'Views30d' => $entry['views_30d'],
+			];
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $rows, [ 'ID', 'Score', 'Age(d)', 'Quality', 'Trend', 'Views30d' ] );
+		\WP_CLI::success( sprintf( '%d posts shown (stale_days=%d, min_score=%d).', count( $rows ), $stale_days, $min_score ) );
+	}
 }
