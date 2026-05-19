@@ -175,7 +175,7 @@ get_header('minimal');
                     </div>
                     <div>
                         <strong class="plv5-stat__number" data-count="500000">0</strong>
-                        <span>decyzji/mies.</span>
+                        <span>decyzji miesięcznie</span>
                     </div>
                 </div>
             </aside>
@@ -204,7 +204,7 @@ get_header('minimal');
     <section class="plv5-how" id="jak-to-dziala">
         <div class="pb-container">
             <div class="plv5-section-head" data-reveal>
-                <p class="plv5-kicker">Content → Decision → Lead</p>
+                <p class="plv5-kicker">Content &rarr; Decision &rarr; Lead</p>
                 <h2>Jak działa Poradnik.pro?</h2>
                 <p>Od wyszukiwania do wykonania — bez chaosu i godzin szukania.</p>
             </div>
