@@ -11,7 +11,7 @@
  * - Lead generation forms
  *
  * @package PearBlog
- * @version 3.0.0
+ * @version 3.1.0
  */
 
 get_header(); ?>
@@ -19,13 +19,13 @@ get_header(); ?>
 <!-- Hero Section -->
 <section class="hero">
     <div class="container">
-        <h1>Znajdź najlepszych fachowców<br>w Twojej okolicy</h1>
-        <p>Porównaj oferty, sprawdź ceny i wybierz sprawdzonych wykonawców</p>
+        <h1>Od problemu do decyzji.</h1>
+        <p>Porównania, rankingi, koszty i specjaliści w jednym miejscu.</p>
 
         <!-- Search Bar -->
         <div class="search">
-            <input type="text" placeholder="Czego szukasz? np. budowa domu, remont mieszkania..." id="hero-search">
-            <button type="button" id="hero-search-btn">🔍 Szukaj</button>
+            <input type="text" placeholder="np. koszt remontu łazienki, pompa ciepła czy gaz, dobry prawnik Katowice..." id="hero-search">
+            <button type="button" id="hero-search-btn">🔎 Znajdź rozwiązanie</button>
         </div>
 
         <!-- Quick Actions -->

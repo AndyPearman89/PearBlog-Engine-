@@ -2,10 +2,10 @@
 /**
  * Template Name: Poradnik.pro V4 Homepage
  *
- * Decision-focused homepage with invisible UI
+ * Decision Engine Platform — Tagline System V5
  *
  * @package PearBlog
- * @version 4.0.0
+ * @version 4.1.0
  */
 
 get_header();
@@ -16,11 +16,11 @@ get_header();
     <section class="poradnik-hero-v4">
         <div class="pb-container">
             <h1 class="poradnik-hero-v4__title">
-                <?php echo esc_html(get_option('poradnik_hero_v4_title', 'Od problemu do decyzji w kilka minut')); ?>
+                <?php echo esc_html(get_option('poradnik_hero_v4_title', 'Od problemu do decyzji.')); ?>
             </h1>
 
             <p class="poradnik-hero-v4__subtitle">
-                <?php echo esc_html(get_option('poradnik_hero_v4_subtitle', 'Znajdź najlepsze rozwiązanie i wykonawcę dla Twojego projektu')); ?>
+                <?php echo esc_html(get_option('poradnik_hero_v4_subtitle', 'Porównania, rankingi, koszty i specjaliści w jednym miejscu.')); ?>
             </p>
 
             <!-- Search -->
@@ -30,7 +30,7 @@ get_header();
                         type="search"
                         name="s"
                         class="poradnik-hero-v4__search-input"
-                        placeholder="Czego szukasz? np. 'remont kuchni', 'kredyt hipoteczny'..."
+                        placeholder="np. koszt remontu łazienki, pompa ciepła czy gaz, dobry prawnik Katowice..."
                         value="<?php echo get_search_query(); ?>"
                         autocomplete="off"
                     >
@@ -200,10 +200,10 @@ get_header();
     <!-- Example AI Suggestion -->
     <?php
     poradnik_ai_suggestion([
-        'title' => 'Nie wiesz od czego zacząć?',
-        'text' => 'Na podstawie Twojej lokalizacji i historii wyszukiwania, polecamy rozpocząć od kalkulatora kosztów. Pomoże Ci określić budżet i dopasować najlepszych wykonawców.',
-        'action_text' => 'Otwórz kalkulator',
-        'action_url' => '#calculator',
+        'title' => 'Inteligentne decyzje zaczynają się tutaj.',
+        'text' => 'AI + wiedza + porównania + wykonawcy — opisz problem, a resztą zajmiemy się za Ciebie. Jeden flow od pytania do działania.',
+        'action_text' => '🔎 Znajdź rozwiązanie',
+        'action_url' => '/znajdz-rozwiazanie/',
     ]);
     ?>
 </main>

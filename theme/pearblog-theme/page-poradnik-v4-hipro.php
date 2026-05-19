@@ -3,10 +3,10 @@
  * Template Name: Poradnik.pro V4 HI-PRO Content Hub
  *
  * High-conversion content hub with 10 optimized sections
- * Problem-solving focus with practical information
+ * Decision Engine Platform — Tagline System V5
  *
  * @package PearBlog
- * @version 4.1.0
+ * @version 4.2.0
  */
 
 get_header();
@@ -20,11 +20,11 @@ get_header();
     <section class="hipro-hero">
         <div class="pb-container">
             <h1 class="hipro-hero__title">
-                Sprawdzone poradniki, które rozwiązują realne problemy
+                Od problemu do decyzji.
             </h1>
 
             <p class="hipro-hero__subtitle">
-                Dowiedz się, co zrobić, ile to kosztuje i kiedy warto skorzystać z fachowca.
+                Porównania, rankingi, koszty i specjaliści w jednym miejscu.
             </p>
 
             <!-- Search -->
@@ -34,23 +34,26 @@ get_header();
                         type="search"
                         name="s"
                         class="hipro-search-input"
-                        placeholder="Czego szukasz? (np. „auto nie odpala", „remont łazienki koszt")"
+                        placeholder="np. koszt remontu łazienki, pompa ciepła czy gaz, dobry prawnik Katowice"
                         value="<?php echo get_search_query(); ?>"
                         autocomplete="off"
                     >
-                    <button type="submit" class="hipro-search-btn hipro-btn-primary" aria-label="Znajdź poradnik">
-                        Znajdź poradnik
+                    <button type="submit" class="hipro-search-btn hipro-btn-primary" aria-label="Znajdź rozwiązanie">
+                        🔎 Znajdź rozwiązanie
                     </button>
                 </form>
             </div>
 
             <!-- CTAs -->
             <div class="hipro-hero__ctas">
-                <a href="<?php echo home_url('/poradniki/'); ?>" class="hipro-btn hipro-btn-primary">
-                    Znajdź poradnik
+                <a href="<?php echo esc_url(home_url('/znajdz-rozwiazanie/')); ?>" class="hipro-btn hipro-btn-primary">
+                    🔎 Znajdź rozwiązanie
                 </a>
-                <a href="<?php echo home_url('/uslugi/'); ?>" class="hipro-btn hipro-btn-secondary">
-                    Przejdź do usług
+                <a href="<?php echo esc_url(home_url('/zapytaj/')); ?>" class="hipro-btn hipro-btn-secondary">
+                    ❓ Zadaj pytanie
+                </a>
+                <a href="<?php echo esc_url(home_url('/eksperci/')); ?>" class="hipro-btn hipro-btn-secondary">
+                    🧑‍💼 Znajdź specjalistę
                 </a>
             </div>
 
@@ -60,25 +63,25 @@ get_header();
                     <svg class="hipro-trust-icon" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    konkretne odpowiedzi
+                    +100 000 porad
                 </div>
                 <div class="hipro-trust-item">
                     <svg class="hipro-trust-icon" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    aktualne ceny
+                    +20 000 specjalistów
                 </div>
                 <div class="hipro-trust-item">
                     <svg class="hipro-trust-icon" width="20" height="20" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    sprawdzone rozwiązania
+                    +500 000 decyzji/mies.
                 </div>
             </div>
 
             <!-- Microcopy -->
             <p class="hipro-hero__microcopy">
-                Bez lania wody — tylko praktyczne informacje.
+                Mniej szukania. Więcej działania.
             </p>
         </div>
     </section>
@@ -271,15 +274,15 @@ get_header();
             <h2 class="hipro-section-title">Masz konkretny problem?</h2>
 
             <p class="hipro-problem-description">
-                Nie musisz zgadywać — pokażemy Ci rozwiązanie i znajdziemy fachowca.
+                Powiedz czego potrzebujesz. Przeanalizujemy opcje, pokażemy koszty i połączymy z właściwym specjalistą.
             </p>
 
             <div class="hipro-problem-ctas">
-                <a href="<?php echo home_url('/znajdz-rozwiazanie/'); ?>" class="hipro-btn hipro-btn-primary">
-                    Znajdź rozwiązanie
+                <a href="<?php echo esc_url(home_url('/znajdz-rozwiazanie/')); ?>" class="hipro-btn hipro-btn-primary">
+                    🔎 Znajdź rozwiązanie
                 </a>
-                <a href="<?php echo home_url('/wyslij-zapytanie/'); ?>" class="hipro-btn hipro-btn-secondary">
-                    Wyślij zapytanie
+                <a href="<?php echo esc_url(home_url('/zapytaj/')); ?>" class="hipro-btn hipro-btn-secondary">
+                    ❓ Zadaj pytanie
                 </a>
             </div>
         </div>
@@ -331,32 +334,32 @@ get_header();
                     <svg class="hipro-trust-card-icon" width="32" height="32" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="hipro-trust-card-title">Praktyczne poradniki</h3>
-                    <p class="hipro-trust-card-text">Konkretne instrukcje krok po kroku, bez zbędnej teorii</p>
+                    <h3 class="hipro-trust-card-title">Decision Engine Platform</h3>
+                    <p class="hipro-trust-card-text">Tłumaczymy problem, porównujemy opcje i prowadzimy do decyzji — w jednym flow</p>
                 </div>
 
                 <div class="hipro-trust-card">
                     <svg class="hipro-trust-card-icon" width="32" height="32" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="hipro-trust-card-title">Aktualne ceny</h3>
-                    <p class="hipro-trust-card-text">Regularnie aktualizowane cenniki dla 2026 roku</p>
+                    <h3 class="hipro-trust-card-title">Liczby przed decyzją</h3>
+                    <p class="hipro-trust-card-text">Kalkulatory, aktualne cenniki i rankingi — zawsze wiesz ile zapłacisz</p>
                 </div>
 
                 <div class="hipro-trust-card">
                     <svg class="hipro-trust-card-icon" width="32" height="32" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="hipro-trust-card-title">Realne rozwiązania</h3>
-                    <p class="hipro-trust-card-text">Sprawdzone metody od praktyków, nie teoretyków</p>
+                    <h3 class="hipro-trust-card-title">+20 000 specjalistów</h3>
+                    <p class="hipro-trust-card-text">Zweryfikowani wykonawcy lokalnie — od poradnika do fachowca bez wychodzenia z portalu</p>
                 </div>
 
                 <div class="hipro-trust-card">
                     <svg class="hipro-trust-card-icon" width="32" height="32" fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"/>
                     </svg>
-                    <h3 class="hipro-trust-card-title">Połączenie z lokalnymi usługami</h3>
-                    <p class="hipro-trust-card-text">Od poradnika do wykonawcy w jednym miejscu</p>
+                    <h3 class="hipro-trust-card-title">AI Doradca</h3>
+                    <p class="hipro-trust-card-text">Inteligentne decyzje zaczynają się tutaj — AI + wiedza + porównania + wykonawcy</p>
                 </div>
             </div>
         </div>
@@ -367,18 +370,18 @@ get_header();
     <!-- ================================================== -->
     <section class="hipro-final-cta">
         <div class="pb-container">
-            <h2 class="hipro-final-cta__title">Nie tylko poradniki — realna pomoc</h2>
+            <h2 class="hipro-final-cta__title">Tu kończy się research. Zaczyna się działanie.</h2>
 
             <p class="hipro-final-cta__description">
-                Sprawdź rozwiązanie, poznaj koszt i znajdź fachowca w jednym miejscu.
+                Porównaj. Wybierz. Zrealizuj. — wszystko w jednym systemie.
             </p>
 
             <div class="hipro-final-cta__buttons">
-                <a href="<?php echo home_url('/znajdz-rozwiazanie/'); ?>" class="hipro-btn hipro-btn-primary hipro-btn-lg">
-                    Znajdź rozwiązanie
+                <a href="<?php echo esc_url(home_url('/znajdz-rozwiazanie/')); ?>" class="hipro-btn hipro-btn-primary hipro-btn-lg">
+                    🔎 Znajdź rozwiązanie
                 </a>
-                <a href="<?php echo home_url('/fachowcy/'); ?>" class="hipro-btn hipro-btn-secondary hipro-btn-lg">
-                    Sprawdź dostępność fachowców
+                <a href="<?php echo esc_url(home_url('/eksperci/')); ?>" class="hipro-btn hipro-btn-secondary hipro-btn-lg">
+                    🧑‍💼 Znajdź specjalistę
                 </a>
             </div>
         </div>
@@ -443,7 +446,7 @@ get_header();
 
             <div class="hipro-footer-bottom">
                 <p class="hipro-footer-copyright">
-                    &copy; <?php echo date('Y'); ?> Poradnik.pro — Sprawdzone rozwiązania dla realnych problemów
+                    &copy; <?php echo date('Y'); ?> Poradnik.pro — Od problemu do decyzji.
                 </p>
             </div>
         </div>
