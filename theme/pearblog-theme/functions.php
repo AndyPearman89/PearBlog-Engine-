@@ -164,6 +164,23 @@ function pearblog_enqueue_assets() {
         wp_enqueue_style('poradnik-v4-hipro', PEARBLOG_URI . '/assets/css/poradnik-v4-hipro.css', array('pearblog-style'), PEARBLOG_VERSION);
     }
 
+    // Poradnik V6 — AI Decision Engine (loads its own full-page stylesheet + JS)
+    if (is_page_template('page-poradnik-v6.php')) {
+        wp_enqueue_style(
+            'poradnik-v6',
+            PEARBLOG_URI . '/assets/css/poradnik-v6.css',
+            array(),
+            '6.0.0'
+        );
+        wp_enqueue_script(
+            'poradnik-v6',
+            PEARBLOG_URI . '/assets/js/poradnik-v6.js',
+            array(),
+            '6.0.0',
+            true
+        );
+    }
+
     // Google Fonts — Poppins (display) + Inter (UI)
     wp_enqueue_style(
         'pearblog-fonts',

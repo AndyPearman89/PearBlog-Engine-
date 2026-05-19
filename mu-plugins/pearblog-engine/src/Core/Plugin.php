@@ -56,6 +56,12 @@ use PearBlogEngine\Local\LocalHubManager;
 use PearBlogEngine\Search\SearchEngine;
 use PearBlogEngine\Revenue\SubscriptionEngine;
 use PearBlogEngine\Revenue\SponsoredPlacement;
+// V6 continuation modules.
+use PearBlogEngine\Compare\CompareController;
+use PearBlogEngine\Compare\ComparisonSchema;
+use PearBlogEngine\Calculators\CalculatorController;
+use PearBlogEngine\Calculators\CalculatorsSchema;
+use PearBlogEngine\AI\DecisionAssistant;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -180,10 +186,30 @@ class Plugin {
 		( new SubscriptionEngine() )->register();
 		( new SponsoredPlacement() )->register();
 
+		// Compare Engine: pros/cons + AI verdict + REST /pearblog/v1/compare.
+		add_action( 'rest_api_init', static function (): void {
+			( new CompareController() )->register_routes();
+		} );
+		ModuleRegistry::add( 'compare_v6', 'Compare Engine V6', '1.0.0', 'PearBlogEngine\\Compare' );
+
+		// Calculator Engine: formula runner + recommendations + REST /pearblog/v1/calculators.
+		add_action( 'rest_api_init', static function (): void {
+			( new CalculatorController() )->register_routes();
+		} );
+		ModuleRegistry::add( 'calculators_v6', 'Calculator Engine V6', '1.0.0', 'PearBlogEngine\\Calculators' );
+
+		// AI Decision Layer: RecommendationEngine + DecisionAssistant advisor + FAQ generator.
+		add_action( 'rest_api_init', static function (): void {
+			( new DecisionAssistant() )->register_routes();
+		} );
+		ModuleRegistry::add( 'ai_decision_v6', 'AI Decision Assistant V6', '1.0.0', 'PearBlogEngine\\AI' );
+
 		// Create V3 database tables on activation.
 		register_activation_hook( PEARBLOG_PLUGIN_FILE, static function (): void {
 			PoradnikV3Schema::create_tables();
 			PoradnikV3Schema::update_version( '3.0.0' );
+			ComparisonSchema::create_tables();
+			CalculatorsSchema::create_tables();
 		} );
 
 		// PT24 Integration – Content-to-Lead bridge.
