@@ -112,11 +112,10 @@ class TopicQueue {
 	}
 
 	private function is_multisite_enabled(): bool {
-		$has_blog_options = \function_exists( 'get_blog_option' ) && \function_exists( 'update_blog_option' );
 		if ( \function_exists( 'is_multisite' ) ) {
-			return \is_multisite() || $has_blog_options;
+			return \is_multisite();
 		}
 
-		return $has_blog_options;
+		return \function_exists( 'get_blog_option' ) && \function_exists( 'update_blog_option' );
 	}
 }
