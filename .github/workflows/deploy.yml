@@ -103,7 +103,7 @@ jobs:
             ssh -o BatchMode=yes -o PreferredAuthentications=publickey \
               -p "${{ steps.vars.outputs.ssh_port }}" \
               "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
-              "true" >/dev/null
+              "true" >/dev/null 2>&1
           }
 
           verify_password_auth() {
@@ -111,7 +111,7 @@ jobs:
               ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no \
               -p "${{ steps.vars.outputs.ssh_port }}" \
               "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
-              "true" >/dev/null
+              "true" >/dev/null 2>&1
           }
 
           RESOLVED_AUTH_MODE=""
@@ -127,7 +127,7 @@ jobs:
           fi
 
           if [[ -z "$RESOLVED_AUTH_MODE" ]]; then
-            echo "::error::Unable to authenticate to ${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }} with the provided SSH credentials."
+            echo "::error::Unable to authenticate to the configured deployment target with the provided SSH credentials."
             echo "::error::If this is a DigitalOcean droplet, ensure the deploy user's public key is present in ~/.ssh/authorized_keys or remove SSH_PRIVATE_KEY so the workflow can use SSH_PASSWORD."
             exit 1
           fi
