@@ -1,0 +1,31 @@
+"""Tests for the repository run helper command."""
+
+import subprocess
+from pathlib import Path
+
+
+ROOT_DIR = Path(__file__).resolve().parents[2]
+
+
+def test_run_dev_command_succeeds():
+    result = subprocess.run(
+        ["bash", str(ROOT_DIR / "run"), "dev"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 0
+    assert "Development sanity checks passed." in result.stdout
+
+
+def test_run_command_rejects_unknown_subcommand():
+    result = subprocess.run(
+        ["bash", str(ROOT_DIR / "run"), "unknown"],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+
+    assert result.returncode == 1
+    assert "Usage: ./run dev" in result.stderr

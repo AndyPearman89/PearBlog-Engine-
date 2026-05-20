@@ -69,6 +69,12 @@ define('PEARBLOG_OPENAI_API_KEY', 'sk-...');
 # 3. Add topics in the admin queue → pipeline runs automatically every hour
 ```
 
+For local repository checks during development:
+
+```bash
+./run dev
+```
+
 See **[SETUP.md](SETUP.md)** for GitHub Actions setup and **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** for full activation.
 
 ---
