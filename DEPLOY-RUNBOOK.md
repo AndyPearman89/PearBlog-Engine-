@@ -22,6 +22,8 @@ Minimum inputs expected by the workflow:
 
 `SSH_PASSWORD` is only useful if password authentication is enabled on the server.
 For the current server configuration, key-based SSH is the required option.
+The workflow trims accidental trailing whitespace/newlines from these values before use.
+If both `SSH_PRIVATE_KEY` and `SSH_PASSWORD` are configured, it now verifies SSH access first and falls back to password auth only when key auth fails.
 
 ## Recommended Deploy Flow
 
@@ -52,6 +54,7 @@ If the token only has the default Codespaces integration scope, the dispatch wil
 - `ssh-add` / `libcrypto` errors usually mean the SSH private key secret is malformed or truncated.
 - `Permission denied (publickey)` means the server does not accept password auth for the current account.
 - `SSH_PASSWORD` by itself will not work unless the server explicitly allows password logins.
+- A trailing newline in `WP_PATH`, `SSH_HOST`, `SSH_USER`, or `SSH_PORT` will now be trimmed automatically, but it is still best to save secrets without extra whitespace.
 - `Resource not accessible by integration` means the GitHub token cannot dispatch workflow runs from this session.
 
 ## Verification
