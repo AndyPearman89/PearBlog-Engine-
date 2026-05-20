@@ -30,7 +30,7 @@ jobs:
         id: vars
         run: |
           sanitize_input() {
-            printf '%s' "$1" | tr -d '\r' | sed 's/[[:space:]]*$//'
+            printf '%s' "$1" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
           }
 
           SSH_HOST="$(sanitize_input "${{ secrets.SSH_HOST || vars.SSH_HOST }}")"
@@ -103,7 +103,7 @@ jobs:
             ssh -o BatchMode=yes -o PreferredAuthentications=publickey \
               -p "${{ steps.vars.outputs.ssh_port }}" \
               "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
-              "printf 'SSH_OK\n'" >/dev/null
+              "true" >/dev/null
           }
 
           verify_password_auth() {
@@ -111,7 +111,7 @@ jobs:
               ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no \
               -p "${{ steps.vars.outputs.ssh_port }}" \
               "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
-              "printf 'SSH_OK\n'" >/dev/null
+              "true" >/dev/null
           }
 
           RESOLVED_AUTH_MODE=""
