@@ -8,7 +8,8 @@
 
 1. **[README.md](README.md)** — Project overview and architecture
 2. **[SETUP.md](SETUP.md)** — Installation & configuration (5 min)
-3. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
+3. **[DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md)** — Single-source-of-truth production deploy runbook
+4. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
 
 ---
 
@@ -20,6 +21,7 @@
 |----------|----------|----------|---------|
 | [README.md](README.md) | EN | Everyone | Features, architecture, quick start |
 | [SETUP.md](SETUP.md) | EN | Ops / Dev | GitHub Secrets, Actions, first run |
+| [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md) | EN | Ops / Dev | Canonical deployment flow, secrets, verification, failure modes |
 | [DEPLOYMENT.md](DEPLOYMENT.md) | EN | Ops / Dev | Full production deployment guide (Apache/Nginx, SSL, Git, FTP, WP-CLI, 4 hosting providers) |
 | [DEPLOYMENT-PL.md](DEPLOYMENT-PL.md) | **PL** | Ops / Dev | Pełny przewodnik wdrożenia produkcyjnego po polsku |
 | [DATABASE-MIGRATIONS.md](DATABASE-MIGRATIONS.md) | EN | Ops / Dev | Full schema reference, upgrade SQL scripts v4→v5→v6, rollback procedures, compatibility matrix |
@@ -111,7 +113,7 @@
 | Goal | Start Here |
 |------|------------|
 | Get started quickly | [SETUP.md](SETUP.md) → [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) |
-| Deploy to production (EN) | [DEPLOYMENT.md](DEPLOYMENT.md) |
+| Deploy to production (EN) | [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md) |
 | Deploy to production (PL) | [DEPLOYMENT-PL.md](DEPLOYMENT-PL.md) |
 | Fix a problem | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) |
 | Set up monitoring | [API-DOCUMENTATION.md](API-DOCUMENTATION.md) + src/Monitoring/ |

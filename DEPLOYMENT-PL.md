@@ -4,6 +4,8 @@
 > **Odbiorcy:** Administratorzy systemów, inżynierowie DevOps, programiści WordPress  
 > **Wymagania wstępne:** Dostęp root lub sudo do serwera, dostęp SSH
 
+> **Uwaga:** Najkrótszą bezpieczną ścieżkę wdrożenia opisuje [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md). Ten dokument pozostaje pełnym opisem infrastruktury, rollbacku i hardeningu.
+
 ---
 
 ## Spis Treści

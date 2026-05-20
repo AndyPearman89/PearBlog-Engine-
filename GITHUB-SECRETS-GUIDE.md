@@ -78,7 +78,12 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ```
 - **Note:** Only add if your server uses non-standard SSH port
 
-### 6. ROOT_PASSWORD
+### 6. SSH_PASSWORD (Only if password auth is enabled)
+- **Description:** SSH password for servers that explicitly allow password logins
+- **Required for:** Password-based SSH deployments only
+- **Important:** For the current `poradnik.pro` server, password auth is not accepted; use `SSH_PRIVATE_KEY` instead.
+
+### 7. ROOT_PASSWORD
 - **Description:** MySQL root password for database operations
 - **Value:** Your MySQL root password
 - **Required for:** Database creation and user management
@@ -97,7 +102,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ## API & Service Secrets
 
-### 7. OPENAI_API_KEY
+### 8. OPENAI_API_KEY
 - **Description:** OpenAI API key for GPT-4o-mini and DALL-E 3
 - **Format:** `sk-proj-...`
 - **Required for:** Content generation and image creation
@@ -111,7 +116,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ```
 - **Cost monitoring:** Set usage limits at https://platform.openai.com/account/limits
 
-### 8. SLACK_WEBHOOK_URL (Optional)
+### 9. SLACK_WEBHOOK_URL (Optional)
 - **Description:** Slack webhook for deployment notifications
 - **Format:** `https://hooks.slack.com/services/...`
 - **Required for:** Slack alerts and notifications
@@ -125,7 +130,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX
   ```
 
-### 9. DISCORD_WEBHOOK_URL (Optional)
+### 10. DISCORD_WEBHOOK_URL (Optional)
 - **Description:** Discord webhook for deployment notifications
 - **Format:** `https://discord.com/api/webhooks/...`
 - **Required for:** Discord alerts
@@ -143,7 +148,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ## CI/CD Pipeline Secrets
 
-### 10. SITE_URL
+### 11. SITE_URL
 - **Description:** Full URL of your WordPress site
 - **Value for poradnik.pro:** `https://poradnik.pro`
 - **Required for:** API calls and health checks
@@ -152,7 +157,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   https://poradnik.pro
   ```
 
-### 11. API_KEY
+### 12. API_KEY
 - **Description:** PearBlog Engine API authentication key
 - **Format:** Random secure string
 - **Required for:** REST API authentication
@@ -165,7 +170,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ABC123XYZ789RandomSecureString456DEF
   ```
 
-### 12. HEALTH_SECRET
+### 13. HEALTH_SECRET
 - **Description:** Shared secret for health endpoint checks
 - **Required for:** Monitoring health endpoint without admin auth
 - **Generate:**
@@ -181,7 +186,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ## Email Provider Secrets (Optional)
 
-### 13. MAILCHIMP_API_KEY (Optional)
+### 14. MAILCHIMP_API_KEY (Optional)
 - **Description:** Mailchimp API key for email digests
 - **Required for:** Email marketing integration
 - **How to get:**
@@ -193,7 +198,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   abc123def456ghi789jkl012mno345pqr678-us1
   ```
 
-### 14. CONVERTKIT_API_KEY (Optional)
+### 15. CONVERTKIT_API_KEY (Optional)
 - **Description:** ConvertKit API key
 - **Required for:** ConvertKit email integration
 - **Example:**
@@ -205,21 +210,21 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ## Database Secrets
 
-### 15. DB_BACKUP_FTP_HOST (Optional)
+### 16. DB_BACKUP_FTP_HOST (Optional)
 - **Description:** FTP host for automated database backups
 - **Example:**
   ```
   ftp.backup-server.com
   ```
 
-### 16. DB_BACKUP_FTP_USER (Optional)
+### 17. DB_BACKUP_FTP_USER (Optional)
 - **Description:** FTP username for backups
 - **Example:**
   ```
   backup_user
   ```
 
-### 17. DB_BACKUP_FTP_PASS (Optional)
+### 18. DB_BACKUP_FTP_PASS (Optional)
 - **Description:** FTP password for backups
 - **Example:**
   ```

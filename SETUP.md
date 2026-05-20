@@ -24,6 +24,8 @@
 The **Deploy to WordPress Server** workflow (`.github/workflows/deploy.yml`) pushes the
 mu-plugin and theme directly to your server via SSH/rsync whenever `main` is updated.
 
+For the shortest safe deploy path and the current source of truth, use [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md).
+
 ### Required secrets for deployment
 
 | Secret | Description | Example |

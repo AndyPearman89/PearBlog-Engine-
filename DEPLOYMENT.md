@@ -6,6 +6,8 @@
 > **Prerequisites:** Root or sudo access to the web server, SSH access
 > **Security Status:** ✅ OWASP Top 10 Audited (Risk Score: 14/100 - Low Risk) - PRODUCTION READY
 
+> **Note:** For the shortest safe deploy path, follow [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md). This guide remains the full reference for infrastructure, rollback, and hardening.
+
 ---
 
 ## Table of Contents
