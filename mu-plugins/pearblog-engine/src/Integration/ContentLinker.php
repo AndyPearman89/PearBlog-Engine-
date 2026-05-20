@@ -148,7 +148,7 @@ class ContentLinker {
      * @param int $limit Maximum number of links
      * @return array Links data
      */
-    private function create_listings_links(string $category, ?$city, int $limit): array {
+    private function create_listings_links(string $category, ?string $city, int $limit): array {
         // In future, query actual PT24 listings
         // For now, create placeholder links
         $links = [];
