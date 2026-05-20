@@ -50,8 +50,18 @@ jobs:
           fi
 
           if [[ ${#MISSING[@]} -gt 0 ]]; then
-            echo "::error::Missing required secrets: ${MISSING[*]}"
-            echo "Add them under Settings → Secrets and variables → Actions"
+            echo "::error::❌ Missing required secrets: ${MISSING[*]}"
+            echo ""
+            echo "::error::📝 HOW TO FIX:"
+            echo "::error::1. Go to: https://github.com/${{ github.repository }}/settings/secrets/actions"
+            echo "::error::2. Click 'New repository secret'"
+            echo "::error::3. Add missing secrets:"
+            for secret in "${MISSING[@]}"; do
+              echo "::error::   - $secret"
+            done
+            echo ""
+            echo "::error::📚 See documentation: GITHUB-SECRETS-GUIDE.md"
+            echo "::error::🔍 Or run 'check-secrets' workflow to debug"
             exit 1
           fi
 
