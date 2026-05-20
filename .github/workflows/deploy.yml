@@ -14,7 +14,7 @@ on:
         required: false
         default: 'false'
       auth_mode:
-        description: 'Authentication mode (auto prefers SSH key, then password)'
+        description: 'Authentication mode: auto (prefers SSH key, then password), key, or password'
         required: false
         default: 'auto'
 
