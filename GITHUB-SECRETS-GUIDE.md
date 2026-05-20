@@ -111,7 +111,32 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ```
 - **Cost monitoring:** Set usage limits at https://platform.openai.com/account/limits
 
-### 8. SLACK_WEBHOOK_URL (Optional)
+### 8. ADSENSE_ID
+- **Description:** Google AdSense Publisher ID for monetization
+- **Format:** `ca-pub-XXXXXXXXXXXXXXXX` (16-digit number)
+- **Required for:** AdSense ads display and revenue tracking
+- **How to get:**
+  1. Visit: https://www.google.com/adsense
+  2. Sign up or login to your AdSense account
+  3. Go to Account → Account information
+  4. Copy your Publisher ID (starts with `ca-pub-`)
+- **Example:**
+  ```
+  ca-pub-1234567890123456
+  ```
+- **Usage in code:**
+  - Automatically injected in theme monetization functions
+  - Used in `pearblog_adsense_publisher_id` WordPress option
+  - Funnel-aware ad placement (TOFU/MOFU/BOFU strategy)
+- **Configuration after deployment:**
+  ```bash
+  # Set via WP-CLI on server:
+  wp option update pearblog_adsense_publisher_id "ca-pub-XXXXXXXXXXXXXXXX" --allow-root
+  wp option update pearblog_adsense_enabled 1 --allow-root
+  wp option update pearblog_adsense_strategy "funnel_aware" --allow-root
+  ```
+
+### 9. SLACK_WEBHOOK_URL (Optional)
 - **Description:** Slack webhook for deployment notifications
 - **Format:** `https://hooks.slack.com/services/...`
 - **Required for:** Slack alerts and notifications
@@ -239,6 +264,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ✓ WP_PATH             = /var/www/poradnik.pro
 ✓ ROOT_PASSWORD       = [MySQL root password]
 ✓ OPENAI_API_KEY      = sk-proj-...
+✓ ADSENSE_ID          = ca-pub-XXXXXXXXXXXXXXXX
 ```
 
 ### Recommended Secrets (Full Features)
