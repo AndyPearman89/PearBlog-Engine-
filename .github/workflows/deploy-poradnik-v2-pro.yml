@@ -60,10 +60,16 @@ jobs:
           echo "has_key=$HAS_KEY"   >> "$GITHUB_OUTPUT"
           echo "has_pass=$HAS_PASS" >> "$GITHUB_OUTPUT"
           echo "has_do=$HAS_DO"     >> "$GITHUB_OUTPUT"
-          if [[ "$HAS_KEY" == true ]]; then
+          # Priority: password+DO (fresh ephemeral key bootstrap) > existing key > password-only
+          if [[ "$HAS_PASS" == true && "$HAS_DO" == true ]]; then
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+            echo "==> Auth: password + DigitalOcean bootstrap (preferred)"
+          elif [[ "$HAS_KEY" == true ]]; then
             echo "mode=key" >> "$GITHUB_OUTPUT"
+            echo "==> Auth: existing SSH key"
           elif [[ "$HAS_PASS" == true ]]; then
             echo "mode=password" >> "$GITHUB_OUTPUT"
+            echo "==> Auth: password (sshpass)"
           else
             echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD or PORADNIK_SSH_KEY."
             exit 1
