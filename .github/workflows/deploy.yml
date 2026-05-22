@@ -29,10 +29,14 @@ jobs:
       - name: Resolve deploy configuration
         id: vars
         run: |
-          SSH_HOST="${{ secrets.SSH_HOST || vars.SSH_HOST }}"
-          SSH_USER="${{ secrets.SSH_USER || vars.SSH_USER }}"
-          WP_PATH="${{ secrets.WP_PATH || vars.WP_PATH }}"
-          SSH_PORT="${{ secrets.SSH_PORT || vars.SSH_PORT }}"
+          sanitize_input() {
+            printf '%s' "$1" | tr -d '\r' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//'
+          }
+
+          SSH_HOST="$(sanitize_input "${{ secrets.SSH_HOST || vars.SSH_HOST }}")"
+          SSH_USER="$(sanitize_input "${{ secrets.SSH_USER || vars.SSH_USER }}")"
+          WP_PATH="$(sanitize_input "${{ secrets.WP_PATH || vars.WP_PATH }}")"
+          SSH_PORT="$(sanitize_input "${{ secrets.SSH_PORT || vars.SSH_PORT }}")"
           FORCE="${{ github.event.inputs.force_deploy }}"
 
           HAS_KEY=false
@@ -56,7 +60,9 @@ jobs:
           fi
 
           AUTH_MODE="key"
-          if [[ "$HAS_KEY" != true ]]; then
+          if [[ "$HAS_KEY" == true && "$HAS_PASSWORD" == true ]]; then
+            AUTH_MODE="auto"
+          elif [[ "$HAS_KEY" != true ]]; then
             AUTH_MODE="password"
           fi
 
@@ -64,19 +70,21 @@ jobs:
           echo "ssh_user=$SSH_USER" >> "$GITHUB_OUTPUT"
           echo "wp_path=$WP_PATH" >> "$GITHUB_OUTPUT"
           echo "auth_mode=$AUTH_MODE" >> "$GITHUB_OUTPUT"
+          echo "has_key=$HAS_KEY" >> "$GITHUB_OUTPUT"
+          echo "has_password=$HAS_PASSWORD" >> "$GITHUB_OUTPUT"
           echo "ssh_port=${SSH_PORT:-22}" >> "$GITHUB_OUTPUT"
           echo "force=${FORCE:-false}" >> "$GITHUB_OUTPUT"
 
           echo "Deploy config ready. Auth mode: $AUTH_MODE"
 
       - name: Set up SSH agent
-        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
+        if: ${{ steps.vars.outputs.has_key == 'true' }}
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
       - name: Install sshpass for password auth
-        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        if: ${{ steps.vars.outputs.has_password == 'true' }}
         run: |
           sudo apt-get update
           sudo apt-get install -y sshpass
@@ -86,8 +94,49 @@ jobs:
           mkdir -p ~/.ssh
           ssh-keyscan -p "${{ steps.vars.outputs.ssh_port }}" -H "${{ steps.vars.outputs.ssh_host }}" >> ~/.ssh/known_hosts
 
+      - name: Verify SSH connectivity
+        id: auth
+        env:
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD }}
+        run: |
+          verify_key_auth() {
+            ssh -o BatchMode=yes -o PreferredAuthentications=publickey \
+              -p "${{ steps.vars.outputs.ssh_port }}" \
+              "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
+              "true" >/dev/null 2>&1
+          }
+
+          verify_password_auth() {
+            sshpass -p "$SSH_PASSWORD" \
+              ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no \
+              -p "${{ steps.vars.outputs.ssh_port }}" \
+              "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
+              "true" >/dev/null 2>&1
+          }
+
+          RESOLVED_AUTH_MODE=""
+
+          if [[ "${{ steps.vars.outputs.has_key }}" == 'true' ]] && verify_key_auth; then
+            RESOLVED_AUTH_MODE="key"
+          elif [[ "${{ steps.vars.outputs.has_key }}" == 'true' ]]; then
+            echo "::warning::SSH key authentication failed. Will try password auth if available."
+          fi
+
+          if [[ -z "$RESOLVED_AUTH_MODE" && "${{ steps.vars.outputs.has_password }}" == 'true' ]] && verify_password_auth; then
+            RESOLVED_AUTH_MODE="password"
+          fi
+
+          if [[ -z "$RESOLVED_AUTH_MODE" ]]; then
+            echo "::error::Unable to authenticate to the configured deployment target with the provided SSH credentials."
+            echo "::error::If this is a DigitalOcean droplet, ensure the deploy user's public key is present in ~/.ssh/authorized_keys or remove SSH_PRIVATE_KEY so the workflow can use SSH_PASSWORD."
+            exit 1
+          fi
+
+          echo "auth_mode=$RESOLVED_AUTH_MODE" >> "$GITHUB_OUTPUT"
+          echo "Using SSH auth mode: $RESOLVED_AUTH_MODE"
+
       - name: Deploy mu-plugin (pearblog-engine) via key
-        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'key' }}
         run: |
           RSYNC_OPTS="-avz --delete"
           # When force_deploy is false only changed paths trigger this job (push paths filter).
@@ -99,7 +148,7 @@ jobs:
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/mu-plugins/pearblog-engine/"
 
       - name: Deploy mu-plugin (pearblog-engine) via password
-        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'password' }}
         run: |
           RSYNC_OPTS="-avz --delete"
           sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync $RSYNC_OPTS \
@@ -108,7 +157,7 @@ jobs:
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/mu-plugins/pearblog-engine/"
 
       - name: Deploy theme (pearblog-theme) via key
-        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'key' }}
         run: |
           rsync -avz --delete \
             -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
@@ -116,7 +165,7 @@ jobs:
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/themes/pearblog-theme/"
 
       - name: Deploy theme (pearblog-theme) via password
-        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'password' }}
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete \
             -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
@@ -124,7 +173,7 @@ jobs:
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/themes/pearblog-theme/"
 
       - name: Flush WordPress object cache via key
-        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'key' }}
         continue-on-error: true
         run: |
           ssh -p "${{ steps.vars.outputs.ssh_port }}" \
@@ -132,7 +181,7 @@ jobs:
             "cd '${{ steps.vars.outputs.wp_path }}' && wp cache flush --allow-root 2>/dev/null || true"
 
       - name: Flush WordPress object cache via password
-        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'password' }}
         continue-on-error: true
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" \
@@ -141,7 +190,7 @@ jobs:
             "cd '${{ steps.vars.outputs.wp_path }}' && wp cache flush --allow-root 2>/dev/null || true"
 
       - name: Enterprise V8 admin smoke test via key
-        if: ${{ steps.vars.outputs.auth_mode == 'key' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'key' }}
         run: |
           ssh -p "${{ steps.vars.outputs.ssh_port }}" \
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
@@ -152,7 +201,7 @@ jobs:
           grep -q '^MENU_OK$' smoke-output.txt
 
       - name: Enterprise V8 admin smoke test via password
-        if: ${{ steps.vars.outputs.auth_mode == 'password' }}
+        if: ${{ steps.auth.outputs.auth_mode == 'password' }}
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" \
             ssh -p "${{ steps.vars.outputs.ssh_port }}" \
