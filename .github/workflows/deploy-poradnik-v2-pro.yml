@@ -44,13 +44,13 @@ jobs:
           HAS_KEY=false
           HAS_PASS=false
           [[ -n "${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
-          [[ -n "${{ secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}" ]] && HAS_PASS=true
+          [[ -n "${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}" ]] && HAS_PASS=true
           if [[ "$HAS_KEY" == true ]]; then
             echo "mode=key" >> "$GITHUB_OUTPUT"
           elif [[ "$HAS_PASS" == true ]]; then
             echo "mode=password" >> "$GITHUB_OUTPUT"
           else
-            echo "::error::Missing auth secret. Set SSH_PASSWORD (or PORADNIK_SSH_KEY)."
+            echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD (or PORADNIK_SSH_KEY)."
             exit 1
           fi
 
@@ -76,7 +76,7 @@ jobs:
       - name: Configure rssh wrapper
         env:
           AUTH_MODE: ${{ steps.auth.outputs.mode }}
-          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
+          SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
         run: |
           mkdir -p "$HOME/bin"
           if [[ "$AUTH_MODE" == "password" ]]; then
