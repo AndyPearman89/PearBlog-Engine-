@@ -15,6 +15,14 @@ on:
         options:
           - "false"
           - "true"
+      snapshot_before_deploy:
+        description: "Create DigitalOcean snapshot before deploy (requires DIGITALOCEAN_TOKEN)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
 
 permissions:
   contents: read
@@ -36,6 +44,8 @@ jobs:
       THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/var/www/poradnik.pro/wp-content/themes/pearblog-theme' }}
       BRANCH: ${{ github.event.inputs.branch }}
       SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
+      SNAPSHOT: ${{ github.event.inputs.snapshot_before_deploy }}
+      DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN || secrets.DO_TOKEN || secrets.DO_API_TOKEN }}
 
     steps:
       - name: Resolve auth mode
@@ -43,28 +53,21 @@ jobs:
         run: |
           HAS_KEY=false
           HAS_PASS=false
+          HAS_DO=false
           [[ -n "${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
           [[ -n "${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}" ]] && HAS_PASS=true
+          [[ -n "$DIGITALOCEAN_ACCESS_TOKEN" ]] && HAS_DO=true
+          echo "has_key=$HAS_KEY"   >> "$GITHUB_OUTPUT"
+          echo "has_pass=$HAS_PASS" >> "$GITHUB_OUTPUT"
+          echo "has_do=$HAS_DO"     >> "$GITHUB_OUTPUT"
           if [[ "$HAS_KEY" == true ]]; then
             echo "mode=key" >> "$GITHUB_OUTPUT"
           elif [[ "$HAS_PASS" == true ]]; then
             echo "mode=password" >> "$GITHUB_OUTPUT"
           else
-            echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD (or PORADNIK_SSH_KEY)."
+            echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD or PORADNIK_SSH_KEY."
             exit 1
           fi
-
-      - name: Set up SSH agent (key auth)
-        if: steps.auth.outputs.mode == 'key'
-        uses: webfactory/ssh-agent@v0.9.0
-        with:
-          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
-
-      - name: Install sshpass (password auth)
-        if: steps.auth.outputs.mode == 'password'
-        run: |
-          sudo apt-get update -qq
-          sudo apt-get install -y -qq sshpass
 
       - name: Add server to known_hosts
         run: |
@@ -73,13 +76,103 @@ jobs:
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           chmod 644 ~/.ssh/known_hosts
 
+      - name: Install doctl
+        if: steps.auth.outputs.has_do == 'true'
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_TOKEN || secrets.DO_TOKEN || secrets.DO_API_TOKEN }}
+
+      - name: DigitalOcean droplet info
+        id: do_info
+        if: steps.auth.outputs.has_do == 'true'
+        run: |
+          set -e
+          sudo apt-get install -y -qq jq >/dev/null
+          echo "==> Looking up droplet by IP $SSH_HOST"
+          JSON=$(doctl compute droplet list --output json)
+          DID=$(echo "$JSON" | jq -r --arg ip "$SSH_HOST" '
+            .[] | select(
+              (.networks.v4 // [])[] | .ip_address == $ip
+            ) | .id' | head -n1)
+          if [[ -z "$DID" || "$DID" == "null" ]]; then
+            echo "::warning::No DigitalOcean droplet found with public IP $SSH_HOST (token may belong to a different team)."
+            echo "id=" >> "$GITHUB_OUTPUT"
+          else
+            echo "==> Droplet ID: $DID"
+            doctl compute droplet get "$DID" --format ID,Name,PublicIPv4,Status,Region,Image
+            echo "id=$DID" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: DigitalOcean snapshot (optional)
+        if: steps.auth.outputs.has_do == 'true' && env.SNAPSHOT == 'true' && steps.do_info.outputs.id != ''
+        run: |
+          set -e
+          DID="${{ steps.do_info.outputs.id }}"
+          NAME="poradnik-pre-v2pro-$(date -u +%Y%m%d-%H%M%S)"
+          echo "==> Creating snapshot $NAME for droplet $DID (this can take a few minutes)"
+          doctl compute droplet-action snapshot "$DID" --snapshot-name "$NAME" --wait
+
+      - name: Bootstrap ephemeral SSH key via DigitalOcean + password
+        id: bootstrap
+        if: steps.auth.outputs.mode == 'password' && steps.auth.outputs.has_do == 'true'
+        env:
+          SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass openssh-client jq
+
+          KEY="$HOME/.ssh/poradnik_ephemeral"
+          PUB="$KEY.pub"
+          LABEL="gh-actions-poradnik-${{ github.run_id }}"
+          ssh-keygen -t ed25519 -N '' -C "$LABEL" -f "$KEY"
+          chmod 600 "$KEY"
+          PUBKEY_CONTENT=$(cat "$PUB")
+
+          echo "==> Registering pubkey in DigitalOcean account as $LABEL"
+          RESP=$(doctl compute ssh-key create "$LABEL" --public-key "$PUBKEY_CONTENT" --output json)
+          FP=$(echo "$RESP" | jq -r '.[0].fingerprint // empty')
+          echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
+          echo "==> DO key fingerprint: $FP"
+
+          echo "==> Appending pubkey to $SSH_USER@$SSH_HOST:~/.ssh/authorized_keys via password"
+          umask 077
+          printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
+          sshpass -f "$HOME/.ssh/.poradnik_pass" ssh \
+            -o PreferredAuthentications=password -o PubkeyAuthentication=no \
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && grep -qxF '$PUBKEY_CONTENT' ~/.ssh/authorized_keys || echo '$PUBKEY_CONTENT' >> ~/.ssh/authorized_keys && echo BOOTSTRAP_OK"
+          rm -f "$HOME/.ssh/.poradnik_pass"
+
+          echo "key_path=$KEY" >> "$GITHUB_OUTPUT"
+          echo "switched_to_key=true" >> "$GITHUB_OUTPUT"
+
+      - name: Set up SSH agent (existing key)
+        if: steps.auth.outputs.mode == 'key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install sshpass (password fallback)
+        if: steps.auth.outputs.mode == 'password' && steps.bootstrap.outputs.switched_to_key != 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+
       - name: Configure rssh wrapper
         env:
           AUTH_MODE: ${{ steps.auth.outputs.mode }}
+          BOOT_KEY: ${{ steps.bootstrap.outputs.key_path }}
+          SWITCHED: ${{ steps.bootstrap.outputs.switched_to_key }}
           SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
         run: |
           mkdir -p "$HOME/bin"
-          if [[ "$AUTH_MODE" == "password" ]]; then
+          if [[ "$SWITCHED" == "true" && -n "$BOOT_KEY" ]]; then
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              "exec ssh -i $BOOT_KEY -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \"\$@\"" \
+              > "$HOME/bin/rssh"
+          elif [[ "$AUTH_MODE" == "password" ]]; then
             umask 077
             printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
             printf '%s\n' \
@@ -215,3 +308,16 @@ jobs:
           curl -sI "https://poradnik.pro/wp-content/themes/pearblog-theme/assets/js/v2-pro-mobile.js" | head -n1
           echo "==> Homepage:"
           curl -sI "https://poradnik.pro/" | head -n1
+
+      - name: Cleanup ephemeral DigitalOcean SSH key
+        if: always() && steps.bootstrap.outputs.fingerprint != ''
+        continue-on-error: true
+        run: |
+          FP="${{ steps.bootstrap.outputs.fingerprint }}"
+          echo "==> Removing ephemeral DO key $FP"
+          doctl compute ssh-key delete "$FP" --force || true
+
+      - name: Cleanup local secrets
+        if: always()
+        run: |
+          rm -f "$HOME/.ssh/.poradnik_pass" "$HOME/.ssh/poradnik_ephemeral" "$HOME/.ssh/poradnik_ephemeral.pub" || true
