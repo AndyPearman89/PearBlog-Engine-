@@ -29,26 +29,42 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || '204.48.27.118' }}
-      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || 'root' }}
-      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || '22' }}
+      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || '204.48.27.118' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'root' }}
+      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '22' }}
       WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || '/var/www/poradnik.pro' }}
       THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/var/www/poradnik.pro/wp-content/themes/pearblog-theme' }}
       BRANCH: ${{ github.event.inputs.branch }}
       SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
 
     steps:
-      - name: Validate required secrets
+      - name: Resolve auth mode
+        id: auth
         run: |
-          if [[ -z "${{ secrets.PORADNIK_SSH_KEY }}" ]]; then
-            echo "::error::Missing required secret PORADNIK_SSH_KEY (SSH private key for root@poradnik.pro)."
+          HAS_KEY=false
+          HAS_PASS=false
+          [[ -n "${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
+          [[ -n "${{ secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}" ]] && HAS_PASS=true
+          if [[ "$HAS_KEY" == true ]]; then
+            echo "mode=key" >> "$GITHUB_OUTPUT"
+          elif [[ "$HAS_PASS" == true ]]; then
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Missing auth secret. Set SSH_PASSWORD (or PORADNIK_SSH_KEY)."
             exit 1
           fi
 
-      - name: Set up SSH agent
+      - name: Set up SSH agent (key auth)
+        if: steps.auth.outputs.mode == 'key'
         uses: webfactory/ssh-agent@v0.9.0
         with:
-          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY }}
+          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install sshpass (password auth)
+        if: steps.auth.outputs.mode == 'password'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
 
       - name: Add server to known_hosts
         run: |
@@ -57,14 +73,35 @@ jobs:
           ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
           chmod 644 ~/.ssh/known_hosts
 
+      - name: Configure rssh wrapper
+        env:
+          AUTH_MODE: ${{ steps.auth.outputs.mode }}
+          SSH_PASSWORD: ${{ secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/bin"
+          if [[ "$AUTH_MODE" == "password" ]]; then
+            umask 077
+            printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec sshpass -f "$HOME/.ssh/.poradnik_pass" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no "$@"' \
+              > "$HOME/bin/rssh"
+          else
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec ssh -o BatchMode=yes "$@"' \
+              > "$HOME/bin/rssh"
+          fi
+          chmod +x "$HOME/bin/rssh"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
       - name: Sanity check SSH
         run: |
-          ssh -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
-            "echo CONNECTED && hostname && uname -a"
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "echo CONNECTED && hostname && uname -a"
 
       - name: Deploy Landing V2 Pro
         run: |
-          ssh -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             BRANCH="$BRANCH" WEB_ROOT="$WEB_ROOT" THEME_PATH="$THEME_PATH" \
             SET_HOMEPAGE="$SET_HOMEPAGE" bash -se <<'REMOTE'
           set -euo pipefail
@@ -166,7 +203,7 @@ jobs:
             echo "==> Page URL: $(wp post url "$PAGE_ID" --allow-root 2>/dev/null || echo unknown)"
           fi
 
-          echo "✅ Landing V2 Pro deployed successfully"
+          echo "OK Landing V2 Pro deployed successfully"
           REMOTE
 
       - name: Smoke test (HTTP)
