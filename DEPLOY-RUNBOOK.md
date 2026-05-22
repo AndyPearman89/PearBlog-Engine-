@@ -30,7 +30,8 @@ For the current server configuration, key-based SSH is the required option.
 1. Open **Actions** in the repository.
 2. Select **Deploy to WordPress Server**.
 3. Click **Run workflow**.
-4. Confirm the latest run reaches the rsync and smoke-test steps.
+4. Optional: set `auth_mode` to `password` if you need to bypass a bad SSH key.
+5. Confirm the latest run reaches the rsync and smoke-test steps.
 
 ### Option 2: GitHub CLI
 
