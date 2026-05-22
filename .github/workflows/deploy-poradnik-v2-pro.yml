@@ -1,0 +1,180 @@
+name: Deploy Landing V2 Pro to poradnik.pro
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: false
+        default: "claude/create-landing-v2-pro"
+      set_as_homepage:
+        description: "Set Landing V2 Pro as homepage"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-poradnik-v2-pro
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy V2 Pro to poradnik.pro
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || '204.48.27.118' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || 'root' }}
+      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || '22' }}
+      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || '/var/www/poradnik.pro' }}
+      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/var/www/poradnik.pro/wp-content/themes/pearblog-theme' }}
+      BRANCH: ${{ github.event.inputs.branch }}
+      SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
+
+    steps:
+      - name: Validate required secrets
+        run: |
+          if [[ -z "${{ secrets.PORADNIK_SSH_KEY }}" ]]; then
+            echo "::error::Missing required secret PORADNIK_SSH_KEY (SSH private key for root@poradnik.pro)."
+            exit 1
+          fi
+
+      - name: Set up SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY }}
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Sanity check SSH
+        run: |
+          ssh -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
+            "echo CONNECTED && hostname && uname -a"
+
+      - name: Deploy Landing V2 Pro
+        run: |
+          ssh -p "$SSH_PORT" -o BatchMode=yes "$SSH_USER@$SSH_HOST" \
+            BRANCH="$BRANCH" WEB_ROOT="$WEB_ROOT" THEME_PATH="$THEME_PATH" \
+            SET_HOMEPAGE="$SET_HOMEPAGE" bash -se <<'REMOTE'
+          set -euo pipefail
+
+          REPO_DIR=/tmp/PearBlog-Engine-
+          REPO_URL=https://github.com/AndyPearman89/PearBlog-Engine-.git
+
+          echo "==> Branch: $BRANCH"
+          echo "==> Web root: $WEB_ROOT"
+          echo "==> Theme path: $THEME_PATH"
+
+          if [[ ! -d "$REPO_DIR/.git" ]]; then
+            echo "==> Cloning repo to $REPO_DIR"
+            rm -rf "$REPO_DIR"
+            git clone "$REPO_URL" "$REPO_DIR"
+          fi
+
+          cd "$REPO_DIR"
+          git fetch origin --prune
+          git checkout "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+
+          echo "==> Verifying source files exist"
+          test -f "theme/pearblog-theme/assets/css/v2-pro-neon.css"
+          test -f "theme/pearblog-theme/assets/js/v2-pro-mobile.js"
+          test -f "theme/pearblog-theme/page-landing-v2-pro.php"
+          test -f "theme/pearblog-theme/functions.php"
+          ls theme/pearblog-theme/template-parts/*v2-pro*.php > /dev/null
+
+          echo "==> Verifying target theme exists"
+          test -d "$THEME_PATH"
+          mkdir -p "$THEME_PATH/assets/css" "$THEME_PATH/assets/js" "$THEME_PATH/template-parts"
+
+          echo "==> Backing up functions.php"
+          TS=$(date +%Y%m%d-%H%M%S)
+          if [[ -f "$THEME_PATH/functions.php" ]]; then
+            cp "$THEME_PATH/functions.php" "$THEME_PATH/functions.php.backup.$TS"
+          fi
+
+          echo "==> Deploying CSS"
+          cp theme/pearblog-theme/assets/css/v2-pro-neon.css "$THEME_PATH/assets/css/"
+
+          echo "==> Deploying JS"
+          cp theme/pearblog-theme/assets/js/v2-pro-mobile.js "$THEME_PATH/assets/js/"
+
+          echo "==> Deploying page template"
+          cp theme/pearblog-theme/page-landing-v2-pro.php "$THEME_PATH/"
+
+          echo "==> Deploying template parts"
+          cp theme/pearblog-theme/template-parts/*v2-pro*.php "$THEME_PATH/template-parts/"
+
+          echo "==> Deploying functions.php"
+          cp theme/pearblog-theme/functions.php "$THEME_PATH/"
+
+          echo "==> Setting ownership & permissions"
+          chown -R www-data:www-data "$THEME_PATH"
+          find "$THEME_PATH" -type d -exec chmod 755 {} \;
+          find "$THEME_PATH" -type f -exec chmod 644 {} \;
+
+          echo "==> PHP syntax check"
+          php -l "$THEME_PATH/page-landing-v2-pro.php"
+          php -l "$THEME_PATH/functions.php"
+          for f in "$THEME_PATH"/template-parts/*v2-pro*.php; do
+            php -l "$f"
+          done
+
+          echo "==> Flushing WordPress cache"
+          cd "$WEB_ROOT"
+          if command -v wp >/dev/null 2>&1; then
+            wp cache flush --allow-root || true
+          else
+            echo "::warning::wp-cli not found, skipping cache flush"
+          fi
+
+          echo "==> Ensuring Landing V2 Pro page exists"
+          if command -v wp >/dev/null 2>&1; then
+            PAGE_ID=$(wp post list --post_type=page --post_title='Landing V2 Pro' --field=ID --allow-root | head -n1 || true)
+            if [[ -z "$PAGE_ID" ]]; then
+              echo "==> Creating Landing V2 Pro page"
+              PAGE_ID=$(wp post create \
+                --post_type=page \
+                --post_title='Landing V2 Pro' \
+                --post_status=publish \
+                --page_template='page-landing-v2-pro.php' \
+                --porcelain \
+                --allow-root)
+              echo "==> Created page ID: $PAGE_ID"
+            else
+              echo "==> Existing page ID: $PAGE_ID (re-applying template)"
+              wp post meta update "$PAGE_ID" _wp_page_template 'page-landing-v2-pro.php' --allow-root || true
+            fi
+
+            if [[ "$SET_HOMEPAGE" == "true" && -n "$PAGE_ID" ]]; then
+              echo "==> Setting page $PAGE_ID as homepage"
+              wp option update show_on_front 'page' --allow-root
+              wp option update page_on_front "$PAGE_ID" --allow-root
+            fi
+
+            echo "==> Page URL: $(wp post url "$PAGE_ID" --allow-root 2>/dev/null || echo unknown)"
+          fi
+
+          echo "✅ Landing V2 Pro deployed successfully"
+          REMOTE
+
+      - name: Smoke test (HTTP)
+        run: |
+          set -e
+          echo "==> CSS asset:"
+          curl -sI "https://poradnik.pro/wp-content/themes/pearblog-theme/assets/css/v2-pro-neon.css" | head -n1
+          echo "==> JS asset:"
+          curl -sI "https://poradnik.pro/wp-content/themes/pearblog-theme/assets/js/v2-pro-mobile.js" | head -n1
+          echo "==> Homepage:"
+          curl -sI "https://poradnik.pro/" | head -n1
