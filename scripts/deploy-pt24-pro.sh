@@ -235,8 +235,8 @@ cd $WEB_ROOT/wp-content/mu-plugins
 print_info "Downloading PearBlog Engine..."
 wget -q https://github.com/AndyPearman89/PearBlog-Engine-/archive/refs/tags/$PEARBLOG_VERSION.tar.gz
 tar -xzf $PEARBLOG_VERSION.tar.gz
-mv PearBlog-Engine--${PEARBLOG_VERSION#v}/mu-plugins/pearblog-engine ./
-rm -rf PearBlog-Engine--${PEARBLOG_VERSION#v} $PEARBLOG_VERSION.tar.gz
+RELEASE_DIR="PearBlog-Engine--${PEARBLOG_VERSION#v}"
+mv "${RELEASE_DIR}/mu-plugins/pearblog-engine" ./
 
 print_success "PearBlog Engine extracted"
 
@@ -249,9 +249,17 @@ print_success "Composer dependencies installed"
 # Step 10: Install PearBlog Theme
 print_header "Step 10: Installing PearBlog Theme"
 cd $WEB_ROOT/wp-content/themes
-cp -r $WEB_ROOT/wp-content/mu-plugins/pearblog-engine/theme/pearblog-theme ./
+THEME_SOURCE="$WEB_ROOT/wp-content/mu-plugins/pearblog-engine/theme/pearblog-theme"
+if [ ! -d "$THEME_SOURCE" ]; then
+    print_error "Theme source not found: $THEME_SOURCE"
+    exit 1
+fi
+
+cp -r "$THEME_SOURCE" ./
 wp theme activate pearblog-theme --allow-root
 print_success "PearBlog theme installed and activated"
+
+rm -rf "$WEB_ROOT/wp-content/mu-plugins/$RELEASE_DIR" "$WEB_ROOT/wp-content/mu-plugins/$PEARBLOG_VERSION.tar.gz"
 
 # Step 11: Configure PearBlog Engine
 print_header "Step 11: Configuring PearBlog Engine"
