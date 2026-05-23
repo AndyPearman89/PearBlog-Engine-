@@ -8,7 +8,7 @@
     <?php wp_head(); ?>
 </head>
 <body <?php body_class('poradnik-landing-minimal'); ?>>
-<?php wp_body_open(); ?>
+<?php if (function_exists('wp_body_open')) { wp_body_open(); } ?>
 
 <!-- Minimal Header for Landing Pages -->
 <header class="plv5-minimal-header" style="
