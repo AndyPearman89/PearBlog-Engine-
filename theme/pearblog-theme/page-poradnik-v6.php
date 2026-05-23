@@ -31,6 +31,25 @@ $rest_base = rest_url( 'pearblog/v1' );
 $decisions_count  = number_format( (int) get_option( 'pb_v6_decisions_count',  124800 ), 0, ',', ' ' );
 $specialists_count = number_format( (int) get_option( 'pb_v6_specialists_count', 3200 ), 0, ',', ' ' );
 $cities_count     = number_format( (int) get_option( 'pb_v6_cities_count',        420 ), 0, ',', ' ' );
+$name_initials    = static function ( $name ) {
+	$name = (string) $name;
+
+	if ( '' === $name ) {
+		return '';
+	}
+
+	if ( function_exists( 'mb_substr' ) ) {
+		$initials = mb_substr( $name, 0, 2 );
+
+		if ( function_exists( 'mb_strtoupper' ) ) {
+			return mb_strtoupper( $initials );
+		}
+
+		return strtoupper( $initials );
+	}
+
+	return strtoupper( substr( $name, 0, 2 ) );
+};
 
 ?>
 <!DOCTYPE html>
@@ -493,7 +512,7 @@ $cities_count     = number_format( (int) get_option( 'pb_v6_cities_count',      
 				<div class="v6-rcard__body">
 					<div class="v6-rcard__top">
 						<div class="v6-rcard__avatar" aria-hidden="true">
-							<?php echo esc_html( mb_strtoupper( mb_substr( $item['name'], 0, 2 ) ) ); ?>
+							<?php echo esc_html( $name_initials( $item['name'] ) ); ?>
 						</div>
 						<div class="v6-rcard__info">
 							<div class="v6-rcard__name">
