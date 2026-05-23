@@ -1,0 +1,331 @@
+name: Deploy Landing V2 Pro to poradnik.pro
+
+on:
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to deploy"
+        required: false
+        default: "claude/create-landing-v2-pro"
+      set_as_homepage:
+        description: "Set Landing V2 Pro as homepage"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+      snapshot_before_deploy:
+        description: "Create DigitalOcean snapshot before deploy (requires DIGITALOCEAN_TOKEN)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: deploy-poradnik-v2-pro
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy V2 Pro to poradnik.pro
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || '204.48.27.118' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'root' }}
+      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '22' }}
+      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || '/var/www/poradnik.pro' }}
+      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/var/www/poradnik.pro/wp-content/themes/pearblog-theme' }}
+      BRANCH: ${{ github.event.inputs.branch }}
+      SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
+      SNAPSHOT: ${{ github.event.inputs.snapshot_before_deploy }}
+      DIGITALOCEAN_ACCESS_TOKEN: ${{ secrets.DIGITALOCEAN_TOKEN || secrets.DO_TOKEN || secrets.DO_API_TOKEN }}
+
+    steps:
+      - name: Resolve auth mode
+        id: auth
+        run: |
+          HAS_KEY=false
+          HAS_PASS=false
+          HAS_DO=false
+          [[ -n "${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
+          [[ -n "${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}" ]] && HAS_PASS=true
+          [[ -n "$DIGITALOCEAN_ACCESS_TOKEN" ]] && HAS_DO=true
+          echo "has_key=$HAS_KEY"   >> "$GITHUB_OUTPUT"
+          echo "has_pass=$HAS_PASS" >> "$GITHUB_OUTPUT"
+          echo "has_do=$HAS_DO"     >> "$GITHUB_OUTPUT"
+          # Priority: password (most reliable here) > existing key.
+          # When DO token is present, password mode additionally bootstraps a fresh ephemeral key.
+          if [[ "$HAS_PASS" == true ]]; then
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+            if [[ "$HAS_DO" == true ]]; then
+              echo "==> Auth: password + DigitalOcean ephemeral-key bootstrap"
+            else
+              echo "==> Auth: password (sshpass)"
+            fi
+          elif [[ "$HAS_KEY" == true ]]; then
+            echo "mode=key" >> "$GITHUB_OUTPUT"
+            echo "==> Auth: existing SSH key"
+          else
+            echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD or PORADNIK_SSH_KEY."
+            exit 1
+          fi
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Install doctl
+        if: steps.auth.outputs.has_do == 'true'
+        uses: digitalocean/action-doctl@v2
+        with:
+          token: ${{ secrets.DIGITALOCEAN_TOKEN || secrets.DO_TOKEN || secrets.DO_API_TOKEN }}
+
+      - name: DigitalOcean droplet info
+        id: do_info
+        if: steps.auth.outputs.has_do == 'true'
+        run: |
+          set -e
+          sudo apt-get install -y -qq jq >/dev/null
+          echo "==> Looking up droplet by IP $SSH_HOST"
+          JSON=$(doctl compute droplet list --output json)
+          DID=$(echo "$JSON" | jq -r --arg ip "$SSH_HOST" '
+            .[] | select(
+              (.networks.v4 // [])[] | .ip_address == $ip
+            ) | .id' | head -n1)
+          if [[ -z "$DID" || "$DID" == "null" ]]; then
+            echo "::warning::No DigitalOcean droplet found with public IP $SSH_HOST (token may belong to a different team)."
+            echo "id=" >> "$GITHUB_OUTPUT"
+          else
+            echo "==> Droplet ID: $DID"
+            doctl compute droplet get "$DID" --format ID,Name,PublicIPv4,Status,Region,Image
+            echo "id=$DID" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: DigitalOcean snapshot (optional)
+        if: steps.auth.outputs.has_do == 'true' && env.SNAPSHOT == 'true' && steps.do_info.outputs.id != ''
+        run: |
+          set -e
+          DID="${{ steps.do_info.outputs.id }}"
+          NAME="poradnik-pre-v2pro-$(date -u +%Y%m%d-%H%M%S)"
+          echo "==> Creating snapshot $NAME for droplet $DID (this can take a few minutes)"
+          doctl compute droplet-action snapshot "$DID" --snapshot-name "$NAME" --wait
+
+      - name: Bootstrap ephemeral SSH key via DigitalOcean + password
+        id: bootstrap
+        if: steps.auth.outputs.mode == 'password' && steps.auth.outputs.has_do == 'true'
+        env:
+          SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
+        run: |
+          set -e
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass openssh-client jq
+
+          KEY="$HOME/.ssh/poradnik_ephemeral"
+          PUB="$KEY.pub"
+          LABEL="gh-actions-poradnik-${{ github.run_id }}"
+          ssh-keygen -t ed25519 -N '' -C "$LABEL" -f "$KEY"
+          chmod 600 "$KEY"
+          PUBKEY_CONTENT=$(cat "$PUB")
+
+          echo "==> Registering pubkey in DigitalOcean account as $LABEL"
+          RESP=$(doctl compute ssh-key create "$LABEL" --public-key "$PUBKEY_CONTENT" --output json)
+          FP=$(echo "$RESP" | jq -r '.[0].fingerprint // empty')
+          echo "fingerprint=$FP" >> "$GITHUB_OUTPUT"
+          echo "==> DO key fingerprint: $FP"
+
+          echo "==> Appending pubkey to $SSH_USER@$SSH_HOST:~/.ssh/authorized_keys via password"
+          umask 077
+          printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
+          sshpass -f "$HOME/.ssh/.poradnik_pass" ssh \
+            -o PreferredAuthentications=password -o PubkeyAuthentication=no \
+            -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "mkdir -p ~/.ssh && chmod 700 ~/.ssh && touch ~/.ssh/authorized_keys && chmod 600 ~/.ssh/authorized_keys && grep -qxF '$PUBKEY_CONTENT' ~/.ssh/authorized_keys || echo '$PUBKEY_CONTENT' >> ~/.ssh/authorized_keys && echo BOOTSTRAP_OK"
+          rm -f "$HOME/.ssh/.poradnik_pass"
+
+          echo "key_path=$KEY" >> "$GITHUB_OUTPUT"
+          echo "switched_to_key=true" >> "$GITHUB_OUTPUT"
+
+      - name: Set up SSH agent (existing key)
+        if: steps.auth.outputs.mode == 'key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install sshpass (password fallback)
+        if: steps.auth.outputs.mode == 'password' && steps.bootstrap.outputs.switched_to_key != 'true'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+
+      - name: Configure rssh wrapper
+        env:
+          AUTH_MODE: ${{ steps.auth.outputs.mode }}
+          BOOT_KEY: ${{ steps.bootstrap.outputs.key_path }}
+          SWITCHED: ${{ steps.bootstrap.outputs.switched_to_key }}
+          SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/bin"
+          if [[ "$SWITCHED" == "true" && -n "$BOOT_KEY" ]]; then
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              "exec ssh -i $BOOT_KEY -o IdentitiesOnly=yes -o PreferredAuthentications=publickey \"\$@\"" \
+              > "$HOME/bin/rssh"
+          elif [[ "$AUTH_MODE" == "password" ]]; then
+            umask 077
+            printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec sshpass -f "$HOME/.ssh/.poradnik_pass" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no "$@"' \
+              > "$HOME/bin/rssh"
+          else
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec ssh -o BatchMode=yes "$@"' \
+              > "$HOME/bin/rssh"
+          fi
+          chmod +x "$HOME/bin/rssh"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Sanity check SSH
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "echo CONNECTED && hostname && uname -a"
+
+      - name: Deploy Landing V2 Pro
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            BRANCH="$BRANCH" WEB_ROOT="$WEB_ROOT" THEME_PATH="$THEME_PATH" \
+            SET_HOMEPAGE="$SET_HOMEPAGE" bash -se <<'REMOTE'
+          set -euo pipefail
+
+          REPO_DIR=/tmp/PearBlog-Engine-
+          REPO_URL=https://github.com/AndyPearman89/PearBlog-Engine-.git
+
+          echo "==> Branch: $BRANCH"
+          echo "==> Web root: $WEB_ROOT"
+          echo "==> Theme path: $THEME_PATH"
+
+          if [[ ! -d "$REPO_DIR/.git" ]]; then
+            echo "==> Cloning repo to $REPO_DIR"
+            rm -rf "$REPO_DIR"
+            git clone "$REPO_URL" "$REPO_DIR"
+          fi
+
+          cd "$REPO_DIR"
+          git fetch origin --prune
+          git checkout "$BRANCH"
+          git reset --hard "origin/$BRANCH"
+
+          echo "==> Verifying source files exist"
+          test -f "theme/pearblog-theme/assets/css/v2-pro-neon.css"
+          test -f "theme/pearblog-theme/assets/js/v2-pro-mobile.js"
+          test -f "theme/pearblog-theme/page-landing-v2-pro.php"
+          test -f "theme/pearblog-theme/functions.php"
+          ls theme/pearblog-theme/template-parts/*v2-pro*.php > /dev/null
+
+          echo "==> Verifying target theme exists"
+          test -d "$THEME_PATH"
+          mkdir -p "$THEME_PATH/assets/css" "$THEME_PATH/assets/js" "$THEME_PATH/template-parts"
+
+          echo "==> Backing up functions.php"
+          TS=$(date +%Y%m%d-%H%M%S)
+          if [[ -f "$THEME_PATH/functions.php" ]]; then
+            cp "$THEME_PATH/functions.php" "$THEME_PATH/functions.php.backup.$TS"
+          fi
+
+          echo "==> Deploying CSS"
+          cp theme/pearblog-theme/assets/css/v2-pro-neon.css "$THEME_PATH/assets/css/"
+
+          echo "==> Deploying JS"
+          cp theme/pearblog-theme/assets/js/v2-pro-mobile.js "$THEME_PATH/assets/js/"
+
+          echo "==> Deploying page template"
+          cp theme/pearblog-theme/page-landing-v2-pro.php "$THEME_PATH/"
+
+          echo "==> Deploying template parts"
+          cp theme/pearblog-theme/template-parts/*v2-pro*.php "$THEME_PATH/template-parts/"
+
+          echo "==> Deploying functions.php"
+          cp theme/pearblog-theme/functions.php "$THEME_PATH/"
+
+          echo "==> Setting ownership & permissions"
+          chown -R www-data:www-data "$THEME_PATH"
+          find "$THEME_PATH" -type d -exec chmod 755 {} \;
+          find "$THEME_PATH" -type f -exec chmod 644 {} \;
+
+          echo "==> PHP syntax check"
+          php -l "$THEME_PATH/page-landing-v2-pro.php"
+          php -l "$THEME_PATH/functions.php"
+          for f in "$THEME_PATH"/template-parts/*v2-pro*.php; do
+            php -l "$f"
+          done
+
+          echo "==> Flushing WordPress cache"
+          cd "$WEB_ROOT"
+          if command -v wp >/dev/null 2>&1; then
+            wp cache flush --allow-root || true
+          else
+            echo "::warning::wp-cli not found, skipping cache flush"
+          fi
+
+          echo "==> Ensuring Landing V2 Pro page exists"
+          if command -v wp >/dev/null 2>&1; then
+            PAGE_ID=$(wp post list --post_type=page --post_title='Landing V2 Pro' --field=ID --allow-root | head -n1 || true)
+            if [[ -z "$PAGE_ID" ]]; then
+              echo "==> Creating Landing V2 Pro page"
+              PAGE_ID=$(wp post create \
+                --post_type=page \
+                --post_title='Landing V2 Pro' \
+                --post_status=publish \
+                --page_template='page-landing-v2-pro.php' \
+                --porcelain \
+                --allow-root)
+              echo "==> Created page ID: $PAGE_ID"
+            else
+              echo "==> Existing page ID: $PAGE_ID (re-applying template)"
+              wp post meta update "$PAGE_ID" _wp_page_template 'page-landing-v2-pro.php' --allow-root || true
+            fi
+
+            if [[ "$SET_HOMEPAGE" == "true" && -n "$PAGE_ID" ]]; then
+              echo "==> Setting page $PAGE_ID as homepage"
+              wp option update show_on_front 'page' --allow-root
+              wp option update page_on_front "$PAGE_ID" --allow-root
+            fi
+
+            echo "==> Page URL: $(wp post url "$PAGE_ID" --allow-root 2>/dev/null || echo unknown)"
+          fi
+
+          echo "OK Landing V2 Pro deployed successfully"
+          REMOTE
+
+      - name: Smoke test (HTTP)
+        run: |
+          set -e
+          echo "==> CSS asset:"
+          curl -sI "https://poradnik.pro/wp-content/themes/pearblog-theme/assets/css/v2-pro-neon.css" | head -n1
+          echo "==> JS asset:"
+          curl -sI "https://poradnik.pro/wp-content/themes/pearblog-theme/assets/js/v2-pro-mobile.js" | head -n1
+          echo "==> Homepage:"
+          curl -sI "https://poradnik.pro/" | head -n1
+
+      - name: Cleanup ephemeral DigitalOcean SSH key
+        if: always() && steps.bootstrap.outputs.fingerprint != ''
+        continue-on-error: true
+        run: |
+          FP="${{ steps.bootstrap.outputs.fingerprint }}"
+          echo "==> Removing ephemeral DO key $FP"
+          doctl compute ssh-key delete "$FP" --force || true
+
+      - name: Cleanup local secrets
+        if: always()
+        run: |
+          rm -f "$HOME/.ssh/.poradnik_pass" "$HOME/.ssh/poradnik_ephemeral" "$HOME/.ssh/poradnik_ephemeral.pub" || true
