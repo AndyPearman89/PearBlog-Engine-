@@ -249,7 +249,7 @@ print_success "Composer dependencies installed"
 # Step 10: Install PearBlog Theme
 print_header "Step 10: Installing PearBlog Theme"
 cd $WEB_ROOT/wp-content/themes
-THEME_SOURCE="$WEB_ROOT/wp-content/mu-plugins/$RELEASE_DIR/theme/pearblog-theme"
+THEME_SOURCE="$WEB_ROOT/wp-content/mu-plugins/pearblog-engine/theme/pearblog-theme"
 if [ ! -d "$THEME_SOURCE" ]; then
     print_error "Theme source not found: $THEME_SOURCE"
     exit 1
