@@ -1042,10 +1042,6 @@ if ( ! function_exists( 'get_post_field' ) ) {
 	}
 }
 
-if ( ! function_exists( 'setcookie' ) ) {
-	// Already a PHP built-in; only define if somehow missing.
-}
-
 if ( ! defined( 'DAY_IN_SECONDS' ) ) {
 	define( 'DAY_IN_SECONDS', 86400 );
 }
@@ -1058,10 +1054,6 @@ if ( ! function_exists( 'current_time' ) ) {
 	function current_time( string $type ): string {
 		return gmdate( 'Y-m-d H:i:s' );
 	}
-}
-
-if ( ! function_exists( 'gmdate' ) ) {
-	// PHP built-in – always available.
 }
 
 // PSR-4 autoloader for src/ classes.

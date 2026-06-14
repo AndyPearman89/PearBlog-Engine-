@@ -474,7 +474,7 @@ class V9Command {
 		$usage   = $engine->get_current_usage();
 		$quota   = (float) get_option( BillingEngine::OPTION_QUOTA, BillingEngine::DEFAULT_QUOTA );
 		$pct     = $engine->get_usage_percentage();
-		$period  = gmdate( 'Y-m-d', $usage['period_start'] );
+		$period  = gmdate( 'Y-m-d', (int) $usage['period_start'] );
 
 		\WP_CLI::log( sprintf( 'Period start : %s', $period ) );
 		\WP_CLI::log( sprintf( 'Generations  : %d', $usage['generations'] ) );
@@ -503,7 +503,7 @@ class V9Command {
 		$rows = [];
 		foreach ( $history as $period ) {
 			$rows[] = [
-				'Period start'  => gmdate( 'Y-m', $period['period_start'] ?? 0 ),
+				'Period start'  => gmdate( 'Y-m', (int) ( $period['period_start'] ?? 0 ) ),
 				'Generations'   => $period['generations'] ?? 0,
 				'Spend (USD)'   => sprintf( '$%.2f', ( $period['cost_cents'] ?? 0 ) / 100 ),
 			];
