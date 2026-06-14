@@ -196,11 +196,20 @@ class OrphanPageDetector {
 			$hrefs = $matches[1] ?? [];
 
 			foreach ( $hrefs as $href ) {
-				// Normalise: strip trailing slash, query string, fragment.
-				$href = strtok( rtrim( $href, '/' ), '?' );
-				$href = strtok( $href ?: '', '#' );
+				// Normalise: strip query string and fragment, then trailing slash.
+				// Use parse_url for predictable and safe URL decomposition.
+				$parsed = parse_url( $href );
+				if ( false === $parsed || empty( $parsed['path'] ) ) {
+					continue;
+				}
 
-				if ( ! $href ) {
+				$base = ( isset( $parsed['scheme'], $parsed['host'] )
+					? $parsed['scheme'] . '://' . $parsed['host']
+					: '' ) . $parsed['path'];
+
+				$href = rtrim( $base, '/' );
+
+				if ( '' === $href ) {
 					continue;
 				}
 

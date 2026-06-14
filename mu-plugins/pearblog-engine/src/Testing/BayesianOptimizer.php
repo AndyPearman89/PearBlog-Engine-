@@ -240,7 +240,9 @@ class BayesianOptimizer {
 	private function gamma_sample( float $shape ): float {
 		if ( $shape < 1.0 ) {
 			// Boost method: Gamma(k) = Gamma(k+1) * U^(1/k).
-			return $this->gamma_sample( $shape + 1.0 ) * ( mt_rand() / mt_getrandmax() ) ** ( 1.0 / $shape );
+			// Clamp U away from 0 to avoid 0^(1/k) = 0 for positive k.
+			$u = max( mt_rand() / mt_getrandmax(), 1e-10 );
+			return $this->gamma_sample( $shape + 1.0 ) * $u ** ( 1.0 / $shape );
 		}
 
 		$d = $shape - 1.0 / 3.0;
@@ -276,8 +278,9 @@ class BayesianOptimizer {
 			return $spare;
 		}
 
-		$u = mt_rand() / mt_getrandmax();
-		$v = mt_rand() / mt_getrandmax();
+		// Clamp both samples away from 0 to avoid log(0) and ensure finite output.
+		$u = max( mt_rand() / mt_getrandmax(), 1e-10 );
+		$v = max( mt_rand() / mt_getrandmax(), 1e-10 );
 
 		$mag = sqrt( -2.0 * log( max( $u, 1e-10 ) ) );
 
