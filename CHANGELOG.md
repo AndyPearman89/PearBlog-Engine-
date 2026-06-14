@@ -128,7 +128,15 @@ All notable changes to PearBlog Engine are documented in this file.
 #### Source fix
 - `SecurityAuditor::run_full_audit()` — injects `name` key (derived from OWASP check ID) into each check result array so `test_each_check_has_name_key` passes
 
-### Added — Test Suite (session 10, +4 test classes, 84 tests)
+### Added — Test Suite (session 11, +4 test classes, 86 tests)
+
+#### New test classes
+- **`AsyncQueueManagerTest`** — status constants (`STATUS_PENDING/PROCESSING/DONE/FAILED/DEAD`), option key + default constants, `get_backend` (default `wp_cron`, custom option), `get_stats` with `wp_cron` backend (zero counts, correct backend key, all required keys present), `push` with `wp_cron` backend (returns int timestamp, sets `_cron_scheduled` entry, uses correct job-type hook), `push` default priority, `execute_job` (fires type-specific action with payload, fires `pearblog_bg_job_completed` on success, fires `pearblog_bg_job_failed` on exception), `maybe_schedule` (schedules when absent, skips when already scheduled), `admin_permission` — 20 tests, 37 assertions
+- **`VideoScriptBuilderTest`** — platform constants (`PLATFORM_YOUTUBE/TIKTOK/SHORTS`) uniqueness, `get_scripts` (empty when no meta, single platform, multiple platforms, all three platforms, skips empty strings, only known platforms returned), `editor_permission` (false without capability, true with capability), `rest_get_scripts` (post_id in response, scripts array key, HTTP 200, empty scripts for missing meta) — 15 tests, 25 assertions
+- **`QuizEngineTest`** — `POST_TYPE`, `META_QUESTIONS`, `META_LEAD_CAPTURE`, `OPTION_LEADS` constants, `get_questions` (empty meta → `[]`, array meta returns questions, JSON string meta decoded, invalid JSON → `[]`, empty string → `[]`), `generate_recommendation` early returns (no questions → default message, empty answers → default message), `capture_lead` (stored in option, correct quiz_id, sanitized email, recommendation stored, append to existing, fires `pearblog_quiz_lead_captured` action, calls `wp_mail`, ring-buffer trims to 500, newest lead is last after overflow), `rest_get_leads` (empty response, count of stored leads, HTTP 200, caps at 50), `admin_permission` — 26 tests, 30 assertions
+- **`NewsletterBuilderTest`** — all 8 `OPTION_*` constants, `send_weekly_newsletter` disabled (returns disabled result, skips `last_sent` option update, does not fire `pearblog_newsletter_sent` action), `maybe_schedule` (no-op when disabled, schedules `pearblog_newsletter_send` when enabled, skips when already scheduled), `build_html` (returns string, contains `<!DOCTYPE html>`, contains site name, contains unsubscribe anchor, contains "Weekly Digest", contains site URL), `admin_permission` (false / true), `rest_preview` (HTTP 200, `html` key present, value is string) — 25 tests, 27 assertions
+
+
 
 #### New test classes
 - **`DistributedLockManagerTest`** — `acquire` (free lock, sets transient, double-acquire fails, cross-instance lock conflict, independent names), `release` (success, transient removed, not held, cannot release another instance's lock), acquire→release→re-acquire cycle, `is_locked` (false when absent, true after acquire, false after release), `with_lock` (callback value, auto-release, null on contention, releases on exception), option constants, unknown backend fallback — 20 tests, 22 assertions
