@@ -27,6 +27,14 @@
  *   wp pearblog v9 orphans detail <post_id>
  *   wp pearblog v9 orphans suggest <post_id>
  *   wp pearblog v9 orphans mark-reviewed <post_id>
+ *   wp pearblog v9 billing usage
+ *   wp pearblog v9 billing reset
+ *   wp pearblog v9 tenant create --domain=<domain> [--industry=<industry>] [--tone=<tone>] [--language=<language>] [--plan=<plan>] [--title=<title>] [--admin=<email>]
+ *   wp pearblog v9 tenant list
+ *   wp pearblog v9 audit run [--export=<file>]
+ *   wp pearblog v9 pii scan <post_id> [--redact]
+ *   wp pearblog v9 roi article <post_id>
+ *   wp pearblog v9 roi snapshot [--refresh]
  *
  * @package PearBlogEngine\CLI
  * @since   9.0.0
@@ -37,11 +45,16 @@ declare(strict_types=1);
 namespace PearBlogEngine\CLI;
 
 use PearBlogEngine\Analytics\PredictiveAnalytics;
+use PearBlogEngine\Analytics\ContentROIEngine;
 use PearBlogEngine\Content\CollaborationManager;
 use PearBlogEngine\Testing\AIVariantGenerator;
 use PearBlogEngine\Testing\BayesianOptimizer;
 use PearBlogEngine\AI\SmartProviderRouter;
 use PearBlogEngine\SEO\OrphanPageDetector;
+use PearBlogEngine\Tenant\BillingEngine;
+use PearBlogEngine\Tenant\TenantOnboardingController;
+use PearBlogEngine\Security\SecurityAuditor;
+use PearBlogEngine\Security\PIIDetector;
 
 /**
  * V9 CLI command group.
@@ -51,19 +64,29 @@ use PearBlogEngine\SEO\OrphanPageDetector;
 class V9Command {
 
 	private PredictiveAnalytics $analytics;
+	private ContentROIEngine $roi;
 	private CollaborationManager $collab;
 	private AIVariantGenerator $variant_gen;
 	private BayesianOptimizer $bayesian;
 	private SmartProviderRouter $router;
 	private OrphanPageDetector $orphan_detector;
+	private BillingEngine $billing;
+	private TenantOnboardingController $tenant;
+	private SecurityAuditor $auditor;
+	private PIIDetector $pii;
 
 	public function __construct() {
 		$this->analytics       = new PredictiveAnalytics();
+		$this->roi             = new ContentROIEngine();
 		$this->collab          = new CollaborationManager();
 		$this->variant_gen     = new AIVariantGenerator();
 		$this->bayesian        = new BayesianOptimizer();
 		$this->router          = new SmartProviderRouter();
 		$this->orphan_detector = new OrphanPageDetector();
+		$this->billing         = new BillingEngine();
+		$this->tenant          = new TenantOnboardingController();
+		$this->auditor         = new SecurityAuditor();
+		$this->pii             = new PIIDetector();
 	}
 
 	// -----------------------------------------------------------------------
@@ -725,5 +748,356 @@ class V9Command {
 
 		$this->orphan_detector->mark_reviewed( $post_id );
 		\WP_CLI::success( "Post #{$post_id} marked as reviewed. It will be excluded from future scans." );
+	}
+
+	// -----------------------------------------------------------------------
+	// Billing sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Show or reset AI token billing usage.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   usage   — Display current billing cycle usage and quota.
+	 *   reset   — Reset the billing cycle (use with care).
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 billing usage
+	 *   wp pearblog v9 billing reset
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function billing( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'usage':
+				$this->billing_usage();
+				break;
+			case 'reset':
+				$this->billing_reset();
+				break;
+			default:
+				\WP_CLI::error( "Unknown billing sub-command '{$sub}'. Try: usage, reset." );
+		}
+	}
+
+	private function billing_usage(): void {
+		$usage = $this->billing->get_current_usage();
+		$pct   = $this->billing->get_usage_percentage();
+
+		\WP_CLI::line( sprintf( 'Cycle usage : %.2f¢ / %.2f¢ (%.1f%%)', $usage['used_cents'], $usage['quota_cents'], $pct ) );
+		\WP_CLI::line( sprintf( 'Cycle start : %s', $usage['cycle_start'] ?? 'unknown' ) );
+
+		if ( $pct >= 100 ) {
+			\WP_CLI::warning( 'Quota exhausted — new generation requests will be blocked until the cycle resets.' );
+		} elseif ( $pct >= 80 ) {
+			\WP_CLI::warning( sprintf( 'Approaching quota limit (%.1f%% used).', $pct ) );
+		} else {
+			\WP_CLI::success( sprintf( 'Quota OK (%.1f%% used).', $pct ) );
+		}
+	}
+
+	private function billing_reset(): void {
+		$this->billing->reset_billing_cycle();
+		\WP_CLI::success( 'Billing cycle reset. Usage counters cleared.' );
+	}
+
+	// -----------------------------------------------------------------------
+	// Tenant sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Manage multi-tenant provisioning.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   create   — Provision a new tenant site.
+	 *   list     — List all provisioned tenants.
+	 *
+	 * ## OPTIONS (create)
+	 *
+	 * --domain=<domain>
+	 * : Domain for the new tenant (required).
+	 *
+	 * [--industry=<industry>]
+	 * : Content industry/niche. Default: general.
+	 *
+	 * [--tone=<tone>]
+	 * : Writing tone. Default: professional.
+	 *
+	 * [--language=<language>]
+	 * : ISO 639-1 language code. Default: en.
+	 *
+	 * [--plan=<plan>]
+	 * : Plan tier: starter, pro, enterprise. Default: starter.
+	 *
+	 * [--title=<title>]
+	 * : Site title. Defaults to domain.
+	 *
+	 * [--admin=<email>]
+	 * : Admin email address.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 tenant create --domain=acme.com --industry=technology --plan=pro
+	 *   wp pearblog v9 tenant list
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function tenant( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'create':
+				$this->tenant_create( $assoc_args );
+				break;
+			case 'list':
+				$this->tenant_list();
+				break;
+			default:
+				\WP_CLI::error( "Unknown tenant sub-command '{$sub}'. Try: create, list." );
+		}
+	}
+
+	private function tenant_create( array $assoc_args ): void {
+		$domain = $assoc_args['domain'] ?? '';
+		if ( '' === $domain ) {
+			\WP_CLI::error( '--domain is required.' );
+		}
+
+		$params = [
+			'domain'      => $domain,
+			'title'       => $assoc_args['title'] ?? '',
+			'industry'    => $assoc_args['industry'] ?? 'general',
+			'tone'        => $assoc_args['tone'] ?? 'professional',
+			'language'    => $assoc_args['language'] ?? 'en',
+			'plan'        => $assoc_args['plan'] ?? 'starter',
+			'admin_email' => $assoc_args['admin'] ?? '',
+		];
+
+		$result = $this->tenant->provision( $params );
+
+		if ( is_wp_error( $result ) ) {
+			\WP_CLI::error( $result->get_error_message() );
+		}
+
+		\WP_CLI::success( "Tenant provisioned: {$result['domain']} (site #{$result['site_id']}, plan: {$result['plan']})" );
+		\WP_CLI::line( 'Admin URL: ' . $result['admin_url'] );
+	}
+
+	private function tenant_list(): void {
+		$tenants = $this->tenant->list_tenants();
+
+		if ( empty( $tenants ) ) {
+			\WP_CLI::line( 'No tenants provisioned yet.' );
+			return;
+		}
+
+		$rows = array_map( static function ( array $t ): array {
+			return [
+				'Domain'      => $t['domain'],
+				'Title'       => $t['title'] ?? '',
+				'Plan'        => $t['plan'] ?? '',
+				'Industry'    => $t['industry'] ?? '',
+				'Language'    => $t['language'] ?? '',
+				'Provisioned' => isset( $t['provisioned'] ) ? gmdate( 'Y-m-d H:i', $t['provisioned'] ) : '',
+			];
+		}, $tenants );
+
+		\WP_CLI\Utils\format_items( 'table', $rows, [ 'Domain', 'Title', 'Plan', 'Industry', 'Language', 'Provisioned' ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// Security audit sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Run the OWASP Top 10 security audit.
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--export=<file>]
+	 * : Write full JSON report to this file path.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 audit run
+	 *   wp pearblog v9 audit run --export=/tmp/audit.json
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function audit( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		if ( 'run' !== $sub ) {
+			\WP_CLI::error( "Unknown audit sub-command '{$sub}'. Try: run." );
+		}
+
+		\WP_CLI::line( 'Running OWASP Top 10 2021 security audit…' );
+		$results = $this->auditor->run_full_audit();
+		$summary = $results['summary'] ?? [];
+
+		\WP_CLI::line( sprintf(
+			'Risk score: %d/100 | Checks: %d | Pass: %d | Warn: %d | Fail: %d',
+			$results['risk_score'] ?? 0,
+			$summary['total'] ?? 0,
+			$summary['passed'] ?? 0,
+			$summary['warnings'] ?? 0,
+			$summary['failures'] ?? 0,
+		) );
+
+		$export = $assoc_args['export'] ?? '';
+		if ( '' !== $export ) {
+			file_put_contents( $export, $this->auditor->export_json() );
+			\WP_CLI::success( "Full report exported to {$export}" );
+		}
+
+		$score = $results['risk_score'] ?? 0;
+		if ( $score > 50 ) {
+			\WP_CLI::warning( "Risk score {$score}/100 — review and address failures before production." );
+		} else {
+			\WP_CLI::success( "Risk score {$score}/100 — site is in good shape." );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// PII scanner sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Scan a post for PII (Personally Identifiable Information).
+	 *
+	 * ## OPTIONS
+	 *
+	 * <post_id>
+	 * : ID of the post to scan.
+	 *
+	 * [--redact]
+	 * : Output redacted content instead of listing PII findings.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 pii scan 42
+	 *   wp pearblog v9 pii scan 42 --redact
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function pii( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		if ( 'scan' !== $sub ) {
+			\WP_CLI::error( "Unknown pii sub-command '{$sub}'. Try: scan." );
+		}
+
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 pii scan <post_id> [--redact]' );
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			\WP_CLI::error( "Post #{$post_id} not found." );
+		}
+
+		$content  = $post->post_content ?? '';
+		$findings = $this->pii->scan_and_persist( $post_id, $content );
+
+		if ( empty( $findings['matches'] ) ) {
+			\WP_CLI::success( "No PII found in post #{$post_id}." );
+			return;
+		}
+
+		\WP_CLI::warning( sprintf( 'Found %d PII match(es) in post #%d:', count( $findings['matches'] ), $post_id ) );
+		foreach ( $findings['matches'] as $match ) {
+			\WP_CLI::line( sprintf( '  [%s] %s', $match['type'], $match['value'] ) );
+		}
+
+		if ( isset( $assoc_args['redact'] ) ) {
+			$redacted = $this->pii->redact( $content );
+			\WP_CLI::line( "\n--- Redacted content ---\n" . mb_strimwidth( $redacted, 0, 500, '…' ) );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// ROI sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Content ROI reporting.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   article <post_id>   — Show ROI metrics for a single article.
+	 *   snapshot [--refresh] — Show (or refresh) the site-wide ROI snapshot.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 roi article 42
+	 *   wp pearblog v9 roi snapshot
+	 *   wp pearblog v9 roi snapshot --refresh
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function roi( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'article':
+				$this->roi_article( $args );
+				break;
+			case 'snapshot':
+				$this->roi_snapshot( $assoc_args );
+				break;
+			default:
+				\WP_CLI::error( "Unknown roi sub-command '{$sub}'. Try: article, snapshot." );
+		}
+	}
+
+	private function roi_article( array $args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 roi article <post_id>' );
+		}
+
+		$roi = $this->roi->compute_article_roi( $post_id );
+
+		\WP_CLI::line( sprintf( 'Post #%d: %s', $post_id, $roi['title'] ?? 'Untitled' ) );
+		\WP_CLI::line( sprintf( '  Sessions (30d) : %d', $roi['sessions_30d'] ?? 0 ) );
+		\WP_CLI::line( sprintf( '  Cost           : $%.4f (%.0f¢)', $roi['cost_usd'] ?? 0, $roi['cost_cents'] ?? 0 ) );
+		\WP_CLI::line( sprintf( '  Revenue        : $%.4f (%.0f¢)', $roi['revenue_usd'] ?? 0, $roi['revenue_cents'] ?? 0 ) );
+		\WP_CLI::line( sprintf( '  ROI            : %.0f¢ (%s)', $roi['roi_cents'] ?? 0, ( $roi['is_profitable'] ?? false ) ? '✓ profitable' : '✗ unprofitable' ) );
+		\WP_CLI::line( sprintf( '  ROI %%          : %.1f%%', $roi['roi_pct'] ?? 0 ) );
+		\WP_CLI::line( sprintf( '  RPM            : %.0f¢', $roi['rpm_cents'] ?? 0 ) );
+		\WP_CLI::line( sprintf( '  Break-even     : %d sessions', $roi['break_even_sessions'] ?? 0 ) );
+	}
+
+	private function roi_snapshot( array $assoc_args ): void {
+		if ( isset( $assoc_args['refresh'] ) ) {
+			\WP_CLI::line( 'Refreshing ROI snapshot…' );
+			$this->roi->refresh();
+			\WP_CLI::success( 'Snapshot refreshed.' );
+		}
+
+		$snap = $this->roi->get_snapshot();
+
+		if ( empty( $snap ) ) {
+			\WP_CLI::line( 'No snapshot available. Run: wp pearblog v9 roi snapshot --refresh' );
+			return;
+		}
+
+		\WP_CLI::line( sprintf( 'Generated : %s', $snap['generated_at'] ?? 'unknown' ) );
+		\WP_CLI::line( sprintf( 'Articles  : %d', $snap['total_articles'] ?? 0 ) );
+		\WP_CLI::line( sprintf( 'Total cost: $%.2f', ( $snap['total_cost_cents'] ?? 0 ) / 100 ) );
+		\WP_CLI::line( sprintf( 'Total rev : $%.2f', ( $snap['total_revenue_cents'] ?? 0 ) / 100 ) );
+		\WP_CLI::line( sprintf( 'Net ROI   : $%.2f', ( $snap['total_roi_cents'] ?? 0 ) / 100 ) );
+		\WP_CLI::line( sprintf( 'Profitable: %d / %d articles', $snap['profitable_count'] ?? 0, $snap['total_articles'] ?? 0 ) );
 	}
 }

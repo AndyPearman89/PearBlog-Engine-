@@ -153,12 +153,12 @@ class TenantOnboardingController {
 	 */
 	public function provision( array $params ): array|\WP_Error {
 		$domain      = $params['domain'];
-		$title       = $params['title'] ?: $domain;
-		$industry    = $params['industry'] ?: 'general';
-		$tone        = $params['tone'] ?: 'professional';
-		$language    = $params['language'] ?: 'en';
-		$plan        = $params['plan'] ?: 'starter';
-		$admin_email = $params['admin_email'] ?: get_option( 'admin_email', '' );
+		$title       = ( $params['title'] ?? '' ) ?: $domain;
+		$industry    = ( $params['industry'] ?? '' ) ?: 'general';
+		$tone        = ( $params['tone'] ?? '' ) ?: 'professional';
+		$language    = ( $params['language'] ?? '' ) ?: 'en';
+		$plan        = ( $params['plan'] ?? '' ) ?: 'starter';
+		$admin_email = ( $params['admin_email'] ?? '' ) ?: get_option( 'admin_email', '' );
 		$publish_rate = self::PLAN_RATES[ $plan ] ?? 1;
 
 		if ( is_multisite() ) {

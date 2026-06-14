@@ -58,6 +58,25 @@ All notable changes to PearBlog Engine are documented in this file.
 - **`PIIDetectorTest`** — email/PESEL/phone/CC/IBAN/IPv4/passport detection, allowlist, HTML stripping, redaction, scan_and_persist
 - **`SecurityAuditorTest`** — run_full_audit structure (10 OWASP checks), summary counts, risk score range, export_json
 
+#### Tests — v9.0 Session 6 (+3 test classes, 88 assertions) + CLI extensions + bug fixes
+- **`SiteProfileTest`** — constructor readonly properties, summary() content, independence of instances (14 tests)
+- **`TenantOnboardingControllerTest`** — provision single-site mode, plan rates, default options, tenant registry, list_tenants (22 tests)
+- **`ConversionFlowTrackerTest`** — get_conversion_metrics zero/data/edge cases, get_funnel_dropoff 3-stage logic, get_session_funnel events/timestamps/converted flag (20 tests)
+
+#### WP-CLI — `wp pearblog v9` extensions (session 6)
+- `billing usage` — display current cycle usage, quota, and percentage consumed
+- `billing reset` — reset billing cycle counters (BillingEngine)
+- `tenant create --domain=<d> [--plan=<p>] [--industry=<i>] [--language=<l>] [--tone=<t>] [--title=<t>] [--admin=<e>]` — provision new tenant
+- `tenant list` — table view of all provisioned tenants from the registry
+- `audit run [--export=<file>]` — run OWASP Top 10 audit; optional JSON export
+- `pii scan <post_id> [--redact]` — detect and optionally redact PII in a post
+- `roi article <post_id>` — per-article ROI report (sessions, cost, revenue, ROI %, RPM)
+- `roi snapshot [--refresh]` — site-wide ROI snapshot with optional refresh
+
+#### Bug fixes (discovered during session 6 testing)
+- **`TenantOnboardingController::provision()`** — replaced direct array access for optional keys (`title`, `industry`, `tone`, `language`, `plan`, `admin_email`) with null-coalescing `??` to prevent PHP 8 fatal errors when keys are omitted
+- **`ConversionFlowTracker::get_session_funnel()`** — replaced `isset()` check (always false for null-initialised values) with `array_key_exists()` so stage timestamps are correctly recorded
+
 ---
 
 ## [8.0.0] — 2026-05-04

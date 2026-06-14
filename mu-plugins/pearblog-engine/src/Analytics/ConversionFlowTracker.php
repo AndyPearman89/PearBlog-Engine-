@@ -155,7 +155,7 @@ class ConversionFlowTracker {
 		foreach ( $events as $event ) {
 			$event_type = $event['event_type'];
 
-			if ( isset( $funnel[ $event_type ] ) && null === $funnel[ $event_type ] ) {
+			if ( array_key_exists( $event_type, $funnel ) && null === $funnel[ $event_type ] ) {
 				$funnel[ $event_type ] = $event['created_at'];
 			}
 
