@@ -38,6 +38,7 @@ use PearBlogEngine\Content\ContentRefreshEngine;
 use PearBlogEngine\Email\EmailDigest;
 use PearBlogEngine\SEO\ProgrammaticSEO;
 use PearBlogEngine\SEO\SchemaManager;
+use PearBlogEngine\SEO\OrphanPageDetector;
 use PearBlogEngine\Social\SocialPublisher;
 use PearBlogEngine\Testing\ABTestEngine;
 use PearBlogEngine\Webhook\WebhookManager;
@@ -142,6 +143,9 @@ class Plugin {
 		// A/B Testing Framework – split-test prompt variants.
 		( new ABTestEngine() )->register();
 
+		// V9.0 F8: Orphan page detection and internal link gap analysis.
+		( new OrphanPageDetector() )->register();
+
 		// Decision Platform – Poradnik.pro Enterprise features.
 		( new DecisionPlatformManager() )->register();
 
@@ -166,6 +170,7 @@ class Plugin {
 			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
 			\WP_CLI::add_command( 'pearblog integration', \PearBlogEngine\CLI\IntegrationCommand::class );
 			\WP_CLI::add_command( 'pearblog security', \PearBlogEngine\CLI\SecurityCommand::class );
+			\WP_CLI::add_command( 'pearblog v9', \PearBlogEngine\CLI\V9Command::class );
 		}
 	}
 
