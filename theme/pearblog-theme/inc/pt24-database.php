@@ -15,7 +15,11 @@ if (!defined('ABSPATH')) {
 
 /**
  * Create PT24 database tables
+ *
+ * Guarded against redeclaration: the pt24-local-services mu-plugin may define a
+ * function with the same name and loads before the theme.
  */
+if ( ! function_exists( 'pt24_create_database_tables' ) ) {
 function pt24_create_database_tables() {
     global $wpdb;
 
@@ -66,6 +70,7 @@ function pt24_create_database_tables() {
 
     // Store database version
     update_option('pt24_db_version', '1.0.0');
+}
 }
 
 /**
