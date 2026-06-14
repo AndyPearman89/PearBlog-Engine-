@@ -128,6 +128,14 @@ All notable changes to PearBlog Engine are documented in this file.
 #### Source fix
 - `SecurityAuditor::run_full_audit()` — injects `name` key (derived from OWASP check ID) into each check result array so `test_each_check_has_name_key` passes
 
+### Added — Test Suite (session 10, +4 test classes, 84 tests)
+
+#### New test classes
+- **`DistributedLockManagerTest`** — `acquire` (free lock, sets transient, double-acquire fails, cross-instance lock conflict, independent names), `release` (success, transient removed, not held, cannot release another instance's lock), acquire→release→re-acquire cycle, `is_locked` (false when absent, true after acquire, false after release), `with_lock` (callback value, auto-release, null on contention, releases on exception), option constants, unknown backend fallback — 20 tests, 22 assertions
+- **`CoreWebVitalsMonitorTest`** — option/default-threshold constants, `measure_url` (unavailable when disabled, expected keys, URL preserved, zero metrics, unavailable without API key, returns cached transient), `maybe_schedule` no-op when disabled, `rest_get_snapshot` (empty array, saved snapshot structure), `rest_measure_url` (WP_Error on missing URL, 200 response for valid URL), `admin_permission` — 19 tests, 35 assertions
+- **`FactCheckerTest`** — `is_enabled` (default false, true only with both flag + API key set), `is_factual_claim` (PLN/EUR/year-range/ponad/mln sentences pass; short/long/opinion sentences fail), `extract_claims` (empty for plain text, finds mln sentence, HTML stripped, 10-item cap, returns array), `check_and_annotate` returns unchanged content and writes no meta when disabled, constants (UNVERIFIED_MARKER, META_RESULTS, META_WARNINGS, DEFAULT_THRESHOLD), `verify_claim` structure/false-without-key/claim-preserved — 26 tests, 33 assertions
+- **`SmartCalculatorEngineTest`** — `calculate` (known service returns array, required keys, min<max, avg between min/max, cost_per_unit formula, service slug stored, unknown service fallback), standard multipliers (premium > sredni > podstawowy), location multipliers (miasto > wies, przedmiescia baseline), `validate_inputs` (null on missing/too-small/too-large metraz, invalid standard, invalid lokalizacja; accepts boundary values 10 and 1000), cost scales with area — 19 tests, 28 assertions
+
 ### Added — Test Suite (session 9, +4 test classes, 82 tests)
 
 #### New test classes
