@@ -37,11 +37,11 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || 'wordpress2614653.home.pl' }}
-      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'wordpress2614653' }}
+      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER }}
       SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '22' }}
-      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || '/wordpress2614653.home.pl/poradnik' }}
-      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/wordpress2614653.home.pl/poradnik/wp-content/themes/pearblog-theme' }}
+      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || secrets.WP_PATH }}
+      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH }}
       BRANCH: ${{ github.event.inputs.branch }}
       SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
       SNAPSHOT: ${{ github.event.inputs.snapshot_before_deploy }}
@@ -51,6 +51,20 @@ jobs:
       - name: Resolve auth mode
         id: auth
         run: |
+          MISSING=()
+          [[ -z "$SSH_HOST" ]] && MISSING+=("PORADNIK_SSH_HOST or SSH_HOST")
+          [[ -z "$SSH_USER" ]] && MISSING+=("PORADNIK_SSH_USER or SSH_USER")
+          [[ -z "$WEB_ROOT" ]] && MISSING+=("PORADNIK_WEB_ROOT or WP_PATH")
+          if [[ ${#MISSING[@]} -gt 0 ]]; then
+            echo "::error::Missing required deploy settings: ${MISSING[*]}"
+            exit 1
+          fi
+
+          if [[ -z "$THEME_PATH" ]]; then
+            THEME_PATH="$WEB_ROOT/wp-content/themes/pearblog-theme"
+            echo "THEME_PATH=$THEME_PATH" >> "$GITHUB_ENV"
+          fi
+
           HAS_KEY=false
           HAS_PASS=false
           HAS_DO=false
