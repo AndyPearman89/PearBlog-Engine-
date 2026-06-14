@@ -867,6 +867,14 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 			return null;
 		}
 
+		public function get_row( string $query, string $output = OBJECT ) {
+			$row = $GLOBALS['_db_results'][0] ?? null;
+			if ( null === $row ) {
+				return null;
+			}
+			return $row;
+		}
+
 		public function esc_like( string $text ): string {
 			return addcslashes( $text, '_%\\' );
 		}
@@ -915,6 +923,145 @@ if ( ! function_exists( 'get_current_user_id' ) ) {
 	function get_current_user_id(): int {
 		return (int) ( $GLOBALS['_current_user_id'] ?? 0 );
 	}
+}
+
+// ---------------------------------------------------------------------------
+// v9.0 session 6 additional stubs
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'sanitize_email' ) ) {
+	function sanitize_email( string $email ): string {
+		return filter_var( $email, FILTER_SANITIZE_EMAIL ) ?: '';
+	}
+}
+
+if ( ! function_exists( 'admin_url' ) ) {
+	function admin_url( string $path = '' ): string {
+		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'get_admin_url' ) ) {
+	function get_admin_url( int $blog_id = 0, string $path = '' ): string {
+		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'get_user_by' ) ) {
+	function get_user_by( string $field, $value ): object|false {
+		$users = $GLOBALS['_wp_users'] ?? [];
+		foreach ( $users as $user ) {
+			if ( isset( $user->$field ) && $user->$field === $value ) {
+				return $user;
+			}
+		}
+		return false;
+	}
+}
+
+if ( ! function_exists( 'get_network' ) ) {
+	function get_network(): ?object {
+		return $GLOBALS['_wp_network'] ?? null;
+	}
+}
+
+if ( ! function_exists( 'get_current_network_id' ) ) {
+	function get_current_network_id(): int {
+		return (int) ( $GLOBALS['_current_network_id'] ?? 1 );
+	}
+}
+
+if ( ! function_exists( 'wpmu_create_blog' ) ) {
+	function wpmu_create_blog( string $domain, string $path, string $title, int $user_id, array $options = [], int $network_id = 1 ): int|\WP_Error {
+		$result = $GLOBALS['_wpmu_create_blog_result'] ?? null;
+		if ( $result instanceof \WP_Error ) {
+			return $result;
+		}
+		$blog_id = (int) ( $GLOBALS['_wpmu_next_blog_id'] ?? 2 );
+		$GLOBALS['_wpmu_created_sites'][] = compact( 'domain', 'path', 'title', 'user_id', 'network_id' );
+		return $blog_id;
+	}
+}
+
+if ( ! function_exists( 'hash_equals' ) ) {
+	// PHP built-in; stub only when missing (very old PHP).
+	function hash_equals( string $known_string, string $user_string ): bool {
+		return $known_string === $user_string;
+	}
+}
+
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+	function wp_create_nonce( string $action = '-1' ): string {
+		return 'test_nonce_' . md5( $action );
+	}
+}
+
+if ( ! function_exists( 'plugins_url' ) ) {
+	function plugins_url( string $path = '', string $plugin = '' ): string {
+		return 'https://example.com/wp-content/plugins/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'wp_enqueue_script' ) ) {
+	function wp_enqueue_script( string $handle, string $src = '', array $deps = [], $ver = false, bool $in_footer = false ): void {}
+}
+
+if ( ! function_exists( 'wp_localize_script' ) ) {
+	function wp_localize_script( string $handle, string $name, array $data ): bool {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'is_ssl' ) ) {
+	function is_ssl(): bool {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'is_singular' ) ) {
+	function is_singular( $post_types = '' ): bool {
+		return (bool) ( $GLOBALS['_is_singular'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID(): int|false {
+		return $GLOBALS['_current_post_id'] ?? false;
+	}
+}
+
+if ( ! function_exists( 'get_permalink' ) ) {
+	function get_permalink( $post = 0 ): string|false {
+		return $GLOBALS['_post_permalink'] ?? 'https://example.com/post/';
+	}
+}
+
+if ( ! function_exists( 'get_post_field' ) ) {
+	function get_post_field( string $field, $post_id = 0 ): string {
+		return (string) ( $GLOBALS['_post_fields'][ $post_id ][ $field ] ?? '' );
+	}
+}
+
+if ( ! function_exists( 'setcookie' ) ) {
+	// Already a PHP built-in; only define if somehow missing.
+}
+
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 86400 );
+}
+
+if ( ! defined( 'MONTH_IN_SECONDS' ) ) {
+	define( 'MONTH_IN_SECONDS', 2592000 );
+}
+
+if ( ! function_exists( 'current_time' ) ) {
+	function current_time( string $type ): string {
+		return gmdate( 'Y-m-d H:i:s' );
+	}
+}
+
+if ( ! function_exists( 'gmdate' ) ) {
+	// PHP built-in – always available.
 }
 
 // PSR-4 autoloader for src/ classes.

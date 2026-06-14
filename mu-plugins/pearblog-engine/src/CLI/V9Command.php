@@ -24,6 +24,19 @@
  *   wp pearblog v9 collab assign <post_id> --reviewers=<ids> – assign reviewers
  *   wp pearblog v9 collab review <post_id> --decision=<d> [--note=<n>] – submit review
  *
+ *   wp pearblog v9 billing usage                – show current billing period AI usage
+ *   wp pearblog v9 billing history              – show billing history (last 12 months)
+ *
+ *   wp pearblog v9 tenant provision --domain=<d> [--plan=<p>] [--industry=<i>] [--language=<l>] – provision tenant
+ *   wp pearblog v9 tenant list                  – list provisioned tenants
+ *
+ *   wp pearblog v9 audit log [--limit=<n>] [--level=<l>] – show audit log entries
+ *
+ *   wp pearblog v9 pii scan <post_id>           – scan post content for PII
+ *   wp pearblog v9 pii export [--days=<n>]      – export PII compliance report
+ *
+ *   wp pearblog v9 roi report [--days=<n>]      – show ROI / conversion stats
+ *
  * @package PearBlogEngine\CLI
  */
 
@@ -39,6 +52,12 @@ use PearBlogEngine\AI\SmartProviderRouter;
 use PearBlogEngine\SEO\OrphanPageDetector;
 use PearBlogEngine\Content\ContentRefreshPrioritizer;
 use PearBlogEngine\Content\CollaborationManager;
+use PearBlogEngine\Tenant\BillingEngine;
+use PearBlogEngine\Tenant\TenantOnboardingController;
+use PearBlogEngine\Pipeline\PipelineAuditLog;
+use PearBlogEngine\Security\PIIDetector;
+use PearBlogEngine\Security\ComplianceExporter;
+use PearBlogEngine\Analytics\ConversionTracker;
 
 /**
  * PearBlog v9.0 commands.
@@ -439,5 +458,292 @@ class V9Command {
 
 		( new CollaborationManager() )->submit_review( $post_id, $decision, $note );
 		\WP_CLI::success( "Review submitted: {$decision} for post #{$post_id}." );
+	}
+
+	// -----------------------------------------------------------------------
+	// Billing
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Show current billing period AI usage.
+	 *
+	 * @subcommand billing usage
+	 */
+	public function billing_usage( array $args, array $assoc_args ): void {
+		$engine  = new BillingEngine();
+		$usage   = $engine->get_current_usage();
+		$quota   = (float) get_option( BillingEngine::OPTION_QUOTA, BillingEngine::DEFAULT_QUOTA );
+		$pct     = $engine->get_usage_percentage();
+		$period  = gmdate( 'Y-m-d', $usage['period_start'] );
+
+		\WP_CLI::log( sprintf( 'Period start : %s', $period ) );
+		\WP_CLI::log( sprintf( 'Generations  : %d', $usage['generations'] ) );
+		\WP_CLI::log( sprintf( 'AI spend     : $%.2f', $usage['cost_cents'] / 100 ) );
+		\WP_CLI::log( sprintf( 'Monthly quota: $%.2f', $quota / 100 ) );
+		\WP_CLI::log( sprintf( 'Usage        : %.1f%%', $pct ) );
+
+		if ( $pct >= 100.0 ) {
+			\WP_CLI::warning( 'Monthly quota exceeded!' );
+		}
+	}
+
+	/**
+	 * Show billing usage history (last 12 months).
+	 *
+	 * @subcommand billing history
+	 */
+	public function billing_history( array $args, array $assoc_args ): void {
+		$history = (array) get_option( BillingEngine::OPTION_USAGE_HISTORY, [] );
+
+		if ( empty( $history ) ) {
+			\WP_CLI::log( 'No billing history found.' );
+			return;
+		}
+
+		$rows = [];
+		foreach ( $history as $period ) {
+			$rows[] = [
+				'Period start'  => gmdate( 'Y-m', $period['period_start'] ?? 0 ),
+				'Generations'   => $period['generations'] ?? 0,
+				'Spend (USD)'   => sprintf( '$%.2f', ( $period['cost_cents'] ?? 0 ) / 100 ),
+			];
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $rows, [ 'Period start', 'Generations', 'Spend (USD)' ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// Tenant
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Provision a new tenant.
+	 *
+	 * ## OPTIONS
+	 * --domain=<domain>
+	 * : Tenant domain.
+	 *
+	 * [--title=<title>]
+	 * : Site title. Defaults to domain.
+	 *
+	 * [--industry=<industry>]
+	 * : Industry/niche. Default: general.
+	 *
+	 * [--tone=<tone>]
+	 * : Writing tone. Default: professional.
+	 *
+	 * [--language=<language>]
+	 * : ISO language code. Default: en.
+	 *
+	 * [--plan=<plan>]
+	 * : Plan tier: starter | pro | enterprise. Default: starter.
+	 *
+	 * [--admin=<email>]
+	 * : Admin email for the new site.
+	 *
+	 * @subcommand tenant provision
+	 */
+	public function tenant_provision( array $args, array $assoc_args ): void {
+		$domain = (string) ( $assoc_args['domain'] ?? '' );
+		if ( '' === $domain ) {
+			\WP_CLI::error( 'Please provide --domain=<domain>.' );
+		}
+
+		$params = [
+			'domain'      => $domain,
+			'title'       => (string) ( $assoc_args['title'] ?? '' ),
+			'industry'    => (string) ( $assoc_args['industry'] ?? 'general' ),
+			'tone'        => (string) ( $assoc_args['tone'] ?? 'professional' ),
+			'language'    => (string) ( $assoc_args['language'] ?? 'en' ),
+			'plan'        => (string) ( $assoc_args['plan'] ?? 'starter' ),
+			'admin_email' => (string) ( $assoc_args['admin'] ?? get_option( 'admin_email', '' ) ),
+		];
+
+		$result = ( new TenantOnboardingController() )->provision( $params );
+
+		if ( is_wp_error( $result ) ) {
+			\WP_CLI::error( $result->get_error_message() );
+		}
+
+		\WP_CLI::success( sprintf(
+			"Tenant provisioned — site_id: %d, domain: %s, plan: %s",
+			$result['site_id'],
+			$result['domain'],
+			$result['plan']
+		) );
+		\WP_CLI::log( 'Admin URL: ' . $result['admin_url'] );
+	}
+
+	/**
+	 * List all provisioned tenants.
+	 *
+	 * @subcommand tenant list
+	 */
+	public function tenant_list( array $args, array $assoc_args ): void {
+		$tenants = ( new TenantOnboardingController() )->list_tenants();
+
+		if ( empty( $tenants ) ) {
+			\WP_CLI::log( 'No tenants provisioned yet.' );
+			return;
+		}
+
+		$rows = array_map( static function ( array $t ): array {
+			return [
+				'Site ID'  => $t['site_id'] ?? '',
+				'Domain'   => $t['domain'] ?? '',
+				'Plan'     => $t['plan'] ?? '',
+				'Industry' => $t['industry'] ?? '',
+				'Language' => $t['language'] ?? '',
+			];
+		}, $tenants );
+
+		\WP_CLI\Utils\format_items( 'table', $rows, [ 'Site ID', 'Domain', 'Plan', 'Industry', 'Language' ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// Audit log
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Show recent pipeline audit log entries.
+	 *
+	 * ## OPTIONS
+	 * [--limit=<n>]
+	 * : Number of entries to display. Default: 25.
+	 *
+	 * [--level=<level>]
+	 * : Filter by severity: info | warning | error.
+	 *
+	 * @subcommand audit log
+	 */
+	public function audit_log( array $args, array $assoc_args ): void {
+		$limit = max( 1, (int) ( $assoc_args['limit'] ?? 25 ) );
+		$level = isset( $assoc_args['level'] ) ? (string) $assoc_args['level'] : null;
+
+		$entries = ( new PipelineAuditLog() )->get_events( $limit, $level );
+
+		if ( empty( $entries ) ) {
+			\WP_CLI::log( 'No audit log entries found.' );
+			return;
+		}
+
+		$rows = array_map( static function ( array $e ): array {
+			return [
+				'Time'    => $e['timestamp'] ?? '',
+				'Level'   => strtoupper( $e['level'] ?? 'INFO' ),
+				'Event'   => $e['event'] ?? '',
+			];
+		}, $entries );
+
+		\WP_CLI\Utils\format_items( 'table', $rows, [ 'Time', 'Level', 'Event' ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// PII / GDPR
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Scan a post for PII (Personally Identifiable Information).
+	 *
+	 * ## OPTIONS
+	 * <post_id>
+	 * : ID of the post to scan.
+	 *
+	 * @subcommand pii scan
+	 */
+	public function pii_scan( array $args, array $assoc_args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Please provide a valid post_id.' );
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			\WP_CLI::error( "Post #{$post_id} not found." );
+		}
+
+		$detector = new PIIDetector();
+		$content  = $post->post_content ?? '';
+		$findings = $detector->scan( $content );
+
+		if ( empty( $findings ) ) {
+			\WP_CLI::success( "No PII detected in post #{$post_id}." );
+			return;
+		}
+
+		\WP_CLI::warning( sprintf( '%d PII match(es) found in post #%d:', count( $findings ), $post_id ) );
+		foreach ( $findings as $type => $matches ) {
+			\WP_CLI::log( sprintf( '  [%s] %d match(es)', strtoupper( $type ), count( (array) $matches ) ) );
+		}
+	}
+
+	/**
+	 * Export PII compliance report.
+	 *
+	 * ## OPTIONS
+	 * [--days=<n>]
+	 * : Number of days to include in the report. Default: 30.
+	 *
+	 * [--format=<format>]
+	 * : Output format: json | csv. Default: json.
+	 *
+	 * @subcommand pii export
+	 */
+	public function pii_export( array $args, array $assoc_args ): void {
+		$days   = max( 1, (int) ( $assoc_args['days'] ?? 30 ) );
+		$format = (string) ( $assoc_args['format'] ?? 'json' );
+
+		$exporter = new ComplianceExporter();
+		$report   = $exporter->build_report( $days, $format );
+
+		if ( 'csv' === $format ) {
+			\WP_CLI::log( $exporter->to_csv( $report ) );
+		} else {
+			\WP_CLI::log( wp_json_encode( $report, JSON_PRETTY_PRINT ) );
+		}
+
+		\WP_CLI::success( sprintf( 'PII compliance report generated (%d days).', $days ) );
+	}
+
+	// -----------------------------------------------------------------------
+	// ROI
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Show ROI and conversion statistics.
+	 *
+	 * ## OPTIONS
+	 * [--days=<n>]
+	 * : Number of days to analyze. Default: 30.
+	 *
+	 * @subcommand roi report
+	 */
+	public function roi_report( array $args, array $assoc_args ): void {
+		$days    = max( 1, (int) ( $assoc_args['days'] ?? 30 ) );
+		$tracker = new ConversionTracker();
+		$totals  = $tracker->get_totals();
+		$funnel  = $tracker->get_funnel_view();
+
+		\WP_CLI::log( sprintf( '=== ROI Report — Last %d days ===', $days ) );
+		\WP_CLI::log( '' );
+
+		if ( ! empty( $totals ) ) {
+			\WP_CLI::log( 'Conversion totals:' );
+			foreach ( $totals as $event_type => $count ) {
+				\WP_CLI::log( sprintf( '  %-25s %d', $event_type . ':', (int) $count ) );
+			}
+			\WP_CLI::log( '' );
+		}
+
+		if ( ! empty( $funnel ) ) {
+			\WP_CLI::log( 'Funnel view:' );
+			foreach ( $funnel as $stage => $data ) {
+				if ( is_array( $data ) ) {
+					\WP_CLI::log( sprintf( '  [%s] count=%d', $stage, $data['count'] ?? 0 ) );
+				}
+			}
+		}
+
+		\WP_CLI::success( 'ROI report complete.' );
 	}
 }

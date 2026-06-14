@@ -51,6 +51,8 @@ use PearBlogEngine\Content\ContentRefreshPrioritizer;
 use PearBlogEngine\Content\CollaborationManager;
 use PearBlogEngine\SEO\OrphanPageDetector;
 use PearBlogEngine\API\MobileAPIController;
+use PearBlogEngine\Tenant\BillingEngine;
+use PearBlogEngine\Tenant\TenantOnboardingController;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -179,6 +181,12 @@ class Plugin {
 
 		// V9.0 – Orphan Page Detector (F8).
 		( new OrphanPageDetector() )->register();
+
+		// V9.0 – Billing Engine (metered AI usage + Stripe integration).
+		( new BillingEngine() )->register();
+
+		// V9.0 – Tenant Onboarding Controller (multisite provisioning REST API).
+		( new TenantOnboardingController() )->register();
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {

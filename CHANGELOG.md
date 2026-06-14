@@ -31,6 +31,29 @@ All notable changes to PearBlog Engine are documented in this file.
 #### CLI (`wp pearblog v9`)
 - **`V9Command`** (`src/CLI/V9Command.php`) — WP-CLI sub-commands: `analytics forecast|anomalies|refresh`, `ab generate|evaluate`, `router status|strategy`, `orphans scan|list|fix`, `refresh-score`, `refresh-rescore`, `collab status|assign|review`.
 
+#### v9.0 Session 6 — Billing, Tenant, Audit, PII & ROI
+
+- **`BillingEngine`** (`src/Tenant/BillingEngine.php`) — Registered in `Plugin::boot()`; meters AI token usage and image-generation costs per billing cycle; Stripe Billing metered usage integration; configurable monthly quota with over-threshold email alert; REST endpoints `GET /pearblog/v1/billing/usage` and `/billing/history`; monthly reset cron + daily Stripe reporting cron.
+- **`TenantOnboardingController`** (`src/Tenant/TenantOnboardingController.php`) — Registered in `Plugin::boot()`; multi-tenant provisioning REST API (`POST /pearblog/v1/tenant/provision`, `GET /pearblog/v1/tenant/list`); supports WordPress Multisite sub-site creation and single-site reconfiguration; `PLAN_RATES` maps starter/pro/enterprise to publish rates 1/3/10.
+- **`V9Command` extensions** — 8 new WP-CLI sub-commands added:
+  - `billing usage` — print current billing period AI spend vs. quota;
+  - `billing history` — tabular view of last 12 billing cycles;
+  - `tenant provision --domain=<d> [--plan|--industry|--language|--title|--admin]` — provision new tenant via CLI;
+  - `tenant list` — list all provisioned tenants;
+  - `audit log [--limit|--level]` — tail the pipeline audit ring-buffer;
+  - `pii scan <post_id>` — scan post content for PII via `PIIDetector`;
+  - `pii export [--days|--format]` — export GDPR compliance report via `ComplianceExporter`;
+  - `roi report [--days]` — print conversion totals and funnel view via `ConversionTracker`.
+
+### Fixed
+- **`ConversionFlowTracker::get_session_funnel`** — replaced `isset($funnel[$event_type])` with `array_key_exists($event_type, $funnel)` so funnel stage timestamps are correctly recorded (PHP `isset()` returns `false` for `null`-initialised keys).
+
+### Tests
+- **`SiteProfileTest`** (10 tests) — constructor, readonly enforcement, `summary()` content and idempotency.
+- **`TenantOnboardingControllerTest`** (18 tests) — single-site provision, plan publish-rate mapping, registry persistence, multisite sub-site creation, WP_Error on failure.
+- **`ConversionFlowTrackerTest`** (11 tests) — `get_session_funnel` timestamp recording and conversion flag, `get_conversion_metrics` rate calculation, `get_funnel_dropoff` stage rates and zero-denominator edge cases.
+- **`bootstrap.php`** — added stubs: `sanitize_email`, `admin_url`, `get_admin_url`, `get_user_by`, `get_network`, `get_current_network_id`, `wpmu_create_blog`, `wp_create_nonce`, `plugins_url`, `wp_enqueue_script`, `wp_localize_script`, `is_ssl`, `is_singular`, `get_the_ID`, `get_permalink`, `get_post_field`, `current_time`; added `get_row()` to `$wpdb` mock.
+
 ### Changed
 - **`src/Core/Plugin.php`** — Registered all v9.0 modules; added `MobileAPIController` to `rest_api_init`; added `wp pearblog v9` CLI command.
 
