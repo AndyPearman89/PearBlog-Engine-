@@ -410,13 +410,13 @@ class PredictiveAnalytics {
 	private function linear_regression( array $y ): array {
 		$n     = count( $y );
 		$sum_x = ( $n * ( $n - 1 ) ) / 2;           // 0 + 1 + … + (n-1)
-		$sum_x2= ( $n * ( $n - 1 ) * ( 2 * $n - 1 ) ) / 6;
+		$sum_x_squared = ( $n * ( $n - 1 ) * ( 2 * $n - 1 ) ) / 6;
 		$sum_y = array_sum( $y );
 		$sum_xy= 0.0;
 		foreach ( $y as $i => $v ) {
 			$sum_xy += $i * (float) $v;
 		}
-		$denom    = ( $n * $sum_x2 - $sum_x ** 2 );
+		$denom    = ( $n * $sum_x_squared - $sum_x ** 2 );
 		if ( $denom === 0 ) {
 			return [ 0.0, $sum_y / $n ];
 		}

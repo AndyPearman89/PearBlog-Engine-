@@ -334,7 +334,7 @@ class CollaborationManager {
 
 		// Trim to rolling window.
 		if ( count( $versions ) > self::MAX_VERSIONS ) {
-			$versions = array_slice( $versions, -self::MAX_VERSIONS );
+			$versions = array_slice( $versions, -self::MAX_VERSIONS, null, true );
 		}
 
 		update_post_meta( $post_id, self::META_VERSIONS, wp_json_encode( $versions ) );

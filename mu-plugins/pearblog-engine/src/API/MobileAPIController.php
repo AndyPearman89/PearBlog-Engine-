@@ -162,7 +162,7 @@ class MobileAPIController {
 	 */
 	public function get_dashboard( \WP_REST_Request $request ): \WP_REST_Response {
 		$cache = get_option( self::OPT_DASH_CACHE );
-		if ( is_array( $cache ) && ( time() - ( $cache['ts'] ?? 0 ) ) < self::DASH_CACHE_TTL ) {
+		if ( is_array( $cache ) && isset( $cache['ts'], $cache['data'] ) && ( time() - $cache['ts'] ) < self::DASH_CACHE_TTL ) {
 			return rest_ensure_response( $cache['data'] );
 		}
 
