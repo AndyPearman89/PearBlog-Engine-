@@ -20,11 +20,11 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 1. SSH_HOST
 - **Description:** Server IP address or hostname
-- **Value for poradnik.pro:** `204.48.27.118`
+- **Value for poradnik.pro:** `wordpress2614653.home.pl`
 - **Required for:** SSH connection to server
 - **Example:**
   ```
-  204.48.27.118
+  wordpress2614653.home.pl
   ```
 
 ### 2. SSH_USER
@@ -45,7 +45,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ssh-keygen -t ed25519 -C "deploy-poradnik-pro" -f ~/.ssh/poradnik_deploy
 
   # Copy public key to server:
-  ssh-copy-id -i ~/.ssh/poradnik_deploy.pub root@204.48.27.118
+  ssh-copy-id -i ~/.ssh/poradnik_deploy.pub root@wordpress2614653.home.pl
 
   # Display private key (copy this to GitHub Secret):
   cat ~/.ssh/poradnik_deploy
@@ -238,7 +238,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ### Minimum Required Secrets (Core Deployment)
 
 ```
-✓ SSH_HOST            = 204.48.27.118
+✓ SSH_HOST            = wordpress2614653.home.pl
 ✓ SSH_USER            = root
 ✓ SSH_PRIVATE_KEY     = [SSH private key content]
 ✓ WP_PATH             = /var/www/poradnik.pro
@@ -262,7 +262,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ### Test SSH Connection
 ```bash
 # Test that SSH key works:
-ssh -i ~/.ssh/poradnik_deploy root@204.48.27.118 "echo 'SSH connection successful'"
+ssh -i ~/.ssh/poradnik_deploy root@wordpress2614653.home.pl "echo 'SSH connection successful'"
 ```
 
 ### Test OpenAI API Key
@@ -310,7 +310,7 @@ mysql -u root -p -e "SELECT VERSION();"
 1. Verify SSH_HOST is correct
 2. Check SSH_PRIVATE_KEY is complete (including header/footer)
 3. Confirm public key is in `~/.ssh/authorized_keys` on server
-4. Test SSH manually: `ssh root@204.48.27.118`
+4. Test SSH manually: `ssh root@wordpress2614653.home.pl`
 
 ### "MySQL access denied"
 1. Verify ROOT_PASSWORD is correct
@@ -335,7 +335,7 @@ mysql -u root -p -e "SELECT VERSION();"
 
 ### Production Site 1 (poradnik.pro)
 ```
-SSH_HOST=204.48.27.118
+SSH_HOST=wordpress2614653.home.pl
 SSH_USER=root
 WP_PATH=/var/www/poradnik.pro
 SITE_URL=https://poradnik.pro
@@ -418,4 +418,4 @@ steps:
 
 **Last Updated:** 2026-05-02
 **Repository:** AndyPearman89/PearBlog-Engine-
-**For:** poradnik.pro deployment (204.48.27.118)
+**For:** poradnik.pro deployment (wordpress2614653.home.pl)
