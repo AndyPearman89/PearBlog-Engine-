@@ -17,6 +17,16 @@
  *   wp pearblog v9 collab history <post_id>
  *   wp pearblog v9 mobile dashboard
  *   wp pearblog v9 mobile queue
+ *   wp pearblog v9 ab generate <post_id> [--type=<type>] [--count=<count>]
+ *   wp pearblog v9 ab all <post_id> [--count=<count>]
+ *   wp pearblog v9 ab summary <post_id> <test_id> <variant_ids>
+ *   wp pearblog v9 router status
+ *   wp pearblog v9 router stats
+ *   wp pearblog v9 router reset-stats
+ *   wp pearblog v9 orphans scan [--force]
+ *   wp pearblog v9 orphans detail <post_id>
+ *   wp pearblog v9 orphans suggest <post_id>
+ *   wp pearblog v9 orphans mark-reviewed <post_id>
  *
  * @package PearBlogEngine\CLI
  * @since   9.0.0
@@ -28,6 +38,10 @@ namespace PearBlogEngine\CLI;
 
 use PearBlogEngine\Analytics\PredictiveAnalytics;
 use PearBlogEngine\Content\CollaborationManager;
+use PearBlogEngine\Testing\AIVariantGenerator;
+use PearBlogEngine\Testing\BayesianOptimizer;
+use PearBlogEngine\AI\SmartProviderRouter;
+use PearBlogEngine\SEO\OrphanPageDetector;
 
 /**
  * V9 CLI command group.
@@ -38,10 +52,18 @@ class V9Command {
 
 	private PredictiveAnalytics $analytics;
 	private CollaborationManager $collab;
+	private AIVariantGenerator $variant_gen;
+	private BayesianOptimizer $bayesian;
+	private SmartProviderRouter $router;
+	private OrphanPageDetector $orphan_detector;
 
 	public function __construct() {
-		$this->analytics = new PredictiveAnalytics();
-		$this->collab    = new CollaborationManager();
+		$this->analytics       = new PredictiveAnalytics();
+		$this->collab          = new CollaborationManager();
+		$this->variant_gen     = new AIVariantGenerator();
+		$this->bayesian        = new BayesianOptimizer();
+		$this->router          = new SmartProviderRouter();
+		$this->orphan_detector = new OrphanPageDetector();
 	}
 
 	// -----------------------------------------------------------------------
@@ -410,5 +432,298 @@ class V9Command {
 			default:
 				\WP_CLI::error( "Unknown mobile sub-command '{$sub}'." );
 		}
+	}
+
+	// -----------------------------------------------------------------------
+	// A/B Testing sub-commands (F3)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Generate A/B test variants and manage Bayesian test summaries.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   generate     Generate content variants for a post.
+	 *   all          Generate variants for all content types.
+	 *   summary      Show Bayesian optimizer summary for a test.
+	 *
+	 * @param  array<int, string>    $args       Positional args.
+	 * @param  array<string, string> $assoc_args Named args.
+	 */
+	public function ab( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'generate':
+				$this->ab_generate( $args, $assoc_args );
+				break;
+			case 'all':
+				$this->ab_all( $args, $assoc_args );
+				break;
+			case 'summary':
+				$this->ab_summary( $args, $assoc_args );
+				break;
+			default:
+				\WP_CLI::error( "Unknown ab sub-command '{$sub}'. Try: generate, all, summary." );
+		}
+	}
+
+	private function ab_generate( array $args, array $assoc_args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 ab generate <post_id> [--type=<type>] [--count=<count>]' );
+		}
+
+		$type   = $assoc_args['type']  ?? AIVariantGenerator::TYPE_HEADLINE;
+		$count  = (int) ( $assoc_args['count'] ?? AIVariantGenerator::DEFAULT_VARIANT_COUNT );
+		$result = $this->variant_gen->generate( $post_id, $type, $count, false );
+
+		\WP_CLI::line( "Post #{$post_id} — {$count} {$type} variant(s) (source: {$result['source']})" );
+		\WP_CLI::line( "Original: {$result['original']}" );
+		foreach ( $result['variants'] as $i => $v ) {
+			\WP_CLI::line( ( $i + 1 ) . ". {$v}" );
+		}
+	}
+
+	private function ab_all( array $args, array $assoc_args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 ab all <post_id> [--count=<count>]' );
+		}
+
+		$count   = (int) ( $assoc_args['count'] ?? AIVariantGenerator::DEFAULT_VARIANT_COUNT );
+		$results = $this->variant_gen->generate_all( $post_id, $count );
+
+		foreach ( $results as $type => $result ) {
+			\WP_CLI::line( "── {$type} ──" );
+			foreach ( $result['variants'] as $i => $v ) {
+				\WP_CLI::line( '  ' . ( $i + 1 ) . ". {$v}" );
+			}
+		}
+		\WP_CLI::success( 'Variants generated for all types.' );
+	}
+
+	private function ab_summary( array $args, array $assoc_args ): void {
+		$post_id     = (int) ( $args[0] ?? 0 );
+		$test_id     = $args[1] ?? '';
+		$variant_csv = $args[2] ?? '';
+
+		if ( $post_id <= 0 || '' === $test_id || '' === $variant_csv ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 ab summary <post_id> <test_id> <A,B,...>' );
+		}
+
+		$variants = array_filter( array_map( 'trim', explode( ',', $variant_csv ) ) );
+		$summary  = $this->bayesian->summary( $post_id, $test_id, $variants );
+
+		\WP_CLI::line( "Test: {$summary['test_id']} | Total impressions: {$summary['total_impressions']} | Ready: " . ( $summary['ready'] ? 'yes' : 'no' ) );
+
+		$table = [];
+		foreach ( $summary['variants'] as $vid => $vdata ) {
+			$table[] = [
+				'Variant'     => $vid,
+				'Impressions' => $vdata['impressions'],
+				'Conversions' => $vdata['conversions'],
+				'Rate'        => round( $vdata['rate'] * 100, 2 ) . ' %',
+				'Win Prob'    => round( ( $summary['win_probabilities'][ $vid ] ?? 0.0 ) * 100, 1 ) . ' %',
+			];
+		}
+		\WP_CLI\Utils\format_items( 'table', $table, [ 'Variant', 'Impressions', 'Conversions', 'Rate', 'Win Prob' ] );
+
+		if ( null !== $summary['winner'] ) {
+			\WP_CLI::success( "Winner: {$summary['winner']}" );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// Smart Provider Router sub-commands (F7)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * View or reset the smart AI provider router.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   status       Show routing order for each content type.
+	 *   stats        Show provider performance statistics.
+	 *   reset-stats  Clear all provider statistics.
+	 *
+	 * @param  array<int, string>    $args       Positional args.
+	 * @param  array<string, string> $assoc_args Named args.
+	 */
+	public function router( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'status':
+				$this->router_status( $args, $assoc_args );
+				break;
+			case 'stats':
+				$this->router_stats( $args, $assoc_args );
+				break;
+			case 'reset-stats':
+				$this->router->reset_stats();
+				\WP_CLI::success( 'Provider statistics reset.' );
+				break;
+			default:
+				\WP_CLI::error( "Unknown router sub-command '{$sub}'. Try: status, stats, reset-stats." );
+		}
+	}
+
+	private function router_status( array $args, array $assoc_args ): void {
+		$types = [
+			SmartProviderRouter::CONTENT_LONG_FORM,
+			SmartProviderRouter::CONTENT_SHORT_FORM,
+			SmartProviderRouter::CONTENT_CODE,
+			SmartProviderRouter::CONTENT_CREATIVE,
+			SmartProviderRouter::CONTENT_FACTUAL,
+			SmartProviderRouter::CONTENT_TRANSLATION,
+		];
+
+		$table = [];
+		foreach ( $types as $type ) {
+			$ordered  = $this->router->get_ordered_providers( $type );
+			$table[]  = [
+				'Content Type' => $type,
+				'Routing Order' => implode( ' → ', $ordered ),
+			];
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $table, [ 'Content Type', 'Routing Order' ] );
+		\WP_CLI::line( 'Budget today: $' . round( $this->router->get_today_cost() / 100, 4 ) .
+		               ' / $' . round( $this->router->get_daily_budget() / 100, 2 ) );
+	}
+
+	private function router_stats( array $args, array $assoc_args ): void {
+		$stats = $this->router->get_stats();
+
+		if ( empty( $stats ) ) {
+			\WP_CLI::success( 'No statistics recorded yet.' );
+			return;
+		}
+
+		$table = [];
+		foreach ( $stats as $slug => $s ) {
+			$total   = ( $s['successes'] ?? 0 ) + ( $s['failures'] ?? 0 );
+			$rate    = $total > 0 ? round( ( $s['successes'] ?? 0 ) / $total * 100, 1 ) : 0;
+			$table[] = [
+				'Provider'    => $slug,
+				'Successes'   => $s['successes'] ?? 0,
+				'Failures'    => $s['failures'] ?? 0,
+				'Success Rate' => $rate . ' %',
+				'Total Tokens' => $s['total_tokens'] ?? 0,
+				'Cost (¢)'    => round( $s['total_cost_cents'] ?? 0.0, 2 ),
+			];
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $table, [ 'Provider', 'Successes', 'Failures', 'Success Rate', 'Total Tokens', 'Cost (¢)' ] );
+	}
+
+	// -----------------------------------------------------------------------
+	// Orphan Page Detector sub-commands (F8)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Detect and manage orphaned pages (F8 SEO Automation Suite).
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   scan           Scan all published content for orphan pages.
+	 *   detail         Show details for a specific orphan.
+	 *   suggest        Generate linking suggestions for an orphan.
+	 *   mark-reviewed  Mark an orphan as reviewed/fixed.
+	 *
+	 * @param  array<int, string>    $args       Positional args.
+	 * @param  array<string, string> $assoc_args Named args.
+	 */
+	public function orphans( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'scan':
+				$this->orphans_scan( $args, $assoc_args );
+				break;
+			case 'detail':
+				$this->orphans_detail( $args, $assoc_args );
+				break;
+			case 'suggest':
+				$this->orphans_suggest( $args, $assoc_args );
+				break;
+			case 'mark-reviewed':
+				$this->orphans_mark_reviewed( $args, $assoc_args );
+				break;
+			default:
+				\WP_CLI::error( "Unknown orphans sub-command '{$sub}'. Try: scan, detail, suggest, mark-reviewed." );
+		}
+	}
+
+	private function orphans_scan( array $args, array $assoc_args ): void {
+		$force  = isset( $assoc_args['force'] );
+		$result = $this->orphan_detector->scan( $force );
+
+		\WP_CLI::line( "Scanned: {$result['total_scanned']} posts | Orphans: {$result['orphan_count']} | Cached: " . ( $result['cached'] ? 'yes' : 'no' ) );
+
+		if ( empty( $result['orphans'] ) ) {
+			\WP_CLI::success( 'No orphan pages found.' );
+			return;
+		}
+
+		$table = [];
+		foreach ( $result['orphans'] as $post_id ) {
+			$table[] = [
+				'ID'    => $post_id,
+				'Title' => mb_strimwidth( (string) get_the_title( $post_id ), 0, 60, '…' ),
+				'URL'   => (string) get_permalink( $post_id ),
+			];
+		}
+
+		\WP_CLI\Utils\format_items( 'table', $table, [ 'ID', 'Title', 'URL' ] );
+	}
+
+	private function orphans_detail( array $args, array $assoc_args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 orphans detail <post_id>' );
+		}
+
+		$detail = $this->orphan_detector->get_orphan_detail( $post_id );
+
+		\WP_CLI::line( "Post    : #{$detail['post_id']} — {$detail['title']}" );
+		\WP_CLI::line( "URL     : {$detail['url']}" );
+		\WP_CLI::line( "Type    : {$detail['post_type']}" );
+		\WP_CLI::line( "Inbound : {$detail['inbound_count']} link(s)" );
+		\WP_CLI::line( "Reviewed: " . ( $detail['is_reviewed'] ? 'yes' : 'no' ) );
+
+		if ( ! empty( $detail['suggestions'] ) ) {
+			\WP_CLI::line( 'Suggested linking posts: ' . implode( ', ', $detail['suggestions'] ) );
+		}
+	}
+
+	private function orphans_suggest( array $args, array $assoc_args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 orphans suggest <post_id>' );
+		}
+
+		$suggestions = $this->orphan_detector->generate_suggestions( $post_id );
+
+		if ( empty( $suggestions ) ) {
+			\WP_CLI::success( 'No suggestions found.' );
+			return;
+		}
+
+		\WP_CLI::line( 'Suggested linking posts (add links from these to post #' . $post_id . '):' );
+		foreach ( $suggestions as $sid ) {
+			\WP_CLI::line( "  #{$sid} — " . get_the_title( $sid ) );
+		}
+	}
+
+	private function orphans_mark_reviewed( array $args, array $assoc_args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 orphans mark-reviewed <post_id>' );
+		}
+
+		$this->orphan_detector->mark_reviewed( $post_id );
+		\WP_CLI::success( "Post #{$post_id} marked as reviewed. It will be excluded from future scans." );
 	}
 }

@@ -45,7 +45,7 @@ PearBlog Engine v8.0.0 has achieved **production-ready status** with:
 
 ### F1: GraphQL API Gateway
 **Priority:** P0 (Ship Blocker)
-**Status:** Planned
+**Status:** ✅ Implemented — GraphQLController.php: standalone REST GraphQL endpoint + WPGraphQL extension path; supports queue, stats, topPosts, health queries; bearer-token + capability auth; rate limiting via RateLimiter.
 **Timeline:** Q3 2026 (12 weeks)
 
 **Description:**
@@ -123,7 +123,7 @@ Comprehensive analytics dashboard with predictive insights, custom metrics, and 
 
 ### F3: Smart A/B Testing Engine
 **Priority:** P0 (Ship Blocker)
-**Status:** Planned
+**Status:** ✅ Implemented (v9.0 Session 4) — AIVariantGenerator.php: headline/CTA/meta/intro variants, template + AI-backed generation, variant cache. BayesianOptimizer.php: Thompson Sampling, Monte-Carlo win probabilities, impression/conversion tracking, winner detection.
 **Timeline:** Q3 2026 (8 weeks)
 
 **Description:**
@@ -217,7 +217,7 @@ Native mobile app (iOS & Android) for monitoring PearBlog installations, managin
 
 ### F5: White-Label Platform
 **Priority:** P1 (Launch Requirement)
-**Status:** Planned
+**Status:** ✅ Implemented — TenantContext.php, TenantIsolator.php, SiteProfile.php: multi-tenant site isolation and per-tenant config. BillingEngine.php: usage metering, Stripe billing integration, subscription tier management. TenantOnboardingController.php: agency onboarding workflow and REST endpoints.
 **Timeline:** Q4 2026 (12 weeks)
 
 **Description:**
@@ -268,7 +268,7 @@ White-label capabilities enabling agencies to rebrand PearBlog Engine as their o
 
 ### F6: Smart Content Refresh Automation
 **Priority:** P1 (Launch Requirement)
-**Status:** Planned
+**Status:** ✅ Implemented — ContentRefreshEngine.php: staleness detection, performance-based refresh prioritisation, AI-powered update scheduling, batch processing, manual override options.
 **Timeline:** Q3 2026 (6 weeks)
 
 **Description:**
@@ -318,7 +318,7 @@ AI-driven system that automatically identifies outdated content and schedules re
 
 ### F7: Multi-Provider AI Orchestration
 **Priority:** P2 (Quality of Life)
-**Status:** Planned
+**Status:** ✅ Implemented (v9.0 Session 4) — SmartProviderRouter.php: content-type-aware routing, Thompson-Sampling-inspired provider scoring, automatic failover, cost estimation, daily budget tracking, sidelining of low-success-rate providers.
 **Timeline:** Q4 2026 (8 weeks)
 
 **Description:**
@@ -355,7 +355,7 @@ Intelligent routing system that automatically selects the best AI provider (Open
 
 ### F8: Advanced SEO Automation Suite
 **Priority:** P2 (Quality of Life)
-**Status:** Planned
+**Status:** ✅ Implemented (v9.0 Session 4) — OrphanPageDetector.php: full published-content scan, internal-link graph analysis, inbound link counting, cache management, keyword-similarity link suggestions, reviewed-post exclusion.
 **Timeline:** Q4 2026 (10 weeks)
 
 **Description:**
