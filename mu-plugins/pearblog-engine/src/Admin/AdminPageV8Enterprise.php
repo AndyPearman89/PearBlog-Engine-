@@ -315,7 +315,7 @@ class AdminPageV8Enterprise {
 						title="<?php esc_attr_e( 'Notifications', 'pearblog-engine' ); ?>">
 						🔔
 						<?php if ( $unread_notifications > 0 ) : ?>
-							<span class="pb-v8-notification-badge"><?php echo esc_html( $unread_notifications ); ?></span>
+							<span class="pb-v8-notification-badge"><?php echo esc_html( (string) $unread_notifications ); ?></span>
 						<?php endif; ?>
 					</button>
 				</div>
@@ -836,7 +836,7 @@ class AdminPageV8Enterprise {
 			<?php if ( null !== $args['change'] ) : ?>
 				<span class="pb-v8-metric-change <?php echo $args['change'] >= 0 ? 'positive' : 'negative'; ?>">
 					<?php echo $args['change'] >= 0 ? '↑' : '↓'; ?>
-					<?php echo esc_html( abs( $args['change'] ) ); ?>%
+					<?php echo esc_html( (string) abs( $args['change'] ) ); ?>%
 				</span>
 			<?php endif; ?>
 		</div>
