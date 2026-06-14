@@ -85,7 +85,7 @@ class AlertManagerTest extends TestCase {
 	public function test_dedup_transient_is_set_after_first_alert(): void {
 		$title = 'New Alert';
 		$level = AlertManager::LEVEL_WARNING;
-		$key   = 'pb_alert_dedup_' . substr( md5( $title . $level ), 0, 16 );
+		$key   = 'pb_alert_dedup_' . substr( hash( 'sha256', $title . $level ), 0, 16 );
 
 		$this->assertFalse( get_transient( $key ) );
 

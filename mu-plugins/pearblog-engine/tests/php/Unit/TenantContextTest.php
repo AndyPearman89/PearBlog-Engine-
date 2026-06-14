@@ -21,12 +21,14 @@ class TenantContextTest extends TestCase {
 
 	protected function setUp(): void {
 		parent::setUp();
-		$GLOBALS['_options'] = [];
+		$GLOBALS['_options']      = [];
+		$GLOBALS['_is_multisite'] = true;
 	}
 
 	protected function tearDown(): void {
 		parent::tearDown();
-		$GLOBALS['_options'] = [];
+		$GLOBALS['_options']      = [];
+		$GLOBALS['_is_multisite'] = false;
 	}
 
 	// -----------------------------------------------------------------------

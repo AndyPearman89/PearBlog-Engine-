@@ -155,6 +155,9 @@ if ( ! function_exists( 'do_action' ) ) {
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			( $GLOBALS['_action_handlers'][ $hook ] )( ...$args );
+		}
 	}
 }
 
@@ -335,6 +338,7 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
+		$GLOBALS['_rest_routes'][] = [ 'namespace' => $namespace, 'route' => $route ];
 		return true;
 	}
 }
@@ -588,7 +592,8 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
-		return 'https://example.com/post/' . (int) $post_id . '/';
+		$id = ( $post_id instanceof WP_Post ) ? $post_id->ID : (int) $post_id;
+		return 'https://example.com/post/' . $id . '/';
 	}
 }
 
@@ -706,6 +711,7 @@ $GLOBALS['_transients']     = [];
 $GLOBALS['_posts']          = [];
 $GLOBALS['_post_list']      = [];
 $GLOBALS['_actions']        = [];
+$GLOBALS['_action_handlers'] = [];
 $GLOBALS['_filters']        = [];
 $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
@@ -719,6 +725,8 @@ $GLOBALS['_db_level_counts'] = [];
 $GLOBALS['_db_channel_counts'] = [];
 $GLOBALS['_is_multisite']   = false;
 $GLOBALS['_current_blog_id'] = 1;
+$GLOBALS['_rest_routes']    = [];
+$GLOBALS['_rewrite_rules']  = [];
 
 // WordPress class stubs.
 if ( ! class_exists( 'WP_Post' ) ) {
@@ -1053,6 +1061,63 @@ if ( ! defined( 'MONTH_IN_SECONDS' ) ) {
 if ( ! function_exists( 'current_time' ) ) {
 	function current_time( string $type ): string {
 		return gmdate( 'Y-m-d H:i:s' );
+	}
+}
+
+// ---------------------------------------------------------------------------
+// v9.0 session 9 additional stubs
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ) {
+		if ( $post instanceof WP_Post ) {
+			return $post->post_type;
+		}
+		return $GLOBALS['_post_type'] ?? 'post';
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $redirect, string $after = 'bottom' ): void {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $redirect, $after ];
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post' ) {
+		$counts = $GLOBALS['_post_counts'][ $type ] ?? new \stdClass();
+		if ( ! isset( $counts->publish ) ) {
+			$counts->publish = 0;
+		}
+		return $counts;
+	}
+}
+
+if ( ! function_exists( 'wp_hash' ) ) {
+	function wp_hash( string $data, string $scheme = 'auth' ): string {
+		return hash( 'sha256', $data . $scheme );
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null ) {
+		return gmdate( $format, strtotime( '2026-01-15 12:00:00' ) );
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, string $more = null ): string {
+		$words = explode( ' ', $text );
+		if ( count( $words ) <= $num_words ) {
+			return $text;
+		}
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . ( $more ?? ' [&hellip;]' );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( int $post_id = 0 ) {
+		return $GLOBALS['_post_tags'][ $post_id ] ?? [];
 	}
 }
 

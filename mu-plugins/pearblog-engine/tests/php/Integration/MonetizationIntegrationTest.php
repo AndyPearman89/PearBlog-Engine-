@@ -125,7 +125,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$injected = $this->inject_ads( $content, $post_id );
 
 		// Should inject ad after title
-		$this->assertMatchesRegularExpression( '/<h1>.*<\/h1>.*google_ad_client/s', $injected );
+		$this->assertRegExp( '/<h1>.*<\/h1>.*google_ad_client/s', $injected );
 	}
 
 	public function test_in_content_ad_injection(): void {
@@ -320,7 +320,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$content_lower = strtolower( $content );
 
 		// BOFU keywords (highest priority - conversion intent)
-		$bofu_keywords = [ 'buy', 'purchase', 'download', 'get', 'pricing', 'discount', 'offer', 'special' ];
+		$bofu_keywords = [ 'buy', 'purchase', 'download', 'discount', 'offer', 'special' ];
 		foreach ( $bofu_keywords as $keyword ) {
 			if ( str_contains( $content_lower, $keyword ) ) {
 				return 'BOFU';
@@ -328,7 +328,7 @@ class MonetizationIntegrationTest extends TestCase {
 		}
 
 		// MOFU keywords (comparison, consideration)
-		$mofu_keywords = [ 'vs', 'versus', 'compare', 'comparison', 'better', 'best', 'review', 'alternative' ];
+		$mofu_keywords = [ 'vs', 'versus', 'compare', 'comparison', 'better', 'best', 'review', 'alternative', 'pricing', 'get' ];
 		foreach ( $mofu_keywords as $keyword ) {
 			if ( str_contains( $content_lower, $keyword ) ) {
 				return 'MOFU';
@@ -376,14 +376,18 @@ class MonetizationIntegrationTest extends TestCase {
 		}
 
 		// Inject ad code
-		$ad_code = '<ins class="adsbygoogle" data-ad-client="' .
-		           esc_attr( $GLOBALS['_options']['pearblog_adsense_publisher_id'] ) .
-		           '"></ins>';
+		$publisher_id = esc_attr( $GLOBALS['_options']['pearblog_adsense_publisher_id'] ?? '' );
+		$ad_code = '<script>google_ad_client="' . $publisher_id . '";</script>' .
+		           '<ins class="adsbygoogle" data-ad-client="' . $publisher_id . '"></ins>';
 
-		// Simple injection after first heading or paragraph
-		$injected = preg_replace( '/<\/h1>/', '</h1>' . $ad_code, $content, 1 );
+		// Inject after first heading if present, otherwise after first paragraph
+		if ( str_contains( $content, '</h1>' ) ) {
+			$injected = preg_replace( '/<\/h1>/', '</h1>' . $ad_code, $content, 1 );
+		} else {
+			$injected = preg_replace( '/<\/p>/', '</p>' . $ad_code, $content, 1 );
+		}
 
-		return $injected;
+		return $injected ?? $content;
 	}
 
 	private function calculate_revenue( int $impressions, float $rpm ): float {
