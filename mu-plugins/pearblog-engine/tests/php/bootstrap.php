@@ -1038,12 +1038,6 @@ if ( ! function_exists( 'get_the_ID' ) ) {
 	}
 }
 
-if ( ! function_exists( 'get_permalink' ) ) {
-	function get_permalink( $post = 0 ): string|false {
-		return $GLOBALS['_post_permalink'] ?? 'https://example.com/post/';
-	}
-}
-
 if ( ! function_exists( 'get_post_field' ) ) {
 	function get_post_field( string $field, $post_id = 0 ): string {
 		return (string) ( $GLOBALS['_post_fields'][ $post_id ][ $field ] ?? '' );

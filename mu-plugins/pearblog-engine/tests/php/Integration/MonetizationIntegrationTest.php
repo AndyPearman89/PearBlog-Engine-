@@ -319,7 +319,9 @@ class MonetizationIntegrationTest extends TestCase {
 	private function detect_funnel_stage( string $content ): string {
 		$content_lower = strtolower( $content );
 
-		// BOFU keywords (highest priority - conversion intent)
+		// BOFU keywords (highest priority - conversion intent).
+		// Note: 'pricing' and 'get' are intentionally classified as MOFU because they
+		// indicate comparison/consideration, not direct purchase intent.
 		$bofu_keywords = [ 'buy', 'purchase', 'download', 'discount', 'offer', 'special' ];
 		foreach ( $bofu_keywords as $keyword ) {
 			if ( str_contains( $content_lower, $keyword ) ) {
