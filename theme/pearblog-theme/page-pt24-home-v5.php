@@ -68,8 +68,8 @@
                     <p class="max-w-xl text-sm text-slate-200 sm:text-base">Zweryfikowani specjaliści dostępni 24/7. Porównaj profile, wybierz najlepszą ofertę i zleć usługę bez stresu.</p>
                     <form action="<?php echo esc_url(home_url('/')); ?>" method="get" class="rounded-3xl border border-white/15 bg-white/95 p-3 shadow-soft">
                         <div class="grid gap-3 sm:grid-cols-3">
-                            <input type="text" name="usluga" placeholder="Usługa" required minlength="2" class="h-12 rounded-2xl border border-slate-200 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brandStart focus:outline-none">
-                            <input type="text" name="lokalizacja" placeholder="Lokalizacja" required minlength="2" class="h-12 rounded-2xl border border-slate-200 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brandStart focus:outline-none">
+                            <input type="text" name="usluga" placeholder="Usługa" aria-label="Wpisz rodzaj usługi" required minlength="2" class="h-12 rounded-2xl border border-slate-200 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brandStart focus:outline-none">
+                            <input type="text" name="lokalizacja" placeholder="Lokalizacja" aria-label="Wpisz lokalizację" required minlength="2" class="h-12 rounded-2xl border border-slate-200 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brandStart focus:outline-none">
                             <button type="submit" class="h-12 rounded-2xl bg-gradient-to-r from-brandStart to-brandEnd px-5 text-sm font-semibold text-white transition hover:opacity-95">Szukaj</button>
                         </div>
                     </form>
