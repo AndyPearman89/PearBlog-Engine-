@@ -1,4 +1,4 @@
-# Launch Day Plan — PearBlog Engine v8.0.0
+# Launch Day Plan (Archived) — PearBlog Engine v8.0.0
 
 > **Launch Date:** 2026-05-10 ✅ CONFIRMED
 > **Launch Time:** 10:00 UTC
