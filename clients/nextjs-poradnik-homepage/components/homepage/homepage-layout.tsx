@@ -305,19 +305,25 @@ export function HomepageLayout() {
               inverted
             />
             <form className="grid gap-3 md:grid-cols-3" aria-label="Formularz lead generation">
+              <label className="sr-only" htmlFor="legacy-lead-branza">Branża</label>
               <input
+                id="legacy-lead-branza"
                 type="text"
                 placeholder="Branża"
                 className="h-12 rounded-xl border border-white/20 bg-white/10 px-4 text-sm text-white placeholder:text-slate-300"
               />
+              <label className="sr-only" htmlFor="legacy-lead-lokalizacja">Lokalizacja</label>
               <input
+                id="legacy-lead-lokalizacja"
                 type="text"
                 placeholder="Lokalizacja"
                 className="h-12 rounded-xl border border-white/20 bg-white/10 px-4 text-sm text-white placeholder:text-slate-300"
               />
+              <label className="sr-only" htmlFor="legacy-lead-problem">Opis problemu</label>
               <textarea
+                id="legacy-lead-problem"
                 placeholder="Opis problemu"
-                className="min-h-12 rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-300 md:col-span-2"
+                className="min-h-[48px] rounded-xl border border-white/20 bg-white/10 px-4 py-3 text-sm text-white placeholder:text-slate-300 md:col-span-2"
               />
               <button className="h-12 rounded-xl bg-success px-5 text-sm font-semibold text-white transition hover:bg-[#059669] md:col-span-1">
                 Znajdź eksperta
