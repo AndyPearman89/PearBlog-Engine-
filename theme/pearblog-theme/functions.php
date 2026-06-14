@@ -495,15 +495,17 @@ function pearblog_get_social_image($type = 'og') {
  * Add favicons to wp_head
  */
 function pearblog_add_favicons() {
-    $favicon_path = PEARBLOG_URI . '/../../brand-assets/favicon/';
+    $tile_color = '#4ADE80';
     ?>
     <!-- Favicons - ULTRA PRO -->
-    <link rel="icon" type="image/x-icon" href="<?php echo esc_url($favicon_path . 'favicon.ico'); ?>">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($favicon_path . 'favicon-32x32.png'); ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo esc_url($favicon_path . 'favicon-16x16.png'); ?>">
-    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url($favicon_path . 'apple-touch-icon.png'); ?>">
-    <link rel="mask-icon" href="<?php echo esc_url($favicon_path . 'safari-pinned-tab.svg'); ?>" color="#4ADE80">
-    <meta name="theme-color" content="#4ADE80">
+    <link rel="icon" type="image/x-icon" href="<?php echo esc_url(pearblog_get_favicon('ico')); ?>">
+    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url(pearblog_get_favicon('32')); ?>">
+    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo esc_url(pearblog_get_favicon('16')); ?>">
+    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url(pearblog_get_favicon('apple')); ?>">
+    <link rel="mask-icon" href="<?php echo esc_url(pearblog_get_favicon('safari')); ?>" color="<?php echo esc_attr($tile_color); ?>">
+    <meta name="theme-color" content="<?php echo esc_attr($tile_color); ?>">
+    <meta name="msapplication-TileColor" content="<?php echo esc_attr($tile_color); ?>">
+    <meta name="msapplication-TileImage" content="<?php echo esc_url(PEARBLOG_URI . '/../../brand-assets/favicon/mstile-150x150.png'); ?>">
     <?php
 }
 add_action('wp_head', 'pearblog_add_favicons', 1);
@@ -515,6 +517,10 @@ function pearblog_add_social_meta_tags() {
     $site_name = get_bloginfo('name');
     $site_desc = get_bloginfo('description');
     $og_image = pearblog_get_social_image('og');
+    $twitter_image = pearblog_get_social_image('twitter');
+    if (empty($twitter_image)) {
+        $twitter_image = $og_image;
+    }
     $image_width = 1200;
     $image_height = 630;
     $image_alt = $site_name;
@@ -545,6 +551,8 @@ function pearblog_add_social_meta_tags() {
             if (empty($image_alt)) {
                 $image_alt = $title;
             }
+
+            $twitter_image = $og_image;
         }
     } else {
         $title = $site_name;
@@ -570,7 +578,7 @@ function pearblog_add_social_meta_tags() {
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo esc_attr($title); ?>">
     <meta name="twitter:description" content="<?php echo esc_attr(wp_strip_all_tags($description)); ?>">
-    <meta name="twitter:image" content="<?php echo esc_url($og_image); ?>">
+    <meta name="twitter:image" content="<?php echo esc_url($twitter_image); ?>">
     <meta name="twitter:image:alt" content="<?php echo esc_attr($image_alt); ?>">
     <?php
 }

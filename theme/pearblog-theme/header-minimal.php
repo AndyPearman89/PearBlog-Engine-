@@ -38,7 +38,11 @@
                 color: #0066ff;
                 text-decoration: none;
             ">
-                <?php bloginfo('name'); ?>
+                <img
+                    src="<?php echo esc_url(pearblog_get_brand_logo('wordmark', 'svg')); ?>"
+                    alt="<?php echo esc_attr(get_bloginfo('name')); ?>"
+                    style="display:block;max-height:36px;width:auto;"
+                >
             </a>
         </div>
 
