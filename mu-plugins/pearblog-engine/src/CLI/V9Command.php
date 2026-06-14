@@ -35,6 +35,13 @@
  *   wp pearblog v9 pii scan <post_id> [--redact]
  *   wp pearblog v9 roi article <post_id>
  *   wp pearblog v9 roi snapshot [--refresh]
+ *   wp pearblog v9 moderation status
+ *   wp pearblog v9 moderation check <post_id>
+ *   wp pearblog v9 rbac list
+ *   wp pearblog v9 rbac capabilities
+ *   wp pearblog v9 compliance report [--days=<days>] [--format=<format>]
+ *   wp pearblog v9 amp status
+ *   wp pearblog v9 amp convert <post_id>
  *
  * @package PearBlogEngine\CLI
  * @since   9.0.0
@@ -55,6 +62,10 @@ use PearBlogEngine\Tenant\BillingEngine;
 use PearBlogEngine\Tenant\TenantOnboardingController;
 use PearBlogEngine\Security\SecurityAuditor;
 use PearBlogEngine\Security\PIIDetector;
+use PearBlogEngine\Security\ContentModerator;
+use PearBlogEngine\Security\RBACManager;
+use PearBlogEngine\Security\ComplianceExporter;
+use PearBlogEngine\Distribution\AMPGenerator;
 
 /**
  * V9 CLI command group.
@@ -74,6 +85,10 @@ class V9Command {
 	private TenantOnboardingController $tenant;
 	private SecurityAuditor $auditor;
 	private PIIDetector $pii;
+	private ContentModerator $moderator;
+	private RBACManager $rbac;
+	private ComplianceExporter $compliance;
+	private AMPGenerator $amp;
 
 	public function __construct() {
 		$this->analytics       = new PredictiveAnalytics();
@@ -87,6 +102,10 @@ class V9Command {
 		$this->tenant          = new TenantOnboardingController();
 		$this->auditor         = new SecurityAuditor();
 		$this->pii             = new PIIDetector();
+		$this->moderator       = new ContentModerator();
+		$this->rbac            = new RBACManager();
+		$this->compliance      = new ComplianceExporter();
+		$this->amp             = new AMPGenerator();
 	}
 
 	// -----------------------------------------------------------------------
@@ -1099,5 +1118,281 @@ class V9Command {
 		\WP_CLI::line( sprintf( 'Total rev : $%.2f', ( $snap['total_revenue_cents'] ?? 0 ) / 100 ) );
 		\WP_CLI::line( sprintf( 'Net ROI   : $%.2f', ( $snap['total_roi_cents'] ?? 0 ) / 100 ) );
 		\WP_CLI::line( sprintf( 'Profitable: %d / %d articles', $snap['profitable_count'] ?? 0, $snap['total_articles'] ?? 0 ) );
+	}
+
+	// -----------------------------------------------------------------------
+	// Moderation sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Content moderation commands.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   status              — Show whether content moderation is enabled.
+	 *   check <post_id>     — Run moderation check on a post's content.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 moderation status
+	 *   wp pearblog v9 moderation check 42
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function moderation( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'status':
+				$this->moderation_status();
+				break;
+			case 'check':
+				$this->moderation_check( $args );
+				break;
+			default:
+				\WP_CLI::error( "Unknown moderation sub-command '{$sub}'. Try: status, check." );
+		}
+	}
+
+	private function moderation_status(): void {
+		$enabled = $this->moderator->is_enabled();
+		\WP_CLI::line( 'Content Moderation: ' . ( $enabled ? '✓ enabled' : '✗ disabled' ) );
+
+		if ( ! $enabled ) {
+			$has_key = '' !== (string) get_option( 'pearblog_openai_api_key', '' );
+			$has_opt = (bool) get_option( ContentModerator::OPTION_ENABLED, false );
+			\WP_CLI::line( sprintf( '  Option enabled : %s', $has_opt ? 'yes' : 'no' ) );
+			\WP_CLI::line( sprintf( '  API key set    : %s', $has_key ? 'yes' : 'no' ) );
+		} else {
+			$action = (string) get_option( ContentModerator::OPTION_ACTION, 'block' );
+			\WP_CLI::line( sprintf( '  Action on flag: %s', $action ) );
+		}
+	}
+
+	private function moderation_check( array $args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 moderation check <post_id>' );
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			\WP_CLI::error( "Post #{$post_id} not found." );
+		}
+
+		\WP_CLI::line( "Running moderation check on post #{$post_id}…" );
+		$result = $this->moderator->check( $post_id, $post->post_content ?? '' );
+
+		\WP_CLI::line( sprintf( 'Flagged : %s', $result['flagged'] ? 'YES' : 'no' ) );
+		\WP_CLI::line( sprintf( 'Action  : %s', $result['action'] ) );
+
+		if ( ! empty( $result['categories'] ) ) {
+			$flagged_cats = array_keys( array_filter( $result['categories'] ) );
+			\WP_CLI::line( 'Categories flagged: ' . ( $flagged_cats ? implode( ', ', $flagged_cats ) : 'none' ) );
+		}
+
+		if ( $result['flagged'] ) {
+			\WP_CLI::warning( 'Content was flagged by moderation.' );
+		} else {
+			\WP_CLI::success( 'Content passed moderation.' );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// RBAC sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Role-Based Access Control commands.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   list           — List all PearBlog capabilities per role.
+	 *   capabilities   — Show all registered PearBlog capabilities.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 rbac list
+	 *   wp pearblog v9 rbac capabilities
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function rbac( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'list':
+				$this->rbac_list();
+				break;
+			case 'capabilities':
+				$this->rbac_capabilities();
+				break;
+			default:
+				\WP_CLI::error( "Unknown rbac sub-command '{$sub}'. Try: list, capabilities." );
+		}
+	}
+
+	private function rbac_list(): void {
+		$overrides = (array) get_option( RBACManager::OPTION_OVERRIDES, [] );
+		$roles     = [ 'administrator', 'editor', 'author', 'contributor' ];
+
+		\WP_CLI::line( 'PearBlog RBAC — capability assignments:' );
+		\WP_CLI::line( str_repeat( '-', 60 ) );
+
+		foreach ( $roles as $role_name ) {
+			$role = get_role( $role_name );
+			if ( ! $role ) {
+				continue;
+			}
+
+			\WP_CLI::line( sprintf( "\n%s:", ucfirst( $role_name ) ) );
+			foreach ( RBACManager::CAPABILITIES as $cap ) {
+				$granted = (bool) ( $role->capabilities[ $cap ] ?? false );
+				\WP_CLI::line( sprintf( '  %-40s %s', $cap, $granted ? '✓' : '✗' ) );
+			}
+		}
+	}
+
+	private function rbac_capabilities(): void {
+		\WP_CLI::line( 'All PearBlog custom capabilities:' );
+		foreach ( RBACManager::CAPABILITIES as $cap ) {
+			\WP_CLI::line( '  ' . $cap );
+		}
+		\WP_CLI::line( sprintf( "\nTotal: %d capabilities", count( RBACManager::CAPABILITIES ) ) );
+	}
+
+	// -----------------------------------------------------------------------
+	// Compliance sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Compliance reporting commands.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   report [--days=<days>] [--format=<format>]
+	 *     — Generate a GDPR/SOC2 compliance report.
+	 *       format: json (default) | csv
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 compliance report
+	 *   wp pearblog v9 compliance report --days=90 --format=csv
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function compliance( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'report':
+				$this->compliance_report( $assoc_args );
+				break;
+			default:
+				\WP_CLI::error( "Unknown compliance sub-command '{$sub}'. Try: report." );
+		}
+	}
+
+	private function compliance_report( array $assoc_args ): void {
+		$days   = (int) ( $assoc_args['days'] ?? 30 );
+		$format = (string) ( $assoc_args['format'] ?? 'json' );
+
+		\WP_CLI::line( sprintf( 'Building compliance report (%d days, %s format)…', $days, $format ) );
+
+		$report = $this->compliance->build_report( $days, $format );
+
+		\WP_CLI::line( sprintf( 'Report ID     : %s', $report['report_id'] ) );
+		\WP_CLI::line( sprintf( 'Generated at  : %s', $report['generated_at'] ) );
+		\WP_CLI::line( sprintf( 'Period        : %s → %s', $report['period_from'], $report['period_to'] ) );
+		\WP_CLI::line( sprintf( 'Total events  : %d', $report['total_events'] ) );
+
+		if ( ! empty( $report['events_by_level'] ) ) {
+			\WP_CLI::line( 'Events by level:' );
+			foreach ( $report['events_by_level'] as $level => $count ) {
+				\WP_CLI::line( sprintf( '  %-10s %d', $level, $count ) );
+			}
+		}
+
+		if ( 'csv' === $format ) {
+			$csv      = $this->compliance->to_csv( $report );
+			$filename = $report['report_id'] . '.csv';
+			file_put_contents( $filename, $csv );
+			\WP_CLI::success( sprintf( 'CSV exported to %s (%d bytes)', $filename, strlen( $csv ) ) );
+		} else {
+			\WP_CLI::success( sprintf( 'Report generated: %d audit events in the last %d days.', $report['total_events'], $days ) );
+		}
+	}
+
+	// -----------------------------------------------------------------------
+	// AMP sub-commands
+	// -----------------------------------------------------------------------
+
+	/**
+	 * AMP (Accelerated Mobile Pages) commands.
+	 *
+	 * ## SUBCOMMANDS
+	 *
+	 *   status           — Show AMP enabled status and configuration.
+	 *   convert <post_id> — Convert a post's content to AMP HTML and preview.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog v9 amp status
+	 *   wp pearblog v9 amp convert 42
+	 *
+	 * @param  array<int, string>    $args
+	 * @param  array<string, string> $assoc_args
+	 */
+	public function amp( array $args, array $assoc_args ): void {
+		$sub = array_shift( $args );
+
+		switch ( $sub ) {
+			case 'status':
+				$this->amp_status();
+				break;
+			case 'convert':
+				$this->amp_convert( $args );
+				break;
+			default:
+				\WP_CLI::error( "Unknown amp sub-command '{$sub}'. Try: status, convert." );
+		}
+	}
+
+	private function amp_status(): void {
+		$enabled      = (bool) get_option( AMPGenerator::OPTION_ENABLED, false );
+		$analytics_id = (string) get_option( AMPGenerator::OPTION_ANALYTICS, '' );
+		$adsense_id   = (string) get_option( AMPGenerator::OPTION_ADSENSE, '' );
+
+		\WP_CLI::line( 'AMP Status: ' . ( $enabled ? '✓ enabled' : '✗ disabled' ) );
+		\WP_CLI::line( sprintf( '  Analytics ID : %s', $analytics_id ?: '(not set)' ) );
+		\WP_CLI::line( sprintf( '  AdSense ID   : %s', $adsense_id ?: '(not set)' ) );
+
+		if ( $enabled ) {
+			\WP_CLI::line( '  AMP URL pattern: ?amp=1 appended to post permalink' );
+		}
+	}
+
+	private function amp_convert( array $args ): void {
+		$post_id = (int) ( $args[0] ?? 0 );
+		if ( $post_id <= 0 ) {
+			\WP_CLI::error( 'Usage: wp pearblog v9 amp convert <post_id>' );
+		}
+
+		$post = get_post( $post_id );
+		if ( ! $post ) {
+			\WP_CLI::error( "Post #{$post_id} not found." );
+		}
+
+		\WP_CLI::line( sprintf( 'Converting post #%d to AMP content…', $post_id ) );
+		$amp_content = $this->amp->convert_to_amp_content( $post->post_content ?? '' );
+
+		\WP_CLI::line( sprintf( 'Original length : %d bytes', strlen( $post->post_content ?? '' ) ) );
+		\WP_CLI::line( sprintf( 'AMP length      : %d bytes', strlen( $amp_content ) ) );
+		\WP_CLI::line( "\n--- AMP content preview (first 800 chars) ---" );
+		\WP_CLI::line( mb_strimwidth( $amp_content, 0, 800, '…' ) );
+		\WP_CLI::success( 'AMP conversion complete.' );
 	}
 }

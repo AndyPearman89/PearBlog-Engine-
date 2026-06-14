@@ -369,6 +369,21 @@ if ( ! function_exists( 'wp_remote_get' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+	function wp_remote_retrieve_body( $response ): string {
+		if ( is_array( $response ) && isset( $response['body'] ) ) {
+			return (string) $response['body'];
+		}
+		return '';
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
+	function wp_remote_retrieve_response_code( $response ): int {
+		return (int) ( $response['response']['code'] ?? 200 );
+	}
+}
+
 if ( ! function_exists( 'wp_remote_request' ) ) {
 	function wp_remote_request( string $url, array $args = [] ): array {
 		return $GLOBALS['_http_response'] ?? [ 'response' => [ 'code' => 200 ], 'body' => '' ];
@@ -1012,6 +1027,60 @@ if ( ! function_exists( 'restore_current_blog' ) ) {
 if ( ! function_exists( 'is_wp_error' ) ) {
 	function is_wp_error( $thing ): bool {
 		return $thing instanceof \WP_Error;
+	}
+}
+
+if ( ! class_exists( 'WP_Role' ) ) {
+	class WP_Role {
+		/** @var array<string, bool> */
+		public array $capabilities = [];
+		public string $name;
+
+		public function __construct( string $name = 'subscriber' ) {
+			$this->name = $name;
+		}
+
+		public function add_cap( string $cap, bool $grant = true ): void {
+			$this->capabilities[ $cap ] = $grant;
+		}
+
+		public function remove_cap( string $cap ): void {
+			unset( $this->capabilities[ $cap ] );
+		}
+
+		public function has_cap( string $cap ): bool {
+			return (bool) ( $this->capabilities[ $cap ] ?? false );
+		}
+	}
+}
+
+if ( ! function_exists( 'get_role' ) ) {
+	function get_role( string $role ): ?\WP_Role {
+		$roles = $GLOBALS['_wp_roles'] ?? [];
+		return $roles[ $role ] ?? null;
+	}
+}
+
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( string $key, string $value, string $url = '' ): string {
+		$sep = strpos( $url, '?' ) === false ? '?' : '&';
+		return $url . $sep . $key . '=' . $value;
+	}
+}
+
+if ( ! function_exists( 'wp_generate_uuid4' ) ) {
+	function wp_generate_uuid4(): string {
+		return sprintf(
+			'%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0x0fff ) | 0x4000,
+			mt_rand( 0, 0x3fff ) | 0x8000,
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff )
+		);
 	}
 }
 

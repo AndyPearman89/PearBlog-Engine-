@@ -77,6 +77,30 @@ All notable changes to PearBlog Engine are documented in this file.
 - **`TenantOnboardingController::provision()`** — replaced direct array access for optional keys (`title`, `industry`, `tone`, `language`, `plan`, `admin_email`) with null-coalescing `??` to prevent PHP 8 fatal errors when keys are omitted
 - **`ConversionFlowTracker::get_session_funnel()`** — replaced `isset()` check (always false for null-initialised values) with `array_key_exists()` so stage timestamps are correctly recorded
 
+#### Tests — v9.0 Session 7 (+5 test classes, 84 assertions) + CLI extensions + bootstrap stubs
+- **`ContentModeratorTest`** — is_enabled enabled/disabled paths, check disabled result (4 fields), check with API stub (pass action + post-meta persistence), option/meta constants (18 tests)
+- **`RBACManagerTest`** — CAPABILITIES constant (count + all 8 slugs), OPTION_OVERRIDES constant, assign_capabilities with no roles, assign_capabilities applies defaults to editor/author roles, current_user_can static helper (16 tests)
+- **`ComplianceExporterTest`** — build_report required keys (7 fields), report_id prefix, total_events=0 for empty log, period_days default/custom/capped-at-365, data_retention keys; to_csv UTF-8 BOM, header comment, column headers, report_id embed (18 tests)
+- **`AMPGeneratorTest`** — option constants (3), add_query_var (4), convert_to_amp_content img→amp-img, src/dimension/layout preservation, missing-src handling, script/iframe/style removal, passthrough for safe content (18 tests)
+- **`PushNotificationPublisherTest`** — option constants (5), is_enabled all enabled/disabled paths (OneSignal + FCM + unknown provider), notify returns disabled result (14 tests)
+
+#### WP-CLI — `wp pearblog v9` extensions (session 7)
+- `moderation status` — show whether ContentModerator is enabled plus action setting
+- `moderation check <post_id>` — run moderation check on a post and show result
+- `rbac list` — show PearBlog capability assignments per role
+- `rbac capabilities` — list all 8 registered PearBlog custom capabilities
+- `compliance report [--days=<d>] [--format=<f>]` — build GDPR/SOC2 compliance report; optional CSV export
+- `amp status` — show AMP enabled status and Analytics/AdSense configuration
+- `amp convert <post_id>` — convert a post's content to AMP HTML and preview
+
+#### Bootstrap stubs added (session 7)
+- `WP_Role` class stub with `add_cap` / `remove_cap` / `has_cap` support
+- `get_role()` function (controlled via `$GLOBALS['_wp_roles']` in tests)
+- `add_query_arg()` function
+- `wp_generate_uuid4()` function
+- `wp_remote_retrieve_body()` function
+- `wp_remote_retrieve_response_code()` function
+
 ---
 
 ## [8.0.0] — 2026-05-04
