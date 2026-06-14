@@ -894,6 +894,13 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', '/tmp/' );
 }
 
+// Ensure wp-admin/includes/upgrade.php exists so DatabaseHandler can require_once it.
+// dbDelta itself is stubbed below; this file just needs to be present.
+if ( ! file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
+	@mkdir( ABSPATH . 'wp-admin/includes', 0777, true );
+	file_put_contents( ABSPATH . 'wp-admin/includes/upgrade.php', '<?php // stub' );
+}
+
 // dbDelta function stub
 if ( ! function_exists( 'dbDelta' ) ) {
 	function dbDelta( $queries ) {
