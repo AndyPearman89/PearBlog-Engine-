@@ -6,6 +6,7 @@
 > **Status:** Archive mode (updated 2026-06-14) — launch window has passed
 
 > ⚠️ **Note (2026-06-14):** This file is retained as a historical launch checklist. Date-specific timeline sections below are now outdated unless explicitly re-used for a future launch.
+> ℹ️ **Historical interpretation:** Unchecked boxes in this document reflect incomplete historical items, not current pending tasks.
 
 ---
 
