@@ -771,8 +771,11 @@ $GLOBALS['_db_results']     = [];
 $GLOBALS['_db_affected_rows'] = 0;
 $GLOBALS['_db_level_counts'] = [];
 $GLOBALS['_db_channel_counts'] = [];
-$GLOBALS['_is_multisite']   = false;
-$GLOBALS['_current_blog_id'] = 1;
+$GLOBALS['_is_multisite']        = false;
+$GLOBALS['_current_blog_id']     = 1;
+$GLOBALS['_current_post_id']     = 0;
+$GLOBALS['_is_ssl']              = false;
+$GLOBALS['_is_user_logged_in']   = false;
 
 // WordPress class stubs.
 if ( ! class_exists( 'WP_Post' ) ) {
@@ -1208,6 +1211,58 @@ if ( ! function_exists( 'get_the_tags' ) ) {
 		return $tags;
 	}
 }
+
+if ( ! function_exists( 'wp_kses_post' ) ) {
+	function wp_kses_post( string $content ): string {
+		return $content;
+	}
+}
+
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID(): int {
+		return (int) ( $GLOBALS['_current_post_id'] ?? 0 );
+	}
+}
+
+if ( ! function_exists( 'is_ssl' ) ) {
+	function is_ssl(): bool {
+		return (bool) ( $GLOBALS['_is_ssl'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+	function is_user_logged_in(): bool {
+		return (bool) ( $GLOBALS['_is_user_logged_in'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'rest_url' ) ) {
+	function rest_url( string $path = '' ): string {
+		return 'http://example.com/wp-json/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! defined( 'COOKIEPATH' ) ) {
+	define( 'COOKIEPATH', '/' );
+}
+
+if ( ! defined( 'COOKIE_DOMAIN' ) ) {
+	define( 'COOKIE_DOMAIN', '' );
+}
+
+// Namespace-level setcookie stubs so that classes calling setcookie() without a
+// leading backslash inside their own namespace don't trigger header-already-sent
+// errors during unit tests.  PHP resolves unqualified built-in calls via
+// namespace first, then global scope; defining these here causes them to be
+// found in the namespace before the real built-in.
+// Namespace-level setcookie stubs so that classes calling setcookie() without a
+// leading backslash inside their own namespace don't trigger header-already-sent
+// errors during unit tests.  PHP resolves unqualified built-in calls via
+// namespace first, then global scope; defining these here causes them to be
+// found in the namespace before the real built-in.
+// These must be defined in a separate include to avoid mixing namespace and
+// non-namespace declarations in a file with declare(strict_types=1).
+require_once __DIR__ . '/namespace-stubs.php';
 
 // PSR-4 autoloader for src/ classes.
 spl_autoload_register( function ( string $class ): void {

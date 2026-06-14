@@ -128,6 +128,24 @@ All notable changes to PearBlog Engine are documented in this file.
 #### Source fix
 - `SecurityAuditor::run_full_audit()` — injects `name` key (derived from OWASP check ID) into each check result array so `test_each_check_has_name_key` passes
 
+### Added — Test Suite (session 9, +4 test classes, 82 tests)
+
+#### New test classes
+- **`CROEngineTest`** — `rest_permission`, `rest_create` (name/variants/post_id/status/winner fields), `rest_list` (all experiments + stats key), `rest_stats` (404 for unknown, 200 with stats), `rest_delete` (404 + confirmed removal), `rest_track` (impression 200, accumulation, conversion CVR, zero-CVR edge case), `evaluate_and_promote` (no winner with < 100 impressions, significant winner at 30% vs 5% CVR, skips completed experiments), `inject_cta_variants` (passthrough with no placeholder, replaces placeholder with winner HTML, skips in admin) — 21 tests, 37 assertions
+- **`RevenueTrackerTest`** — source constants, `get_article_data` default structure, `track` (event appended, `total_cents` accumulation, per-source totals, site cumulative total, meta passthrough), `calculate_roi` (structure, zero-cost, cost+revenue, rounding to 2 dp), `init_article_revenue` (creates entry, does not overwrite), `get_site_summary` (required keys, USD conversion), `rest_article_revenue` (ROI keys present), `rest_track_event` (200 for valid source, WP_Error for invalid), `admin_permission` — 20 tests, 48 assertions
+- **`AffiliateDiscoveryTest`** — option/meta constants, `is_enabled`, `extract_product_keywords` (capitalized phrases, action phrases, deduplication, empty text, max 15 limit), `discover_for_post` (disabled guard, post not found, manual link match, saves post meta), `inject_affiliate_links` (disabled, not singular, anchor injection, first-occurrence-only, skips entries without keyword) — 18 tests, 26 assertions
+- **`PaywallEngineTest`** — option/meta constants, `is_enabled`, `get_reads_count` (no cookie, cookie value, month reset, invalid cookie), `has_exceeded_free_limit` (below limit, at limit, custom limit), `has_access` (anonymous, manage_options admin, valid subscriber cookie, unknown token), `maybe_gate_content` (disabled, not singular, admin passthrough, gate on limit exceeded, gate for premium post), `create_checkout_session` throws when unconfigured, `rest_get_status` (required keys, remaining calculation) — 23 tests, 37 assertions
+
+#### Bootstrap additions (session 9)
+- `wp_kses_post()` stub (returns content unchanged)
+- `get_the_ID()` stub (reads `$GLOBALS['_current_post_id']`)
+- `is_ssl()` stub (reads `$GLOBALS['_is_ssl']`)
+- `is_user_logged_in()` stub (reads `$GLOBALS['_is_user_logged_in']`)
+- `rest_url()` stub
+- Constants: `COOKIEPATH`, `COOKIE_DOMAIN`
+- Global reset entries for `_current_post_id`, `_is_ssl`, `_is_user_logged_in`
+- `tests/php/namespace-stubs.php` — defines `PearBlogEngine\Monetization\setcookie()` as a no-op so that `PaywallEngine::increment_read_counter()` and `CROEngine::pick_variant_html()` don't trigger "headers already sent" errors during PHPUnit runs
+
 ---
 
 ## [8.0.0] — 2026-05-04
