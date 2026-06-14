@@ -15,7 +15,7 @@
  *   POST /mobile/content/{id}/approve – approve AI draft
  *   POST /mobile/content/{id}/reject  – reject AI draft with reason
  *
- * Authentication: ****** (pearblog_api_key) or manage_options capability.
+ * Authentication: ****** (pearblog_api_key option) or manage_options capability.
  *
  * @package PearBlogEngine\API
  */

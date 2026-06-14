@@ -130,10 +130,8 @@ class BayesianOptimizer {
 
 		$threshold  = self::QUALITY_SUCCESS_THRESHOLD * self::MAX_QUALITY_SCORE;
 		$avg        = $total_score / $runs;
-		$successes  = (int) round( ( $avg / self::MAX_QUALITY_SCORE ) * $runs );
-		$failures   = $runs - $successes;
 
-		// Soft floor from threshold: shift successes by ratio.
+		// Map average quality score to a success ratio, then adjust by soft threshold.
 		$adj_successes = max( 0, (int) round( $runs * ( $avg / self::MAX_QUALITY_SCORE ) ) );
 
 		return [

@@ -898,7 +898,9 @@ if ( ! function_exists( 'url_to_postid' ) ) {
 
 if ( ! function_exists( 'remove_all_filters' ) ) {
 	function remove_all_filters( string $hook, $priority = false ): bool {
-		unset( $GLOBALS['_filters'][ $hook ] );
+		if ( isset( $GLOBALS['_filters'][ $hook ] ) ) {
+			unset( $GLOBALS['_filters'][ $hook ] );
+		}
 		return true;
 	}
 }
