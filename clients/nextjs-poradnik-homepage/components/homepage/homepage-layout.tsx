@@ -162,7 +162,7 @@ export function HomepageLayout() {
             <Panel className="space-y-4">
               <form className="grid gap-3 md:grid-cols-[1.5fr_1fr_auto]" aria-label="Wyszukiwarka poradnik.pro">
                 <label className="sr-only" htmlFor="query">
-                  czego szukasz?
+                  Czego szukasz?
                 </label>
                 <input
                   id="query"
