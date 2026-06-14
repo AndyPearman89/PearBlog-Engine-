@@ -127,6 +127,16 @@ jobs:
           echo "==> WordPress path: $WP_PATH"
           echo "==> WordPress version: $($WP core version)"
 
+          # ---- helper: normalise a display name to a URL slug ----
+          make_slug() {
+            local raw="$1"
+            # Try iconv transliteration first (handles Polish diacritics), then pure ASCII fallback
+            echo "$raw" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' \
+              | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null \
+              | tr -cd '[:alnum:]-' \
+              || echo "$raw" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-'
+          }
+
           # ---- 1. Flush rewrite rules so pretty permalinks work ----
           echo "==> Setting permalink structure"
           $WP rewrite structure '/%postname%/' --hard
@@ -144,7 +154,7 @@ jobs:
           )
           for NAME in "${!CATS[@]}"; do
             DESC="${CATS[$NAME]}"
-            SLUG=$(echo "$NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null || echo "$NAME" | tr '[:upper:]' '[:lower:]' | tr ' ' '-')
+            SLUG=$(make_slug "$NAME")
             EXISTING=$($WP term list category --name="$NAME" --field=term_id --format=ids 2>/dev/null || true)
             if [[ -z "$EXISTING" ]]; then
               TID=$($WP term create category "$NAME" --slug="$SLUG" --description="$DESC" --porcelain)
@@ -188,7 +198,7 @@ jobs:
           )
           for CAT in "${!CAT_PAGES[@]}"; do
             TITLE="${CAT_PAGES[$CAT]}"
-            SLUG=$(echo "$CAT" | tr '[:upper:]' '[:lower:]' | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null || echo "$CAT" | tr '[:upper:]' '[:lower:]')
+            SLUG=$(make_slug "$CAT")
             EXISTING=$($WP post list --post_type=page --post_name="$SLUG" --field=ID --format=ids 2>/dev/null || true)
             if [[ -z "$EXISTING" ]]; then
               PID=$($WP post create \
@@ -224,25 +234,46 @@ jobs:
             "Jak remontować mieszkanie bez błędów - poradnik"
           )
 
-          # Queue via WP-CLI pearblog command if available, else fall back to options
+          # Queue via WP-CLI pearblog command if available, else fall back to a WP option.
+          # Manual recovery when pearblog CLI is absent: log into WP Admin → PearBlog Engine →
+          # Queue, and paste the topics from the pearblog_seed_topics option; or run
+          # `wp option get pearblog_seed_topics --path=<WP_PATH>` and add them via the admin UI.
           if $WP pearblog --help >/dev/null 2>&1; then
             for TOPIC in "${TOPICS[@]}"; do
               $WP pearblog queue add "$TOPIC" 2>/dev/null || true
               echo "  Queued: $TOPIC"
             done
           else
-            echo "  wp pearblog queue not found; storing topics in option for manual processing"
+            echo "::warning::wp pearblog CLI not found — topics stored in pearblog_seed_topics option."
+            echo "           To process manually: WP Admin → PearBlog Engine → Queue, or run:"
+            echo "           wp option get pearblog_seed_topics --path=\$WP_PATH --allow-root"
             $WP option update pearblog_seed_topics "$(printf '%s\n' "${TOPICS[@]}")" || true
           fi
 
           # ---- 6. Generate initial articles ----
+          # Validate that ARTICLE_COUNT is a non-negative integer (0–10).
           COUNT="${ARTICLE_COUNT:-5}"
-          if [[ "$COUNT" -gt 0 ]] 2>/dev/null; then
+          if ! [[ "$COUNT" =~ ^[0-9]+$ ]] || [[ "$COUNT" -gt 10 ]]; then
+            echo "::warning::Invalid article_count '$COUNT' (must be 0–10). Defaulting to 5."
+            COUNT=5
+          fi
+
+          if [[ "$COUNT" -gt 0 ]]; then
             echo "==> Generating $COUNT initial article(s)"
+            FAILED=0
             for i in $(seq 1 "$COUNT"); do
               echo "  Generating article $i/$COUNT ..."
-              $WP pearblog generate --allow-root 2>&1 | tail -3 || true
+              if ! OUTPUT=$($WP pearblog generate --allow-root 2>&1); then
+                FAILED=$((FAILED + 1))
+                echo "::warning::Article $i failed to generate. WP-CLI output:"
+                echo "$OUTPUT" | tail -5 | sed 's/^/    /'
+              else
+                echo "$OUTPUT" | tail -3 | sed 's/^/    /'
+              fi
             done
+            if [[ "$FAILED" -gt 0 ]]; then
+              echo "::warning::$FAILED of $COUNT articles failed. Check OpenAI API key and PearBlog Engine logs."
+            fi
           else
             echo "==> Skipping article generation (article_count=0)"
           fi
