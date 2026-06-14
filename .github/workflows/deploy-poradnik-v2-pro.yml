@@ -54,7 +54,7 @@ jobs:
           MISSING=()
           [[ -z "$SSH_HOST" ]] && MISSING+=("PORADNIK_SSH_HOST or SSH_HOST")
           [[ -z "$SSH_USER" ]] && MISSING+=("PORADNIK_SSH_USER or SSH_USER")
-          [[ -z "$WEB_ROOT" ]] && MISSING+=("PORADNIK_WEB_ROOT or WP_PATH")
+          [[ -z "$WEB_ROOT" ]] && MISSING+=("PORADNIK_WEB_ROOT (or generic WP_PATH)")
           if [[ ${#MISSING[@]} -gt 0 ]]; then
             echo "::error::Missing required deploy settings: ${MISSING[*]}"
             exit 1
