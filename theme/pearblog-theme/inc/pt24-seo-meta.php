@@ -21,11 +21,32 @@ function pt24_output_seo_meta() {
     $service = get_query_var('pt24_service', '');
     $city = get_query_var('pt24_city', '');
 
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '/';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $request_query = (string) wp_parse_url($request_uri, PHP_URL_QUERY);
+    $home_path = (string) wp_parse_url(home_url('/'), PHP_URL_PATH);
+
+    if ($home_path && '/' !== $home_path) {
+        $normalized_home_path = untrailingslashit($home_path);
+        if (0 === strpos($request_path, $normalized_home_path . '/')) {
+            $request_path = substr($request_path, strlen($normalized_home_path));
+        }
+    }
+
+    if ('' === $request_path) {
+        $request_path = '/';
+    }
+
+    $canonical_url = home_url($request_path);
+    if ('' !== $request_query) {
+        $canonical_url .= '?' . $request_query;
+    }
+
     // Default meta
     $meta = array(
         'title' => get_bloginfo('name') . ' - Znajdź sprawdzonego fachowca',
         'description' => 'Porównaj oferty sprawdzonych fachowców. Otrzymaj wycenę nawet w 15 minut. Bez dzwonienia, bez stresu.',
-        'canonical' => home_url($_SERVER['REQUEST_URI']),
+        'canonical' => $canonical_url,
         'og_type' => 'website',
         'og_locale' => 'pl_PL',
     );
@@ -46,7 +67,7 @@ function pt24_output_seo_meta() {
     // City page
     if (empty($service) && !empty($city)) {
         $city_name = ucfirst($city);
-        $meta['title'] = "$city_name - Fachowcy i usługi lokaln e | PT24.PRO";
+        $meta['title'] = "$city_name - Fachowcy i usługi lokalne | PT24.PRO";
         $meta['description'] = "Sprawdzeni fachowcy w mieście $city_name. Hydraulicy, mechanicy, elektrycy i inne usługi. Porównaj oferty i ceny.";
     }
 

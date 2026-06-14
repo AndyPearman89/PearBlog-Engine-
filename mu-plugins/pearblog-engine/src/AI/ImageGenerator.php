@@ -18,7 +18,7 @@ namespace PearBlogEngine\AI;
 class ImageGenerator {
 
 	private const API_URL = 'https://api.openai.com/v1/images/generations';
-	private const MODEL   = 'dall-e-3';
+	private const DEFAULT_MODEL = 'gpt-image-1';
 
 	/** @var string */
 	private string $api_key;
@@ -55,13 +55,16 @@ class ImageGenerator {
 		}
 
 		$prompt = $this->build_prompt( $topic, $style );
+		$model = $this->get_model();
+		$quality = $this->get_quality_for_model( $model );
+		$size = $this->get_size_for_model( $model );
 
 		$body = wp_json_encode( [
-			'model'   => self::MODEL,
+			'model'   => $model,
 			'prompt'  => $prompt,
 			'n'       => 1,
-			'size'    => '1792x1024', // DALL-E 3 landscape format
-			'quality' => 'standard',  // or 'hd' for higher quality
+			'size'    => $size,
+			'quality' => $quality,
 		] );
 
 		$response = wp_remote_post(
@@ -86,11 +89,24 @@ class ImageGenerator {
 
 		if ( 200 !== $status || ! is_array( $data ) ) {
 			$message = $data['error']['message'] ?? 'Unknown API error';
-			error_log( "PearBlog Engine: DALL-E API error ({$status}) – {$message}" );
+			error_log( "PearBlog Engine: Image API error ({$status}, model={$model}) – {$message}" );
 			return null;
 		}
 
-		return $data['data'][0]['url'] ?? null;
+		$image = $data['data'][0] ?? null;
+		if ( ! is_array( $image ) ) {
+			return null;
+		}
+
+		if ( ! empty( $image['url'] ) ) {
+			return (string) $image['url'];
+		}
+
+		if ( ! empty( $image['b64_json'] ) ) {
+			return $this->store_base64_image_and_get_url( (string) $image['b64_json'], $topic );
+		}
+
+		return null;
 	}
 
 	/**
@@ -213,12 +229,84 @@ class ImageGenerator {
 		// Mark as AI-generated for tracking
 		update_post_meta( $attachment_id, '_pearblog_ai_generated', true );
 		update_post_meta( $attachment_id, '_pearblog_generation_date', current_time( 'timestamp' ) );
-		update_post_meta( $attachment_id, '_pearblog_image_source', 'dall-e-3' );
+		update_post_meta( $attachment_id, '_pearblog_image_source', $this->get_model() );
 
 		// DALL-E 3 standard size is 1792x1024
 		update_post_meta( $attachment_id, '_pearblog_original_width', 1792 );
 		update_post_meta( $attachment_id, '_pearblog_original_height', 1024 );
 
 		return $attachment_id;
+	}
+
+	/**
+	 * Resolve model for image generation.
+	 *
+	 * @return string
+	 */
+	private function get_model(): string {
+		$model = (string) get_option( 'pearblog_image_model', self::DEFAULT_MODEL );
+
+		if ( '' === trim( $model ) ) {
+			return self::DEFAULT_MODEL;
+		}
+
+		return $model;
+	}
+
+	/**
+	 * Resolve quality value per model API constraints.
+	 *
+	 * @param string $model
+	 * @return string
+	 */
+	private function get_quality_for_model( string $model ): string {
+		if ( 0 === strpos( $model, 'gpt-image-' ) ) {
+			return 'auto';
+		}
+
+		return 'standard';
+	}
+
+	/**
+	 * Resolve supported image size per model API constraints.
+	 *
+	 * @param string $model
+	 * @return string
+	 */
+	private function get_size_for_model( string $model ): string {
+		if ( 0 === strpos( $model, 'gpt-image-' ) ) {
+			return '1536x1024';
+		}
+
+		return '1792x1024';
+	}
+
+	/**
+	 * Persist base64 image payload into uploads and return public URL.
+	 *
+	 * @param string $base64_data
+	 * @param string $topic
+	 * @return string|null
+	 */
+	private function store_base64_image_and_get_url( string $base64_data, string $topic ): ?string {
+		$binary = base64_decode( $base64_data, true );
+		if ( false === $binary ) {
+			return null;
+		}
+
+		$filename = sanitize_file_name( $topic );
+		if ( '' === $filename ) {
+			$filename = 'pearblog-image';
+		}
+
+		$filename .= '-' . gmdate( 'YmdHis' ) . '.png';
+		$upload = wp_upload_bits( $filename, null, $binary );
+
+		if ( ! empty( $upload['error'] ) ) {
+			error_log( 'PearBlog Engine: Failed to persist generated image binary – ' . (string) $upload['error'] );
+			return null;
+		}
+
+		return isset( $upload['url'] ) ? (string) $upload['url'] : null;
 	}
 }

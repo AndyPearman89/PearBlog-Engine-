@@ -569,7 +569,14 @@ class PoradnikAdsLayoutPro {
         $enabled = get_option('alp_enabled', true);
         $performance = self::get_performance_data(7);
 
-        require_once get_template_directory() . '/templates/admin/ads-layout-pro.php';
+        $template = get_template_directory() . '/templates/admin/ads-layout-pro.php';
+
+        if ( file_exists( $template ) ) {
+            require $template;
+            return;
+        }
+
+        echo '<div class="wrap"><h1>Ads Layout Pro</h1><p>Dashboard template is missing. The page is running in fallback mode.</p></div>';
     }
 }
 

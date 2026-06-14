@@ -64,6 +64,7 @@ class AdminPageV8Enterprise {
 	 */
 	public function register(): void {
 		add_action( 'admin_menu', [ $this, 'add_menu' ] );
+		add_action( 'network_admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
@@ -78,10 +79,12 @@ class AdminPageV8Enterprise {
 	 * Add WordPress admin menu
 	 */
 	public function add_menu(): void {
+		$capability = $this->get_required_capability();
+
 		add_menu_page(
 			__( 'PearBlog Enterprise v8', 'pearblog-engine' ),
 			__( '🚀 PearBlog v8', 'pearblog-engine' ),
-			'manage_options',
+			$capability,
 			self::MENU_SLUG,
 			[ $this, 'render_page' ],
 			$this->get_menu_icon_svg(),
@@ -94,11 +97,34 @@ class AdminPageV8Enterprise {
 				self::MENU_SLUG,
 				$tab_label,
 				$tab_label,
-				'manage_options',
+				$capability,
 				self::MENU_SLUG . '#' . $tab_id,
 				'__return_null' // Content rendered by main page
 			);
 		}
+	}
+
+	/**
+	 * Resolve capability required to view the admin menu.
+	 */
+	private function get_required_capability(): string {
+		$default_capability = \is_network_admin() ? 'manage_network_options' : 'manage_options';
+		$capability         = apply_filters( 'pearblog_admin_capability', $default_capability );
+
+		if ( defined( 'PEARBLOG_ADMIN_FORCE_ACCESS' ) && PEARBLOG_ADMIN_FORCE_ACCESS ) {
+			return 'read';
+		}
+
+		$access_override = (string) get_option( 'pearblog_admin_capability_override', '' );
+		if ( '' !== trim( $access_override ) ) {
+			return sanitize_key( $access_override );
+		}
+
+		if ( ! is_string( $capability ) || '' === trim( $capability ) ) {
+			return $default_capability;
+		}
+
+		return $capability;
 	}
 
 	/**

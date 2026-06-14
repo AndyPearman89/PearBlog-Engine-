@@ -41,7 +41,15 @@ class DashboardWidget {
 	 * Add the widget to the right column of the dashboard.
 	 */
 	public function add_widget(): void {
-		wp_add_dashboard_widget(
+		if ( ! function_exists( 'get_current_screen' ) ) {
+			return;
+		}
+
+		if ( ! function_exists( 'wp_add_dashboard_widget' ) ) {
+			return;
+		}
+
+		\wp_add_dashboard_widget(
 			self::WIDGET_ID,
 			self::WIDGET_NAME,
 			[ $this, 'render' ],
