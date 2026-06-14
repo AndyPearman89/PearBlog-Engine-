@@ -39,7 +39,7 @@
                 text-decoration: none;
             ">
                 <img
-                    src="<?php echo esc_url(pearblog_get_brand_logo('wordmark', 'svg')); ?>"
+                    src="<?php echo esc_url(pearblog_get_brand_logo('wordmark', 'png')); ?>"
                     alt="<?php echo esc_attr(get_bloginfo('name')); ?>"
                     style="display:block;max-height:36px;width:auto;"
                 >

@@ -552,7 +552,6 @@ function pearblog_add_social_meta_tags() {
             if (empty($image_alt)) {
                 $image_alt = $title;
             }
-
         }
     } else {
         $title = $site_name;
