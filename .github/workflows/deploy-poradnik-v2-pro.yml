@@ -38,10 +38,10 @@ jobs:
 
     env:
       SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || '204.48.27.118' }}
-      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'root' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'wordpress2614653' }}
       SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '22' }}
-      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || '/var/www/poradnik.pro' }}
-      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/var/www/poradnik.pro/wp-content/themes/pearblog-theme' }}
+      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || '/wordpress2614653.home.pl/poradnik' }}
+      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '/wordpress2614653.home.pl/poradnik/wp-content/themes/pearblog-theme' }}
       BRANCH: ${{ github.event.inputs.branch }}
       SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
       SNAPSHOT: ${{ github.event.inputs.snapshot_before_deploy }}
