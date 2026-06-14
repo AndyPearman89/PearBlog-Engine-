@@ -44,6 +44,7 @@
 |----------|----------|----------|---------|
 | [API-DOCUMENTATION.md](API-DOCUMENTATION.md) | EN | Dev | Full REST API reference, rate limits, OpenAPI spec, Postman collection, webhooks |
 | [CDN-INTEGRATION.md](CDN-INTEGRATION.md) | EN | Ops / Dev | Cloudflare, CloudFront, BunnyCDN setup + cache purging + cost analysis |
+| [DEVELOPER-HOOKS.md](DEVELOPER-HOOKS.md) | EN | Dev | All 30 action/filter hooks with signatures, parameters, source locations, and examples |
 | [clients/js/README.md](clients/js/README.md) | EN | Dev | JavaScript API client usage |
 | [clients/python/README.md](clients/python/README.md) | EN | Dev | Python API client usage |
 
@@ -59,6 +60,7 @@
 |----------|----------|----------|---------|
 | [PROGRESS-VISUALIZATION.md](PROGRESS-VISUALIZATION.md) | **PL / EN** | Everyone | Bilingual progress visualization: milestones, timeline, metrics |
 | [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | EN | Everyone | Visual roadmap, milestones, timeline v8.0+ |
+| [FEATURED-PLAN-v9.0.md](FEATURED-PLAN-v9.0.md) | EN | Everyone | v9.0 feature plan: AI enhancements, A/B testing engine, orphan page detection, mobile API, collaboration |
 | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) | EN | Dev / Ops | 26-task autonomous execution plan (Phase 1-7) |
 | [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | EN | Ops | Hour-by-hour launch day plan, T-7 timeline, rollback procedure (archived) |
 | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | EN | Ops | Standalone pre-launch & weekly/monthly/quarterly operations checklists |
@@ -68,6 +70,7 @@
 
 | Document | Language | Audience | Summary |
 |----------|----------|----------|---------|
+| [ENTERPRISE-V8-QUICKSTART.md](ENTERPRISE-V8-QUICKSTART.md) | EN | Ops / Dev | 30-minute enterprise v8.0 setup guide with step-by-step instructions |
 | [VIDEO-TUTORIALS.md](VIDEO-TUTORIALS.md) | EN | Everyone | 5 video tutorial scripts: Quick Start, Full Setup, Admin Tour, Troubleshooting, Advanced Config |
 | [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) | PL | Ops | Step-by-step autonomous activation |
 
@@ -129,6 +132,7 @@
 | Scale to multiple sites | [PRODUCTION-ANALYSIS-FULL.md](PRODUCTION-ANALYSIS-FULL.md) § 7 |
 | Check security posture | [SECURITY-AUDIT-REPORT.md](SECURITY-AUDIT-REPORT.md) |
 | See what's next | [NEXT-STEPS.md](NEXT-STEPS.md) |
+| Plan for v9.0 | [FEATURED-PLAN-v9.0.md](FEATURED-PLAN-v9.0.md) |
 | Prepare for launch | [PRE-LAUNCH-CHECKLIST.md](PRE-LAUNCH-CHECKLIST.md) → [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) |
 | Join beta testing | [BETA-TESTING-PROGRAM.md](BETA-TESTING-PROGRAM.md) |
 | See performance baselines | [PERFORMANCE-BENCHMARKS.md](PERFORMANCE-BENCHMARKS.md) |
