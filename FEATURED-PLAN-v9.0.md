@@ -75,7 +75,7 @@ Modern GraphQL API to complement existing REST endpoints, enabling efficient dat
 
 ### F2: Advanced Analytics Dashboard
 **Priority:** P0 (Ship Blocker)
-**Status:** Planned
+**Status:** ✅ Implemented (v9.0 Session 3) — PredictiveAnalytics.php: forecasting, anomaly detection, trend analysis, revenue projection, optimisation recommendations.
 **Timeline:** Q3 2026 (10 weeks)
 
 **Description:**
@@ -170,7 +170,7 @@ AI-powered A/B testing system that automatically tests content variations and pr
 
 ### F4: Mobile Monitoring App
 **Priority:** P1 (Launch Requirement)
-**Status:** Planned
+**Status:** ✅ Backend Implemented (v9.0 Session 3) — MobileAPIController.php: dashboard, queue, approve/reject, alerts, multi-site endpoints.
 **Timeline:** Q4 2026 (14 weeks)
 
 **Description:**
@@ -400,7 +400,7 @@ Next-generation SEO toolkit with schema automation, internal linking intelligenc
 
 ### F9: Content Collaboration Platform
 **Priority:** P2 (Quality of Life)
-**Status:** Planned
+**Status:** ✅ Implemented (v9.0 Session 3) — CollaborationManager.php: review workflows, inline comments, editorial assignment, version snapshots, team workload.
 **Timeline:** Q4 2026 (8 weeks)
 
 **Description:**

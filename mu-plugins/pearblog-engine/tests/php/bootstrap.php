@@ -762,24 +762,42 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	class WP_Error {
 		private string $code;
 		private string $message;
+		public array   $data;
 		public function __construct( string $code = '', string $message = '', $data = '' ) {
 			$this->code    = $code;
 			$this->message = $message;
+			// Wrap in numeric array so $err->data[0]['status'] works.
+			$this->data    = [ is_array( $data ) ? $data : (array) $data ];
 		}
 		public function get_error_code(): string { return $this->code; }
 		public function get_error_message( string $code = '' ): string { return $this->message; }
+		public function get_error_data(): mixed { return $this->data[0] ?? []; }
 	}
 }
 
 if ( ! class_exists( 'WP_REST_Request' ) ) {
-	class WP_REST_Request {
-		private array $params  = [];
-		private array $headers = [];
-		public function get_param( string $key ) { return $this->params[ $key ] ?? null; }
+	class WP_REST_Request implements ArrayAccess {
+		private array $params      = [];
+		private array $headers     = [];
+		private array $route_attrs = [];
+		public function __construct( string $method = 'GET', array $params = [], array $route_attrs = [] ) {
+			$this->params      = $params;
+			$this->route_attrs = $route_attrs;
+		}
+		public function get_param( string $key ) { return $this->route_attrs[ $key ] ?? $this->params[ $key ] ?? null; }
 		public function set_param( string $key, $value ): void { $this->params[ $key ] = $value; }
-		public function get_params(): array { return $this->params; }
+		public function get_params(): array { return array_merge( $this->params, $this->route_attrs ); }
 		public function get_header( string $name ): ?string { return $this->headers[ strtolower( $name ) ] ?? null; }
 		public function set_header( string $name, string $value ): void { $this->headers[ strtolower( $name ) ] = $value; }
+		// ArrayAccess — allows $request['id'] syntax used in WP REST route callbacks.
+		public function offsetExists( $offset ): bool {
+			return isset( $this->route_attrs[ $offset ] ) || isset( $this->params[ $offset ] );
+		}
+		public function offsetGet( $offset ): mixed {
+			return $this->route_attrs[ $offset ] ?? $this->params[ $offset ] ?? null;
+		}
+		public function offsetSet( $offset, $value ): void { $this->route_attrs[ $offset ] = $value; }
+		public function offsetUnset( $offset ): void { unset( $this->route_attrs[ $offset ], $this->params[ $offset ] ); }
 	}
 }
 
@@ -805,8 +823,11 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 // Mock wpdb class for database testing
 if ( ! isset( $GLOBALS['wpdb'] ) ) {
 	$GLOBALS['wpdb'] = new class {
-		public string $prefix = 'wp_';
-		public int $insert_id = 1;
+		public string $prefix   = 'wp_';
+		public string $postmeta = 'wp_postmeta';
+		public string $posts    = 'wp_posts';
+		public string $options  = 'wp_options';
+		public int $insert_id   = 1;
 		public string $last_error = '';
 
 		public function get_charset_collate(): string {
@@ -883,6 +904,96 @@ if ( ! function_exists( 'dbDelta' ) ) {
 	function dbDelta( $queries ) {
 		$GLOBALS['_db_queries'][] = $queries;
 		return [ 'Created table wp_pearblog_logs' ];
+	}
+}
+
+// -----------------------------------------------------------------------
+// V9.0 stubs — PredictiveAnalytics, CollaborationManager, MobileAPIController
+// -----------------------------------------------------------------------
+
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+	function sanitize_textarea_field( $str ): string {
+		return is_string( $str ) ? trim( $str ) : '';
+	}
+}
+
+if ( ! function_exists( 'absint' ) ) {
+	function absint( $maybeint ): int {
+		return abs( (int) $maybeint );
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id(): int {
+		return $GLOBALS['_current_user_id'] ?? 1;
+	}
+}
+
+if ( ! function_exists( 'human_time_diff' ) ) {
+	function human_time_diff( int $from, int $to = 0 ): string {
+		$diff = abs( ( $to ?: time() ) - $from );
+		if ( $diff < 60 ) {
+			return $diff . ' seconds';
+		}
+		if ( $diff < 3600 ) {
+			return (int) ( $diff / 60 ) . ' minutes';
+		}
+		return (int) ( $diff / 3600 ) . ' hours';
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, string $more = '…' ): string {
+		$words = explode( ' ', $text );
+		if ( count( $words ) <= $num_words ) {
+			return $text;
+		}
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . $more;
+	}
+}
+
+if ( ! function_exists( 'wp_trash_post' ) ) {
+	function wp_trash_post( int $post_id ): void {
+		$GLOBALS['_trashed_posts'][] = $post_id;
+		if ( isset( $GLOBALS['_posts'][ $post_id ] ) ) {
+			$GLOBALS['_posts'][ $post_id ]->post_status = 'trash';
+		}
+	}
+}
+
+
+if ( ! function_exists( 'rest_ensure_response' ) ) {
+	function rest_ensure_response( $data ) {
+		if ( $data instanceof \WP_REST_Response ) {
+			return $data;
+		}
+		return new \WP_REST_Response( $data );
+	}
+}
+
+if ( ! function_exists( 'get_sites' ) ) {
+	function get_sites( array $args = [] ): array {
+		return $GLOBALS['_sites'] ?? [];
+	}
+}
+
+if ( ! function_exists( 'switch_to_blog' ) ) {
+	function switch_to_blog( int $blog_id ): bool {
+		$GLOBALS['_current_blog_id'] = $blog_id;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'restore_current_blog' ) ) {
+	function restore_current_blog(): bool {
+		$GLOBALS['_current_blog_id'] = 1;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'is_wp_error' ) ) {
+	function is_wp_error( $thing ): bool {
+		return $thing instanceof \WP_Error;
 	}
 }
 
