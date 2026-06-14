@@ -1122,6 +1122,93 @@ if ( ! function_exists( 'get_the_tags' ) ) {
 	}
 }
 
+if ( ! function_exists( 'wp_generate_uuid4' ) ) {
+	function wp_generate_uuid4(): string {
+		return sprintf(
+			'%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+			mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0x0fff ) | 0x4000,
+			mt_rand( 0, 0x3fff ) | 0x8000,
+			mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+		);
+	}
+}
+
+if ( ! function_exists( 'get_queried_object' ) ) {
+	function get_queried_object() {
+		return $GLOBALS['_queried_object'] ?? null;
+	}
+}
+
+if ( ! function_exists( 'get_query_var' ) ) {
+	function get_query_var( string $var, $default = '' ) {
+		return $GLOBALS['_query_vars'][ $var ] ?? $default;
+	}
+}
+
+if ( ! function_exists( 'get_the_title' ) ) {
+	function get_the_title( $post = 0 ): string {
+		return $GLOBALS['_post_titles'][ (int) $post ] ?? 'Test Title';
+	}
+}
+
+if ( ! function_exists( 'wp_next_scheduled' ) ) {
+	function wp_next_scheduled( string $hook, array $args = [] ) {
+		return $GLOBALS['_scheduled'][ $hook ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_schedule_event' ) ) {
+	function wp_schedule_event( int $timestamp, string $recurrence, string $hook, array $args = [] ): bool {
+		$GLOBALS['_scheduled'][ $hook ] = $timestamp;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_unschedule_event' ) ) {
+	function wp_unschedule_event( int $timestamp, string $hook, array $args = [] ): bool {
+		unset( $GLOBALS['_scheduled'][ $hook ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_role' ) ) {
+	function get_role( string $role ) {
+		return $GLOBALS['_roles'][ $role ] ?? null;
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( string $text, bool $remove_breaks = false ): string {
+		return strip_tags( $text );
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+	function wp_remote_retrieve_body( $response ): string {
+		return $response['body'] ?? '';
+	}
+}
+
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+	function is_user_logged_in(): bool {
+		return (bool) ( $GLOBALS['_is_user_logged_in'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'wp_get_post_categories' ) ) {
+	function wp_get_post_categories( int $post_id, array $args = [] ): array {
+		return $GLOBALS['_post_categories'][ $post_id ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
+	function get_the_post_thumbnail_url( $post = null, string $size = 'post-thumbnail' ) {
+		return $GLOBALS['_thumbnail_url'] ?? '';
+	}
+}
+
 // PSR-4 autoloader for src/ classes.
 spl_autoload_register( function ( string $class ): void {
 	$prefix   = 'PearBlogEngine\\';

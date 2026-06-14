@@ -54,6 +54,13 @@ All notable changes to PearBlog Engine are documented in this file.
 - **`ConversionFlowTrackerTest`** (11 tests) — `get_session_funnel` timestamp recording and conversion flag, `get_conversion_metrics` rate calculation, `get_funnel_dropoff` stage rates and zero-denominator edge cases.
 - **`bootstrap.php`** — added stubs: `sanitize_email`, `admin_url`, `get_admin_url`, `get_user_by`, `get_network`, `get_current_network_id`, `wpmu_create_blog`, `wp_create_nonce`, `plugins_url`, `wp_enqueue_script`, `wp_localize_script`, `is_ssl`, `is_singular`, `get_the_ID`, `get_permalink`, `get_post_field`, `current_time`; added `get_row()` to `$wpdb` mock.
 
+#### v9.0 Session 11 — Coverage for remaining V9.0 modules
+
+- **`ComplianceExporterTest`** (16 tests) — `build_report()` structure and defaults, period-days cap, CSV generation with UTF-8 BOM, `rest_export()` for JSON and CSV formats, `admin_permission()` return type.
+- **`AMPGeneratorTest`** (17 tests) — option constants, `register()` enabled/disabled paths, `add_query_var()` appends `amp`, `convert_to_amp_content()` img→amp-img conversion, script/iframe/style removal, default dimensions, `output_amphtml_link()` suppressed when not singular.
+- **`PushNotificationPublisherTest`** (15 tests) — option constants, `is_enabled()` false by default and per provider, `notify()` disabled early-return, `on_publish()` skips non-post and already-notified, `notify()` with OneSignal stores post meta.
+- **`bootstrap.php`** — added stubs: `wp_get_post_categories`, `get_the_post_thumbnail_url`, `wp_generate_uuid4`, `is_user_logged_in`, `get_role`, `wp_strip_all_tags`, `wp_remote_retrieve_body`, `wp_next_scheduled`, `wp_schedule_event`, `wp_unschedule_event`, `get_queried_object`, `get_query_var`, `get_the_title`; added `wp-admin/includes/upgrade.php` stub for `DatabaseHandler`.
+
 ### Changed
 - **`src/Core/Plugin.php`** — Registered all v9.0 modules; added `MobileAPIController` to `rest_api_init`; added `wp pearblog v9` CLI command.
 
