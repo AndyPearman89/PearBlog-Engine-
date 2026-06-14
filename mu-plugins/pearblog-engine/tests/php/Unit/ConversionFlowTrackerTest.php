@@ -14,8 +14,12 @@ use PearBlogEngine\Analytics\ConversionFlowTracker;
 
 class ConversionFlowTrackerTest extends TestCase {
 
+	/** @var mixed */
+	private $original_wpdb;
+
 	protected function setUp(): void {
 		parent::setUp();
+		$this->original_wpdb = $GLOBALS['wpdb'] ?? null;
 
 		// Override the global wpdb mock with one that supports get_row.
 		$GLOBALS['wpdb'] = new class {
@@ -338,5 +342,12 @@ class ConversionFlowTrackerTest extends TestCase {
 
 		// Only first page_view timestamp should be stored.
 		$this->assertSame( $ts1, $funnel['page_view'] );
+	}
+
+	protected function tearDown(): void {
+		parent::tearDown();
+		if ( $this->original_wpdb !== null ) {
+			$GLOBALS['wpdb'] = $this->original_wpdb;
+		}
 	}
 }

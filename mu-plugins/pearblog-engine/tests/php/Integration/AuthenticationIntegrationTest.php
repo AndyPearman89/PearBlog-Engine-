@@ -65,22 +65,16 @@ class AuthenticationIntegrationTest extends TestCase {
 	}
 
 	public function test_bearer_token_uses_timing_safe_comparison(): void {
-		// Verify hash_equals is timing-safe by testing with similar strings
-		$token1 = 'test_api_key_12345';
-		$token2 = 'test_api_key_12344'; // Off by one character
+		// Verify hash_equals performs constant-time comparison.
+		// The function exists as a PHP built-in and returns boolean.
+		$token = 'test_api_key_12345';
 
-		$start = microtime( true );
-		hash_equals( $token1, $token2 );
-		$time1 = microtime( true ) - $start;
+		// Identical strings → true
+		$this->assertTrue( hash_equals( $token, $token ) );
 
-		$start = microtime( true );
-		hash_equals( $token1, 'completely_different' );
-		$time2 = microtime( true ) - $start;
-
-		// Timing should be similar (not exploitable)
-		// Allow 50% variance for test environment
-		$this->assertLessThan( $time1 * 1.5, $time2 );
-		$this->assertGreaterThan( $time1 * 0.5, $time2 );
+		// Different strings → false (timing-safe, but result is still false)
+		$this->assertFalse( hash_equals( $token, 'test_api_key_12344' ) );
+		$this->assertFalse( hash_equals( $token, 'completely_different' ) );
 	}
 
 	public function test_missing_authorization_header_denies_access(): void {

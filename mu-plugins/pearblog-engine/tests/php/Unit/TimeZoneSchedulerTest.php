@@ -16,8 +16,12 @@ class TimeZoneSchedulerTest extends TestCase {
 
 	private TimeZoneScheduler $scheduler;
 
+	/** @var mixed */
+	private $original_wpdb;
+
 	protected function setUp(): void {
 		parent::setUp();
+		$this->original_wpdb = $GLOBALS['wpdb'] ?? null;
 		$GLOBALS['_options']  = [
 			'pearblog_tz_scheduling_enabled' => true,
 			'pearblog_target_timezone'        => 'Europe/London',
@@ -41,6 +45,9 @@ class TimeZoneSchedulerTest extends TestCase {
 	protected function tearDown(): void {
 		parent::tearDown();
 		unset( $GLOBALS['_current_user_can'] );
+		if ( $this->original_wpdb !== null ) {
+			$GLOBALS['wpdb'] = $this->original_wpdb;
+		}
 	}
 
 	// -----------------------------------------------------------------------

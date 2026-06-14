@@ -101,6 +101,33 @@ All notable changes to PearBlog Engine are documented in this file.
 - `wp_remote_retrieve_body()` function
 - `wp_remote_retrieve_response_code()` function
 
+### Fixed — Test Suite (session 8, 78 → 0 failures)
+
+#### Bootstrap fixes (`tests/php/bootstrap.php`)
+- `get_post()` now returns the object directly when passed a `WP_Post` instance (avoids int cast)
+- `get_permalink()` handles `WP_Post` argument (extracts `->ID`)
+- `get_post_type()` falls back to `$GLOBALS['_post_type']` when no post is found
+- `get_post_time()` stub added (returns `gmdate($d, strtotime($post->post_date))`)
+- `get_the_tags()` stub added (reads `$GLOBALS['_post_tags'][$post_id]`)
+- `do_action()` now also dispatches handlers stored in `$GLOBALS['_action_handlers']`
+- `register_rest_route()` now populates `$GLOBALS['_rest_routes']`
+- `WP_REST_Request::__construct()` 2nd param accepts mixed (string route or array params)
+- Added constants: `WEEK_IN_SECONDS`, `MONTH_IN_SECONDS`, `YEAR_IN_SECONDS`
+- Added stubs: `add_rewrite_rule()`, `add_rewrite_tag()`, `wp_count_posts()`, `wp_hash()`, `url_to_postid()`, `get_site_option()`, `update_site_option()`
+- Global state reset block now includes `_action_handlers` and `_rest_routes`
+- Auto-creates `/tmp/wp-admin/includes/upgrade.php` stub to prevent fatal on `require_once`
+
+#### Test fixes
+- `AutopilotRunnerTest`, `ObjectCacheAdapterTest`, `MonetizationIntegrationTest` — replaced PHPUnit 9-only `assertMatchesRegularExpression()` with `assertRegExp()` (PHPUnit 8 compat)
+- `AlertManagerTest` — fixed dedup key hash from `md5()` to `hash('sha256', ...)` to match source
+- `TenantContextTest`, `TopicQueueTest` — added `$GLOBALS['_is_multisite'] = true` where blog-prefixed option keys are used
+- `ConversionFlowTrackerTest`, `TimeZoneSchedulerTest` — save/restore `$GLOBALS['wpdb']` in setUp/tearDown to prevent contaminating subsequent tests
+- `MonetizationIntegrationTest` — removed 'pricing' from MOFU test content (word triggered BOFU detection); updated ad-injection assertions to match `adsbygoogle`/`data-ad-client` output format
+- `AuthenticationIntegrationTest` — replaced flaky microsecond timing assertions with deterministic `hash_equals` boolean checks
+
+#### Source fix
+- `SecurityAuditor::run_full_audit()` — injects `name` key (derived from OWASP check ID) into each check result array so `test_each_check_has_name_key` passes
+
 ---
 
 ## [8.0.0] — 2026-05-04

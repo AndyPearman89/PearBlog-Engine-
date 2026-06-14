@@ -155,6 +155,10 @@ if ( ! function_exists( 'do_action' ) ) {
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
+		// Support direct handler assignment pattern used in some tests.
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			( $GLOBALS['_action_handlers'][ $hook ] )( ...$args );
+		}
 	}
 }
 
@@ -335,6 +339,7 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
+		$GLOBALS['_rest_routes'][] = [ 'namespace' => $namespace, 'route' => $route, 'args' => $args ];
 		return true;
 	}
 }
@@ -604,6 +609,9 @@ if ( ! function_exists( 'get_admin_url' ) ) {
 
 if ( ! function_exists( 'get_post' ) ) {
 	function get_post( $post = null ) {
+		if ( $post instanceof WP_Post ) {
+			return $post;
+		}
 		return $GLOBALS['_posts'][ (int) $post ] ?? null;
 	}
 }
@@ -621,6 +629,9 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
+		if ( $post_id instanceof WP_Post ) {
+			$post_id = $post_id->ID;
+		}
 		return 'https://example.com/post/' . (int) $post_id . '/';
 	}
 }
@@ -720,6 +731,15 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
 	define( 'MINUTE_IN_SECONDS', 60 );
 }
+if ( ! defined( 'WEEK_IN_SECONDS' ) ) {
+	define( 'WEEK_IN_SECONDS', 604800 );
+}
+if ( ! defined( 'MONTH_IN_SECONDS' ) ) {
+	define( 'MONTH_IN_SECONDS', 2592000 );
+}
+if ( ! defined( 'YEAR_IN_SECONDS' ) ) {
+	define( 'YEAR_IN_SECONDS', 31536000 );
+}
 
 // WordPress database result types
 if ( ! defined( 'OBJECT' ) ) {
@@ -739,6 +759,7 @@ $GLOBALS['_transients']     = [];
 $GLOBALS['_posts']          = [];
 $GLOBALS['_post_list']      = [];
 $GLOBALS['_actions']        = [];
+$GLOBALS['_action_handlers'] = [];
 $GLOBALS['_filters']        = [];
 $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
@@ -813,8 +834,14 @@ if ( ! class_exists( 'WP_REST_Request' ) ) {
 		private array $params      = [];
 		private array $headers     = [];
 		private array $route_attrs = [];
-		public function __construct( string $method = 'GET', array $params = [], array $route_attrs = [] ) {
-			$this->params      = $params;
+		/**
+		 * @param string       $method         HTTP method.
+		 * @param string|array $route_or_params Route URL (string, ignored in tests) or params array (legacy).
+		 * @param array        $route_attrs     Named URL parameters.
+		 */
+		public function __construct( string $method = 'GET', $route_or_params = '', array $route_attrs = [] ) {
+			// Accept either a URL string (real WP signature) or a params array (legacy test usage).
+			$this->params      = is_array( $route_or_params ) ? $route_or_params : [];
 			$this->route_attrs = $route_attrs;
 		}
 		public function get_param( string $key ) { return $this->route_attrs[ $key ] ?? $this->params[ $key ] ?? null; }
@@ -1081,6 +1108,104 @@ if ( ! function_exists( 'wp_generate_uuid4' ) ) {
 			mt_rand( 0, 0xffff ),
 			mt_rand( 0, 0xffff )
 		);
+	}
+}
+
+// -----------------------------------------------------------------------
+// Additional WP stubs required by various source classes under test.
+// -----------------------------------------------------------------------
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $redirect, string $after = 'bottom' ): void {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $redirect, $after ];
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_tag' ) ) {
+	function add_rewrite_tag( string $tag, string $regex ): void {}
+}
+
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ): string {
+		$post_obj = get_post( $post );
+		return $post_obj ? $post_obj->post_type : ( $GLOBALS['_post_type'] ?? 'post' );
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post' ): object {
+		return (object) [
+			'publish'    => (int) ( $GLOBALS['_post_counts'][ $type ]['publish'] ?? 0 ),
+			'draft'      => (int) ( $GLOBALS['_post_counts'][ $type ]['draft'] ?? 0 ),
+			'pending'    => (int) ( $GLOBALS['_post_counts'][ $type ]['pending'] ?? 0 ),
+			'trash'      => (int) ( $GLOBALS['_post_counts'][ $type ]['trash'] ?? 0 ),
+			'private'    => (int) ( $GLOBALS['_post_counts'][ $type ]['private'] ?? 0 ),
+			'future'     => (int) ( $GLOBALS['_post_counts'][ $type ]['future'] ?? 0 ),
+			'inherit'    => (int) ( $GLOBALS['_post_counts'][ $type ]['inherit'] ?? 0 ),
+			'auto-draft' => (int) ( $GLOBALS['_post_counts'][ $type ]['auto-draft'] ?? 0 ),
+		];
+	}
+}
+
+if ( ! function_exists( 'wp_hash' ) ) {
+	function wp_hash( string $data, string $scheme = 'auth' ): string {
+		return hash_hmac( 'md5', $data, 'test-secret-key' );
+	}
+}
+
+if ( ! function_exists( 'url_to_postid' ) ) {
+	function url_to_postid( string $url ): int {
+		// Match bootstrap's get_permalink format: https://example.com/post/{id}/
+		if ( preg_match( '#/post/(\d+)/#', $url, $m ) ) {
+			return (int) $m[1];
+		}
+		// Also check posts by guid.
+		foreach ( $GLOBALS['_posts'] ?? [] as $post ) {
+			if ( isset( $post->guid ) && $post->guid === $url ) {
+				return (int) $post->ID;
+			}
+		}
+		return 0;
+	}
+}
+
+if ( ! function_exists( 'get_site_option' ) ) {
+	function get_site_option( string $option, $default = false ) {
+		return $GLOBALS['_site_options'][ $option ] ?? $default;
+	}
+}
+
+if ( ! function_exists( 'update_site_option' ) ) {
+	function update_site_option( string $option, $value ): bool {
+		$GLOBALS['_site_options'][ $option ] = $value;
+		return true;
+	}
+}
+
+// Create a stub wp-admin/includes/upgrade.php so that classes calling
+// require_once ABSPATH . 'wp-admin/includes/upgrade.php' don't fail.
+// ABSPATH is defined as '/tmp/' in this bootstrap.
+if ( ! file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
+	@mkdir( ABSPATH . 'wp-admin/includes', 0777, true );
+	file_put_contents( ABSPATH . 'wp-admin/includes/upgrade.php', "<?php\n// Stub for unit tests – dbDelta is already defined in bootstrap.php.\n" );
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $d = 'U', bool $gmt = false, $post = null, bool $translate = false ) {
+		$post_obj = get_post( $post );
+		$date_str = $post_obj ? $post_obj->post_date : gmdate( 'Y-m-d H:i:s' );
+		$ts = strtotime( $date_str );
+		if ( 'U' === $d ) {
+			return $ts;
+		}
+		return gmdate( $d, $ts );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( $post_id = 0 ) {
+		$tags = $GLOBALS['_post_tags'][ (int) $post_id ] ?? false;
+		return $tags;
 	}
 }
 

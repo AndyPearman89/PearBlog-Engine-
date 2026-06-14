@@ -76,6 +76,14 @@ class SecurityAuditor {
 		// Generate summary
 		$this->generate_summary();
 
+		// Ensure each check has a 'name' key derived from its array key
+		foreach ( $this->results['checks'] as $key => &$check ) {
+			if ( ! isset( $check['name'] ) ) {
+				$check['name'] = $key;
+			}
+		}
+		unset( $check );
+
 		return $this->results;
 	}
 
