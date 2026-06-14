@@ -14,6 +14,7 @@ Generated files:
 - favicon-256x256.png
 - favicon-512x512.png
 - apple-touch-icon.png
+- apple-touch-icon-precomposed.png
 - mstile-70x70.png
 - mstile-144x144.png
 - mstile-150x150.png

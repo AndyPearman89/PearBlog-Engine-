@@ -3,6 +3,11 @@
 Generated files:
 
 - pearblog-logo-animated.svg
+- pearblog-logo-glow.png
+- pearblog-logo-neon.png
+- pearblog-logo-3d.png
+- pearblog-logo-lottie-loop.json
+- pearblog-logo-lottie-once.json
 
 Notes:
 
