@@ -440,6 +440,7 @@ function pearblog_get_favicon($size = '32') {
         'ico' => $base_path . 'favicon.ico',
         'apple' => $base_path . 'apple-touch-icon.png',
         'safari' => $base_path . 'safari-pinned-tab.svg',
+        'mstile' => $base_path . 'mstile-150x150.png',
     );
 
     if (isset($special_types[$size])) {
@@ -505,7 +506,7 @@ function pearblog_add_favicons() {
     <link rel="mask-icon" href="<?php echo esc_url(pearblog_get_favicon('safari')); ?>" color="<?php echo esc_attr($tile_color); ?>">
     <meta name="theme-color" content="<?php echo esc_attr($tile_color); ?>">
     <meta name="msapplication-TileColor" content="<?php echo esc_attr($tile_color); ?>">
-    <meta name="msapplication-TileImage" content="<?php echo esc_url(PEARBLOG_URI . '/../../brand-assets/favicon/mstile-150x150.png'); ?>">
+    <meta name="msapplication-TileImage" content="<?php echo esc_url(pearblog_get_favicon('mstile')); ?>">
     <?php
 }
 add_action('wp_head', 'pearblog_add_favicons', 1);
@@ -552,7 +553,6 @@ function pearblog_add_social_meta_tags() {
                 $image_alt = $title;
             }
 
-            $twitter_image = $og_image;
         }
     } else {
         $title = $site_name;
