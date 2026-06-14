@@ -1,6 +1,6 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress — **v6.0**
+> Autonomous AI content production for WordPress — **v8.0**
 
 ---
 
@@ -58,11 +58,11 @@
 | Document | Language | Audience | Summary |
 |----------|----------|----------|---------|
 | [PROGRESS-VISUALIZATION.md](PROGRESS-VISUALIZATION.md) | **PL / EN** | Everyone | Bilingual progress visualization: milestones, timeline, metrics |
-| [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | EN | Everyone | Visual roadmap, milestones, timeline v6.0→v7.0 |
+| [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | EN | Everyone | Visual roadmap, milestones, timeline v8.0+ |
 | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) | EN | Dev / Ops | 26-task autonomous execution plan (Phase 1-7) |
-| [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | EN | Ops | Hour-by-hour launch day plan, T-7 timeline, rollback procedure |
+| [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | EN | Ops | Hour-by-hour launch day plan, T-7 timeline, rollback procedure (archived) |
 | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | EN | Ops | Standalone pre-launch & weekly/monthly/quarterly operations checklists |
-| [NEXT-STEPS.md](NEXT-STEPS.md) | EN | Everyone | Post-v6.0 action plan: beta sprint, v7.0 launch, v7.1/v7.2/v7.3 feature roadmap |
+| [NEXT-STEPS.md](NEXT-STEPS.md) | EN | Everyone | Post-v8.0 action plan and feature roadmap |
 
 ### Learning & Onboarding
 
@@ -90,14 +90,14 @@
 
 | Document | Summary |
 |----------|---------|
-| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin v6.0 architecture, 12-step pipeline, all modules, REST API |
+| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin v8.0 architecture, 12-step pipeline, all modules, REST API |
 | [scripts/README.md](scripts/README.md) | Python automation suite, environment variables, usage |
 
 ### Brand Assets & Visuals
 
 | File | Description |
 |------|-------------|
-| [brand-assets/screenshots/pipeline-overview.svg](brand-assets/screenshots/pipeline-overview.svg) | 12-step pipeline diagram (v6.0) with metrics, modules, REST endpoints |
+| [brand-assets/screenshots/pipeline-overview.svg](brand-assets/screenshots/pipeline-overview.svg) | 12-step pipeline diagram (v8.0) with metrics, modules, REST endpoints |
 | [brand-assets/screenshots/architecture.svg](brand-assets/screenshots/architecture.svg) | Full system architecture — all 16 modules + external integrations |
 | [brand-assets/screenshots/admin-panel.svg](brand-assets/screenshots/admin-panel.svg) | Admin panel General tab UI mockup |
 | [brand-assets/screenshots/queue-manager.svg](brand-assets/screenshots/queue-manager.svg) | Queue Manager tab mockup |
@@ -138,27 +138,38 @@
 
 ---
 
-## 🔧 Architecture Overview — v6.0
+## 🔧 Architecture Overview — v8.0
 
 ```
-PearBlog Engine v6.0
-├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin
-│   ├── src/Pipeline/               # ContentPipeline (12-step) + BackgroundProcessor (async WP-Cron queue)
-│   ├── src/AI/                     # GPT-4o-mini + DALL-E 3 + ImageAnalyzer
-│   ├── src/Content/                # 13 content classes + FewShotEngine + PersonaBuilder + CompetitiveGapEngine + SerpScraper + MultilingualManager
-│   ├── src/Analytics/              # GA4Client + AnalyticsDashboard (GA4 Data API, daily sync)
-│   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO (Schema, OG, audit)
+PearBlog Engine v8.0
+├── mu-plugins/pearblog-engine/     # Core WordPress MU-plugin (216 PHP files)
+│   ├── src/Pipeline/               # ContentPipeline (12-step) + BackgroundProcessor + ContentImportExport + PipelineAuditLog + ApprovalWorkflow + AsyncQueueManager
+│   ├── src/AI/                     # AIClient (multi-provider) + ImageGenerator/Analyzer + ContentRewriter + FactChecker + PromptOptimizer + VideoScriptBuilder + PodcastGenerator + Provider adapters (OpenAI / Anthropic / Gemini)
+│   ├── src/Content/                # 28+ content classes — PromptBuilder, PromptBuilderFactory, TravelPromptBuilder, BeskidyPromptBuilder, MultiLanguageTravelBuilder, PT24PromptBuilder, PoradnikPromptBuilder, EcommercePromptBuilder, FinancePromptBuilder, FoodPromptBuilder, HealthPromptBuilder, GlossaryBuilder, FewShotEngine, PersonaBuilder, CompetitiveGapEngine, QualityScorer, ReadabilityAnalyzer, ContentRefreshEngine, ContentScore, MultilingualManager, DuplicateDetector, LivePricingDataLayer, CTABlockCPT, FAQBlockCPT, PostMetaManager, PoradnikCostTemplateBuilder, PoradnikV3TemplateBuilder, SerpScraper
+│   ├── src/Analytics/              # GA4Client + AnalyticsDashboard + SearchIntentEngine + PredictiveEngine + CohortEngine + ContentROIEngine + ConversionFlowTracker + ConversionTracker
+│   ├── src/SEO/                    # SEOEngine + ProgrammaticSEO + SchemaManager + InternalLinker + ProgrammaticLocalSEO + TopicalAuthorityEngine + HreflangManager + XmlSitemapManager + SearchConsoleClient + KeywordDatabase + KeywordDatabaseV3
 │   ├── src/Monetization/           # AdSense + Affiliate + SaaS CTA injection
-│   ├── src/Scheduler/              # WP-Cron management (multisite-safe)
+│   ├── src/Scheduler/              # CronManager + PublishScheduler + TimeZoneScheduler (multisite-safe)
 │   ├── src/Keywords/               # KeywordCluster value object + KeywordClusterEngine (IDF-based GA4 clustering)
-│   ├── src/Cache/                  # ContentCache + ObjectCacheAdapter (wp_cache_*) + CdnManager (BunnyCDN/Cloudflare)
-│   ├── src/API/                    # REST automation endpoints + WebhookManager + PermissionManager + GraphQLController
-│   ├── src/Admin/                  # Top-level WP admin menu + DashboardWidget + OnboardingWizard + ContentCalendar + WhiteLabelManager
-│   ├── src/Monitoring/             # AlertManager + HealthController + PerformanceDashboard + Logger + SLAManager
-│   ├── src/Social/                 # SocialPublisher + EmailDigest
-│   ├── src/CLI/                    # PearBlogCommand + AutopilotRunner (26 tasks, 7 phases)
-│   ├── src/Tenant/                 # Multi-site context
-│   ├── tests/php/Unit/             # 39 unit test classes (588 tests · 1096 assertions)
+│   ├── src/Cache/                  # ContentCache + ObjectCacheAdapter (wp_cache_*) + CdnManager (BunnyCDN/Cloudflare) + QueryOptimizer
+│   ├── src/API/                    # REST automation + DashboardController + TopicsController + GraphQLController + PermissionManager + RateLimiter + PoradnikV3API + SearchSuggestAPI
+│   ├── src/Admin/                  # 20 classes — AdminPageV8Enterprise (15-tab enterprise UI) + AdminPageV7 + AdminPage + DashboardWidget + OnboardingWizardV2 + ContentCalendar + WhiteLabelManager + 13 tab controllers
+│   ├── src/Monitoring/             # AlertManager + HealthController + PerformanceDashboard + Logger + SLAManager + ErrorTracker
+│   ├── src/Social/                 # SocialPublisher + SocialCalendar + PushNotificationPublisher
+│   ├── src/CLI/                    # PearBlogCommand + AutopilotRunner (26 tasks, 7 phases) + IntegrationCommand + SEOV3Command + SecurityCommand
+│   ├── src/Tenant/                 # Multi-site context (TenantContext + SiteProfile)
+│   ├── src/LeadAI/                 # PT24 AI Lead Engine V2 — DDD architecture (Domain / Application / Infrastructure / UI)
+│   ├── src/Poradnik/               # Poradnik content engine — PoradnikEngine + AIOptimizer + ScoringEngine + DecisionEngine + DataEngine + EventTracker + WorkerManager + CSVImporter + DataScraper
+│   ├── src/Security/               # RBACManager + SecurityAuditor + ContentModerator + PIIDetector + ComplianceExporter
+│   ├── src/DecisionPlatform/       # Full Decision Platform — comparisons, rankings, calculators, expert marketplace, lead generation, intent detection, link graph
+│   ├── src/Distribution/           # AMPGenerator + RSSFeedBuilder
+│   ├── src/Email/                  # EmailDigest + NewsletterBuilder
+│   ├── src/Integration/            # PT24Bridge + ZapierManager + CTAInjector + ContentLinker + LeadAttributor + RankingSyncer
+│   ├── src/Logging/                # AdvancedLogger + DatabaseHandler + RequestContextProcessor + WordPressContextProcessor + MemoryUsageProcessor
+│   ├── src/Database/               # PT24IntegrationSchema + PoradnikSchema + PoradnikV3Schema
+│   ├── src/Webhook/                # WebhookManager
+│   ├── src/Testing/                # ABTestEngine
+│   ├── tests/php/Unit/             # 65 unit test classes (714 tests · 1317 assertions)
 │   ├── tests/php/Integration/      # ContentPipelineIntegrationTest
 │   └── assets/css/admin.css        # Admin panel styles
 │
@@ -169,7 +180,7 @@ PearBlog Engine v6.0
 │   ├── search.php                  # Search results
 │   ├── 404.php                     # Error page
 │   ├── category.php                # Category archive
-│   ├── inc/                        # 17 modules (monetization, analytics, layout, …)
+│   ├── inc/                        # 17 modules (monetization, analytics, layout, PT24, …)
 │   ├── template-parts/             # 13 reusable block templates
 │   └── assets/
 │       ├── css/                    # base, components, utilities
@@ -221,8 +232,8 @@ Topic Queue
 | Monthly cost (720 articles + images) | ~$58 |
 | Break-even traffic | ~5,000 visitors/month |
 | Pipeline execution time (avg) | ~55 seconds |
-| Unit tests | 588 tests · 1096 assertions |
-| PHPUnit test classes | 39 unit + 1 integration |
+| Unit tests | 714 tests · 1317 assertions |
+| PHPUnit test classes | 65 unit + 1 integration |
 | Automation level | 100% |
 
 ---
@@ -243,6 +254,6 @@ Topic Queue
 
 ---
 
-*PearBlog Engine v6.0 — Enterprise-ready autonomous content system*  
-*Documentation last updated: 2026-04-12*
+*PearBlog Engine v8.0 — Enterprise-ready autonomous content system*  
+*Documentation last updated: 2026-06-14*
 

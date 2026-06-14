@@ -29,9 +29,9 @@ PearBlog Engine generates, optimizes, and publishes SEO articles autonomously �
 **Pipeline (12 steps, ~55 sec, $0.08/article):**
 
 ```
-Topic Queue → PromptBuilder → GPT-4o-mini → DuplicateCheck → Draft
-  → SEOEngine → MonetizationEngine → InternalLinker → DALL-E 3
-  → DuplicateIndex → Publish → QualityScore + Alert
+Topic Queue → PromptBuilderFactory → AIClient (GPT-4o-mini) → DuplicateDetector → Draft
+  → SEOEngine → MonetizationEngine → InternalLinker → ImageGenerator (DALL-E 3)
+  → DuplicateIndex → Publish → QualityScorer + AlertManager
 ```
 
 ### 🚀 NEW: Decision Platform (Poradnik.pro)
@@ -83,34 +83,46 @@ See **[SETUP.md](SETUP.md)** for GitHub Actions setup and **[AUTONOMOUS-ACTIVATI
 
 ```
 PearBlog-Engine/
-├── mu-plugins/pearblog-engine/          # Core WordPress MU-plugin
+├── mu-plugins/pearblog-engine/          # Core WordPress MU-plugin (v8.0, 216 PHP files)
 │   ├── pearblog-engine.php              # Bootstrap (PSR-4 autoload)
 │   ├── assets/css/admin.css             # Admin panel styles
 │   └── src/
-│       ├── Pipeline/ContentPipeline.php # 8-step autonomous flow
-│       ├── AI/
-│       │   ├── AIClient.php             # GPT-4o-mini integration
-│       │   ├── ImageGenerator.php       # DALL-E 3 featured images
-│       │   └── ImageAnalyzer.php        # Media library audit & keyword suggestions
-│       ├── SEO/
-│       │   ├── SEOEngine.php            # Meta tags (Yoast/RankMath compat)
-│       │   └── ProgrammaticSEO.php      # Schema.org, Open Graph, SEO audit
-│       ├── Content/                     # 4 prompt builders + validator
+│       ├── Core/Plugin.php              # Singleton boot — registers all sub-systems
+│       ├── Pipeline/                    # 12-step autonomous pipeline (ContentPipeline, BackgroundProcessor, ContentImportExport, PipelineAuditLog, ApprovalWorkflow)
+│       ├── AI/                          # Multi-provider AI layer (OpenAI/Anthropic/Gemini, DALL-E 3, ContentRewriter, FactChecker, PromptOptimizer)
+│       ├── Content/                     # 28+ builders + ContentValidator, DuplicateDetector, QualityScorer, ReadabilityAnalyzer, ContentRefreshEngine
+│       ├── Analytics/                   # GA4Client, AnalyticsDashboard, SearchIntentEngine, PredictiveEngine, CohortEngine, ContentROIEngine
+│       ├── SEO/                         # SEOEngine, ProgrammaticSEO, SchemaManager, InternalLinker, TopicalAuthorityEngine, XmlSitemapManager, HreflangManager
 │       ├── Monetization/               # AdSense + Affiliate + SaaS CTA injection
-│       ├── Scheduler/CronManager.php   # WP-Cron + multisite
-│       ├── Admin/AdminPage.php         # WP Admin — top-level menu + tabbed UI
-│       ├── API/AutomationController.php# REST API endpoints
-│       ├── Keywords/                   # Keyword clustering
-│       └── Tenant/                     # Multi-site context
+│       ├── Scheduler/                   # CronManager + PublishScheduler (GA4-optimal timing) + TimeZoneScheduler
+│       ├── Keywords/                    # KeywordCluster + KeywordClusterEngine (IDF-based GA4 clustering)
+│       ├── Cache/                       # ContentCache + ObjectCacheAdapter + CdnManager (BunnyCDN/Cloudflare) + QueryOptimizer
+│       ├── API/                         # REST endpoints — AutomationController, DashboardController, TopicsController, GraphQLController, PermissionManager, RateLimiter
+│       ├── Admin/                       # 20 classes — AdminPageV8Enterprise (15-tab), ContentCalendar, OnboardingWizardV2, WhiteLabelManager
+│       ├── Monitoring/                  # AlertManager + HealthController + PerformanceDashboard + Logger + SLAManager + ErrorTracker
+│       ├── Social/                      # SocialPublisher + SocialCalendar + PushNotificationPublisher
+│       ├── CLI/                         # PearBlogCommand + AutopilotRunner (26 tasks, 7 phases) + IntegrationCommand + SEOV3Command + SecurityCommand
+│       ├── Tenant/                      # Multi-site context (TenantContext + SiteProfile)
+│       ├── LeadAI/                      # PT24 AI Lead Engine V2 — DDD (Domain / Application / Infrastructure / UI)
+│       ├── Poradnik/                    # Poradnik.pro content engine (PoradnikEngine, AIOptimizer, ScoringEngine, DecisionEngine)
+│       ├── Security/                    # RBACManager, SecurityAuditor, ContentModerator, PIIDetector, ComplianceExporter
+│       ├── DecisionPlatform/            # Full Decision Platform — comparisons, rankings, calculators, expert marketplace, lead gen, intent detection
+│       ├── Distribution/               # AMPGenerator + RSSFeedBuilder
+│       ├── Email/                       # EmailDigest + NewsletterBuilder
+│       ├── Integration/                 # PT24Bridge + ZapierManager + CTAInjector + ContentLinker
+│       ├── Logging/                     # AdvancedLogger + DatabaseHandler + context processors
+│       ├── Database/                    # PT24IntegrationSchema + PoradnikSchema + PoradnikV3Schema
+│       ├── Webhook/                     # WebhookManager
+│       └── Testing/                     # ABTestEngine
 │
-├── theme/pearblog-theme/               # SEO-first WordPress theme v5.1
+├── theme/pearblog-theme/               # SEO-first WordPress theme v5.2
 │   ├── index.php                       # Homepage with hero + card grid
 │   ├── single.php                      # 12-element SEO article layout
 │   ├── page.php                        # Static page template
 │   ├── search.php                      # Search results template
 │   ├── 404.php                         # Error page
 │   ├── category.php                    # Category archive
-│   ├── inc/                            # 16 modules (monetization, analytics, etc.)
+│   ├── inc/                            # 17 modules (monetization, analytics, PT24, etc.)
 │   ├── template-parts/                 # 13 reusable block templates
 │   └── assets/
 │       ├── css/                        # base, components, utilities, admin styles
@@ -123,8 +135,13 @@ PearBlog-Engine/
 │   ├── serp_analyzer.py               # Competition analysis
 │   └── run_pipeline.py                # GitHub Actions runner
 │
+├── clients/                            # API client libraries
+│   ├── js/pearblog-client.js           # ESM JavaScript API client
+│   └── python/pearblog_client.py       # Python API client
+│
+├── tests/load/                         # k6 load testing scenarios
 ├── examples/                           # Usage examples
-├── brand-assets/                       # Brand guidelines
+├── brand-assets/                       # Brand guidelines & assets
 ├── SETUP.md                            # Installation guide
 ├── BUSINESS-STRATEGY.md                # ROI & monetization strategy
 ├── MARKETING-GUIDE.md                  # SEO & traffic acquisition
@@ -201,6 +218,7 @@ Top-level **PearBlog Engine** menu in WordPress admin with tabbed sections:
 - **A/B Testing:** Automatic headline testing with daily winner detection
 - **Monetization:** Auto ad injection, affiliate priority (Booking → Airbnb), SaaS CTA
 - **Performance:** Lazy loading, Core Web Vitals, ~8 KB personalization JS
+- **PT24 integration:** Custom post type for service landing pages with city/service routing
 - **Missing templates added:** `page.php`, `search.php`, `404.php`
 - **Multisite:** Per-site branding, colours, feature toggles
 
