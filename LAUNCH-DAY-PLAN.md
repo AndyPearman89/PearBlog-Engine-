@@ -9,7 +9,7 @@
 
 ---
 
-## T-7 Days (2026-05-03) ✅ COMPLETED
+## T-7 Days (2026-05-03) ✅ COMPLETED (Historical)
 
 - [x] Complete PRE-LAUNCH-CHECKLIST.md — all items green ✅
 - [x] Deploy to staging and run full regression test ✅ (743/743 tests passing)
