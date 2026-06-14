@@ -42,9 +42,9 @@
                     src="<?php echo esc_url(pearblog_get_brand_logo('wordmark', 'png')); ?>"
                     alt="<?php echo esc_attr(get_bloginfo('name')); ?>"
                     style="display:block;max-height:36px;width:auto;"
-                    onerror="this.style.display='none';this.nextElementSibling.style.display='inline';"
+                    onerror="this.setAttribute('aria-hidden','true');this.style.display='none';this.nextElementSibling.style.display='inline';this.nextElementSibling.setAttribute('aria-hidden','false');"
                 >
-                <span style="display:none;"><?php bloginfo('name'); ?></span>
+                <span aria-hidden="true" style="display:none;"><?php bloginfo('name'); ?></span>
             </a>
         </div>
 

@@ -497,6 +497,7 @@ function pearblog_get_social_image($type = 'og') {
  */
 function pearblog_add_favicons() {
     $tile_color = '#4ADE80';
+    $mstile_image_path = PEARBLOG_DIR . '/../../brand-assets/favicon/mstile-150x150.png';
     ?>
     <!-- Favicons - ULTRA PRO -->
     <link rel="icon" type="image/x-icon" href="<?php echo esc_url(pearblog_get_favicon('ico')); ?>">
@@ -506,7 +507,9 @@ function pearblog_add_favicons() {
     <link rel="mask-icon" href="<?php echo esc_url(pearblog_get_favicon('safari')); ?>" color="<?php echo esc_attr($tile_color); ?>">
     <meta name="theme-color" content="<?php echo esc_attr($tile_color); ?>">
     <meta name="msapplication-TileColor" content="<?php echo esc_attr($tile_color); ?>">
+    <?php if (file_exists($mstile_image_path)) : ?>
     <meta name="msapplication-TileImage" content="<?php echo esc_url(pearblog_get_favicon('mstile')); ?>">
+    <?php endif; ?>
     <?php
 }
 add_action('wp_head', 'pearblog_add_favicons', 1);
