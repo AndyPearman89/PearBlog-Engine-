@@ -2,7 +2,39 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [8.0.0] — 2026-05-04
+## [9.0.0] — 2026-06-14
+
+### Added — v9.0 AI-Powered Content Intelligence
+
+#### F2 – Predictive Analytics
+- **`PredictiveAnalytics`** (`src/Analytics/PredictiveAnalytics.php`) — Traffic forecasting via single exponential smoothing, anomaly detection with configurable threshold, revenue projection, and REST endpoints `GET /pearblog/v1/analytics/forecast` and `/anomalies`.
+
+#### F3 – AI A/B Testing Suite
+- **`AIVariantGenerator`** (`src/Testing/AIVariantGenerator.php`) — Generates A/B test content variants via AI prompt composition; produces headline and body variants from a base topic.
+- **`BayesianOptimizer`** (`src/Testing/BayesianOptimizer.php`) — Beta-Binomial Bayesian evaluation with 10 000-sample Monte Carlo simulation, Thompson sampling, and Marsaglia-Tsang gamma sampler for statistically rigorous winner selection (WIN_THRESHOLD = 0.95).
+
+#### F4 – Mobile App API
+- **`MobileAPIController`** (`src/API/MobileAPIController.php`) — Mobile REST backend with endpoints for pipeline summary, topic queue paging, pause/resume control, alert retrieval, and content approve/reject actions. Bearer-token + `manage_options` dual auth.
+
+#### F6 – Content Refresh Prioritizer
+- **`ContentRefreshPrioritizer`** (`src/Content/ContentRefreshPrioritizer.php`) — Multi-factor post scoring (trend 40 pts, age 30 pts, quality 20 pts, decay 10 pts) producing a ranked refresh queue; REST endpoints `GET /pearblog/v1/refresh/queue` and `/refresh/score/{id}`.
+
+#### F7 – Smart Provider Router
+- **`SmartProviderRouter`** (`src/AI/SmartProviderRouter.php`) — Strategy-based AI provider routing (cost_optimised / quality_first / round_robin / failover) with circuit-breaker (threshold = 3, cool-down 300 s) and per-provider stats tracking. REST endpoint `GET /pearblog/v1/ai/router/status`.
+
+#### F8 – Orphan Page Detector
+- **`OrphanPageDetector`** (`src/SEO/OrphanPageDetector.php`) — Internal-link graph scanner that identifies posts with zero inbound links; `apply_fix` action via WordPress filter for automated internal-link injection; REST endpoints `GET /pearblog/v1/seo/orphans` and `POST /pearblog/v1/seo/orphans/{id}/fix`.
+
+#### F9 – Collaboration Manager
+- **`CollaborationManager`** (`src/Content/CollaborationManager.php`) — Editorial review workflow (pending → in_review → approved / changes_requested / rejected) with inline comment threads, history log, and REST endpoints for status, assignment, review submission, and comment retrieval.
+
+#### CLI (`wp pearblog v9`)
+- **`V9Command`** (`src/CLI/V9Command.php`) — WP-CLI sub-commands: `analytics forecast|anomalies|refresh`, `ab generate|evaluate`, `router status|strategy`, `orphans scan|list|fix`, `refresh-score`, `refresh-rescore`, `collab status|assign|review`.
+
+### Changed
+- **`src/Core/Plugin.php`** — Registered all v9.0 modules; added `MobileAPIController` to `rest_api_init`; added `wp pearblog v9` CLI command.
+
+
 
 ### Added — v8.0 Enterprise Admin Complete
 

@@ -886,6 +886,35 @@ if ( ! function_exists( 'dbDelta' ) ) {
 	}
 }
 
+// ---------------------------------------------------------------------------
+// v9.0 additional stubs
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'url_to_postid' ) ) {
+	function url_to_postid( string $url ): int {
+		return 0; // no resolution in unit tests
+	}
+}
+
+if ( ! function_exists( 'remove_all_filters' ) ) {
+	function remove_all_filters( string $hook, $priority = false ): bool {
+		unset( $GLOBALS['_filters'][ $hook ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+	function sanitize_textarea_field( string $str ): string {
+		return sanitize_text_field( $str );
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id(): int {
+		return (int) ( $GLOBALS['_current_user_id'] ?? 0 );
+	}
+}
+
 // PSR-4 autoloader for src/ classes.
 spl_autoload_register( function ( string $class ): void {
 	$prefix   = 'PearBlogEngine\\';
