@@ -3,7 +3,9 @@
 > **Launch Date:** 2026-05-10 ✅ CONFIRMED
 > **Launch Time:** 10:00 UTC
 > **Owner:** @AndyPearman89
-> **Status:** v8.0.0 Released (2026-05-04), T-5 Days to Public Launch
+> **Status:** Archive mode (updated 2026-06-14) — launch window has passed
+
+> ⚠️ **Note (2026-06-14):** This file is retained as a historical launch checklist. Date-specific timeline sections below are now outdated unless explicitly re-used for a future launch.
 
 ---
 
@@ -22,7 +24,7 @@
 
 ---
 
-## T-3 Days (2026-05-07)
+## T-3 Days (2026-05-07) ⚠️ OUTDATED (Historical)
 
 - [x] Create git tag `v8.0.0` and GitHub Release draft ✅ (v8.0.0 released 2026-05-04)
 - [x] Package plugin ZIP (`pearblog-engine-v8.0.0.zip`) ✅ (556KB, created 2026-05-04)
@@ -35,7 +37,7 @@
 
 ---
 
-## T-1 Day (2026-05-09)
+## T-1 Day (2026-05-09) ⚠️ OUTDATED (Historical)
 
 - [ ] Final code freeze — no merges to main
 - [ ] Deploy release candidate to staging
@@ -48,7 +50,7 @@
 
 ---
 
-## Launch Day (2026-05-10)
+## Launch Day (2026-05-10) ⚠️ OUTDATED (Historical)
 
 ### 08:00–09:00 UTC — Pre-Launch
 - [ ] Deploy v8.0.0 to production
@@ -123,7 +125,7 @@ If a critical issue is discovered after launch:
 
 ---
 
-## Success Metrics (Day 1)
+## Success Metrics (Day 1) ⚠️ OUTDATED (Historical Targets)
 
 | Metric | Target |
 |--------|--------|
@@ -137,7 +139,7 @@ If a critical issue is discovered after launch:
 
 ---
 
-## Post-Launch (Days 2–7)
+## Post-Launch (Days 2–7) ⚠️ OUTDATED (Historical)
 
 - [ ] Publish "How we built PearBlog Engine" blog post
 - [ ] Respond to all remaining GitHub Issues
