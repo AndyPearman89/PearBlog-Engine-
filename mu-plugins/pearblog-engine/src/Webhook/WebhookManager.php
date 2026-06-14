@@ -177,12 +177,19 @@ class WebhookManager {
 	}
 
 	public function api_create( \WP_REST_Request $req ): \WP_REST_Response {
+		$url = esc_url_raw( $req->get_param( 'url' ) );
+
+		$validation_error = $this->validate_webhook_url( $url );
+		if ( null !== $validation_error ) {
+			return new \WP_REST_Response( [ 'code' => 'invalid_webhook_url', 'message' => $validation_error ], 400 );
+		}
+
 		$hooks  = $this->load_hooks();
 		$new_id = substr( md5( uniqid( '', true ) ), 0, 8 );
 
 		$hooks[] = [
 			'id'     => $new_id,
-			'url'    => esc_url_raw( $req->get_param( 'url' ) ),
+			'url'    => $url,
 			'events' => array_map( 'sanitize_text_field', (array) $req->get_param( 'events' ) ),
 			'secret' => sanitize_text_field( $req->get_param( 'secret' ) ),
 		];
@@ -200,6 +207,53 @@ class WebhookManager {
 		) );
 		$this->save_hooks( $hooks );
 		return new \WP_REST_Response( [ 'success' => true ], 200 );
+	}
+
+	// -----------------------------------------------------------------------
+	// SSRF protection
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Validate a webhook URL against SSRF risks.
+	 *
+	 * Rejects URLs that:
+	 *  - Use a non-HTTP/HTTPS scheme.
+	 *  - Resolve to loopback, link-local, private, or reserved IP ranges.
+	 *
+	 * @param string $url Sanitized webhook URL.
+	 * @return string|null Error message on failure, null when the URL is safe.
+	 */
+	private function validate_webhook_url( string $url ): ?string {
+		if ( '' === $url ) {
+			return 'Webhook URL is required.';
+		}
+
+		$parsed = wp_parse_url( $url );
+		$scheme = strtolower( $parsed['scheme'] ?? '' );
+
+		if ( ! in_array( $scheme, [ 'http', 'https' ], true ) ) {
+			return 'Webhook URL must use http or https.';
+		}
+
+		$host = $parsed['host'] ?? '';
+		if ( '' === $host ) {
+			return 'Webhook URL is missing a host.';
+		}
+
+		// Resolve hostname to its IP address (returns false on failure).
+		$ip = gethostbyname( $host );
+
+		if ( false === filter_var( $ip, FILTER_VALIDATE_IP ) ) {
+			return 'Webhook URL host could not be resolved.';
+		}
+
+		// Block loopback, private, link-local, and reserved ranges.
+		$blocked_flags = FILTER_FLAG_NO_PRIV_RANGE | FILTER_FLAG_NO_RES_RANGE;
+		if ( false === filter_var( $ip, FILTER_VALIDATE_IP, $blocked_flags ) ) {
+			return 'Webhook URL must not point to a private or reserved IP address.';
+		}
+
+		return null;
 	}
 
 	// -----------------------------------------------------------------------
