@@ -2,44 +2,39 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  --primary: #4f46e5;
-  --secondary: #7c3aed;
-  --success: #10b981;
-  --dark: #0f172a;
-  --background: #f8fafc;
-  --border: #e2e8f0;
+@layer base {
+  :root {
+    --primary: 79 70 229;          /* #4F46E5 */
+    --secondary: 124 58 237;       /* #7C3AED */
+    --success: 16 185 129;         /* #10B981 */
+    --dark: 15 23 42;              /* #0F172A */
+    --background: 248 250 252;     /* #F8FAFC */
+    --border: 226 232 240;         /* #E2E8F0 */
+    --radius: 20px;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply m-0 bg-background p-0 font-sans text-dark antialiased;
+  }
+
+  /* Focus ring — WCAG AA visible keyboard indicator */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--background);
-  color: var(--dark);
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-}
-
-.text-primary {
-  color: var(--primary);
-}
-
-.bg-primary {
-  background-color: var(--primary);
-}
-
-.bg-background {
-  background-color: var(--background);
-}
-
-.border-border {
-  border-color: var(--border);
-}
-
-.bg-success {
-  background-color: var(--success);
+@layer utilities {
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
 }
