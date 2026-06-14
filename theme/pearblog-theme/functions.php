@@ -430,7 +430,7 @@ function pearblog_get_brand_logo($type = 'primary', $format = 'svg') {
 /**
  * Get favicon URL
  *
- * @param string $size Favicon size: 16, 32, 48, 64, 96, 128, 256, 512, or special types
+ * @param string $size Favicon size: 16, 32, 48, 64, 96, 128, 256, 512, or special types (ico, apple, safari, mstile)
  * @return string Favicon URL
  */
 function pearblog_get_favicon($size = '32') {

@@ -42,7 +42,9 @@
                     src="<?php echo esc_url(pearblog_get_brand_logo('wordmark', 'png')); ?>"
                     alt="<?php echo esc_attr(get_bloginfo('name')); ?>"
                     style="display:block;max-height:36px;width:auto;"
+                    onerror="this.style.display='none';this.nextElementSibling.style.display='inline';"
                 >
+                <span style="display:none;"><?php bloginfo('name'); ?></span>
             </a>
         </div>
 
