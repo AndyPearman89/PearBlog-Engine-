@@ -2,6 +2,64 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [9.0.0] — 2026-06-14
+
+### Added — v9.0 Scale, Intelligence & Ecosystem Expansion
+
+#### F1: GraphQL API Gateway
+- **`GraphQLController`** (`src/API/GraphQLController.php`) — Standalone REST GraphQL endpoint with WPGraphQL extension path; supports `queue`, `stats`, `topPosts`, `health` queries; bearer-token + capability auth; rate limiting via `RateLimiter`
+
+#### F2: Advanced Analytics Dashboard
+- **`PredictiveAnalytics`** (`src/Analytics/PredictiveAnalytics.php`) — Content performance forecasting, anomaly detection, trend analysis, revenue projection, and optimisation recommendations
+- **`CohortEngine`** (`src/Analytics/CohortEngine.php`) — Cohort & funnel analytics (Visit → Register → Lead → Conversion) with per-source breakdown and weekly snapshots
+- **`ContentROIEngine`** (`src/Analytics/ContentROIEngine.php`) — Unified ROI dashboard combining GA4 traffic, AI generation cost, and revenue data; REST endpoints `/pearblog/v1/roi` and `/pearblog/v1/roi/{post_id}`
+
+#### F3: Smart A/B Testing Engine
+- **`AIVariantGenerator`** (`src/Testing/AIVariantGenerator.php`) — Headline, CTA, meta description, and intro-paragraph variant generation with template fallback and AI-backed strategy
+- **`BayesianOptimizer`** (`src/Testing/BayesianOptimizer.php`) — Thompson Sampling multi-armed bandit with Monte-Carlo win probability calculation, impression/conversion tracking, and winner detection
+
+#### F4: Mobile Monitoring App — Backend
+- **`MobileAPIController`** (`src/API/MobileAPIController.php`) — REST backend for iOS/Android app; dashboard, queue, content approval/rejection, alerts, and multi-site endpoints under `/pearblog/v1/mobile/`
+
+#### F5: White-Label Platform
+- **`TenantContext`** / **`TenantIsolator`** / **`SiteProfile`** (`src/Tenant/`) — Multi-tenant site isolation and per-tenant AES-256-CBC option encryption with site-specific HKDF key derivation
+- **`BillingEngine`** (`src/Tenant/BillingEngine.php`) — AI token usage metering, configurable monthly quota, Stripe Billing metered-usage integration, 12-month history ring buffer
+- **`TenantOnboardingController`** (`src/Tenant/TenantOnboardingController.php`) — Agency onboarding workflow and REST endpoints
+
+#### F6: Smart Content Refresh Automation
+- **`ContentRefreshEngine`** (`src/Content/ContentRefreshEngine.php`) — Staleness detection, performance-based refresh prioritisation, AI-powered update scheduling, batch processing, manual override options
+
+#### F7: Multi-Provider AI Orchestration
+- **`SmartProviderRouter`** (`src/AI/SmartProviderRouter.php`) — Content-type-aware routing, Thompson-Sampling-inspired provider scoring, automatic failover, cost estimation, daily budget tracking, and automatic sidelining of low-success-rate providers
+
+#### F8: Advanced SEO Automation Suite
+- **`OrphanPageDetector`** (`src/SEO/OrphanPageDetector.php`) — Full published-content scan, internal-link graph analysis, inbound-link counting, cache management, keyword-similarity link suggestions, reviewed-post exclusion
+
+#### F9: Content Collaboration Platform
+- **`CollaborationManager`** (`src/Content/CollaborationManager.php`) — Multi-stage review workflows, inline comments, editorial assignment, version snapshots, and team workload management
+
+#### WP-CLI — `wp pearblog v9`
+- `forecast`, `revenue-forecast`, `anomalies`, `optimize` — PredictiveAnalytics commands
+- `collab assign/request-review/approve/reject/pending/workload/snapshot/history` — CollaborationManager commands
+- `mobile dashboard/queue` — MobileAPIController diagnostic commands
+- `ab generate/all/summary` — A/B testing variant commands
+- `router status/stats/reset-stats` — SmartProviderRouter commands
+- `orphans scan/detail/suggest/mark-reviewed` — OrphanPageDetector commands
+
+#### Security
+- **`PIIDetector`** (`src/Security/PIIDetector.php`) — Scans AI-generated content for PII (email, PESEL, NIP, phone, credit card, IBAN, IPv4, passport) before publication; redaction and post-meta persistence
+- **`SecurityAuditor`** (`src/Security/SecurityAuditor.php`) — Automated OWASP Top 10 2021 scanner with risk scoring and JSON export
+
+#### Tests — v9.0 Session 5 (+6 test classes, ~95 assertions)
+- **`CohortEngineTest`** — record_event, compute_snapshot funnel rates, refresh_snapshot
+- **`ContentROIEngineTest`** — compute_article_roi keys/ROI calc, build_snapshot aggregation, refresh/get_snapshot caching
+- **`BillingEngineTest`** — add_usage accumulation, get_usage_percentage, reset_billing_cycle history ring buffer (12-month cap)
+- **`TenantIsolatorTest`** — AES-256-CBC encrypt/decrypt round-trip, per-site key isolation, sensitive options list
+- **`PIIDetectorTest`** — email/PESEL/phone/CC/IBAN/IPv4/passport detection, allowlist, HTML stripping, redaction, scan_and_persist
+- **`SecurityAuditorTest`** — run_full_audit structure (10 OWASP checks), summary counts, risk score range, export_json
+
+---
+
 ## [8.0.0] — 2026-05-04
 
 ### Added — v8.0 Enterprise Admin Complete
