@@ -500,35 +500,35 @@ https://github.com/AndyPearman89/PearBlog-Engine-/issues
 ## ✅ CHECKLIST WDROŻENIA
 
 ### Pre-Deployment
-- [ ] Domena zakupiona i skonfigurowana
-- [ ] Serwer gotowy (Ubuntu/Debian)
-- [ ] Root/sudo access
-- [ ] OpenAI API Key ready
+- [x] Domena zakupiona i skonfigurowana
+- [x] Serwer gotowy (Ubuntu/Debian)
+- [x] Root/sudo access
+- [x] OpenAI API Key ready
 
 ### Deployment
-- [ ] ./scripts/deploy-pt24-pro.sh
-- [ ] ./scripts/deploy-pt24-local-services.sh
-- [ ] API key skonfigurowany
-- [ ] Test: wygenerowano 1 stronę
-- [ ] Test: bulk 10 stron
+- [x] ./scripts/deploy-pt24-pro.sh
+- [x] ./scripts/deploy-pt24-local-services.sh
+- [x] API key skonfigurowany
+- [x] Test: wygenerowano 1 stronę
+- [x] Test: bulk 10 stron
 
 ### Post-Deployment
-- [ ] Rewrite rules działają
-- [ ] URL /mechanik/warszawa/ działa
-- [ ] Admin panel accessible
-- [ ] SSL certificate active
+- [x] Rewrite rules działają
+- [x] URL /mechanik/warszawa/ działa
+- [x] Admin panel accessible
+- [x] SSL certificate active
 
 ### Content
-- [ ] 50 stron lokalnych
-- [ ] 5 profili firm (demo)
-- [ ] Strona główna
-- [ ] FAQ, kontakt, cennik
+- [x] 50 stron lokalnych
+- [x] 5 profili firm (demo)
+- [x] Strona główna
+- [x] FAQ, kontakt, cennik
 
 ### Production
-- [ ] Google Analytics
-- [ ] Google Search Console
-- [ ] Backup system
-- [ ] Monitoring (UptimeRobot)
+- [x] Google Analytics
+- [x] Google Search Console
+- [x] Backup system
+- [x] Monitoring (UptimeRobot)
 
 ---
 

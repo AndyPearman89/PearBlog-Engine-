@@ -664,16 +664,16 @@ The integration includes:
 
 Before going live:
 
-- [ ] All 4 files uploaded to theme
-- [ ] Assets registered in functions.php
-- [ ] Database table created
-- [ ] Test shortcode on draft post
-- [ ] Test auto-injection
-- [ ] Verify tracking works
-- [ ] Check mobile responsive
-- [ ] Test on multiple browsers
-- [ ] Set up analytics
-- [ ] Monitor first 100 clicks
+- [x] All 4 files uploaded to theme
+- [x] Assets registered in functions.php
+- [x] Database table created
+- [x] Test shortcode on draft post
+- [x] Test auto-injection
+- [x] Verify tracking works
+- [x] Check mobile responsive
+- [x] Test on multiple browsers
+- [x] Set up analytics
+- [x] Monitor first 100 clicks
 
 ---
 

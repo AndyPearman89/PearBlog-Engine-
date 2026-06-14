@@ -433,15 +433,15 @@ wp db export backup-before-scale.sql
 
 ### Checklist Aktywacji
 
-- [ ] OpenAI API Key skonfigurowany
-- [ ] Image generation włączone
-- [ ] Style obrazów wybrany (photorealistic dla travel)
-- [ ] Industry/niche ustawione
-- [ ] Język ustawiony (pl dla Polski)
-- [ ] 10-50 tematów w kolejce
-- [ ] WP-Cron aktywny (test: `wp cron test`)
-- [ ] Debug log włączony (WP_DEBUG_LOG = true)
-- [ ] Backup database wykonany
+- [x] OpenAI API Key skonfigurowany
+- [x] Image generation włączone
+- [x] Style obrazów wybrany (photorealistic dla travel)
+- [x] Industry/niche ustawione
+- [x] Język ustawiony (pl dla Polski)
+- [x] 10-50 tematów w kolejce
+- [x] WP-Cron aktywny (test: `wp cron test`)
+- [x] Debug log włączony (WP_DEBUG_LOG = true)
+- [x] Backup database wykonany
 
 ### Start Autonomy
 

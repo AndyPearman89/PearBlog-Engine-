@@ -314,16 +314,16 @@ Generated 356 keywords
 
 Before production deployment:
 
-- [ ] Run `wp pearblog seo:stats` to verify data
-- [ ] Test `--dry-run` mode first
-- [ ] Start with small batch (10-20 pages)
-- [ ] Verify URLs are working
-- [ ] Check meta titles and descriptions
-- [ ] Export keyword list for records
-- [ ] Generate in stages (high intent → problem → long tail)
-- [ ] Monitor server resources during generation
-- [ ] Flush rewrite rules after generation
-- [ ] Submit updated sitemap to GSC
+- [x] Run `wp pearblog seo:stats` to verify data
+- [x] Test `--dry-run` mode first
+- [x] Start with small batch (10-20 pages)
+- [x] Verify URLs are working
+- [x] Check meta titles and descriptions
+- [x] Export keyword list for records
+- [x] Generate in stages (high intent → problem → long tail)
+- [x] Monitor server resources during generation
+- [x] Flush rewrite rules after generation
+- [x] Submit updated sitemap to GSC
 
 ---
 

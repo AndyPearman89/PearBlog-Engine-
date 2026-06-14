@@ -803,39 +803,39 @@ done
 
 ### Phase 1: Setup (Tydzień 1)
 
-- [ ] Zainstaluj WordPress
-- [ ] Skonfiguruj permalinki
-- [ ] Dodaj Custom Post Types
-- [ ] Dodaj Custom Taxonomies
-- [ ] Dodaj Rewrite Rules
-- [ ] Flush rewrites
-- [ ] Przetestuj URL routing
+- [x] Zainstaluj WordPress
+- [x] Skonfiguruj permalinki
+- [x] Dodaj Custom Post Types
+- [x] Dodaj Custom Taxonomies
+- [x] Dodaj Rewrite Rules
+- [x] Flush rewrites
+- [x] Przetestuj URL routing
 
 ### Phase 2: Templates (Tydzień 2)
 
-- [ ] Stwórz pt24-category.php
-- [ ] Stwórz pt24-local.php
-- [ ] Stwórz pt24-service.php
-- [ ] Stwórz pt24-combined.php
-- [ ] Stwórz single-pt24_business.php
-- [ ] Dodaj template parts
+- [x] Stwórz pt24-category.php
+- [x] Stwórz pt24-local.php
+- [x] Stwórz pt24-service.php
+- [x] Stwórz pt24-combined.php
+- [x] Stwórz single-pt24_business.php
+- [x] Dodaj template parts
 
 ### Phase 3: Automation (Tydzień 3)
 
-- [ ] Dodaj WP-CLI commands
-- [ ] Przygotuj CSV z miastami
-- [ ] Stwórz content templates
-- [ ] Zintegruj ChatGPT API (opcjonalnie)
-- [ ] Wygeneruj pierwsze 20 stron
+- [x] Dodaj WP-CLI commands
+- [x] Przygotuj CSV z miastami
+- [x] Stwórz content templates
+- [x] Zintegruj ChatGPT API (opcjonalnie)
+- [x] Wygeneruj pierwsze 20 stron
 
 ### Phase 4: Testing (Tydzień 4)
 
-- [ ] Przetestuj wszystkie URL patterns
-- [ ] Sprawdź SEO (title, description, H1)
-- [ ] Przetestuj responsive
-- [ ] Sprawdź speed (GTmetrix)
-- [ ] Przetestuj formularze
-- [ ] Deploy na produkcję
+- [x] Przetestuj wszystkie URL patterns
+- [x] Sprawdź SEO (title, description, H1)
+- [x] Przetestuj responsive
+- [x] Sprawdź speed (GTmetrix)
+- [x] Przetestuj formularze
+- [x] Deploy na produkcję
 
 ---
 

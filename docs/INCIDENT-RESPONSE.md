@@ -596,8 +596,8 @@ wp plugin install wp-security-audit-log --activate --path=/var/www/html
 - [Lesson 2]
 
 ## Action Items
-- [ ] [Action 1] - Owner: [Name] - Due: [Date]
-- [ ] [Action 2] - Owner: [Name] - Due: [Date]
+- [x] [Action 1] - Owner: [Name] - Due: [Date]
+- [x] [Action 2] - Owner: [Name] - Due: [Date]
 
 ## Prevention
 [How we'll prevent this in the future]

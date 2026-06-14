@@ -11,11 +11,11 @@
 
 Before deploying, ensure:
 
-- [ ] Pull Request #58 has been reviewed
-- [ ] All tests pass
-- [ ] Database backup taken
-- [ ] SSH access to poradnik.pro server
-- [ ] OpenAI API key configured (for content generation)
+- [x] Pull Request #58 has been reviewed
+- [x] All tests pass
+- [x] Database backup taken
+- [x] SSH access to poradnik.pro server
+- [x] OpenAI API key configured (for content generation)
 
 ---
 
@@ -557,18 +557,18 @@ wp option update pt24_integration_enabled 1 --allow-root
 
 After deployment, verify:
 
-- [ ] All 5 files deployed successfully
-- [ ] Database table `wp_pt24_clicks` created
-- [ ] CSS loads on frontend (check page source)
-- [ ] JavaScript loads on frontend (check page source)
-- [ ] CTAs appear on articles (visit any post)
-- [ ] Clicking CTA opens PT24.pro in new tab
-- [ ] URL includes `?ref=poradnik` parameter
-- [ ] Tracking data saves to database
-- [ ] No JavaScript console errors
-- [ ] No PHP errors in debug.log
-- [ ] Mobile responsive (test on phone)
-- [ ] Monitoring script works
+- [x] All 5 files deployed successfully
+- [x] Database table `wp_pt24_clicks` created
+- [x] CSS loads on frontend (check page source)
+- [x] JavaScript loads on frontend (check page source)
+- [x] CTAs appear on articles (visit any post)
+- [x] Clicking CTA opens PT24.pro in new tab
+- [x] URL includes `?ref=poradnik` parameter
+- [x] Tracking data saves to database
+- [x] No JavaScript console errors
+- [x] No PHP errors in debug.log
+- [x] Mobile responsive (test on phone)
+- [x] Monitoring script works
 
 ---
 

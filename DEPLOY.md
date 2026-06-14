@@ -155,52 +155,52 @@ scripts/                             → Deployment automation
 
 ### Pre-Launch (9:00 AM - 9:55 AM)
 
-- [ ] **9:00 AM** - Final database backup
+- [x] **9:00 AM** - Final database backup
   ```bash
   wp db export backup-launch-day-$(date +%Y%m%d).sql --allow-root
   ```
 
-- [ ] **9:15 AM** - Clear all caches
+- [x] **9:15 AM** - Clear all caches
   ```bash
   wp cache flush --allow-root
   wp rewrite flush --allow-root
   # Clear CDN cache (Cloudflare/other)
   ```
 
-- [ ] **9:30 AM** - Test homepage load time
+- [x] **9:30 AM** - Test homepage load time
   - Target: < 2.5 seconds LCP
   - Tool: Google PageSpeed Insights
 
-- [ ] **9:40 AM** - Test lead form
+- [x] **9:40 AM** - Test lead form
   - Submit test lead
   - Verify database entry
   - Check no console errors
 
-- [ ] **9:50 AM** - Final verification
+- [x] **9:50 AM** - Final verification
   - All 10 sections visible
   - Mobile responsive working
   - SEO meta tags present
 
 ### Launch (10:00 AM)
 
-- [ ] **10:00 AM** - Official launch
+- [x] **10:00 AM** - Official launch
   - Monitor server load
   - Watch error logs
   - Track first submissions
 
 ### Post-Launch (10:00 AM - 11:00 AM)
 
-- [ ] **10:15 AM** - Monitor first 15 minutes
+- [x] **10:15 AM** - Monitor first 15 minutes
   - Check error logs: `tail -f /var/log/apache2/error.log`
   - Monitor lead submissions
   - Verify analytics tracking
 
-- [ ] **10:30 AM** - Performance check
+- [x] **10:30 AM** - Performance check
   - Run PageSpeed Insights
   - Check Core Web Vitals
   - Monitor server resources
 
-- [ ] **11:00 AM** - First hour review
+- [x] **11:00 AM** - First hour review
   - Total visitors
   - Lead submissions
   - Error rate

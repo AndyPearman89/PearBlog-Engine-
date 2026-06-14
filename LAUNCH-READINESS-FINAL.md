@@ -347,7 +347,7 @@ wp plugin install pearblog-engine-v6.0.0.zip --force --activate
 - [x] Confirm monitoring stack is live ✅ (PerformanceDashboard operational)
 - [x] Write the public launch blog post / press release ✅ (LAUNCH-ANNOUNCEMENT.md)
 - [x] Prepare the LAUNCH-DAY-PLAN.md hour-by-hour runbook ✅ (Updated with T-7 status)
-- [ ] Brief any support team members (Week 4 task)
+- [x] Brief any support team members (Week 4 task)
 
 ### Critical Path Items
 

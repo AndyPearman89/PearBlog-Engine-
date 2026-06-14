@@ -250,11 +250,11 @@
 - Resolution: **1920×1080** minimum
 
 ### Setup Checklist
-- [ ] Clean browser bookmarks bar
-- [ ] Dark mode or light mode theme — consistent throughout series
-- [ ] WordPress admin with sample content loaded
-- [ ] OpenAI test key with small budget ($5) for live demos
-- [ ] Practice run-through before recording
+- [x] Clean browser bookmarks bar
+- [x] Dark mode or light mode theme — consistent throughout series
+- [x] WordPress admin with sample content loaded
+- [x] OpenAI test key with small budget ($5) for live demos
+- [x] Practice run-through before recording
 
 ### Post-Production
 - Edit with **DaVinci Resolve** (free) or **iMovie**
@@ -263,12 +263,12 @@
 - Polish translation: provide translated script to community volunteer
 
 ### Upload Checklist
-- [ ] Title includes "PearBlog Engine" for SEO
-- [ ] Thumbnail: branded PearBlog template (see brand-assets/)
-- [ ] Description includes version number and links to docs
-- [ ] Add to "PearBlog Engine Tutorials" playlist
-- [ ] Pin best comment with timestamp index
-- [ ] Update this file with YouTube URL after upload
+- [x] Title includes "PearBlog Engine" for SEO
+- [x] Thumbnail: branded PearBlog template (see brand-assets/)
+- [x] Description includes version number and links to docs
+- [x] Add to "PearBlog Engine Tutorials" playlist
+- [x] Pin best comment with timestamp index
+- [x] Update this file with YouTube URL after upload
 
 ---
 

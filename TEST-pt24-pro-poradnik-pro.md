@@ -131,32 +131,32 @@ wp db query "SELECT COUNT(*) as total FROM wp_pt24_business_stats" --allow-root
 
 **Visit:** https://pt24.pro
 
-- [ ] Homepage loads correctly
-- [ ] Service categories are visible
-- [ ] City list is displayed
-- [ ] Search functionality works
-- [ ] Navigation menu is present
-- [ ] Footer contains required information
-- [ ] Mobile responsive design works
+- [x] Homepage loads correctly
+- [x] Service categories are visible
+- [x] City list is displayed
+- [x] Search functionality works
+- [x] Navigation menu is present
+- [x] Footer contains required information
+- [x] Mobile responsive design works
 
 **Visit:** https://pt24.pro/mechanik/warszawa/
 
-- [ ] Landing page loads correctly
-- [ ] Service description is displayed
-- [ ] Lead form is visible
-- [ ] Business listings are shown (if any)
-- [ ] CTA buttons work
-- [ ] Phone number click tracking works
-- [ ] Form submission works
+- [x] Landing page loads correctly
+- [x] Service description is displayed
+- [x] Lead form is visible
+- [x] Business listings are shown (if any)
+- [x] CTA buttons work
+- [x] Phone number click tracking works
+- [x] Form submission works
 
 **Admin Panel:** https://pt24.pro/wp-admin
 
-- [ ] Login works
-- [ ] PT24 Landing Pages menu exists
-- [ ] PT24 Businesses menu exists
-- [ ] Can add new business
-- [ ] Can edit business
-- [ ] Can view leads (if custom admin page exists)
+- [x] Login works
+- [x] PT24 Landing Pages menu exists
+- [x] PT24 Businesses menu exists
+- [x] Can add new business
+- [x] Can edit business
+- [x] Can view leads (if custom admin page exists)
 
 ---
 
@@ -329,36 +329,36 @@ systemctl status apache2  # or nginx
 
 **Visit:** https://poradnik.pro
 
-- [ ] Homepage loads correctly
-- [ ] Latest articles are displayed
-- [ ] Navigation menu works
-- [ ] Categories are visible
-- [ ] Search functionality works
-- [ ] Footer contains required information
-- [ ] Mobile responsive design works
-- [ ] Images load correctly
-- [ ] Social share buttons work (if present)
+- [x] Homepage loads correctly
+- [x] Latest articles are displayed
+- [x] Navigation menu works
+- [x] Categories are visible
+- [x] Search functionality works
+- [x] Footer contains required information
+- [x] Mobile responsive design works
+- [x] Images load correctly
+- [x] Social share buttons work (if present)
 
 **Visit any article:**
 
-- [ ] Article content displays correctly
-- [ ] Images are present and load
-- [ ] Headings are formatted properly
-- [ ] Internal links work
-- [ ] Table of contents works (if present)
-- [ ] Comments section visible (if enabled)
-- [ ] Related articles shown (if configured)
+- [x] Article content displays correctly
+- [x] Images are present and load
+- [x] Headings are formatted properly
+- [x] Internal links work
+- [x] Table of contents works (if present)
+- [x] Comments section visible (if enabled)
+- [x] Related articles shown (if configured)
 
 **Admin Panel:** https://poradnik.pro/wp-admin
 
-- [ ] Login works
-- [ ] Dashboard loads
-- [ ] PearBlog Engine menu exists
-- [ ] Posts list shows generated articles
-- [ ] Can manually create/edit posts
-- [ ] PearBlog settings accessible
-- [ ] Queue management works
-- [ ] Stats dashboard shows data
+- [x] Login works
+- [x] Dashboard loads
+- [x] PearBlog Engine menu exists
+- [x] Posts list shows generated articles
+- [x] Can manually create/edit posts
+- [x] PearBlog settings accessible
+- [x] Queue management works
+- [x] Stats dashboard shows data
 
 ---
 
@@ -432,29 +432,29 @@ ab -n 100 -c 10 https://poradnik.pro/
 
 ### pt24.pro is considered healthy if:
 
-- [ ] Homepage loads (HTTP 200)
-- [ ] SSL certificate valid
-- [ ] Health API returns OK
-- [ ] PT24 API endpoints respond
-- [ ] At least 10+ landing pages exist
-- [ ] Landing page URLs work (/{service}/{city}/)
-- [ ] Lead form submissions work
-- [ ] Database tables exist (wp_pt24_leads, wp_pt24_business_stats)
-- [ ] No critical errors in logs
-- [ ] Platform statistics accessible via WP-CLI
+- [x] Homepage loads (HTTP 200)
+- [x] SSL certificate valid
+- [x] Health API returns OK
+- [x] PT24 API endpoints respond
+- [x] At least 10+ landing pages exist
+- [x] Landing page URLs work (/{service}/{city}/)
+- [x] Lead form submissions work
+- [x] Database tables exist (wp_pt24_leads, wp_pt24_business_stats)
+- [x] No critical errors in logs
+- [x] Platform statistics accessible via WP-CLI
 
 ### poradnik.pro is considered healthy if:
 
-- [ ] Homepage loads (HTTP 200)
-- [ ] SSL certificate valid
-- [ ] Health API returns OK
-- [ ] At least 1+ published article exists
-- [ ] Content pipeline scheduled (hourly)
-- [ ] Autonomous mode enabled
-- [ ] Autopilot running
-- [ ] OpenAI API key configured
-- [ ] No critical errors in logs
-- [ ] Posts generated automatically
+- [x] Homepage loads (HTTP 200)
+- [x] SSL certificate valid
+- [x] Health API returns OK
+- [x] At least 1+ published article exists
+- [x] Content pipeline scheduled (hourly)
+- [x] Autonomous mode enabled
+- [x] Autopilot running
+- [x] OpenAI API key configured
+- [x] No critical errors in logs
+- [x] Posts generated automatically
 
 ---
 

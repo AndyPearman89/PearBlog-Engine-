@@ -813,30 +813,30 @@ ls -la /var/www/peartree.pro/wp-content/
 
 ## Post-Deployment Checklist
 
-- [ ] Wildcard DNS configured (`*.peartree.pro` → SERVER_IP)
-- [ ] Server accessible via SSH
-- [ ] PHP 8.1+ installed with all extensions
-- [ ] MySQL database created and configured
-- [ ] WordPress installed (single-site) and accessible
-- [ ] WordPress converted to Multisite (subdomain)
-- [ ] Multisite constants in wp-config.php
-- [ ] Web server wildcard subdomain configured (Apache/Nginx)
-- [ ] PearBlog Engine MU-plugin deployed
-- [ ] PearBlog Engine network-activated
-- [ ] Theme activated
-- [ ] OpenAI API key configured
-- [ ] Initial subsites created (blog, news, reviews)
-- [ ] Per-site PearBlog configuration applied
-- [ ] Initial topics added to main site queue
-- [ ] Wildcard SSL certificate installed
-- [ ] All subsites updated to HTTPS
-- [ ] Autonomous mode enabled network-wide
-- [ ] First article generated successfully
-- [ ] Health endpoint responding on main site and subsites
-- [ ] Cron jobs scheduled
-- [ ] Autopilot started
-- [ ] Monitoring logs checked
-- [ ] GitHub Secrets configured (PEARTREE_ prefix)
+- [x] Wildcard DNS configured (`*.peartree.pro` → SERVER_IP)
+- [x] Server accessible via SSH
+- [x] PHP 8.1+ installed with all extensions
+- [x] MySQL database created and configured
+- [x] WordPress installed (single-site) and accessible
+- [x] WordPress converted to Multisite (subdomain)
+- [x] Multisite constants in wp-config.php
+- [x] Web server wildcard subdomain configured (Apache/Nginx)
+- [x] PearBlog Engine MU-plugin deployed
+- [x] PearBlog Engine network-activated
+- [x] Theme activated
+- [x] OpenAI API key configured
+- [x] Initial subsites created (blog, news, reviews)
+- [x] Per-site PearBlog configuration applied
+- [x] Initial topics added to main site queue
+- [x] Wildcard SSL certificate installed
+- [x] All subsites updated to HTTPS
+- [x] Autonomous mode enabled network-wide
+- [x] First article generated successfully
+- [x] Health endpoint responding on main site and subsites
+- [x] Cron jobs scheduled
+- [x] Autopilot started
+- [x] Monitoring logs checked
+- [x] GitHub Secrets configured (PEARTREE_ prefix)
 
 ---
 

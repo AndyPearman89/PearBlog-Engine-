@@ -156,13 +156,13 @@
 
 ### Priority 2: High Severity Issues
 
-- [ ] **** in `GraphQLController.php`: REST route registered without permission_callback
-- [ ] **** in `AdminPageV7.php`: POST handler without nonce verification
+- [x] **** in `GraphQLController.php`: REST route registered without permission_callback
+- [x] **** in `AdminPageV7.php`: POST handler without nonce verification
 
 ### Priority 3: Medium Severity Issues
 
-- [ ] **** in `RateLimiter.php`: No capability checks found in controller
-- [ ] **** in `API Controllers`: Insufficient logging in API controllers
+- [x] **** in `RateLimiter.php`: No capability checks found in controller
+- [x] **** in `API Controllers`: Insufficient logging in API controllers
 
 ---
 

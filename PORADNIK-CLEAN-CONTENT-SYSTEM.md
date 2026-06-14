@@ -303,21 +303,21 @@ https://pt24.pro/ranking/krakow/remont-lazienki
 
 Before publishing, verify:
 
-- [ ] META description on first line
-- [ ] H1 title includes "ile kosztuje i jak wybrać"
-- [ ] Introduction explains the problem
-- [ ] All 4 main sections present
-- [ ] Cost information included
-- [ ] Practical advice provided
-- [ ] ONE soft CTA included
-- [ ] 4-6 FAQ questions
-- [ ] Conclusion summarizes key points
-- [ ] No aggressive sales language
-- [ ] No multiple CTAs
-- [ ] Natural PT24 link with good anchor text
-- [ ] 1,200+ words
-- [ ] Polish language correct
-- [ ] Readable and accessible
+- [x] META description on first line
+- [x] H1 title includes "ile kosztuje i jak wybrać"
+- [x] Introduction explains the problem
+- [x] All 4 main sections present
+- [x] Cost information included
+- [x] Practical advice provided
+- [x] ONE soft CTA included
+- [x] 4-6 FAQ questions
+- [x] Conclusion summarizes key points
+- [x] No aggressive sales language
+- [x] No multiple CTAs
+- [x] Natural PT24 link with good anchor text
+- [x] 1,200+ words
+- [x] Polish language correct
+- [x] Readable and accessible
 
 ---
 

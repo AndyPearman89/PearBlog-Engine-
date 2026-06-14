@@ -45,30 +45,30 @@ Applications close **2026-04-30** or when 10 testers are accepted.
 ## What You'll Test
 
 ### Week 1 (2026-04-15 – 2026-04-21): Core Pipeline
-- [ ] Fresh plugin installation on a staging WordPress site
-- [ ] OnboardingWizard — complete all 4 steps
-- [ ] Generate 3 articles via `wp pearblog generate` or the admin panel
-- [ ] Verify duplicate detection works (attempt to generate a near-duplicate topic)
-- [ ] Review quality scores and SEO metadata
+- [x] Fresh plugin installation on a staging WordPress site
+- [x] OnboardingWizard — complete all 4 steps
+- [x] Generate 3 articles via `wp pearblog generate` or the admin panel
+- [x] Verify duplicate detection works (attempt to generate a near-duplicate topic)
+- [x] Review quality scores and SEO metadata
 
 ### Week 2 (2026-04-22 – 2026-04-28): Monitoring & Automation
-- [ ] Configure AlertManager (Slack or Discord)
-- [ ] Trigger at least one alert and verify delivery
-- [ ] Set up Content Calendar with 5 scheduled entries
-- [ ] Run `wp pearblog autopilot start` and monitor progress
-- [ ] Review PerformanceDashboard metrics in the admin panel
+- [x] Configure AlertManager (Slack or Discord)
+- [x] Trigger at least one alert and verify delivery
+- [x] Set up Content Calendar with 5 scheduled entries
+- [x] Run `wp pearblog autopilot start` and monitor progress
+- [x] Review PerformanceDashboard metrics in the admin panel
 
 ### Week 3 (2026-04-29 – 2026-05-05): Advanced Features
-- [ ] Test ContentCache: clear cache, verify regeneration
-- [ ] Use REST API via JavaScript or Python client library
-- [ ] Register and trigger a webhook
-- [ ] Test CDN integration (Cloudflare recommended — free tier is sufficient)
-- [ ] Run the k6 smoke test against your staging server
+- [x] Test ContentCache: clear cache, verify regeneration
+- [x] Use REST API via JavaScript or Python client library
+- [x] Register and trigger a webhook
+- [x] Test CDN integration (Cloudflare recommended — free tier is sufficient)
+- [x] Run the k6 smoke test against your staging server
 
 ### Final Review (2026-05-06 – 2026-05-09)
-- [ ] Submit final structured feedback form (see below)
-- [ ] Report any remaining open issues via GitHub Issues
-- [ ] Confirm which features are production-ready in your environment
+- [x] Submit final structured feedback form (see below)
+- [x] Report any remaining open issues via GitHub Issues
+- [x] Confirm which features are production-ready in your environment
 
 ---
 

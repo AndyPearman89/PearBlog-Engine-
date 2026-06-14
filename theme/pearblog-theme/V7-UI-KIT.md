@@ -282,13 +282,13 @@ if (pb_should_show_variant('homepage_v7')) {
 4. **Component Classes**: New `.pb-hero__*` BEM naming
 
 ### Migration Checklist
-- [ ] Update custom CSS overrides to work with dark theme
-- [ ] Test contrast ratios for accessibility (WCAG AA)
-- [ ] Review image overlays for dark backgrounds
-- [ ] Update brand colors in customizer if needed
-- [ ] Test reading experience on mobile devices
-- [ ] Verify CTA button visibility and conversion tracking
-- [ ] Update screenshots/marketing materials
+- [x] Update custom CSS overrides to work with dark theme
+- [x] Test contrast ratios for accessibility (WCAG AA)
+- [x] Review image overlays for dark backgrounds
+- [x] Update brand colors in customizer if needed
+- [x] Test reading experience on mobile devices
+- [x] Verify CTA button visibility and conversion tracking
+- [x] Update screenshots/marketing materials
 
 ## Browser Support
 

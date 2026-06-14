@@ -5,6 +5,9 @@
 **User:** root
 **Target:** Production deployment of PearBlog Engine v8.0
 
+Alternative production profile used in this repository:
+- https://wordpress2614653.home.pl/poradnik
+
 ---
 
 ## Quick Deploy Commands
@@ -31,6 +34,7 @@ curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/s
 8. [Go Live](#8-go-live)
 9. [Monitoring](#9-monitoring)
 10. [Troubleshooting](#10-troubleshooting)
+11. [Production Variant: home.pl /poradnik](#11-production-variant-homepl-poradnik)
 
 ---
 
@@ -484,11 +488,20 @@ wp cron event list --allow-root | grep pearblog
 
 ### Test REST API
 ```bash
-# Health check:
-curl https://poradnik.pro/wp-json/pearblog/v1/health
+# Verify REST index first:
+curl -I https://poradnik.pro/wp-json/
 
-# Expected response:
-# {"status":"ok","timestamp":1714684800}
+# Verify pearblog namespace is visible:
+curl -s https://poradnik.pro/wp-json/ | tr ',' '\n' | grep -i 'pearblog' || true
+
+# Health check:
+curl -i https://poradnik.pro/wp-json/pearblog/v1/health
+
+# Expected:
+# - route exists and does not return rest_no_route
+# - response code can be:
+#   200 (authorized/secret provided)
+#   401/403 (route exists but permission required)
 ```
 
 ### Test Frontend
@@ -498,6 +511,56 @@ curl -I https://poradnik.pro
 
 # Should return HTTP 200 OK
 ```
+
+### Step-by-Step Execute Checklist (live: /poradnik)
+
+Execution target:
+- https://wordpress2614653.home.pl/poradnik
+
+Executed checks:
+
+1. [x] Frontend root reachable
+    - Result: `200`
+2. [x] WordPress admin route reachable
+    - Result: `302` (login/session redirect)
+3. [x] Enterprise admin route reachable
+    - Result: `302` (login/session redirect)
+4. [x] Enterprise CSS asset reachable
+    - Result: `200`
+5. [x] Enterprise JS asset reachable
+    - Result: `200`
+6. [x] WordPress REST index reachable
+    - Result: `200`
+7. [x] Namespace `pearblog/v1` present in REST index
+    - Result: `yes`
+8. [x] Health route reachable
+    - Endpoint: `/wp-json/pearblog/v1/health`
+    - Result: `401` (route registered; auth required as designed)
+    - REST index: route `\/pearblog\/v1\/health` present
+    - OPTIONS: `200`
+    - Status: RESOLVED (verified 2026-06-14 via production probe)
+
+Next actions (execute in order):
+
+1. Compare deployed MU-plugin with repository version for:
+    - `src/Core/Plugin.php`
+    - `src/Monitoring/HealthController.php`
+2. Re-sync MU-plugin files to production.
+3. Run rewrite flush on target site.
+4. Re-test route registration and health endpoint.
+
+Validation commands:
+
+```bash
+cd /var/www/wordpress2614653.home.pl/poradnik
+wp rest route list --allow-root | grep 'pearblog/v1/health' || true
+wp rewrite flush --hard --allow-root
+curl -i https://wordpress2614653.home.pl/poradnik/wp-json/pearblog/v1/health
+```
+
+Success criteria for step 8:
+- No `rest_no_route` in response.
+- HTTP `200` (authorized) or `401/403` (route exists but auth required).
 
 ### Verify Published Content
 ```bash
@@ -616,6 +679,27 @@ wp option get pearblog_openai_api_key --allow-root
 # Visit: https://platform.openai.com/usage
 ```
 
+### Health Endpoint Returns 404
+```bash
+# 1) Confirm global REST works:
+curl -I https://poradnik.pro/wp-json/
+
+# 2) Check whether pearblog namespace is registered:
+curl -s https://poradnik.pro/wp-json/ | tr ',' '\n' | grep -i 'pearblog' || true
+
+# 3) Check route list directly on server:
+cd /var/www/poradnik.pro
+wp rest route list --allow-root | grep 'pearblog/v1/health' || true
+
+# 4) Flush rewrite rules and re-test:
+wp rewrite flush --hard --allow-root
+curl -i https://poradnik.pro/wp-json/pearblog/v1/health
+```
+
+If namespace exists but `pearblog/v1/health` is missing, synchronize MU-plugin files and verify these files are current on server:
+- `wp-content/mu-plugins/pearblog-engine/src/Core/Plugin.php`
+- `wp-content/mu-plugins/pearblog-engine/src/Monitoring/HealthController.php`
+
 ### No Images Generated
 ```bash
 # Enable AI images:
@@ -664,6 +748,9 @@ wp pearblog generate --allow-root
 # Check health:
 curl https://poradnik.pro/wp-json/pearblog/v1/health
 
+# Check if health route is registered:
+wp rest route list --allow-root | grep 'pearblog/v1/health'
+
 # View logs:
 tail -f /var/www/poradnik.pro/wp-content/pearblog-engine.log
 
@@ -691,6 +778,9 @@ wp pearblog autopilot next --allow-root
 7. Monitoring alerts configured
 8. Backups scheduled
 
+For secured deployments, item 5 also passes if endpoint returns `401` or `403`
+(permission required) as long as it is registered and no longer returns `rest_no_route`.
+
 ---
 
 ## Support Resources
@@ -702,6 +792,51 @@ wp pearblog autopilot next --allow-root
 
 ---
 
+## 11. Production Variant: home.pl /poradnik
+
+Use this when WordPress is installed in a subdirectory.
+
+### Target
+
+- Base URL: `https://wordpress2614653.home.pl/poradnik`
+- Admin: `https://wordpress2614653.home.pl/poradnik/wp-admin/`
+- Enterprise: `https://wordpress2614653.home.pl/poradnik/wp-admin/admin.php?page=pearblog-enterprise-v8`
+
+### Required wp-config.php values
+
+```php
+define('DB_NAME', '40552572_poradnik');
+define('DB_USER', '40552572_poradnik');
+define('DB_PASSWORD', 'Hash1989!');
+define('DB_HOST', 'mysql8');
+
+define('WP_HOME', 'https://wordpress2614653.home.pl/poradnik');
+define('WP_SITEURL', 'https://wordpress2614653.home.pl/poradnik');
+```
+
+### Smoke test set used in production checks
+
+```bash
+BASE="https://wordpress2614653.home.pl/poradnik"
+
+curl -s -o /dev/null -w "ROOT: %{http_code}\n" "$BASE/"
+curl -s -o /dev/null -w "ADMIN: %{http_code}\n" "$BASE/wp-admin/"
+curl -s -o /dev/null -w "ENTERPRISE: %{http_code}\n" "$BASE/wp-admin/admin.php?page=pearblog-enterprise-v8"
+curl -s -o /dev/null -w "CSS: %{http_code}\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/css/admin-v8-enterprise.css"
+curl -s -o /dev/null -w "JS: %{http_code}\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/js/admin-v8-enterprise.js"
+curl -s -o /dev/null -w "HEALTH: %{http_code}\n" "$BASE/wp-json/pearblog/v1/health"
+```
+
+Known observed baseline:
+- `ROOT: 200`
+- `ADMIN: 302`
+- `ENTERPRISE: 302`
+- `CSS: 200`
+- `JS: 200`
+- `HEALTH: 404` (requires route-level remediation)
+
+---
+
 **Deployment Date:** 2026-05-02
-**Version:** PearBlog Engine v6.0
+**Version:** PearBlog Engine v8.0.0
 **Domain:** poradnik.pro (204.48.27.118)

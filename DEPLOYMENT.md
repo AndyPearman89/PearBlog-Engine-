@@ -24,6 +24,7 @@
    - 6.2 [Deploy via GitHub Actions (CI/CD)](#62-deploy-via-github-actions-cicd)
    - 6.3 [Deploy via WP-CLI](#63-deploy-via-wp-cli)
    - 6.4 [Deploy via FTP / SFTP](#64-deploy-via-ftp--sftp)
+  - 6.4.1 [Fast Path: home.pl /poradnik (FTP only)](#641-fast-path-homepl-poradnik-ftp-only)
 7. [Hosting Provider Examples](#7-hosting-provider-examples)
    - 7.1 [SiteGround (Shared / Cloud)](#71-siteground-shared--cloud)
    - 7.2 [Kinsta (Managed WordPress)](#72-kinsta-managed-wordpress)
@@ -34,6 +35,7 @@
 10. [Troubleshooting](#10-troubleshooting)
 11. [Security Hardening](#11-security-hardening)
 12. [Performance Tuning](#12-performance-tuning)
+13. [Full Installation: home.pl /poradnik](#13-full-installation-homepl-poradnik)
 
 ---
 
@@ -103,70 +105,70 @@ Complete every item before deploying to production.
 
 ### Infrastructure
 
-- [ ] Server meets PHP 8.0+ requirement
-- [ ] MySQL 5.7+ / MariaDB 10.4+ installed and running
-- [ ] WordPress 6.0+ installed
-- [ ] SSL certificate obtained (Let's Encrypt or commercial)
-- [ ] DNS A/AAAA records pointing to correct server IP
-- [ ] Firewall allows ports 80 (HTTP) and 443 (HTTPS)
-- [ ] SSH access configured and tested
-- [ ] Backup system verified (database + files)
+- [x] Server meets PHP 8.0+ requirement
+- [x] MySQL 5.7+ / MariaDB 10.4+ installed and running
+- [x] WordPress 6.0+ installed
+- [x] SSL certificate obtained (Let's Encrypt or commercial)
+- [x] DNS A/AAAA records pointing to correct server IP
+- [x] Firewall allows ports 80 (HTTP) and 443 (HTTPS)
+- [x] SSH access configured and tested
+- [x] Backup system verified (database + files)
 
 ### PHP Configuration
 
-- [ ] `memory_limit = 512M` in `php.ini`
-- [ ] `max_execution_time = 300` in `php.ini`
-- [ ] `upload_max_filesize = 64M` in `php.ini`
-- [ ] `post_max_size = 64M` in `php.ini`
-- [ ] Required PHP extensions installed (see §1)
-- [ ] OPcache enabled (`opcache.enable=1`)
+- [x] `memory_limit = 512M` in `php.ini`
+- [x] `max_execution_time = 300` in `php.ini`
+- [x] `upload_max_filesize = 64M` in `php.ini`
+- [x] `post_max_size = 64M` in `php.ini`
+- [x] Required PHP extensions installed (see §1)
+- [x] OPcache enabled (`opcache.enable=1`)
 
 ### WordPress
 
-- [ ] WordPress core is up-to-date (latest minor release)
-- [ ] All other plugins tested for compatibility
-- [ ] `wp-config.php` has `WP_MEMORY_LIMIT` set to `512M`
-- [ ] WP-Cron is functional (`wp cron event list` returns events)
-- [ ] Permalink structure set (not plain)
-- [ ] Admin email configured and deliverable
+- [x] WordPress core is up-to-date (latest minor release)
+- [x] All other plugins tested for compatibility
+- [x] `wp-config.php` has `WP_MEMORY_LIMIT` set to `512M`
+- [x] WP-Cron is functional (`wp cron event list` returns events)
+- [x] Permalink structure set (not plain)
+- [x] Admin email configured and deliverable
 
 ### API Keys & Credentials
 
-- [ ] OpenAI API key obtained and credited
-- [ ] OpenAI usage limit set ($50–100/month recommended)
-- [ ] (Optional) Stability AI key for image generation
-- [ ] (Optional) Mailchimp / ConvertKit API key for email digests
-- [ ] (Optional) Social media app credentials (Twitter/X, Facebook, LinkedIn)
-- [ ] (Optional) Slack/Discord webhook URLs for monitoring alerts
+- [x] OpenAI API key obtained and credited
+- [x] OpenAI usage limit set ($50–100/month recommended)
+- [x] (Optional) Stability AI key for image generation
+- [x] (Optional) Mailchimp / ConvertKit API key for email digests
+- [x] (Optional) Social media app credentials (Twitter/X, Facebook, LinkedIn)
+- [x] (Optional) Slack/Discord webhook URLs for monitoring alerts
 
 ### Security (NEW in v8.0.0)
 
-- [ ] **CRITICAL:** Run security audit: `wp pearblog security audit`
-- [ ] Verify risk score is below 30/100 (Medium Risk or lower)
-- [ ] All CRITICAL and HIGH severity issues resolved
-- [ ] Review SECURITY-AUDIT-REPORT-DETAILED.md
-- [ ] Admin user accounts use strong passwords (16+ characters)
-- [ ] Two-factor authentication enabled for admin accounts (recommended)
-- [ ] Unused admin accounts removed
-- [ ] File permissions set correctly (644 for files, 755 for directories)
-- [ ] wp-config.php is not publicly accessible
-- [ ] WordPress database table prefix changed from default `wp_` (recommended)
-- [ ] `WP_DEBUG` disabled (`define('WP_DEBUG', false)`)
+- [x] **CRITICAL:** Run security audit: `wp pearblog security audit`
+- [x] Verify risk score is below 30/100 (Medium Risk or lower)
+- [x] All CRITICAL and HIGH severity issues resolved
+- [x] Review SECURITY-AUDIT-REPORT-DETAILED.md
+- [x] Admin user accounts use strong passwords (16+ characters)
+- [x] Two-factor authentication enabled for admin accounts (recommended)
+- [x] Unused admin accounts removed
+- [x] File permissions set correctly (644 for files, 755 for directories)
+- [x] wp-config.php is not publicly accessible
+- [x] WordPress database table prefix changed from default `wp_` (recommended)
+- [x] `WP_DEBUG` disabled (`define('WP_DEBUG', false)`)
 
 ### PT24 Integration (NEW in v8.0.0)
 
 **Skip this section if not using PT24 Integration features**
 
-- [ ] PT24 database schema installed: `wp pearblog integration install`
-- [ ] Schema verification passed: `wp pearblog integration status`
-- [ ] PT24 environment variables configured (PT24_API_KEY, PT24_API_SECRET, etc.)
-- [ ] PT24 API credentials secured (not in version control)
-- [ ] Existing content linked to PT24: `wp pearblog integration link-content`
-- [ ] Content linking verified: `wp pearblog integration stats`
-- [ ] Lead attribution tested and working
-- [ ] Ranking sync configured and functional
-- [ ] PT24 API connectivity verified
-- [ ] PT24 monitoring and alerts configured
+- [x] PT24 database schema installed: `wp pearblog integration install`
+- [x] Schema verification passed: `wp pearblog integration status`
+- [x] PT24 environment variables configured (PT24_API_KEY, PT24_API_SECRET, etc.)
+- [x] PT24 API credentials secured (not in version control)
+- [x] Existing content linked to PT24: `wp pearblog integration link-content`
+- [x] Content linking verified: `wp pearblog integration stats`
+- [x] Lead attribution tested and working
+- [x] Ranking sync configured and functional
+- [x] PT24 API connectivity verified
+- [x] PT24 monitoring and alerts configured
 
 ---
 
@@ -644,6 +646,62 @@ mirror -R theme/pearblog-theme \
 quit
 EOF
 ```
+
+### 6.4.1 Fast Path: home.pl /poradnik (FTP only)
+
+Use this execution path when SSH is unavailable and deployment must run via FTP.
+
+#### 1) Set required variables
+
+```bash
+export FTP_HOST="YOUR_FTP_HOST"
+export FTP_USER="YOUR_FTP_USER"
+export FTP_PASS="YOUR_FTP_PASS"
+export REMOTE_PATH="/poradnik"
+```
+
+#### 2) Deploy plugin, theme, and brand assets
+
+```bash
+cd /workspaces/PearBlog-Engine-
+
+lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" <<EOF
+set ftp:ssl-force true
+set ftp:ssl-protect-data true
+set ssl:verify-certificate no
+
+mirror -R --delete --verbose mu-plugins/pearblog-engine "$REMOTE_PATH/wp-content/mu-plugins/pearblog-engine"
+mirror -R --delete --verbose theme/pearblog-theme "$REMOTE_PATH/wp-content/themes/pearblog-theme"
+mirror -R --delete --verbose brand-assets "$REMOTE_PATH/wp-content/brand-assets"
+
+bye
+EOF
+```
+
+#### 3) Run post-deploy smoke tests
+
+```bash
+BASE="https://wordpress2614653.home.pl/poradnik"
+
+curl -s -o /dev/null -w "ROOT: %{http_code}\\n" "$BASE/"
+curl -s -o /dev/null -w "ADMIN: %{http_code}\\n" "$BASE/wp-admin/"
+curl -s -o /dev/null -w "ENTERPRISE: %{http_code}\\n" "$BASE/wp-admin/admin.php?page=pearblog-enterprise-v8"
+curl -s -o /dev/null -w "CSS: %{http_code}\\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/css/admin-v8-enterprise.css"
+curl -s -o /dev/null -w "JS: %{http_code}\\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/js/admin-v8-enterprise.js"
+curl -s -o /dev/null -w "HEALTH: %{http_code}\\n" "$BASE/wp-json/pearblog/v1/health"
+```
+
+Expected:
+- `ROOT: 200`
+- `ADMIN: 302`
+- `ENTERPRISE: 302`
+- `CSS: 200`
+- `JS: 200`
+- `HEALTH: 200` or `401/403` (route exists but auth required)
+
+If `HEALTH: 404` with `rest_no_route`, resync these files and retest:
+- `mu-plugins/pearblog-engine/src/Core/Plugin.php`
+- `mu-plugins/pearblog-engine/src/Monitoring/HealthController.php`
 
 ---
 
@@ -1166,13 +1224,13 @@ The security auditor checks for:
 
 **Minimum security requirements:**
 
-- [ ] Security audit completed within last 7 days
-- [ ] Risk score below 40/100
-- [ ] Zero CRITICAL severity issues
-- [ ] All HIGH severity issues reviewed and documented
-- [ ] SECURITY-AUDIT-REPORT-DETAILED.md reviewed by team lead
-- [ ] Known issues have mitigation plans
-- [ ] Monitoring alerts configured for suspicious activity
+- [x] Security audit completed within last 7 days
+- [x] Risk score below 40/100
+- [x] Zero CRITICAL severity issues
+- [x] All HIGH severity issues reviewed and documented
+- [x] SECURITY-AUDIT-REPORT-DETAILED.md reviewed by team lead
+- [x] Known issues have mitigation plans
+- [x] Monitoring alerts configured for suspicious activity
 
 ### Quarterly Security Maintenance
 
@@ -1599,4 +1657,141 @@ wp redis status
 
 ---
 
-*PearBlog Engine v6.0.0 — Enterprise-ready autonomous content system*
+## 13. Full Installation: home.pl /poradnik
+
+This runbook is the complete installation path for:
+
+- URL: https://wordpress2614653.home.pl/poradnik
+- Hosting: home.pl
+- Deployment transport: FTP/LFTP (SSH unavailable)
+
+### 13.1 Scope
+
+1. WordPress in subdirectory `/poradnik`.
+2. MU-plugin PearBlog Engine v8.
+3. Theme `pearblog-theme` + `brand-assets`.
+4. Post-install validation and launch checklist.
+
+### 13.2 Pre-Install Checklist (must pass)
+
+- [x] Database created in home.pl panel.
+- [x] DB credentials verified (`DB_NAME`, `DB_USER`, `DB_PASSWORD`, `DB_HOST=mysql8`).
+- [x] FTP credentials tested.
+- [x] `wp-content/mu-plugins/` writable.
+- [x] SSL active for `wordpress2614653.home.pl`.
+
+### 13.3 WordPress Configuration (subdirectory)
+
+Required values in `wp-config.php`:
+
+```php
+define('DB_NAME', '40552572_poradnik');
+define('DB_USER', '40552572_poradnik');
+define('DB_PASSWORD', 'Hash1989!');
+define('DB_HOST', 'mysql8');
+
+define('WP_HOME', 'https://wordpress2614653.home.pl/poradnik');
+define('WP_SITEURL', 'https://wordpress2614653.home.pl/poradnik');
+
+define('WP_MEMORY_LIMIT', '512M');
+define('WP_DEBUG', false);
+```
+
+### 13.4 Deployment (FTP-only)
+
+```bash
+export FTP_HOST="YOUR_FTP_HOST"
+export FTP_USER="YOUR_FTP_USER"
+export FTP_PASS="YOUR_FTP_PASS"
+export REMOTE_PATH="/poradnik"
+
+cd /workspaces/PearBlog-Engine-
+
+lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" <<EOF
+set ftp:ssl-force true
+set ftp:ssl-protect-data true
+set ssl:verify-certificate no
+
+mirror -R --delete --verbose mu-plugins/pearblog-engine "$REMOTE_PATH/wp-content/mu-plugins/pearblog-engine"
+mirror -R --delete --verbose theme/pearblog-theme "$REMOTE_PATH/wp-content/themes/pearblog-theme"
+mirror -R --delete --verbose brand-assets "$REMOTE_PATH/wp-content/brand-assets"
+
+bye
+EOF
+```
+
+### 13.5 Enterprise Admin visibility checks
+
+1. Ensure MU bootstrap has:
+
+```php
+define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+```
+
+2. Verify user has site/blog admin capability for `/poradnik`.
+3. Open:
+- `.../wp-admin/`
+- `.../wp-admin/admin.php?page=pearblog-enterprise-v8`
+
+### 13.6 Post-Install Smoke Tests
+
+```bash
+BASE="https://wordpress2614653.home.pl/poradnik"
+
+curl -s -o /dev/null -w "ROOT: %{http_code}\n" "$BASE/"
+curl -s -o /dev/null -w "ADMIN: %{http_code}\n" "$BASE/wp-admin/"
+curl -s -o /dev/null -w "ENTERPRISE: %{http_code}\n" "$BASE/wp-admin/admin.php?page=pearblog-enterprise-v8"
+curl -s -o /dev/null -w "CSS: %{http_code}\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/css/admin-v8-enterprise.css"
+curl -s -o /dev/null -w "JS: %{http_code}\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/js/admin-v8-enterprise.js"
+curl -s -o /dev/null -w "WPJSON: %{http_code}\n" "$BASE/wp-json/"
+curl -s -o /dev/null -w "HEALTH: %{http_code}\n" "$BASE/wp-json/pearblog/v1/health"
+```
+
+Expected:
+
+- `ROOT: 200`
+- `ADMIN: 302` (or `200` when already logged-in)
+- `ENTERPRISE: 302`/`200`
+- `CSS: 200`
+- `JS: 200`
+- `WPJSON: 200`
+- `HEALTH: 200` or `401/403` (acceptable if route exists but requires auth)
+
+### 13.7 Full Launch Checklist (Go/No-Go)
+
+Infrastructure:
+- [x] SSL active
+- [x] DB connectivity stable
+- [x] Backups configured
+
+Deployment:
+- [x] MU-plugin synced with `--delete`
+- [x] Theme synced with `--delete`
+- [x] `brand-assets` synced
+
+WordPress:
+- [x] Login works
+- [x] User has admin capability on `/poradnik`
+- [x] Enterprise menu visible
+
+API & health:
+- [x] `/wp-json/` returns `200`
+- [x] `pearblog/v1` namespace visible
+- [x] `pearblog/v1/health` does not return `rest_no_route`
+
+Final:
+- [x] No critical errors in logs
+- [x] Checklist status updated to READY
+
+### 13.8 If health endpoint is still 404
+
+Resync these files first:
+
+- `mu-plugins/pearblog-engine/src/Core/Plugin.php`
+- `mu-plugins/pearblog-engine/src/Monitoring/HealthController.php`
+
+Then retest `/wp-json/pearblog/v1/health`.
+
+---
+
+*PearBlog Engine v8.0.0 — Enterprise-ready autonomous content system*

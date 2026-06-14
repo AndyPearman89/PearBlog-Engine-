@@ -22,6 +22,7 @@
    - 5.3 [v5.1 → v5.2 / v5.3](#53-v51--v52--v53)
    - 5.4 [v5.x → v6.0 (major upgrade)](#54-v5x--v60-major-upgrade)
    - 5.5 [Fresh Install (v6.0)](#55-fresh-install-v60)
+  - 5.6 [v6.x/v7.x → v8 Enterprise](#56-v6xv7x--v8-enterprise)
 6. [Rollback Procedures](#6-rollback-procedures)
    - 6.1 [v6.0 → v5.x Rollback](#61-v60--v5x-rollback)
    - 6.2 [v5.x → v4.x Rollback](#62-v5x--v4x-rollback)
@@ -30,6 +31,7 @@
 8. [Data Integrity Verification](#8-data-integrity-verification)
 9. [Multisite Considerations](#9-multisite-considerations)
 10. [Troubleshooting](#10-troubleshooting)
+11. [Production Runbook: home.pl /poradnik](#11-production-runbook-homepl-poradnik)
 
 ---
 
@@ -197,6 +199,8 @@ PearBlog Engine reads and writes to the following native WP tables but does not 
 | v5.2 | 8.0+ | 6.0+ | 5.7+ / 10.4+ | Admin UI v5.2, dark mode, DashboardWidget |
 | v5.3 | 8.0+ | 6.0+ | 5.7+ / 10.4+ | Autonomous mode, email settings, affiliate fixes |
 | v6.0 | 8.0+ | 6.0+ | 5.7+ / 10.4+ | Enterprise: circuit breaker, social, webhooks, autopilot |
+| v7.x | 8.1+ | 6.2+ | 8.0+ / 10.6+ | Admin v7, expanded enterprise modules |
+| v8.x | 8.1+ | 6.2+ | 8.0+ / 10.6+ | Admin v8 Enterprise (15 tabs), realtime settings |
 
 ### Plugin Compatibility
 
@@ -550,6 +554,51 @@ To verify post-activation:
 wp option list --search="pearblog_*" --fields=option_name | wc -l
 # Expected: ≥ 36 options
 ```
+
+---
+
+### 5.6 v6.x/v7.x → v8 Enterprise
+
+**New in v8:** Enterprise Admin v8 settings (theme, language, realtime toggle) and UI/operational extensions.
+
+Core data schema remains backward compatible: no table alterations are required.
+
+```sql
+-- ─── v6.x/v7.x → v8 upgrade ─────────────────────────────────────────────
+
+-- 8.0.1  Seed v8 admin options (idempotent)
+INSERT IGNORE INTO wp_options (option_name, option_value, autoload)
+VALUES
+  ('pearblog_v8_theme', 'light', 'no'),
+  ('pearblog_v8_language', 'en', 'no'),
+  ('pearblog_v8_realtime_enabled', '1', 'no');
+
+-- 8.0.2  Verify (expected: 3 rows)
+SELECT option_name, option_value, autoload
+FROM wp_options
+WHERE option_name IN (
+  'pearblog_v8_theme',
+  'pearblog_v8_language',
+  'pearblog_v8_realtime_enabled'
+)
+ORDER BY option_name;
+```
+
+**WP-CLI equivalent:**
+
+```bash
+wp option add pearblog_v8_theme light --autoload=no 2>/dev/null || true
+wp option add pearblog_v8_language en --autoload=no 2>/dev/null || true
+wp option add pearblog_v8_realtime_enabled 1 --autoload=no 2>/dev/null || true
+```
+
+**Enterprise mode flag (MU plugin):**
+
+```php
+define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+```
+
+If the flag is missing, v8 UI can be unavailable even when options are present.
 
 ---
 
@@ -1083,6 +1132,171 @@ wp option add pearblog_last_pipeline_run 0 --autoload=yes 2>/dev/null || true
 wp pearblog generate
 ```
 
+### Access Denied for Enterprise v8 Admin Page
+
+Symptom:
+- Accessing `/wp-admin/admin.php?page=pearblog-enterprise-v8` shows permission denied.
+
+Root cause:
+- The page requires `manage_options`, but the logged-in user lacks Administrator capabilities.
+
+Validate user capabilities:
+
+```sql
+SELECT um.user_id, u.user_login, um.meta_key, um.meta_value
+FROM wp_usermeta um
+JOIN wp_users u ON u.ID = um.user_id
+WHERE um.meta_key IN ('wp_capabilities', 'wp_user_level')
+  AND u.user_login = 'YOUR_LOGIN';
+```
+
+Emergency fix (single-site):
+
+```sql
+UPDATE wp_usermeta
+SET meta_value = 'a:1:{s:13:"administrator";b:1;}'
+WHERE user_id = YOUR_USER_ID
+  AND meta_key = 'wp_capabilities';
+
+UPDATE wp_usermeta
+SET meta_value = '10'
+WHERE user_id = YOUR_USER_ID
+  AND meta_key = 'wp_user_level';
+```
+
+After update:
+- Log out and log back in.
+- Re-open the Enterprise v8 admin URL.
+
+For multisite, use blog-scoped keys (example: `wp_2_capabilities`, `wp_2_user_level`).
+
+---
+
+## 11. Production Runbook: home.pl /poradnik
+
+This runbook reflects a production deployment in subdirectory mode.
+
+### Target
+
+- URL: `https://wordpress2614653.home.pl/poradnik`
+- DB host: `mysql8`
+- DB name: `40552572_poradnik`
+- DB user: `40552572_poradnik`
+
+### 11.1 Safe Backup Before Any Migration
+
+```bash
+mysqldump -h mysql8 -u 40552572_poradnik -p'Hash1989!' 40552572_poradnik \
+  --single-transaction --routines --triggers \
+  | gzip > poradnik-pre-migration-$(date +%Y%m%d_%H%M%S).sql.gz
+```
+
+### 11.2 Prefix Detection (Mandatory)
+
+Do not assume `wp_` prefix.
+
+```bash
+wp config get table_prefix --path=/var/www/wordpress2614653.home.pl/poradnik
+```
+
+Replace table names in SQL examples accordingly.
+
+### 11.3 v8 Seed + Verification
+
+```sql
+INSERT IGNORE INTO wp_options (option_name, option_value, autoload)
+VALUES
+  ('pearblog_v8_theme', 'light', 'no'),
+  ('pearblog_v8_language', 'pl', 'no'),
+  ('pearblog_v8_realtime_enabled', '1', 'no');
+
+SELECT option_name, option_value
+FROM wp_options
+WHERE option_name LIKE 'pearblog_v8_%'
+ORDER BY option_name;
+```
+
+### 11.4 Post-Migration Smoke Tests
+
+```bash
+curl -I -L https://wordpress2614653.home.pl/poradnik/
+curl -I -L https://wordpress2614653.home.pl/poradnik/wp-admin/
+curl -I -L "https://wordpress2614653.home.pl/poradnik/wp-admin/admin.php?page=pearblog-enterprise-v8"
+```
+
+Expected:
+- Frontend HTTP 200
+- Admin login screen or admin dashboard HTTP 200
+- Enterprise page accessible for Administrator
+
+### 11.5 Copy/Paste: Prefix-Safe v8 Seed + Admin Fix (Single-Site)
+
+Use this block when you want a no-edit run with automatic table prefix detection.
+
+```bash
+WP_PATH="/var/www/wordpress2614653.home.pl/poradnik"
+WP="wp --path=$WP_PATH"
+PREFIX="$($WP config get table_prefix)"
+
+# 1) Seed v8 options idempotently
+$WP option add pearblog_v8_theme light --autoload=no 2>/dev/null || true
+$WP option add pearblog_v8_language pl --autoload=no 2>/dev/null || true
+$WP option add pearblog_v8_realtime_enabled 1 --autoload=no 2>/dev/null || true
+
+# 2) Verify
+$WP option list --search='pearblog_v8_*' --fields=option_name,option_value --format=table
+
+# 3) Emergency capability fix (if Enterprise page is still blocked)
+# Replace YOUR_LOGIN with the real username.
+LOGIN="YOUR_LOGIN"
+USER_ID="$($WP user get "$LOGIN" --field=ID)"
+
+$WP db query "
+UPDATE ${PREFIX}usermeta
+SET meta_value = 'a:1:{s:13:\"administrator\";b:1;}'
+WHERE user_id = ${USER_ID}
+  AND meta_key = '${PREFIX}capabilities';
+
+UPDATE ${PREFIX}usermeta
+SET meta_value = '10'
+WHERE user_id = ${USER_ID}
+  AND meta_key = '${PREFIX}user_level';
+"
+
+echo "Done for user ID: ${USER_ID}"
+echo "Log out/in and test: /wp-admin/admin.php?page=pearblog-enterprise-v8"
+```
+
+### 11.6 Copy/Paste: Blog-Scoped Capabilities (Multisite)
+
+For multisite, capability keys are blog-scoped. Use this when user is admin on one site but blocked on another.
+
+```bash
+WP_PATH="/var/www/wordpress2614653.home.pl/poradnik"
+WP="wp --path=$WP_PATH"
+PREFIX="$($WP config get table_prefix)"
+
+# Replace values:
+LOGIN="YOUR_LOGIN"
+BLOG_ID="2"
+
+USER_ID="$($WP user get "$LOGIN" --field=ID)"
+
+$WP db query "
+UPDATE ${PREFIX}usermeta
+SET meta_value = 'a:1:{s:13:\"administrator\";b:1;}'
+WHERE user_id = ${USER_ID}
+  AND meta_key = '${PREFIX}${BLOG_ID}_capabilities';
+
+UPDATE ${PREFIX}usermeta
+SET meta_value = '10'
+WHERE user_id = ${USER_ID}
+  AND meta_key = '${PREFIX}${BLOG_ID}_user_level';
+"
+
+echo "Done for blog ${BLOG_ID}, user ID ${USER_ID}."
+```
+
 ---
 
 ## Related Documentation
@@ -1097,4 +1311,4 @@ wp pearblog generate
 
 ---
 
-*PearBlog Engine v6.0.0 — Enterprise-ready autonomous content system*
+*PearBlog Engine v8.0.0 — Enterprise-ready autonomous content system*
