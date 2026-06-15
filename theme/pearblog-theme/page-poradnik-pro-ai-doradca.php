@@ -205,10 +205,10 @@ document.getElementById('ai-advisor-form').addEventListener('submit', function(e
 
     // Gather form data
     const data = {
-        category: form.category?.value || '',
-        budget: form.budget?.value || '',
-        location: form.location?.value || '',
-        goal: form.goal?.value || ''
+        category: (form.category && form.category.value) || '',
+        budget: (form.budget && form.budget.value) || '',
+        location: (form.location && form.location.value) || '',
+        goal: (form.goal && form.goal.value) || ''
     };
 
     // Show loading

@@ -211,7 +211,7 @@
                 </ul>
             </div>
         </div>
-        <div class="border-t border-slate-200 py-4 text-center text-xs text-slate-500">&copy; <?php echo esc_html(date('Y')); ?> PT24.PRO</div>
+        <div class="border-t border-slate-200 py-4 text-center text-xs text-slate-500">&copy; <?php echo esc_html(gmdate('Y')); ?> PT24.PRO</div>
     </footer>
 </div>
 <?php wp_footer(); ?>
