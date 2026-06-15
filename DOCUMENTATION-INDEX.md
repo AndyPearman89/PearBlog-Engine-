@@ -1,6 +1,6 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress — **v6.0**
+> Enterprise-grade autonomous AI content production for WordPress — **v9.0**
 
 ---
 
@@ -90,7 +90,9 @@
 
 | Document | Summary |
 |----------|---------|
-| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin v6.0 architecture, 12-step pipeline, all modules, REST API |
+| [mu-plugins/pearblog-engine/README.md](mu-plugins/pearblog-engine/README.md) | Plugin v9.0 architecture, 224 classes, 33 modules, REST + GraphQL API |
+| [mu-plugins/pearblog-engine/docs/CLI.md](mu-plugins/pearblog-engine/docs/CLI.md) | Complete WP-CLI command reference (50+ commands) |
+| [mu-plugins/pearblog-engine/docs/TESTING.md](mu-plugins/pearblog-engine/docs/TESTING.md) | PHPUnit test architecture, 1 760 tests, writing new tests |
 | [scripts/README.md](scripts/README.md) | Python automation suite, environment variables, usage |
 
 ### Brand Assets & Visuals
