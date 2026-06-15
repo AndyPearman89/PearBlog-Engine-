@@ -447,7 +447,7 @@
                 <h1>Jan Kowalski</h1>
                 <div class="role-row">
                     <span>Doradca nieruchomości</span>
-                    <span class="badge">ZweryfikowanyP</span>
+                    <span class="badge">Zweryfikowany</span>
                     <span class="badge">Poradnik</span>
                 </div>
                 <div class="meta-row">
@@ -458,7 +458,7 @@
                     <span>Warszawa</span>
                 </div>
                 <div class="cta-row">
-                    <a href="/kontakt" class="btn-secondary">Zastawaj</a>
+                    <a href="/kontakt" class="btn-secondary">Zapytaj</a>
                     <a href="/kontakt" class="btn-primary">Wyślij wiadomość</a>
                 </div>
             </div>
@@ -504,7 +504,7 @@
                             <span class="stat-value">10+ lat</span>
                         </div>
                         <div class="stat-box">
-                            <span class="stat-label">Przetworzone transakcji:</span>
+                            <span class="stat-label">Przetworzone transakcje</span>
                             <span class="stat-value">1200+</span>
                         </div>
                         <div class="stat-box">
@@ -524,7 +524,7 @@
                 <div class="card rating-overview">
                     <div class="score">4.9</div>
                     <div class="stars">★★★★★</div>
-                    <div class="caption">Następstwa 532 opinie</div>
+                    <div class="caption">Na podstawie 532 opinii</div>
                 </div>
                 <div class="review-grid">
                     <article class="review-card">
