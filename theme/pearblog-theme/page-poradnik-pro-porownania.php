@@ -413,6 +413,69 @@
                     <span class="comparison-tag green">Werdykt dostępny</span>
                 </div>
             </a>
+
+            <a href="#" class="comparison-card">
+                <span class="comparison-badge">🏠 Dom</span>
+                <h3 class="comparison-title">Docieplenie styropian vs Wełna mineralna</h3>
+                <p class="comparison-desc">Który materiał izolacyjny wybrać? Porównanie cen, parametrów i trwałości.</p>
+                <div class="comparison-vs">
+                    <div class="vs-option">
+                        <div class="vs-option-icon">⬜</div>
+                        <div class="vs-option-label">Styropian EPS</div>
+                    </div>
+                    <div class="vs-divider">VS</div>
+                    <div class="vs-option">
+                        <div class="vs-option-icon">🟨</div>
+                        <div class="vs-option-label">Wełna mineralna</div>
+                    </div>
+                </div>
+                <div class="comparison-tags">
+                    <span class="comparison-tag">Termomodernizacja</span>
+                    <span class="comparison-tag green">Werdykt dostępny</span>
+                </div>
+            </a>
+
+            <a href="#" class="comparison-card">
+                <span class="comparison-badge">🚗 Auto</span>
+                <h3 class="comparison-title">Auto elektryczne vs Hybryda plug-in</h3>
+                <p class="comparison-desc">Koszty eksploatacji, zasięg i wygoda — które rozwiązanie bardziej się opłaca w Polsce?</p>
+                <div class="comparison-vs">
+                    <div class="vs-option">
+                        <div class="vs-option-icon">🔋</div>
+                        <div class="vs-option-label">100% Elektryczny</div>
+                    </div>
+                    <div class="vs-divider">VS</div>
+                    <div class="vs-option">
+                        <div class="vs-option-icon">⛽</div>
+                        <div class="vs-option-label">Hybryda PHEV</div>
+                    </div>
+                </div>
+                <div class="comparison-tags">
+                    <span class="comparison-tag">Motoryzacja</span>
+                    <span class="comparison-tag green">Werdykt dostępny</span>
+                </div>
+            </a>
+
+            <a href="#" class="comparison-card">
+                <span class="comparison-badge">🦷 Zdrowie</span>
+                <h3 class="comparison-title">Implant vs Most protetyczny</h3>
+                <p class="comparison-desc">Trwałość, komfort i cena — co wybrać przy uzupełnianiu brakujących zębów?</p>
+                <div class="comparison-vs">
+                    <div class="vs-option">
+                        <div class="vs-option-icon">🔩</div>
+                        <div class="vs-option-label">Implant</div>
+                    </div>
+                    <div class="vs-divider">VS</div>
+                    <div class="vs-option">
+                        <div class="vs-option-icon">🦷</div>
+                        <div class="vs-option-label">Most protetyczny</div>
+                    </div>
+                </div>
+                <div class="comparison-tags">
+                    <span class="comparison-tag">Stomatologia</span>
+                    <span class="comparison-tag green">Werdykt dostępny</span>
+                </div>
+            </a>
         </div>
 
         <!-- PAGINATION -->

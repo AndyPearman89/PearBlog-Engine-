@@ -242,6 +242,39 @@
                     <div class="top-item"><span class="top-item-name">3. GreenPump</span><span class="top-item-score">9.1</span></div>
                 </div>
             </a>
+
+            <a href="#" class="category-ranking-card">
+                <div class="category-ranking-icon">💳</div>
+                <h3 class="category-ranking-title">Doradcy kredytowi</h3>
+                <p class="category-ranking-count">156 specjalistów</p>
+                <div class="category-ranking-top">
+                    <div class="top-item"><span class="top-item-name">1. FinExpert24</span><span class="top-item-score">9.8</span></div>
+                    <div class="top-item"><span class="top-item-name">2. KredytOK</span><span class="top-item-score">9.5</span></div>
+                    <div class="top-item"><span class="top-item-name">3. Doradca Wiśniewski</span><span class="top-item-score">9.3</span></div>
+                </div>
+            </a>
+
+            <a href="#" class="category-ranking-card">
+                <div class="category-ranking-icon">🦷</div>
+                <h3 class="category-ranking-title">Stomatolodzy</h3>
+                <p class="category-ranking-count">211 gabinetów</p>
+                <div class="category-ranking-top">
+                    <div class="top-item"><span class="top-item-name">1. DentPro Wrocław</span><span class="top-item-score">9.9</span></div>
+                    <div class="top-item"><span class="top-item-name">2. SmileLab Warszawa</span><span class="top-item-score">9.6</span></div>
+                    <div class="top-item"><span class="top-item-name">3. Klinika Zdrowy Uśmiech</span><span class="top-item-score">9.4</span></div>
+                </div>
+            </a>
+
+            <a href="#" class="category-ranking-card">
+                <div class="category-ranking-icon">🎨</div>
+                <h3 class="category-ranking-title">Architekci wnętrz</h3>
+                <p class="category-ranking-count">78 projektantów</p>
+                <div class="category-ranking-top">
+                    <div class="top-item"><span class="top-item-name">1. Studio Forma</span><span class="top-item-score">9.7</span></div>
+                    <div class="top-item"><span class="top-item-name">2. DesignLab Gdańsk</span><span class="top-item-score">9.4</span></div>
+                    <div class="top-item"><span class="top-item-name">3. Wnętrza z Klasą</span><span class="top-item-score">9.2</span></div>
+                </div>
+            </a>
         </div>
 
         <!-- TOP RANKING LIST -->

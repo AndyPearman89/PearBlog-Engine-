@@ -295,6 +295,61 @@
                 </div>
                 <span class="btn-calc">Oblicz koszt</span>
             </a>
+
+            <a href="#" class="calc-card">
+                <div class="calc-icon green">🏡</div>
+                <h3 class="calc-title">Kalkulator docieplenia</h3>
+                <p class="calc-desc">Oblicz koszt termomodernizacji domu i roczne oszczędności na ogrzewaniu.</p>
+                <div class="calc-stats">
+                    <span>📊 7k użyć</span>
+                    <span>⏱️ ~3 min</span>
+                </div>
+                <span class="btn-calc">Oblicz oszczędności</span>
+            </a>
+
+            <a href="#" class="calc-card">
+                <div class="calc-icon blue">🏢</div>
+                <h3 class="calc-title">Kalkulator wynajmu vs kupna</h3>
+                <p class="calc-desc">Wynajem czy kupno mieszkania? Sprawdź, co się bardziej opłaca w Twojej sytuacji.</p>
+                <div class="calc-stats">
+                    <span>📊 14k użyć</span>
+                    <span>⏱️ ~3 min</span>
+                </div>
+                <span class="btn-calc">Porównaj opcje</span>
+            </a>
+
+            <a href="#" class="calc-card">
+                <div class="calc-icon purple">💡</div>
+                <h3 class="calc-title">Kalkulator oszczędności energii</h3>
+                <p class="calc-desc">Ile zaoszczędzisz wymieniając okna, ocieplając dom lub montując rekuperator?</p>
+                <div class="calc-stats">
+                    <span>📊 6k użyć</span>
+                    <span>⏱️ ~2 min</span>
+                </div>
+                <span class="btn-calc">Oblicz oszczędności</span>
+            </a>
+
+            <a href="#" class="calc-card">
+                <div class="calc-icon orange">⚖️</div>
+                <h3 class="calc-title">Kalkulator alimentów</h3>
+                <p class="calc-desc">Orientacyjna kwota alimentów na podstawie dochodów i potrzeb dziecka.</p>
+                <div class="calc-stats">
+                    <span>📊 19k użyć</span>
+                    <span>⏱️ ~2 min</span>
+                </div>
+                <span class="btn-calc">Oblicz kwotę</span>
+            </a>
+
+            <a href="#" class="calc-card">
+                <div class="calc-icon red">🦷</div>
+                <h3 class="calc-title">Kalkulator kosztów leczenia</h3>
+                <p class="calc-desc">Implanty, korony, ortodoncja — sprawdź orientacyjne koszty zabiegów stomatologicznych.</p>
+                <div class="calc-stats">
+                    <span>📊 8k użyć</span>
+                    <span>⏱️ ~2 min</span>
+                </div>
+                <span class="btn-calc">Oblicz koszt</span>
+            </a>
         </div>
     </div>
 </section>

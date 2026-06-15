@@ -485,6 +485,97 @@
                     </div>
                 </div>
             </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">☀️</div>
+                <div class="guide-body">
+                    <span class="guide-category">Energia</span>
+                    <h3 class="guide-title">Fotowoltaika w 2026 — kompletny poradnik</h3>
+                    <p class="guide-excerpt">Net-billing, dobór mocy, koszty instalacji i realne oszczędności. Czy panele nadal się opłacają?</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 22 min</span>
+                        <span>15k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">🏘️</div>
+                <div class="guide-body">
+                    <span class="guide-category">Nieruchomości</span>
+                    <h3 class="guide-title">Kupno mieszkania — od A do Z</h3>
+                    <p class="guide-excerpt">Rynek pierwotny vs wtórny, umowa deweloperska, kredyt, odbiór techniczny — wszystko w jednym miejscu.</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 25 min</span>
+                        <span>9,8k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">🦷</div>
+                <div class="guide-body">
+                    <span class="guide-category">Zdrowie</span>
+                    <h3 class="guide-title">Implanty zębowe — koszt, rodzaje i opinie</h3>
+                    <p class="guide-excerpt">Ile kosztuje implant, jak wygląda zabieg i kiedy warto wybrać most zamiast implantu?</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 14 min</span>
+                        <span>7,3k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">📱</div>
+                <div class="guide-body">
+                    <span class="guide-category">Technologia</span>
+                    <h3 class="guide-title">Internet domowy — porównanie technologii 2026</h3>
+                    <p class="guide-excerpt">Światłowód, LTE, 5G, kabel — która technologia najlepsza w Twojej lokalizacji?</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 11 min</span>
+                        <span>4,5k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">🏡</div>
+                <div class="guide-body">
+                    <span class="guide-category">Budownictwo</span>
+                    <h3 class="guide-title">Docieplenie domu — materiały i koszty</h3>
+                    <p class="guide-excerpt">Styropian vs wełna, metoda lekka mokra, koszty za m² i dotacje na termomodernizację.</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 16 min</span>
+                        <span>6,8k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">👶</div>
+                <div class="guide-body">
+                    <span class="guide-category">Prawo</span>
+                    <h3 class="guide-title">Alimenty — ile, jak i kiedy?</h3>
+                    <p class="guide-excerpt">Zasady ustalania alimentów, tabelki orientacyjne, procedura sądowa i egzekucja.</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 13 min</span>
+                        <span>11k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
+
+            <a href="#" class="guide-card">
+                <div class="guide-thumb">💰</div>
+                <div class="guide-body">
+                    <span class="guide-category">Finanse</span>
+                    <h3 class="guide-title">Oszczędzanie na emeryturę — IKE, IKZE, PPK</h3>
+                    <p class="guide-excerpt">Porównanie produktów emerytalnych, korzyści podatkowe i strategie oszczędzania na starość.</p>
+                    <div class="guide-meta">
+                        <span class="guide-reading-time">📖 17 min</span>
+                        <span>3,4k wyświetleń</span>
+                    </div>
+                </div>
+            </a>
         </div>
 
         <!-- PAGINATION -->
