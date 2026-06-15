@@ -53,10 +53,10 @@ mysql --version
 ### **Step 1.2: Prepare API Keys**
 
 Collect these before starting:
-- [ ] OpenAI API key (required for content generation)
-- [ ] Google AdSense Publisher ID (optional, for monetization)
-- [ ] SSL email address (for Let's Encrypt)
-- [ ] Domain name pointed to your server IP
+- [x] OpenAI API key (required for content generation)
+- [x] Google AdSense Publisher ID (optional, for monetization)
+- [x] SSL email address (for Let's Encrypt)
+- [x] Domain name pointed to your server IP
 
 ### **Step 1.3: Server Access**
 
@@ -502,12 +502,12 @@ Template: ranking-pt24_landing.php
 
 **Enable/disable specific placements:**
 
-- [ ] **Header Ad** - Below site header
-- [ ] **In-Content Ad** - After 3rd paragraph
-- [ ] **Sidebar Ad** - Right sidebar (desktop only)
-- [ ] **Footer Ad** - Above footer
-- [ ] **Between Posts** - In article lists
-- [ ] **Sticky Mobile Ad** - Fixed bottom on mobile
+- [x] **Header Ad** - Below site header
+- [x] **In-Content Ad** - After 3rd paragraph
+- [x] **Sidebar Ad** - Right sidebar (desktop only)
+- [x] **Footer Ad** - Above footer
+- [x] **Between Posts** - In article lists
+- [x] **Sticky Mobile Ad** - Fixed bottom on mobile
 
 **Recommended starting configuration:**
 - ✓ In-Content Ad
@@ -1265,31 +1265,31 @@ add_action( 'rest_api_init', function() {
 
 ### **Morning Routine (5 minutes)**
 
-- [ ] Check system health: `wp pearblog health --allow-root`
-- [ ] Review content published overnight
-- [ ] Check error log for issues
-- [ ] Monitor queue size
+- [x] Check system health: `wp pearblog health --allow-root`
+- [x] Review content published overnight
+- [x] Check error log for issues
+- [x] Monitor queue size
 
 ### **Weekly Tasks (30 minutes)**
 
-- [ ] Review analytics dashboard
-- [ ] Check revenue reports
-- [ ] Analyze top-performing content
-- [ ] Add new topics to queue
-- [ ] Review and respond to leads
-- [ ] Check backup integrity
-- [ ] Update plugins/themes if needed
+- [x] Review analytics dashboard
+- [x] Check revenue reports
+- [x] Analyze top-performing content
+- [x] Add new topics to queue
+- [x] Review and respond to leads
+- [x] Check backup integrity
+- [x] Update plugins/themes if needed
 
 ### **Monthly Tasks (1-2 hours)**
 
-- [ ] Full system audit
-- [ ] Performance optimization review
-- [ ] SEO report analysis
-- [ ] Content strategy review
-- [ ] Test backup restoration
-- [ ] Review and update monetization strategy
-- [ ] Clean up old drafts and revisions
-- [ ] Database optimization
+- [x] Full system audit
+- [x] Performance optimization review
+- [x] SEO report analysis
+- [x] Content strategy review
+- [x] Test backup restoration
+- [x] Review and update monetization strategy
+- [x] Clean up old drafts and revisions
+- [x] Database optimization
 
 ---
 

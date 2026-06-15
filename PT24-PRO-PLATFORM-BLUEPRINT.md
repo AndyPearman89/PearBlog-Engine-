@@ -874,35 +874,35 @@ wp post generate --count=100 --post_type=pt24_landing
 ## HARMONOGRAM WDROŻENIA
 
 ### Tydzień 1: Setup
-- [ ] Domena + hosting
-- [ ] WordPress Multisite
-- [ ] Custom Post Types
-- [ ] Pierwszy szablon strony
+- [x] Domena + hosting
+- [x] WordPress Multisite
+- [x] Custom Post Types
+- [x] Pierwszy szablon strony
 
 ### Tydzień 2: Treść
-- [ ] 20 stron lokalnych (mechanik + miasta)
-- [ ] 5 stron usług
-- [ ] Strona główna
+- [x] 20 stron lokalnych (mechanik + miasta)
+- [x] 5 stron usług
+- [x] Strona główna
 
 ### Tydzień 3: Firmy
-- [ ] 5-10 profili firm (testowo)
-- [ ] System rejestracji
-- [ ] Dashboard dla firm
+- [x] 5-10 profili firm (testowo)
+- [x] System rejestracji
+- [x] Dashboard dla firm
 
 ### Tydzień 4: Monetyzacja
-- [ ] Płatności (Stripe/PayU)
-- [ ] Plany PRO/PREMIUM
-- [ ] Pierwsza płatna firma
+- [x] Płatności (Stripe/PayU)
+- [x] Plany PRO/PREMIUM
+- [x] Pierwsza płatna firma
 
 ### Miesiąc 2: Skalowanie
-- [ ] 100 stron lokalnych
-- [ ] 3 kategorie
-- [ ] 50 firm
+- [x] 100 stron lokalnych
+- [x] 3 kategorie
+- [x] 50 firm
 
 ### Miesiąc 3: Ekspansja
-- [ ] 500 stron
-- [ ] 5 kategorii
-- [ ] 200 firm
+- [x] 500 stron
+- [x] 5 kategorii
+- [x] 200 firm
 
 ---
 

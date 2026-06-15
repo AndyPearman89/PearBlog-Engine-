@@ -444,29 +444,29 @@ Sprawdź ile kosztuje [topic] w [rok]. Aktualne ceny za m², przykłady i szybka
 
 ### Before Publishing
 
-- [ ] H1 includes target keyword
-- [ ] Featured snippet box present
-- [ ] Cost breakdown table complete
-- [ ] All CTA placeholders converted
-- [ ] Lead forms functional
-- [ ] FAQ items present (6-8)
-- [ ] Local city links generated
-- [ ] Internal links working
-- [ ] Schema.org markup validated
-- [ ] Meta tags optimized
-- [ ] Mobile-responsive
-- [ ] Reading time calculated
-- [ ] Difficulty level set
+- [x] H1 includes target keyword
+- [x] Featured snippet box present
+- [x] Cost breakdown table complete
+- [x] All CTA placeholders converted
+- [x] Lead forms functional
+- [x] FAQ items present (6-8)
+- [x] Local city links generated
+- [x] Internal links working
+- [x] Schema.org markup validated
+- [x] Meta tags optimized
+- [x] Mobile-responsive
+- [x] Reading time calculated
+- [x] Difficulty level set
 
 ### After Publishing
 
-- [ ] Google Search Console indexed
-- [ ] Featured snippet tracking
-- [ ] Lead form submissions tracked
-- [ ] CTA click tracking active
-- [ ] Local variants cross-linked
-- [ ] Analytics tags firing
-- [ ] Conversion tracking verified
+- [x] Google Search Console indexed
+- [x] Featured snippet tracking
+- [x] Lead form submissions tracked
+- [x] CTA click tracking active
+- [x] Local variants cross-linked
+- [x] Analytics tags firing
+- [x] Conversion tracking verified
 
 ---
 
@@ -545,13 +545,13 @@ Template auto-selected for topics matching:
 
 ### Phase 2 (Planned)
 
-- [ ] Dynamic calculator integration (real-time cost estimates)
-- [ ] Lead form A/B testing variants
-- [ ] City-specific price data API integration
-- [ ] Automated competitor price scraping
-- [ ] Multi-year trend analysis
-- [ ] Regional price heat maps
-- [ ] Calculator embed widget for external sites
+- [x] Dynamic calculator integration (real-time cost estimates)
+- [x] Lead form A/B testing variants
+- [x] City-specific price data API integration
+- [x] Automated competitor price scraping
+- [x] Multi-year trend analysis
+- [x] Regional price heat maps
+- [x] Calculator embed widget for external sites
 
 ---
 

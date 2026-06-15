@@ -488,7 +488,14 @@ class PoradnikAffiliateCopyGenerator {
      */
     public static function render_admin_page() {
         $custom_templates = get_option('acg_custom_templates', []);
-        require_once get_template_directory() . '/templates/admin/affiliate-copy-generator.php';
+        $template = get_template_directory() . '/templates/admin/affiliate-copy-generator.php';
+
+        if ( file_exists( $template ) ) {
+            require $template;
+            return;
+        }
+
+        echo '<div class="wrap"><h1>Affiliate Copy Generator</h1><p>Dashboard template is missing. The page is running in fallback mode.</p></div>';
     }
 }
 

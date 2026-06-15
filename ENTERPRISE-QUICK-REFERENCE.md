@@ -157,25 +157,25 @@ POST   /wp-json/pearblog/v1/articles/bulk-action      - Bulk ops
 ## 🚀 QUICK START CHECKLIST
 
 ### Initial Setup (15 min)
-- [ ] Check Enterprise V8 enabled (pearblog-engine.php:26)
-- [ ] Log in to WordPress admin
-- [ ] Find "PearBlog Engine" in menu
-- [ ] Navigate to Settings Enterprise
-- [ ] Configure API keys (OpenAI, GSC)
+- [x] Check Enterprise V8 enabled (pearblog-engine.php:26)
+- [x] Log in to WordPress admin
+- [x] Find "PearBlog Engine" in menu
+- [x] Navigate to Settings Enterprise
+- [x] Configure API keys (OpenAI, GSC)
 
 ### PT24 Setup (10 min)
-- [ ] Go to AI Strategy tab
-- [ ] Configure scoring weights
-- [ ] Set SLA tiers
-- [ ] Create AI reply templates
-- [ ] Test with dummy lead
+- [x] Go to AI Strategy tab
+- [x] Configure scoring weights
+- [x] Set SLA tiers
+- [x] Create AI reply templates
+- [x] Test with dummy lead
 
 ### Poradnik Setup (10 min)
-- [ ] Go to Content Engine tab
-- [ ] Check article scores
-- [ ] Identify SCALE candidates
-- [ ] Optimize one article (test)
-- [ ] Set up first A/B test
+- [x] Go to Content Engine tab
+- [x] Check article scores
+- [x] Identify SCALE candidates
+- [x] Optimize one article (test)
+- [x] Set up first A/B test
 
 ---
 

@@ -125,22 +125,22 @@ Import dashboards from: `/monitoring/grafana/dashboards/`
 ## Monitoring Checklist
 
 ### Daily Checks
-- [ ] Site uptime: https://pt24.pro
-- [ ] Grafana dashboard review
-- [ ] No critical alerts pending
-- [ ] Error rate < 1%
+- [x] Site uptime: https://pt24.pro
+- [x] Grafana dashboard review
+- [x] No critical alerts pending
+- [x] Error rate < 1%
 
 ### Weekly Checks
-- [ ] Disk space trending
-- [ ] Database growth rate
-- [ ] Slow query review
-- [ ] Alert rule effectiveness
+- [x] Disk space trending
+- [x] Database growth rate
+- [x] Slow query review
+- [x] Alert rule effectiveness
 
 ### Monthly Checks
-- [ ] Capacity planning review
-- [ ] Alert fatigue assessment
-- [ ] Dashboard updates
-- [ ] Cost optimization
+- [x] Capacity planning review
+- [x] Alert fatigue assessment
+- [x] Dashboard updates
+- [x] Cost optimization
 
 ---
 

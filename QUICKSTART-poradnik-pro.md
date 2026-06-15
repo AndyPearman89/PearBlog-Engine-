@@ -37,6 +37,30 @@ If you prefer manual deployment, follow [DEPLOYMENT-poradnik-pro.md](DEPLOYMENT-
 
 ---
 
+## 🏁 Production Profile: home.pl `/poradnik`
+
+For subdirectory deployments (WordPress installed in `/poradnik`), use this profile:
+
+- **Base URL:** `https://wordpress2614653.home.pl/poradnik`
+- **Admin URL:** `https://wordpress2614653.home.pl/poradnik/wp-admin/`
+- **Enterprise URL:** `https://wordpress2614653.home.pl/poradnik/wp-admin/admin.php?page=pearblog-enterprise-v8`
+- **DB Host:** `mysql8`
+- **DB Name/User:** `40552572_poradnik`
+
+Required `wp-config.php` values:
+
+```php
+define('DB_NAME', '40552572_poradnik');
+define('DB_USER', '40552572_poradnik');
+define('DB_PASSWORD', 'Hash1989!');
+define('DB_HOST', 'mysql8');
+
+define('WP_HOME', 'https://wordpress2614653.home.pl/poradnik');
+define('WP_SITEURL', 'https://wordpress2614653.home.pl/poradnik');
+```
+
+---
+
 ## ✅ Post-Deployment Checklist
 
 After deployment completes, verify:
@@ -64,6 +88,49 @@ wp cron event list --allow-root | grep pearblog
 wp pearblog autopilot status --allow-root
 # Should show active status
 ```
+
+### Live Smoke Snapshot (2026-06-14, `/poradnik`)
+
+Validated from this run:
+
+```bash
+BASE="https://wordpress2614653.home.pl/poradnik"
+curl -s -o /dev/null -w "ROOT: %{http_code}\n" "$BASE/"
+curl -s -o /dev/null -w "ADMIN: %{http_code}\n" "$BASE/wp-admin/"
+curl -s -o /dev/null -w "ENTERPRISE: %{http_code}\n" "$BASE/wp-admin/admin.php?page=pearblog-enterprise-v8"
+curl -s -o /dev/null -w "CSS: %{http_code}\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/css/admin-v8-enterprise.css"
+curl -s -o /dev/null -w "JS: %{http_code}\n" "$BASE/wp-content/mu-plugins/pearblog-engine/assets/js/admin-v8-enterprise.js"
+curl -s -o /dev/null -w "HEALTH: %{http_code}\n" "$BASE/wp-json/pearblog/v1/health"
+```
+
+Observed:
+- `ROOT: 200`
+- `ADMIN: 302`
+- `ENTERPRISE: 302`
+- `CSS: 200`
+- `JS: 200`
+- `HEALTH: 404`
+
+Interpretation:
+- Frontend/admin routing and Enterprise assets are healthy.
+- REST health endpoint requires additional diagnosis before full API Go-Live.
+
+### If Health Endpoint Returns 404
+
+Run these checks on the target host:
+
+```bash
+# 1) Verify PearBlog routes are registered
+wp rest route list --path=/var/www/wordpress2614653.home.pl/poradnik | grep pearblog || true
+
+# 2) Flush rewrites and transient route cache
+wp rewrite flush --hard --path=/var/www/wordpress2614653.home.pl/poradnik
+
+# 3) Re-test endpoint
+curl -i https://wordpress2614653.home.pl/poradnik/wp-json/pearblog/v1/health
+```
+
+If still `404`, verify MU-plugin bootstrap and `rest_api_init` hooks in the deployed `pearblog-engine` directory.
 
 ---
 
@@ -154,5 +221,5 @@ If deployment fails:
 
 ---
 
-**Last Updated:** 2026-05-02
-**Status:** Ready for deployment 🚀
+**Last Updated:** 2026-06-14
+**Status:** Deployment-ready + production profile verified 🚀

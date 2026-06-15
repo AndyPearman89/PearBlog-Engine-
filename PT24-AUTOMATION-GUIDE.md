@@ -605,27 +605,27 @@ wp post list \
 ## HARMONOGRAM AUTOMATYZACJI
 
 ### Week 1: Setup
-- [ ] Install OpenAI Python SDK
-- [ ] Prepare city list (100 cities)
-- [ ] Test ChatGPT prompts (10 examples)
-- [ ] Setup WP-CLI environment
+- [x] Install OpenAI Python SDK
+- [x] Prepare city list (100 cities)
+- [x] Test ChatGPT prompts (10 examples)
+- [x] Setup WP-CLI environment
 
 ### Week 2: Generate Mechanik Pages
-- [ ] Generate 100 pages (mechanik + miasta)
-- [ ] Quality check
-- [ ] Fix issues
-- [ ] Publish
+- [x] Generate 100 pages (mechanik + miasta)
+- [x] Quality check
+- [x] Fix issues
+- [x] Publish
 
 ### Week 3: Generate Other Categories
-- [ ] Hydraulik (100 pages)
-- [ ] Elektryk (100 pages)
-- [ ] Laweta (100 pages)
-- [ ] Wulkanizacja (100 pages)
+- [x] Hydraulik (100 pages)
+- [x] Elektryk (100 pages)
+- [x] Laweta (100 pages)
+- [x] Wulkanizacja (100 pages)
 
 ### Week 4: Variations & Long-tail
-- [ ] Generate "mobilny mechanik" pages
-- [ ] Generate "mechanik 24h" pages
-- [ ] Total: 600+ pages
+- [x] Generate "mobilny mechanik" pages
+- [x] Generate "mechanik 24h" pages
+- [x] Total: 600+ pages
 
 ---
 

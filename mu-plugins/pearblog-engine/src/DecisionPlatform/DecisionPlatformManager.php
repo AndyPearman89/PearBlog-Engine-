@@ -149,9 +149,13 @@ class DecisionPlatformManager {
 	 * Enrich published content with Decision Platform features
 	 *
 	 * @param int $post_id
-	 * @param array<string, mixed> $pipeline_data
+	 * @param mixed $pipeline_data
 	 */
-	public function enrich_published_content( int $post_id, array $pipeline_data ): void {
+	public function enrich_published_content( int $post_id, $pipeline_data = null ): void {
+		if ( ! is_array( $pipeline_data ) ) {
+			$pipeline_data = [];
+		}
+
 		$post = get_post( $post_id );
 		if ( ! $post ) {
 			return;

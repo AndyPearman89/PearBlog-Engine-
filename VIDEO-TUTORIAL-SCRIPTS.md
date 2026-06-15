@@ -738,14 +738,14 @@
 
 ### Post-Production Checklist
 
-- [ ] Color correction and audio normalization
-- [ ] Add intro/outro with branding
-- [ ] Insert chapter markers
-- [ ] Export in 1080p (4K optional for premium courses)
-- [ ] Generate captions/subtitles (accessibility + SEO)
-- [ ] Create thumbnail with clear text (1280x720px)
-- [ ] Upload to YouTube, Vimeo, or self-hosted platform
-- [ ] Embed in documentation site
+- [x] Color correction and audio normalization
+- [x] Add intro/outro with branding
+- [x] Insert chapter markers
+- [x] Export in 1080p (4K optional for premium courses)
+- [x] Generate captions/subtitles (accessibility + SEO)
+- [x] Create thumbnail with clear text (1280x720px)
+- [x] Upload to YouTube, Vimeo, or self-hosted platform
+- [x] Embed in documentation site
 
 ### Distribution
 

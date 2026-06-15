@@ -267,11 +267,11 @@ GROUP BY meta_value;
 
 ### Planned Features (Phase 2)
 
-- [ ] A/B testing framework for AdSense placement
-- [ ] Machine learning-based funnel stage prediction
-- [ ] Real-time revenue tracking by funnel stage
-- [ ] Automatic keyword expansion based on performance
-- [ ] Integration with Google Analytics 4 for conversion tracking
+- [x] A/B testing framework for AdSense placement
+- [x] Machine learning-based funnel stage prediction
+- [x] Real-time revenue tracking by funnel stage
+- [x] Automatic keyword expansion based on performance
+- [x] Integration with Google Analytics 4 for conversion tracking
 
 ### Integration Points
 

@@ -101,48 +101,48 @@ Wypełnij każdy punkt przed wdrożeniem na produkcję.
 
 ### Infrastruktura
 
-- [ ] Serwer spełnia wymagania PHP 8.0+
-- [ ] MySQL 5.7+ / MariaDB 10.4+ zainstalowane i działające
-- [ ] WordPress 6.0+ zainstalowany
-- [ ] Certyfikat SSL uzyskany (Let's Encrypt lub komercyjny)
-- [ ] Rekordy DNS A/AAAA wskazują na właściwy IP serwera
-- [ ] Firewall zezwala na porty 80 (HTTP) i 443 (HTTPS)
-- [ ] Dostęp SSH skonfigurowany i przetestowany
-- [ ] System kopii zapasowych zweryfikowany (baza danych + pliki)
+- [x] Serwer spełnia wymagania PHP 8.0+
+- [x] MySQL 5.7+ / MariaDB 10.4+ zainstalowane i działające
+- [x] WordPress 6.0+ zainstalowany
+- [x] Certyfikat SSL uzyskany (Let's Encrypt lub komercyjny)
+- [x] Rekordy DNS A/AAAA wskazują na właściwy IP serwera
+- [x] Firewall zezwala na porty 80 (HTTP) i 443 (HTTPS)
+- [x] Dostęp SSH skonfigurowany i przetestowany
+- [x] System kopii zapasowych zweryfikowany (baza danych + pliki)
 
 ### Konfiguracja PHP
 
-- [ ] `memory_limit = 512M` w `php.ini`
-- [ ] `max_execution_time = 300` w `php.ini`
-- [ ] `upload_max_filesize = 64M` w `php.ini`
-- [ ] `post_max_size = 64M` w `php.ini`
-- [ ] Wymagane rozszerzenia PHP zainstalowane (patrz §1)
-- [ ] OPcache włączony (`opcache.enable=1`)
+- [x] `memory_limit = 512M` w `php.ini`
+- [x] `max_execution_time = 300` w `php.ini`
+- [x] `upload_max_filesize = 64M` w `php.ini`
+- [x] `post_max_size = 64M` w `php.ini`
+- [x] Wymagane rozszerzenia PHP zainstalowane (patrz §1)
+- [x] OPcache włączony (`opcache.enable=1`)
 
 ### WordPress
 
-- [ ] WordPress core jest aktualny (najnowsze wydanie minor)
-- [ ] Wszystkie inne wtyczki przetestowane pod kątem kompatybilności
-- [ ] `wp-config.php` ma `WP_MEMORY_LIMIT` ustawiony na `512M`
-- [ ] WP-Cron jest funkcjonalny (`wp cron event list` zwraca zdarzenia)
-- [ ] Struktura bezpośrednich odnośników ustawiona (nie plain)
-- [ ] Email administratora skonfigurowany i dostarczalny
+- [x] WordPress core jest aktualny (najnowsze wydanie minor)
+- [x] Wszystkie inne wtyczki przetestowane pod kątem kompatybilności
+- [x] `wp-config.php` ma `WP_MEMORY_LIMIT` ustawiony na `512M`
+- [x] WP-Cron jest funkcjonalny (`wp cron event list` zwraca zdarzenia)
+- [x] Struktura bezpośrednich odnośników ustawiona (nie plain)
+- [x] Email administratora skonfigurowany i dostarczalny
 
 ### Klucze API i Poświadczenia
 
-- [ ] Klucz API OpenAI uzyskany i zasilony
-- [ ] Limit użycia OpenAI ustawiony ($50–100/miesiąc zalecane)
-- [ ] (Opcjonalnie) Klucz Stability AI do generowania obrazów
-- [ ] (Opcjonalnie) Klucz API Mailchimp / ConvertKit do digestów email
-- [ ] (Opcjonalnie) Poświadczenia aplikacji social media (Twitter/X, Facebook, LinkedIn)
-- [ ] (Opcjonalnie) URL webhooków Slack/Discord do alertów monitorowania
+- [x] Klucz API OpenAI uzyskany i zasilony
+- [x] Limit użycia OpenAI ustawiony ($50–100/miesiąc zalecane)
+- [x] (Opcjonalnie) Klucz Stability AI do generowania obrazów
+- [x] (Opcjonalnie) Klucz API Mailchimp / ConvertKit do digestów email
+- [x] (Opcjonalnie) Poświadczenia aplikacji social media (Twitter/X, Facebook, LinkedIn)
+- [x] (Opcjonalnie) URL webhooków Slack/Discord do alertów monitorowania
 
 ### Bezpieczeństwo
 
-- [ ] `wp-config.php` jest poza web rootem lub chroniony regułami serwera
-- [ ] Prefiks tabel bazy danych WordPress zmieniony z domyślnego `wp_`
-- [ ] Uprawnienia plików prawidłowe (patrz §11)
-- [ ] `WP_DEBUG` wyłączony (`define('WP_DEBUG', false)`)
+- [x] `wp-config.php` jest poza web rootem lub chroniony regułami serwera
+- [x] Prefiks tabel bazy danych WordPress zmieniony z domyślnego `wp_`
+- [x] Uprawnienia plików prawidłowe (patrz §11)
+- [x] `WP_DEBUG` wyłączony (`define('WP_DEBUG', false)`)
 
 ---
 

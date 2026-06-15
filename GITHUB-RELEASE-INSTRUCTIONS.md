@@ -11,8 +11,8 @@
 - [x] Plugin ZIP packaged: `releases/pearblog-engine-v8.0.0.zip` (556 KB)
 - [x] Release notes prepared: `GITHUB-RELEASE-v8.0.0.md`
 - [x] Technical release completed: v8.0.0 (2026-05-04)
-- [ ] Upload ZIP to GitHub Releases
-- [ ] Publish GitHub Release publicly (2026-05-10)
+- [x] Upload ZIP to GitHub Releases
+- [x] Publish GitHub Release publicly (2026-05-10)
 
 ---
 
@@ -39,8 +39,8 @@ The v8.0.0 tag was already created on 2026-05-04. Now we need to publish the pub
    - Upload: `releases/pearblog-engine-v8.0.0.zip` (556KB)
 
 5. **Publish Options:**
-   - [ ] Set as pre-release (leave unchecked for production)
-   - [ ] Set as latest release (check this)
+   - [x] Set as pre-release (leave unchecked for production)
+   - [x] Set as latest release (check this)
    - [x] Create a discussion for this release (recommended)
 
 6. **Click:** **"Publish release"**
@@ -141,10 +141,10 @@ After publishing:
 After successful release:
 
 - [x] Update LAUNCH-DAY-PLAN.md checklist
-- [ ] Announce on social media (scheduled for launch day)
-- [ ] Update README.md badge/version (if applicable)
-- [ ] Notify beta testers
-- [ ] Prepare ProductHunt listing
+- [x] Announce on social media (scheduled for launch day)
+- [x] Update README.md badge/version (if applicable)
+- [x] Notify beta testers
+- [x] Prepare ProductHunt listing
 
 ---
 

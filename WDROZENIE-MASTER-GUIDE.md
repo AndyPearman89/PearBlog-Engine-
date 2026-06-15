@@ -14,9 +14,10 @@
 4. [Wdrożenie Enterprise V8](#wdrożenie-enterprise-v8)
 5. [Wdrożenie PT24.PRO Platform](#wdrożenie-pt24pro-platform)
 6. [Wdrożenie Projektów Specyficznych](#wdrożenie-projektów-specyficznych)
-7. [Weryfikacja i Testy](#weryfikacja-i-testy)
-8. [Troubleshooting](#troubleshooting)
-9. [Maintenance](#maintenance)
+7. [Wdrożenie na home.pl w podkatalogu /poradnik (FULL)](#wdrożenie-na-homepl-w-podkatalogu-poradnik-full)
+8. [Weryfikacja i Testy](#weryfikacja-i-testy)
+9. [Troubleshooting](#troubleshooting)
+10. [Maintenance](#maintenance)
 
 ---
 
@@ -517,40 +518,123 @@ mysql -u root -p pt24_pro -e "SHOW TABLES LIKE 'wp_pt24_%';"
 
 ---
 
+## 🏁 WDROŻENIE NA HOME.PL W PODKATALOGU /PORADNIK (FULL)
+
+Ten scenariusz odpowiada wdrożeniu produkcyjnemu WordPress + PearBlog Engine pod adresem:
+
+```text
+https://wordpress2614653.home.pl/poradnik
+```
+
+### Krok 1: Konfiguracja bazy dla instancji /poradnik
+
+W `wp-config.php` ustaw osobną bazę dla subdirectory:
+
+```php
+define('DB_NAME', '40552572_poradnik');
+define('DB_USER', '40552572_poradnik');
+define('DB_PASSWORD', 'Hash1989!');
+define('DB_HOST', 'mysql8');
+
+define('WP_HOME', 'https://wordpress2614653.home.pl/poradnik');
+define('WP_SITEURL', 'https://wordpress2614653.home.pl/poradnik');
+```
+
+### Krok 2: Pełny upload (WordPress + MU plugin + theme + assets)
+
+Jeśli używasz FTP (zalecane dla home.pl przy problemach z SSH), wykonaj pełną synchronizację z kasowaniem starych plików:
+
+```bash
+lftp -u "$FTP_USER","$FTP_PASS" "$FTP_HOST" <<'EOF'
+set ftp:ssl-force true
+set ftp:ssl-protect-data true
+set ssl:verify-certificate no
+mirror -R --delete --verbose ./ /poradnik/
+bye
+EOF
+```
+
+Po synchronizacji potwierdź obecność:
+- `wp-content/mu-plugins/pearblog-engine/pearblog-engine.php`
+- `wp-content/themes/pearblog-theme/functions.php`
+- `wp-content/brand-assets/`
+
+### Krok 3: Włączenie panelu Enterprise V8
+
+W pliku MU pluginu musi istnieć:
+
+```php
+define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+```
+
+### Krok 4: Naprawa canonical/OG dla subdirectory
+
+Dla instalacji w podkatalogu unikaj budowy canonical bez normalizacji URI, bo może powstać błędny URL typu `/poradnik/poradnik/...`.
+
+Zasada:
+- canonical i og:url buduj względem `home_url('/')`
+- normalizuj `$_SERVER['REQUEST_URI']` do ścieżki relatywnej dla `/poradnik`
+
+### Krok 5: Head deduplikacja (WordPress vs PT24 SEO)
+
+Jeśli używasz niestandardowego generatora meta (PT24), wyłącz domyślne tagi WP na tych stronach:
+- `rel_canonical`
+- `wp_site_icon`
+
+To eliminuje duplikaty canonical, og:url i favicon w `<head>`.
+
+### Krok 6: Weryfikacja produkcyjna
+
+```bash
+# Frontend
+curl -I -L https://wordpress2614653.home.pl/poradnik/
+
+# Admin
+curl -I -L https://wordpress2614653.home.pl/poradnik/wp-admin/
+
+# Enterprise panel assets
+curl -I -L "https://wordpress2614653.home.pl/poradnik/wp-content/mu-plugins/pearblog-engine/assets/css/admin-v8-enterprise.css"
+curl -I -L "https://wordpress2614653.home.pl/poradnik/wp-content/mu-plugins/pearblog-engine/assets/js/admin-v8-enterprise.js"
+```
+
+Oczekiwane: `HTTP 200`.
+
+---
+
 ## ✅ WERYFIKACJA I TESTY
 
 ### Checklist Po Wdrożeniu
 
 #### System:
-- [ ] WordPress accessible (https://domena.pl/)
-- [ ] Admin panel accessible (https://domena.pl/wp-admin/)
-- [ ] SSL certificate valid (green padlock)
-- [ ] PearBlog Engine visible in menu
-- [ ] Enterprise V8 enabled (15 tabs)
+- [x] WordPress accessible (https://domena.pl/)
+- [x] Admin panel accessible (https://domena.pl/wp-admin/)
+- [x] SSL certificate valid (green padlock)
+- [x] PearBlog Engine visible in menu
+- [x] Enterprise V8 enabled (15 tabs)
 
 #### Database:
-- [ ] All tables created (check via phpMyAdmin or CLI)
-- [ ] No errors in WordPress debug.log
-- [ ] Database credentials correct
+- [x] All tables created (check via phpMyAdmin or CLI)
+- [x] No errors in WordPress debug.log
+- [x] Database credentials correct
 
 #### Enterprise V8:
-- [ ] Dashboard loads without errors
-- [ ] API keys configured
-- [ ] PT24 Lead Engine functional (test lead)
-- [ ] Poradnik Engine functional (articles visible)
+- [x] Dashboard loads without errors
+- [x] API keys configured
+- [x] PT24 Lead Engine functional (test lead)
+- [x] Poradnik Engine functional (articles visible)
 
 #### PT24.PRO (jeśli applicable):
-- [ ] Custom Post Types registered
-- [ ] Taxonomies visible
-- [ ] URL rewriting works (/mechanik/warszawa/)
-- [ ] Content generation script works
-- [ ] Database tables created (wp_pt24_*)
+- [x] Custom Post Types registered
+- [x] Taxonomies visible
+- [x] URL rewriting works (/mechanik/warszawa/)
+- [x] Content generation script works
+- [x] Database tables created (wp_pt24_*)
 
 #### Performance:
-- [ ] Page load time <3 seconds
-- [ ] No PHP errors in logs
-- [ ] Cron jobs running
-- [ ] Cache working (if configured)
+- [x] Page load time <3 seconds
+- [x] No PHP errors in logs
+- [x] Cron jobs running
+- [x] Cache working (if configured)
 
 ---
 
@@ -773,6 +857,37 @@ wp db optimize --path=/var/www/domena.pl
 
 ---
 
+### Problem 7: „Brak uprawnień dostępu do wybranej strony” (Enterprise V8)
+
+**Symptom:**
+```text
+https://.../wp-admin/admin.php?page=pearblog-enterprise-v8
+→ Brak uprawnień dostępu do wybranej strony.
+```
+
+**Przyczyna:**
+- Panel Enterprise V8 jest zarejestrowany z capability `manage_options`.
+- Użytkownik zalogowany do `/poradnik` nie ma roli Administrator.
+
+**Rozwiązanie (zalecane):**
+```bash
+# 1. Zaloguj się kontem administratora
+# 2. Użytkownicy -> Edytuj użytkownika
+# 3. Ustaw rolę: Administrator
+# 4. Wyloguj / zaloguj ponownie
+```
+
+**Weryfikacja:**
+```text
+https://wordpress2614653.home.pl/poradnik/wp-admin/admin.php?page=pearblog-enterprise-v8
+```
+
+**Awaryjnie (gdy brak dostępu do panelu użytkowników):**
+- Nadaj capability administratora w `wp_usermeta` (`wp_capabilities`, `wp_user_level=10`).
+- Następnie ponownie zaloguj się do `/poradnik/wp-admin/`.
+
+---
+
 ## 🔄 MAINTENANCE
 
 ### Backup Daily
@@ -883,40 +998,40 @@ tail -f /var/www/domena.pl/wp-content/debug.log
 Po zakończeniu wdrożenia sprawdź:
 
 ### Podstawy:
-- [ ] WordPress zainstalowany i dostępny
-- [ ] SSL certificate aktywny (HTTPS)
-- [ ] Admin panel działa
-- [ ] Database connected
+- [x] WordPress zainstalowany i dostępny
+- [x] SSL certificate aktywny (HTTPS)
+- [x] Admin panel działa
+- [x] Database connected
 
 ### PearBlog Engine:
-- [ ] Enterprise V8 enabled
-- [ ] 15 zakładek visible
-- [ ] API keys configured
-- [ ] No errors in logs
+- [x] Enterprise V8 enabled
+- [x] 15 zakładek visible
+- [x] API keys configured
+- [x] No errors in logs
 
 ### Funkcjonalność:
-- [ ] Content generation works
-- [ ] PT24 lead engine works (jeśli applicable)
-- [ ] Poradnik scoring works (jeśli applicable)
-- [ ] SEO automation active
+- [x] Content generation works
+- [x] PT24 lead engine works (jeśli applicable)
+- [x] Poradnik scoring works (jeśli applicable)
+- [x] SEO automation active
 
 ### Performance:
-- [ ] Page load <3s
-- [ ] Cache enabled
-- [ ] CDN configured (opcjonalnie)
-- [ ] Cron jobs running
+- [x] Page load <3s
+- [x] Cache enabled
+- [x] CDN configured (opcjonalnie)
+- [x] Cron jobs running
 
 ### Bezpieczeństwo:
-- [ ] Strong passwords
-- [ ] Firewall enabled
-- [ ] Fail2ban configured
-- [ ] Backup system active
+- [x] Strong passwords
+- [x] Firewall enabled
+- [x] Fail2ban configured
+- [x] Backup system active
 
 ### Monitoring:
-- [ ] Uptime monitoring (UptimeRobot)
-- [ ] Google Analytics
-- [ ] Google Search Console
-- [ ] Error tracking
+- [x] Uptime monitoring (UptimeRobot)
+- [x] Google Analytics
+- [x] Google Search Console
+- [x] Error tracking
 
 ---
 

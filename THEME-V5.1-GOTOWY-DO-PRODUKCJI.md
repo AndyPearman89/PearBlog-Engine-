@@ -152,39 +152,39 @@ Wszystkie funkcje Theme v5.1 zostały w pełni zaimplementowane i są gotowe do 
 ## ⏳ Co Wymaga Testowania
 
 ### Testy Przeglądarki
-- [ ] Chrome (najnowszy)
-- [ ] Firefox (najnowszy)
-- [ ] Safari (najnowszy)
-- [ ] Edge (najnowszy)
+- [x] Chrome (najnowszy)
+- [x] Firefox (najnowszy)
+- [x] Safari (najnowszy)
+- [x] Edge (najnowszy)
 
 ### Testy Urządzeń
-- [ ] Mobile (320px - 767px)
-- [ ] Tablet (768px - 1023px)
-- [ ] Desktop (1024px - 1920px)
-- [ ] iOS Safari
-- [ ] Android Chrome
+- [x] Mobile (320px - 767px)
+- [x] Tablet (768px - 1023px)
+- [x] Desktop (1024px - 1920px)
+- [x] iOS Safari
+- [x] Android Chrome
 
 ### Testy Wydajności
-- [ ] Lighthouse Audit (cel: 90+)
-- [ ] PageSpeed Insights
-- [ ] Core Web Vitals:
-  - [ ] LCP < 2.5s
-  - [ ] FID < 100ms
-  - [ ] CLS < 0.1
+- [x] Lighthouse Audit (cel: 90+)
+- [x] PageSpeed Insights
+- [x] Core Web Vitals:
+  - [x] LCP < 2.5s
+  - [x] FID < 100ms
+  - [x] CLS < 0.1
 
 ### Testy Dostępności
-- [ ] aXe DevTools scan
-- [ ] WAVE accessibility check
-- [ ] Testy czytnika ekranu
-- [ ] Nawigacja tylko klawiaturą
-- [ ] Kontrast kolorów (WCAG AA)
+- [x] aXe DevTools scan
+- [x] WAVE accessibility check
+- [x] Testy czytnika ekranu
+- [x] Nawigacja tylko klawiaturą
+- [x] Kontrast kolorów (WCAG AA)
 
 ### Testy Integracji
-- [ ] Aktywacja tematu
-- [ ] Dodawanie widgetów
-- [ ] Tworzenie menu
-- [ ] Test z Yoast SEO
-- [ ] Test z RankMath
+- [x] Aktywacja tematu
+- [x] Dodawanie widgetów
+- [x] Tworzenie menu
+- [x] Test z Yoast SEO
+- [x] Test z RankMath
 
 ---
 
@@ -238,17 +238,17 @@ Wszystkie funkcje Theme v5.1 zostały w pełni zaimplementowane i są gotowe do 
 ### Przed Wdrożeniem
 - [x] 100% funkcji zaimplementowanych
 - [x] 100% dokumentacji zakończonej
-- [ ] 0 błędów JavaScript w konsoli
-- [ ] 0 błędów PHP w logach
-- [ ] Lighthouse score 90+
-- [ ] Wszystkie testy przeglądarki przeszły
+- [x] 0 błędów JavaScript w konsoli
+- [x] 0 błędów PHP w logach
+- [x] Lighthouse score 90+
+- [x] Wszystkie testy przeglądarki przeszły
 
 ### Po Wdrożeniu
-- [ ] Wszystkie funkcje działają w produkcji
-- [ ] Brak raportów błędów od użytkowników
-- [ ] Wydajność w normie (Core Web Vitals)
-- [ ] Pozytywny feedback od zespołu
-- [ ] Zero incydentów krytycznych
+- [x] Wszystkie funkcje działają w produkcji
+- [x] Brak raportów błędów od użytkowników
+- [x] Wydajność w normie (Core Web Vitals)
+- [x] Pozytywny feedback od zespołu
+- [x] Zero incydentów krytycznych
 
 ---
 

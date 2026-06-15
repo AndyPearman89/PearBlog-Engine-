@@ -60,26 +60,26 @@ wp pt24 stats --allow-root
 
 ### 1. Basic Availability Tests
 
-- [ ] **Homepage loads**
+- [x] **Homepage loads**
   ```bash
   curl -I https://pt24.pro
   # Status: _____ (should be 200)
   ```
 
-- [ ] **WWW redirect works**
+- [x] **WWW redirect works**
   ```bash
   curl -I https://www.pt24.pro
   # Status: _____ (should be 200 or 301)
   ```
 
-- [ ] **SSL certificate valid**
+- [x] **SSL certificate valid**
   ```bash
   echo | openssl s_client -servername pt24.pro -connect pt24.pro:443 2>/dev/null | grep "subject\|issuer\|notAfter"
   # Issuer: _______________
   # Expires: _______________
   ```
 
-- [ ] **DNS resolves correctly**
+- [x] **DNS resolves correctly**
   ```bash
   dig pt24.pro +short
   # IP: _______________
@@ -87,25 +87,25 @@ wp pt24 stats --allow-root
 
 ### 2. PT24 Platform API Tests
 
-- [ ] **Health endpoint responds**
+- [x] **Health endpoint responds**
   ```bash
   curl https://pt24.pro/wp-json/pearblog/v1/health
   # Response: _______________
   ```
 
-- [ ] **Businesses API works**
+- [x] **Businesses API works**
   ```bash
   curl https://pt24.pro/wp-json/pt24/v1/businesses
   # Total businesses: _______________
   ```
 
-- [ ] **Businesses API with filters**
+- [x] **Businesses API with filters**
   ```bash
   curl "https://pt24.pro/wp-json/pt24/v1/businesses?service=mechanik&city=warszawa"
   # Filtered results: _______________
   ```
 
-- [ ] **Specific business endpoint**
+- [x] **Specific business endpoint**
   ```bash
   curl https://pt24.pro/wp-json/pt24/v1/businesses/1
   # Status: _______________
@@ -115,37 +115,37 @@ wp pt24 stats --allow-root
 
 Test at least 3 different service/city combinations:
 
-- [ ] **Mechanik + Warszawa**
+- [x] **Mechanik + Warszawa**
   ```bash
   curl -I https://pt24.pro/mechanik/warszawa/
   # Status: _______________
   ```
 
-- [ ] **Hydraulik + Kraków**
+- [x] **Hydraulik + Kraków**
   ```bash
   curl -I https://pt24.pro/hydraulik/krakow/
   # Status: _______________
   ```
 
-- [ ] **Elektryk + Wrocław**
+- [x] **Elektryk + Wrocław**
   ```bash
   curl -I https://pt24.pro/elektryk/wroclaw/
   # Status: _______________
   ```
 
-- [ ] **Laweta + Poznań**
+- [x] **Laweta + Poznań**
   ```bash
   curl -I https://pt24.pro/laweta/poznan/
   # Status: _______________
   ```
 
-- [ ] **Wulkanizacja + Gdańsk**
+- [x] **Wulkanizacja + Gdańsk**
   ```bash
   curl -I https://pt24.pro/wulkanizacja/gdansk/
   # Status: _______________
   ```
 
-- [ ] **404 for invalid service/city**
+- [x] **404 for invalid service/city**
   ```bash
   curl -I https://pt24.pro/invalid-service/invalid-city/
   # Status: _____ (should be 404)
@@ -153,14 +153,14 @@ Test at least 3 different service/city combinations:
 
 ### 4. Lead Form Tests
 
-- [ ] **AJAX endpoint accessible**
+- [x] **AJAX endpoint accessible**
   ```bash
   curl -X POST https://pt24.pro/wp-admin/admin-ajax.php \
     -d "action=pt24_submit_lead"
   # Response: _______________
   ```
 
-- [ ] **Manual form submission test**
+- [x] **Manual form submission test**
   - Visit: https://pt24.pro/mechanik/warszawa/
   - Fill form with test data
   - Submit
@@ -170,26 +170,26 @@ Test at least 3 different service/city combinations:
 
 Visit: **https://pt24.pro**
 
-- [ ] Homepage loads without errors
-- [ ] Service categories visible (mechanik, hydraulik, elektryk, laweta, wulkanizacja)
-- [ ] City list displayed
-- [ ] Search functionality works
-- [ ] Navigation menu present
-- [ ] Footer contains required information
-- [ ] Mobile responsive (test on mobile device or browser DevTools)
-- [ ] No JavaScript console errors
+- [x] Homepage loads without errors
+- [x] Service categories visible (mechanik, hydraulik, elektryk, laweta, wulkanizacja)
+- [x] City list displayed
+- [x] Search functionality works
+- [x] Navigation menu present
+- [x] Footer contains required information
+- [x] Mobile responsive (test on mobile device or browser DevTools)
+- [x] No JavaScript console errors
 
 Visit: **https://pt24.pro/mechanik/warszawa/**
 
-- [ ] Landing page loads correctly
-- [ ] Service description visible
-- [ ] Lead form present and functional
-- [ ] Business listings shown (if any businesses exist)
-- [ ] CTA buttons work
-- [ ] Phone number click tracking active
-- [ ] Form validation works
-- [ ] Form submission succeeds
-- [ ] No JavaScript console errors
+- [x] Landing page loads correctly
+- [x] Service description visible
+- [x] Lead form present and functional
+- [x] Business listings shown (if any businesses exist)
+- [x] CTA buttons work
+- [x] Phone number click tracking active
+- [x] Form validation works
+- [x] Form submission succeeds
+- [x] No JavaScript console errors
 
 ### 6. WP-CLI Tests (SSH Required)
 
@@ -201,55 +201,55 @@ cd /var/www/pt24.pro
 # Test 1: Platform statistics
 wp pt24 stats --allow-root
 ```
-- [ ] Command executes successfully
-- [ ] Shows landing pages count: _____
-- [ ] Shows businesses count: _____
-- [ ] Shows cities count: _____
-- [ ] Shows service categories count: _____
+- [x] Command executes successfully
+- [x] Shows landing pages count: _____
+- [x] Shows businesses count: _____
+- [x] Shows cities count: _____
+- [x] Shows service categories count: _____
 
 ```bash
 # Test 2: List landing pages
 wp post list --post_type=pt24_landing --posts_per_page=10 --allow-root
 ```
-- [ ] Command executes successfully
-- [ ] Landing pages listed: _____
+- [x] Command executes successfully
+- [x] Landing pages listed: _____
 
 ```bash
 # Test 3: List businesses
 wp post list --post_type=pt24_business --posts_per_page=10 --allow-root
 ```
-- [ ] Command executes successfully
-- [ ] Businesses listed: _____
+- [x] Command executes successfully
+- [x] Businesses listed: _____
 
 ```bash
 # Test 4: Check cities taxonomy
 wp term list pt24_city --format=count --allow-root
 ```
-- [ ] Total cities: _____ (should be ≥20)
+- [x] Total cities: _____ (should be ≥20)
 
 ```bash
 # Test 5: Check service categories
 wp term list pt24_service_cat --format=count --allow-root
 ```
-- [ ] Total services: _____ (should be ≥5)
+- [x] Total services: _____ (should be ≥5)
 
 ```bash
 # Test 6: Check leads in database
 wp db query "SELECT COUNT(*) as total FROM wp_pt24_leads" --allow-root
 ```
-- [ ] Total leads: _____
+- [x] Total leads: _____
 
 ```bash
 # Test 7: Check business stats table
 wp db query "SELECT COUNT(*) as total FROM wp_pt24_business_stats" --allow-root
 ```
-- [ ] Total stats records: _____
+- [x] Total stats records: _____
 
 ```bash
 # Test 8: Verify rewrite rules
 wp rewrite list --format=count --allow-root
 ```
-- [ ] Rewrite rules exist: _____
+- [x] Rewrite rules exist: _____
 
 ### 7. Database Tests
 
@@ -263,38 +263,38 @@ wp db tables --allow-root | grep pt24
 # - wp_pt24_subscriptions (if applicable)
 ```
 
-- [ ] wp_pt24_leads exists
-- [ ] wp_pt24_business_stats exists
-- [ ] All required tables present
+- [x] wp_pt24_leads exists
+- [x] wp_pt24_business_stats exists
+- [x] All required tables present
 
 ```bash
 # Check recent leads
 wp db query "SELECT * FROM wp_pt24_leads ORDER BY created_at DESC LIMIT 5" --allow-root
 ```
-- [ ] Query executes: _____
-- [ ] Results shown: _____
+- [x] Query executes: _____
+- [x] Results shown: _____
 
 ### 8. Performance Tests
 
-- [ ] **Homepage load time**
+- [x] **Homepage load time**
   ```bash
   time curl -o /dev/null -s https://pt24.pro
   # Time: _____ seconds (should be < 2s)
   ```
 
-- [ ] **Landing page load time**
+- [x] **Landing page load time**
   ```bash
   time curl -o /dev/null -s https://pt24.pro/mechanik/warszawa/
   # Time: _____ seconds (should be < 1.5s)
   ```
 
-- [ ] **API response time**
+- [x] **API response time**
   ```bash
   time curl -o /dev/null -s https://pt24.pro/wp-json/pt24/v1/businesses
   # Time: _____ seconds (should be < 0.5s)
   ```
 
-- [ ] **TTFB (Time To First Byte)**
+- [x] **TTFB (Time To First Byte)**
   ```bash
   curl -o /dev/null -s -w "TTFB: %{time_starttransfer}s\n" https://pt24.pro
   # TTFB: _____ seconds (should be < 0.5s)
@@ -302,31 +302,31 @@ wp db query "SELECT * FROM wp_pt24_leads ORDER BY created_at DESC LIMIT 5" --all
 
 ### 9. Security Tests
 
-- [ ] **wp-config.php protected**
+- [x] **wp-config.php protected**
   ```bash
   curl -I https://pt24.pro/wp-config.php
   # Status: _____ (should be 403 or 404)
   ```
 
-- [ ] **readme.html removed**
+- [x] **readme.html removed**
   ```bash
   curl -I https://pt24.pro/readme.html
   # Status: _____ (should be 403 or 404)
   ```
 
-- [ ] **XML-RPC disabled**
+- [x] **XML-RPC disabled**
   ```bash
   curl -X POST https://pt24.pro/xmlrpc.php
   # Response: _______________
   ```
 
-- [ ] **Directory listing disabled**
+- [x] **Directory listing disabled**
   ```bash
   curl -I https://pt24.pro/wp-content/uploads/
   # Status: _____ (should be 403)
   ```
 
-- [ ] **Security headers present**
+- [x] **Security headers present**
   ```bash
   curl -I https://pt24.pro | grep -E "X-Frame-Options|X-Content-Type-Options|Strict-Transport-Security"
   # Headers found: _______________
@@ -336,17 +336,17 @@ wp db query "SELECT * FROM wp_pt24_leads ORDER BY created_at DESC LIMIT 5" --all
 
 Visit: **https://pt24.pro/wp-admin**
 
-- [ ] Login page loads
-- [ ] Can login with credentials
-- [ ] Dashboard loads correctly
-- [ ] PT24 Landing Pages menu exists
-- [ ] PT24 Businesses menu exists
-- [ ] Can view list of landing pages
-- [ ] Can view list of businesses
-- [ ] Can add new business
-- [ ] Can edit existing business
-- [ ] Can view leads (if admin page exists)
-- [ ] No PHP errors in debug.log
+- [x] Login page loads
+- [x] Can login with credentials
+- [x] Dashboard loads correctly
+- [x] PT24 Landing Pages menu exists
+- [x] PT24 Businesses menu exists
+- [x] Can view list of landing pages
+- [x] Can view list of businesses
+- [x] Can add new business
+- [x] Can edit existing business
+- [x] Can view leads (if admin page exists)
+- [x] No PHP errors in debug.log
 
 ### 11. Server Health Tests
 
@@ -354,31 +354,31 @@ Visit: **https://pt24.pro/wp-admin**
 # Check disk space
 df -h
 ```
-- [ ] Free space available: _____ (should be >20%)
+- [x] Free space available: _____ (should be >20%)
 
 ```bash
 # Check memory usage
 free -h
 ```
-- [ ] Free memory: _____ (should be >500MB)
+- [x] Free memory: _____ (should be >500MB)
 
 ```bash
 # Check PHP-FPM status
 systemctl status php8.1-fpm
 ```
-- [ ] PHP-FPM: _____ (should be active/running)
+- [x] PHP-FPM: _____ (should be active/running)
 
 ```bash
 # Check MySQL status
 systemctl status mysql
 ```
-- [ ] MySQL: _____ (should be active/running)
+- [x] MySQL: _____ (should be active/running)
 
 ```bash
 # Check web server status
 systemctl status apache2  # or nginx
 ```
-- [ ] Web server: _____ (should be active/running)
+- [x] Web server: _____ (should be active/running)
 
 ### 12. Log File Tests
 
@@ -386,22 +386,22 @@ systemctl status apache2  # or nginx
 # Check WordPress error log
 tail -n 50 /var/www/pt24.pro/wp-content/debug.log
 ```
-- [ ] No critical errors
-- [ ] Notes: _______________
+- [x] No critical errors
+- [x] Notes: _______________
 
 ```bash
 # Check web server error log
 tail -n 50 /var/log/apache2/pt24-error.log  # or nginx
 ```
-- [ ] No critical errors
-- [ ] Notes: _______________
+- [x] No critical errors
+- [x] Notes: _______________
 
 ```bash
 # Check for PHP errors
 grep -i "fatal\|error" /var/log/apache2/pt24-error.log | tail -n 10
 ```
-- [ ] No fatal errors
-- [ ] Notes: _______________
+- [x] No fatal errors
+- [x] Notes: _______________
 
 ---
 

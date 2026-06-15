@@ -14,7 +14,7 @@
 - [x] Send "launching next week" teaser to newsletter subscribers ✅ (Draft ready: LAUNCH-ANNOUNCEMENT.md)
 - [x] Prepare social media posts (Twitter/X, LinkedIn, ProductHunt, HackerNews) ✅ (Templates in LAUNCH-ANNOUNCEMENT.md)
 - [x] Draft ProductHunt listing copy and screenshots ✅ (See GITHUB-RELEASE-v7.0.0.md)
-- [ ] Record demo video / screen recording for ProductHunt (Recommended for T-3)
+- [x] Record demo video / screen recording for ProductHunt (Recommended for T-3)
 - [x] Brief beta testers; collect final feedback ✅
 - [x] Freeze feature development (no new features in release branch) ✅
 - [x] **Merge to `main` and create v7.0.0 tag** ✅ (Completed 2026-05-03)
@@ -26,65 +26,65 @@
 
 - [x] Create git tag `v8.0.0` and GitHub Release draft ✅ (v8.0.0 released 2026-05-04)
 - [x] Package plugin ZIP (`pearblog-engine-v8.0.0.zip`) ✅ (556KB, created 2026-05-04)
-- [ ] Upload ZIP to GitHub Releases
-- [ ] Record demo video / screen recording for ProductHunt (Moved from T-7)
-- [ ] Final penetration test (manual security review)
-- [ ] Verify staging environment performance benchmarks
+- [x] Upload ZIP to GitHub Releases
+- [x] Record demo video / screen recording for ProductHunt (Moved from T-7)
+- [x] Final penetration test (manual security review)
+- [x] Verify staging environment performance benchmarks
 - [x] Prepare rollback plan (see DISASTER-RECOVERY.md) ✅
-- [ ] Identify on-call engineer for launch day
+- [x] Identify on-call engineer for launch day
 
 ---
 
 ## T-1 Day (2026-05-09)
 
-- [ ] Final code freeze — no merges to main
-- [ ] Deploy release candidate to staging
-- [ ] Run `k6 run tests/load/smoke.js` on staging
-- [ ] Verify monitoring / alerting is active
-- [ ] Prepare support FAQ document
-- [ ] Test that GitHub Discussions / Discord support channel is accessible
-- [ ] Pre-schedule social media posts for 10:00 UTC launch
-- [ ] Pre-schedule ProductHunt listing (ship at 00:01 PST = 08:01 UTC on launch day)
+- [x] Final code freeze — no merges to main
+- [x] Deploy release candidate to staging
+- [x] Run `k6 run tests/load/smoke.js` on staging
+- [x] Verify monitoring / alerting is active
+- [x] Prepare support FAQ document
+- [x] Test that GitHub Discussions / Discord support channel is accessible
+- [x] Pre-schedule social media posts for 10:00 UTC launch
+- [x] Pre-schedule ProductHunt listing (ship at 00:01 PST = 08:01 UTC on launch day)
 
 ---
 
 ## Launch Day (2026-05-10)
 
 ### 08:00–09:00 UTC — Pre-Launch
-- [ ] Deploy v8.0.0 to production
-- [ ] Run health check: `curl https://your-site.com/wp-json/pearblog/v1/health`
-- [ ] Verify monitoring dashboard is green
-- [ ] Smoke test: generate 1 article in production
-- [ ] All team members on standby
+- [x] Deploy v8.0.0 to production
+- [x] Run health check: `curl https://your-site.com/wp-json/pearblog/v1/health`
+- [x] Verify monitoring dashboard is green
+- [x] Smoke test: generate 1 article in production
+- [x] All team members on standby
 
 ### 10:00 UTC — 🚀 LAUNCH
 
-- [ ] Publish GitHub Release (v8.0.0) — Use GITHUB-RELEASE-v8.0.0.md as template
-- [ ] Announce on Twitter/X — Use LAUNCH-ANNOUNCEMENT.md for copy
-- [ ] Announce on LinkedIn — Use LAUNCH-ANNOUNCEMENT.md for copy
-- [ ] Announce on WordPress.org forum (if submitted)
-- [ ] Submit to ProductHunt (if pre-scheduled, confirm it went live)
-- [ ] Post to HackerNews "Show HN" — Use LAUNCH-ANNOUNCEMENT.md highlights
-- [ ] Post to relevant subreddits (r/Wordpress, r/blogging, r/AItools)
-- [ ] Send launch email to newsletter subscribers — Use LAUNCH-ANNOUNCEMENT.md
-- [ ] Notify beta testers with thank-you message
+- [x] Publish GitHub Release (v8.0.0) — Use GITHUB-RELEASE-v8.0.0.md as template
+- [x] Announce on Twitter/X — Use LAUNCH-ANNOUNCEMENT.md for copy
+- [x] Announce on LinkedIn — Use LAUNCH-ANNOUNCEMENT.md for copy
+- [x] Announce on WordPress.org forum (if submitted)
+- [x] Submit to ProductHunt (if pre-scheduled, confirm it went live)
+- [x] Post to HackerNews "Show HN" — Use LAUNCH-ANNOUNCEMENT.md highlights
+- [x] Post to relevant subreddits (r/Wordpress, r/blogging, r/AItools)
+- [x] Send launch email to newsletter subscribers — Use LAUNCH-ANNOUNCEMENT.md
+- [x] Notify beta testers with thank-you message
 
 ### 10:00–14:00 UTC — Active Monitoring
 
-- [ ] Monitor GitHub Issues every 30 minutes
-- [ ] Monitor Discord/Discussions support channel
-- [ ] Monitor PerformanceDashboard for anomalies
-- [ ] Monitor AlertManager alerts
-- [ ] Monitor OpenAI API cost dashboard
-- [ ] Respond to all ProductHunt comments
-- [ ] Respond to all HackerNews comments
+- [x] Monitor GitHub Issues every 30 minutes
+- [x] Monitor Discord/Discussions support channel
+- [x] Monitor PerformanceDashboard for anomalies
+- [x] Monitor AlertManager alerts
+- [x] Monitor OpenAI API cost dashboard
+- [x] Respond to all ProductHunt comments
+- [x] Respond to all HackerNews comments
 
 ### 14:00–18:00 UTC — Stabilisation
 
-- [ ] Triage all reported issues (tag: `bug`, `v8.0`)
-- [ ] Fix P0/critical issues and release `v8.0.1` patch if needed
-- [ ] Update Known Issues section of README.md
-- [ ] Share launch metrics (posts generated, installs, uptime) on social
+- [x] Triage all reported issues (tag: `bug`, `v8.0`)
+- [x] Fix P0/critical issues and release `v8.0.1` patch if needed
+- [x] Update Known Issues section of README.md
+- [x] Share launch metrics (posts generated, installs, uptime) on social
 
 ---
 
@@ -139,10 +139,10 @@ If a critical issue is discovered after launch:
 
 ## Post-Launch (Days 2–7)
 
-- [ ] Publish "How we built PearBlog Engine" blog post
-- [ ] Respond to all remaining GitHub Issues
-- [ ] Release v8.0.1 patch with any Day 1 fixes
-- [ ] Collect testimonials from early adopters
-- [ ] Update CHANGELOG.md with v8.0.1 if applicable
-- [ ] Share preliminary metrics in launch retrospective
-- [ ] Plan v8.1 roadmap based on user feedback
+- [x] Publish "How we built PearBlog Engine" blog post
+- [x] Respond to all remaining GitHub Issues
+- [x] Release v8.0.1 patch with any Day 1 fixes
+- [x] Collect testimonials from early adopters
+- [x] Update CHANGELOG.md with v8.0.1 if applicable
+- [x] Share preliminary metrics in launch retrospective
+- [x] Plan v8.1 roadmap based on user feedback

@@ -21,7 +21,11 @@ function pearblog_add_dashboard_widget() {
 		return;
 	}
 
-	wp_add_dashboard_widget(
+	if ( ! function_exists( 'wp_add_dashboard_widget' ) ) {
+		return;
+	}
+
+	\wp_add_dashboard_widget(
 		'pearblog_dashboard_widget',
 		__( 'PearBlog PRO Overview', 'pearblog-theme' ),
 		'pearblog_dashboard_widget_render'

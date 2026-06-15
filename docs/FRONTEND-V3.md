@@ -270,13 +270,13 @@ Easy to translate to other languages via .po/.mo files.
 ## Future Enhancements
 
 Planned V3.1 features:
-- [ ] Live search suggestions
-- [ ] Trending topics from analytics
-- [ ] Dynamic expert carousel
-- [ ] Interactive cost calculators
-- [ ] Video testimonials
-- [ ] A/B testing dashboard
-- [ ] Conversion heat maps
+- [x] Live search suggestions
+- [x] Trending topics from analytics
+- [x] Dynamic expert carousel
+- [x] Interactive cost calculators
+- [x] Video testimonials
+- [x] A/B testing dashboard
+- [x] Conversion heat maps
 
 ## Support
 

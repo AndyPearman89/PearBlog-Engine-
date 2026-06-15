@@ -580,36 +580,36 @@ sudo systemctl start nginx
 
 ### PT24.PRO
 
-- [ ] Server prepared with prerequisites
-- [ ] DNS configured and propagated
-- [ ] SSL certificate installed
-- [ ] WordPress installed
-- [ ] WP-CLI configured
-- [ ] Run deployment script
-- [ ] Verify homepage V4 template
-- [ ] Test services navigation
-- [ ] Test cities grid
-- [ ] Configure AdSense (optional)
-- [ ] Run performance tests
-- [ ] Set up monitoring
-- [ ] Create backup schedule
+- [x] Server prepared with prerequisites
+- [x] DNS configured and propagated
+- [x] SSL certificate installed
+- [x] WordPress installed
+- [x] WP-CLI configured
+- [x] Run deployment script
+- [x] Verify homepage V4 template
+- [x] Test services navigation
+- [x] Test cities grid
+- [x] Configure AdSense (optional)
+- [x] Run performance tests
+- [x] Set up monitoring
+- [x] Create backup schedule
 
 ### Poradnik.PRO
 
-- [ ] Server prepared with prerequisites
-- [ ] DNS configured and propagated
-- [ ] SSL certificate installed
-- [ ] WordPress installed
-- [ ] WP-CLI configured
-- [ ] Run deployment script
-- [ ] Verify V4 HI-PRO template
-- [ ] Test all 10 sections
-- [ ] Configure content categories
-- [ ] Set up PT24 linking
-- [ ] Configure AdSense (optional)
-- [ ] Run performance tests
-- [ ] Set up monitoring
-- [ ] Create backup schedule
+- [x] Server prepared with prerequisites
+- [x] DNS configured and propagated
+- [x] SSL certificate installed
+- [x] WordPress installed
+- [x] WP-CLI configured
+- [x] Run deployment script
+- [x] Verify V4 HI-PRO template
+- [x] Test all 10 sections
+- [x] Configure content categories
+- [x] Set up PT24 linking
+- [x] Configure AdSense (optional)
+- [x] Run performance tests
+- [x] Set up monitoring
+- [x] Create backup schedule
 
 ---
 

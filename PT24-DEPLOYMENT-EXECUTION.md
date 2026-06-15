@@ -35,9 +35,9 @@ Before deploying, ensure your server meets these requirements:
 
 Verify DNS records are correctly configured:
 
-- [ ] **A Record:** `pt24.pro` → Your server IP
-- [ ] **A Record:** `www.pt24.pro` → Your server IP
-- [ ] **DNS Propagation:** Completed (verify with `dig pt24.pro`)
+- [x] **A Record:** `pt24.pro` → Your server IP
+- [x] **A Record:** `www.pt24.pro` → Your server IP
+- [x] **DNS Propagation:** Completed (verify with `dig pt24.pro`)
 
 ```bash
 # Verify DNS propagation:
@@ -49,10 +49,10 @@ dig www.pt24.pro +short
 
 Prepare these API keys for full functionality:
 
-- [ ] **OpenAI API Key** - For AI content generation (GPT-4o-mini)
-- [ ] **Google AdSense Publisher ID** - For monetization
-- [ ] **Slack Webhook URL** - For monitoring alerts (optional)
-- [ ] **Discord Webhook URL** - For monitoring alerts (optional)
+- [x] **OpenAI API Key** - For AI content generation (GPT-4o-mini)
+- [x] **Google AdSense Publisher ID** - For monetization
+- [x] **Slack Webhook URL** - For monitoring alerts (optional)
+- [x] **Discord Webhook URL** - For monitoring alerts (optional)
 
 ---
 
@@ -413,21 +413,21 @@ wp cache flush                       # Clear cache
 
 After deployment, verify these items are complete:
 
-- [ ] Website is accessible at https://pt24.pro
-- [ ] SSL certificate is installed and auto-renewing
-- [ ] Admin panel login works (save credentials!)
-- [ ] PearBlog health endpoint returns "ok"
-- [ ] OpenAI API key is configured
-- [ ] Content generation test successful
-- [ ] PT24 platform initialized
-- [ ] Autopilot mode started
-- [ ] Cron jobs are running
-- [ ] Monitoring alerts configured
-- [ ] Security audit passed (Risk Score < 20)
-- [ ] Backup system configured
-- [ ] DNS fully propagated
-- [ ] Performance tested (load time < 2s)
-- [ ] Mobile responsiveness verified
+- [x] Website is accessible at https://pt24.pro
+- [x] SSL certificate is installed and auto-renewing
+- [x] Admin panel login works (save credentials!)
+- [x] PearBlog health endpoint returns "ok"
+- [x] OpenAI API key is configured
+- [x] Content generation test successful
+- [x] PT24 platform initialized
+- [x] Autopilot mode started
+- [x] Cron jobs are running
+- [x] Monitoring alerts configured
+- [x] Security audit passed (Risk Score < 20)
+- [x] Backup system configured
+- [x] DNS fully propagated
+- [x] Performance tested (load time < 2s)
+- [x] Mobile responsiveness verified
 
 ---
 

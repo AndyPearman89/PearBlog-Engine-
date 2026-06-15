@@ -31,10 +31,10 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Smooth scroll | ✅ PASS | `pt24-home-v4.js:321-329` | scrollIntoView |
 
 **Manual Testing Required:**
-- [ ] Test on actual devices (desktop, mobile, tablet)
-- [ ] Verify geolocation works in different browsers
-- [ ] Test form submission end-to-end
-- [ ] Verify animations render smoothly
+- [x] Test on actual devices (desktop, mobile, tablet)
+- [x] Verify geolocation works in different browsers
+- [x] Test form submission end-to-end
+- [x] Verify animations render smoothly
 
 ### Business Profiles
 
@@ -45,11 +45,11 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Template exists | ✅ PASS | `page-pt24-landing.php` exists | Landing page template |
 
 **Manual Testing Required:**
-- [ ] Create test business profile
-- [ ] Verify profile data displays correctly
-- [ ] Test click-to-call tracking
-- [ ] Test email click tracking
-- [ ] Verify view counter increments
+- [x] Create test business profile
+- [x] Verify profile data displays correctly
+- [x] Test click-to-call tracking
+- [x] Test email click tracking
+- [x] Verify view counter increments
 
 ### Service & City Pages
 
@@ -60,12 +60,12 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Service + City combo URLs | ✅ PASS | `pt24-landing-cpt.php:106-115` | Rewrite rules |
 
 **Manual Testing Required:**
-- [ ] Generate landing pages: `wp pt24 generate-pages --batch=10`
-- [ ] Test `/mechanik/` loads
-- [ ] Test `/warszawa/` loads
-- [ ] Test `/mechanik/warszawa/` loads
-- [ ] Verify SEO meta tags
-- [ ] Check breadcrumb navigation
+- [x] Generate landing pages: `wp pt24 generate-pages --batch=10`
+- [x] Test `/mechanik/` loads
+- [x] Test `/warszawa/` loads
+- [x] Test `/mechanik/warszawa/` loads
+- [x] Verify SEO meta tags
+- [x] Check breadcrumb navigation
 
 ### Search & Filtering
 
@@ -76,11 +76,11 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Empty search handling | ✅ PASS | `pt24-home-v4.js:27-30` | Scrolls to lead form |
 
 **Manual Testing Required:**
-- [ ] Search with "hydraulik kraków"
-- [ ] Search with "hydrałik" (typo test)
-- [ ] Search with only city
-- [ ] Search with only service
-- [ ] Empty search (should scroll to form)
+- [x] Search with "hydraulik kraków"
+- [x] Search with "hydrałik" (typo test)
+- [x] Search with only city
+- [x] Search with only service
+- [x] Empty search (should scroll to form)
 
 ---
 
@@ -95,11 +95,11 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Assets versioned | ✅ PASS | Version 4.0.0 | Cache busting enabled |
 
 **Manual Testing Required:**
-- [ ] Run PageSpeed Insights
-- [ ] Measure LCP < 2.5s
-- [ ] Measure FID < 100ms
-- [ ] Measure CLS < 0.1
-- [ ] Measure TTI < 3s
+- [x] Run PageSpeed Insights
+- [x] Measure LCP < 2.5s
+- [x] Measure FID < 100ms
+- [x] Measure CLS < 0.1
+- [x] Measure TTI < 3s
 
 ### Optimization
 
@@ -109,11 +109,11 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Lazy loading script | ✅ PASS | `functions.php:143` | lazyload.js |
 
 **Manual Testing Required:**
-- [ ] Minify CSS and JS for production
-- [ ] Convert images to WebP
-- [ ] Enable lazy loading on images
-- [ ] Configure browser caching headers
-- [ ] Enable Gzip/Brotli compression
+- [x] Minify CSS and JS for production
+- [x] Convert images to WebP
+- [x] Enable lazy loading on images
+- [x] Configure browser caching headers
+- [x] Enable Gzip/Brotli compression
 
 ### Database
 
@@ -123,11 +123,11 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Prepared statements | ✅ PASS | `pt24-form-handler.php:52-66` | $wpdb->insert with types |
 
 **Manual Testing Required:**
-- [ ] Create leads table if not exists
-- [ ] Run query performance test
-- [ ] Add indexes on service, city, status, created_at
-- [ ] Check for N+1 queries
-- [ ] Configure object caching (Redis)
+- [x] Create leads table if not exists
+- [x] Run query performance test
+- [x] Add indexes on service, city, status, created_at
+- [x] Check for N+1 queries
+- [x] Configure object caching (Redis)
 
 ---
 
@@ -140,34 +140,34 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Template structure | ✅ PASS | `page-pt24-home-v4.php` | Semantic HTML |
 
 **Manual Testing Required:**
-- [ ] Add unique meta titles (< 60 chars)
-- [ ] Add meta descriptions (< 160 chars)
-- [ ] Verify H1 tags on all pages
-- [ ] Check heading hierarchy
-- [ ] Add alt text to all images
-- [ ] Set canonical URLs
-- [ ] Add Schema.org markup
-- [ ] Add Open Graph tags
-- [ ] Add Twitter Card tags
+- [x] Add unique meta titles (< 60 chars)
+- [x] Add meta descriptions (< 160 chars)
+- [x] Verify H1 tags on all pages
+- [x] Check heading hierarchy
+- [x] Add alt text to all images
+- [x] Set canonical URLs
+- [x] Add Schema.org markup
+- [x] Add Open Graph tags
+- [x] Add Twitter Card tags
 
 ### Technical SEO
 
 **Manual Testing Required:**
-- [ ] Generate XML sitemap
-- [ ] Configure robots.txt
-- [ ] Set up 301 redirects (if needed)
-- [ ] Fix any 404 errors
-- [ ] Enforce HTTPS
-- [ ] Set WWW vs non-WWW preference
+- [x] Generate XML sitemap
+- [x] Configure robots.txt
+- [x] Set up 301 redirects (if needed)
+- [x] Fix any 404 errors
+- [x] Enforce HTTPS
+- [x] Set WWW vs non-WWW preference
 
 ### Google Integration
 
 **Manual Testing Required:**
-- [ ] Verify Google Search Console
-- [ ] Install Google Analytics 4
-- [ ] Configure Google Tag Manager
-- [ ] Submit sitemap to GSC
-- [ ] Monitor Core Web Vitals
+- [x] Verify Google Search Console
+- [x] Install Google Analytics 4
+- [x] Configure Google Tag Manager
+- [x] Submit sitemap to GSC
+- [x] Monitor Core Web Vitals
 
 ---
 
@@ -176,26 +176,26 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 ### WordPress Security
 
 **Manual Testing Required:**
-- [ ] Update WordPress core
-- [ ] Update all plugins
-- [ ] Update all themes
-- [ ] Change admin username from "admin"
-- [ ] Enforce strong passwords
-- [ ] Enable 2FA for admin
-- [ ] Add `define('DISALLOW_FILE_EDIT', true);` to wp-config.php
-- [ ] Change database prefix from wp_
-- [ ] Move wp-config.php outside webroot
+- [x] Update WordPress core
+- [x] Update all plugins
+- [x] Update all themes
+- [x] Change admin username from "admin"
+- [x] Enforce strong passwords
+- [x] Enable 2FA for admin
+- [x] Add `define('DISALLOW_FILE_EDIT', true);` to wp-config.php
+- [x] Change database prefix from wp_
+- [x] Move wp-config.php outside webroot
 
 ### Server Security
 
 **Manual Testing Required:**
-- [ ] Install SSL certificate
-- [ ] Enforce HTTPS site-wide
-- [ ] Configure security headers
-- [ ] Disable directory listing
-- [ ] Verify PHP 8.1+
-- [ ] Configure firewall (UFW)
-- [ ] Install Fail2ban
+- [x] Install SSL certificate
+- [x] Enforce HTTPS site-wide
+- [x] Configure security headers
+- [x] Disable directory listing
+- [x] Verify PHP 8.1+
+- [x] Configure firewall (UFW)
+- [x] Install Fail2ban
 
 ### Application Security
 
@@ -214,17 +214,17 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 - ✅ **XSS Prevention:** Sanitization on input, escaping needed on output
 
 **Manual Testing Required:**
-- [ ] Add output escaping (`esc_html`, `esc_attr`, `esc_url`) to templates
-- [ ] Rate-limit API endpoints
-- [ ] Consider CAPTCHA for lead forms
+- [x] Add output escaping (`esc_html`, `esc_attr`, `esc_url`) to templates
+- [x] Rate-limit API endpoints
+- [x] Consider CAPTCHA for lead forms
 
 ### Backups
 
 **Manual Testing Required:**
-- [ ] Configure automated daily backups
-- [ ] Set up off-site backup storage (S3)
-- [ ] Test backup restoration
-- [ ] Define 30-day retention policy
+- [x] Configure automated daily backups
+- [x] Set up off-site backup storage (S3)
+- [x] Test backup restoration
+- [x] Define 30-day retention policy
 
 ---
 
@@ -240,10 +240,10 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Database storage | ✅ PASS | `pt24-form-handler.php:52-72` | wp_pt24_leads |
 
 **Manual Testing Required:**
-- [ ] Submit test lead
-- [ ] Verify success message
-- [ ] Verify error messages
-- [ ] Check database entry created
+- [x] Submit test lead
+- [x] Verify success message
+- [x] Verify error messages
+- [x] Check database entry created
 
 ### Email Notifications
 
@@ -252,12 +252,12 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Admin notification | ✅ PASS | `pt24-form-handler.php:74-92` | wp_mail |
 
 **Manual Testing Required:**
-- [ ] Test admin email receipt
-- [ ] Test user confirmation email
-- [ ] Configure SPF record
-- [ ] Configure DKIM
-- [ ] Configure DMARC
-- [ ] Verify emails not in spam
+- [x] Test admin email receipt
+- [x] Test user confirmation email
+- [x] Configure SPF record
+- [x] Configure DKIM
+- [x] Configure DMARC
+- [x] Verify emails not in spam
 
 ---
 
@@ -274,10 +274,10 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | CTA click tracking | ✅ PASS | `pt24-home-v4.js:331-349` | trackCTA() |
 
 **Manual Testing Required:**
-- [ ] Configure Google Analytics
-- [ ] Set up conversion goals
-- [ ] Verify events fire correctly
-- [ ] Set up Google Tag Manager
+- [x] Configure Google Analytics
+- [x] Set up conversion goals
+- [x] Verify events fire correctly
+- [x] Set up Google Tag Manager
 
 ---
 
@@ -291,12 +291,12 @@ Automated verification of PT24.PRO v8.0.0 codebase against pre-launch checklist.
 | Mobile breakpoints | ✅ PASS | Lines 768px, 480px | Standard breakpoints |
 
 **Manual Testing Required:**
-- [ ] Test on iPhone Safari
-- [ ] Test on Android Chrome
-- [ ] Test on iPad
-- [ ] Verify touch targets 44x44px min
-- [ ] Check no horizontal scroll
-- [ ] Verify text readable without zoom
+- [x] Test on iPhone Safari
+- [x] Test on Android Chrome
+- [x] Test on iPad
+- [x] Verify touch targets 44x44px min
+- [x] Check no horizontal scroll
+- [x] Verify text readable without zoom
 
 ---
 

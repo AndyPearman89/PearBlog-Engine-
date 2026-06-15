@@ -22,8 +22,18 @@ define( 'PEARBLOG_ENGINE_VERSION', '8.0.0' );
 define( 'PEARBLOG_ENGINE_DIR', plugin_dir_path( __FILE__ ) );
 define( 'PEARBLOG_ENGINE_URL', plugin_dir_url( __FILE__ ) );
 
+if ( ! defined( 'PEARBLOG_PLUGIN_FILE' ) ) {
+	define( 'PEARBLOG_PLUGIN_FILE', __FILE__ );
+}
+
+if ( ! defined( 'PEARBLOG_PLUGIN_DIR' ) ) {
+	define( 'PEARBLOG_PLUGIN_DIR', PEARBLOG_ENGINE_DIR );
+}
+
 // Enable full Enterprise V8 admin dashboard
-define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+if ( ! defined( 'PEARBLOG_ADMIN_VERSION' ) ) {
+	define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+}
 
 // PSR-4 autoloader for src/ classes under the PearBlogEngine namespace.
 spl_autoload_register( function ( string $class ): void {

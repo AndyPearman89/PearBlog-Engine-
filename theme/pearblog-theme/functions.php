@@ -395,6 +395,16 @@ function pearblog_get_related_posts($post_id = null, $limit = 3) {
  */
 
 /**
+ * Build a public URL for an asset deployed under wp-content/brand-assets.
+ *
+ * @param string $relative_path Relative path inside brand-assets.
+ * @return string
+ */
+function pearblog_get_brand_asset_url($relative_path) {
+    return content_url('brand-assets/' . ltrim($relative_path, '/'));
+}
+
+/**
  * Get brand logo URL
  *
  * @param string $type Logo type: primary, dark, light, icon, wordmark
@@ -414,7 +424,7 @@ function pearblog_get_brand_logo($type = 'primary', $format = 'svg') {
     }
 
     // Fallback to brand assets directory
-    $base_path = PEARBLOG_URI . '/../../brand-assets/logo/';
+    $base_path = pearblog_get_brand_asset_url('logo/');
 
     $logos = array(
         'primary' => $base_path . 'pearblog-logo-primary.' . $format,
@@ -434,11 +444,11 @@ function pearblog_get_brand_logo($type = 'primary', $format = 'svg') {
  * @return string Favicon URL
  */
 function pearblog_get_favicon($size = '32') {
-    $base_path = PEARBLOG_URI . '/../../brand-assets/favicon/';
+    $base_path = pearblog_get_brand_asset_url('favicon/');
 
     $special_types = array(
-        'ico' => $base_path . 'favicon.ico',
-        'apple' => $base_path . 'apple-touch-icon.png',
+        'ico' => $base_path . 'favicon.svg',
+        'apple' => $base_path . 'favicon.svg',
         'safari' => $base_path . 'safari-pinned-tab.svg',
     );
 
@@ -446,7 +456,7 @@ function pearblog_get_favicon($size = '32') {
         return $special_types[$size];
     }
 
-    return $base_path . 'favicon-' . $size . 'x' . $size . '.png';
+    return $base_path . 'favicon.svg';
 }
 
 /**
@@ -457,9 +467,9 @@ function pearblog_get_favicon($size = '32') {
  */
 function pearblog_get_social_image($type = 'og') {
     $images = array(
-        'og' => 'brand-assets/social/pearblog-og-default.png',
-        'twitter' => 'brand-assets/social/pearblog-twitter-card.png',
-        'profile' => 'brand-assets/social/pearblog-profile-default.png',
+        'og' => 'brand-assets/social/pearblog-og-default.svg',
+        'twitter' => 'brand-assets/social/pearblog-twitter-card.svg',
+        'profile' => 'brand-assets/logo/pearblog-icon.svg',
     );
 
     $selected = $images[$type] ?? $images['og'];
@@ -495,14 +505,13 @@ function pearblog_get_social_image($type = 'og') {
  * Add favicons to wp_head
  */
 function pearblog_add_favicons() {
-    $favicon_path = PEARBLOG_URI . '/../../brand-assets/favicon/';
+    $favicon_svg = pearblog_get_favicon('32');
+    $favicon_mask = pearblog_get_favicon('safari');
     ?>
     <!-- Favicons - ULTRA PRO -->
-    <link rel="icon" type="image/x-icon" href="<?php echo esc_url($favicon_path . 'favicon.ico'); ?>">
-    <link rel="icon" type="image/png" sizes="32x32" href="<?php echo esc_url($favicon_path . 'favicon-32x32.png'); ?>">
-    <link rel="icon" type="image/png" sizes="16x16" href="<?php echo esc_url($favicon_path . 'favicon-16x16.png'); ?>">
-    <link rel="apple-touch-icon" sizes="180x180" href="<?php echo esc_url($favicon_path . 'apple-touch-icon.png'); ?>">
-    <link rel="mask-icon" href="<?php echo esc_url($favicon_path . 'safari-pinned-tab.svg'); ?>" color="#4ADE80">
+    <link rel="icon" type="image/svg+xml" href="<?php echo esc_url($favicon_svg); ?>">
+    <link rel="apple-touch-icon" href="<?php echo esc_url($favicon_svg); ?>">
+    <link rel="mask-icon" href="<?php echo esc_url($favicon_mask); ?>" color="#4ADE80">
     <meta name="theme-color" content="#4ADE80">
     <?php
 }
@@ -512,6 +521,13 @@ add_action('wp_head', 'pearblog_add_favicons', 1);
  * Add Open Graph and Twitter Card meta tags with canonical image support
  */
 function pearblog_add_social_meta_tags() {
+    $pt24_service = function_exists('get_query_var') ? get_query_var('pt24_service', '') : '';
+    $pt24_city = function_exists('get_query_var') ? get_query_var('pt24_city', '') : '';
+
+    if (function_exists('pt24_output_seo_meta') && (is_front_page() || !empty($pt24_service) || !empty($pt24_city))) {
+        return;
+    }
+
     $site_name = get_bloginfo('name');
     $site_desc = get_bloginfo('description');
     $og_image = pearblog_get_social_image('og');

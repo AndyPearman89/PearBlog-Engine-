@@ -1,0 +1,12 @@
+export { Header } from "./sections/header";
+export { HeroSection } from "./sections/hero";
+export { CategoriesSection } from "./sections/categories";
+export { ExpertsSection } from "./sections/experts";
+export { QASection } from "./sections/qa";
+export { RankingsSection } from "./sections/rankings";
+export { CalculatorsSection } from "./sections/calculators";
+export { ReviewsSection } from "./sections/reviews";
+export { LeadEngineSection } from "./sections/lead-engine";
+export { SEOSection } from "./sections/seo";
+export { Footer } from "./sections/footer";
+export { SectionHeader } from "./sections/section-header";

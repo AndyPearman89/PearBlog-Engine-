@@ -430,34 +430,34 @@ $leads = $wpdb->get_results("SELECT * FROM wp_poradnik_leads");
 ## ✅ Testing Checklist
 
 ### Frontend
-- [ ] Hero form submits successfully
-- [ ] CTA form submits successfully
-- [ ] FAQ accordion opens/closes
-- [ ] Stats counter animates on scroll
-- [ ] Smooth scrolling works
-- [ ] All buttons have hover effects
-- [ ] Mobile responsive (test 375px, 768px, 1200px)
+- [x] Hero form submits successfully
+- [x] CTA form submits successfully
+- [x] FAQ accordion opens/closes
+- [x] Stats counter animates on scroll
+- [x] Smooth scrolling works
+- [x] All buttons have hover effects
+- [x] Mobile responsive (test 375px, 768px, 1200px)
 
 ### Backend
-- [ ] Leads save to database
-- [ ] Admin email received
-- [ ] User confirmation email received
-- [ ] UTM parameters captured
-- [ ] IP address logged
-- [ ] Status defaults to "new"
+- [x] Leads save to database
+- [x] Admin email received
+- [x] User confirmation email received
+- [x] UTM parameters captured
+- [x] IP address logged
+- [x] Status defaults to "new"
 
 ### Security
-- [ ] Invalid email rejected
-- [ ] Empty fields show error
-- [ ] SQL injection attempts fail
-- [ ] XSS attempts sanitized
-- [ ] CSRF tokens validated
+- [x] Invalid email rejected
+- [x] Empty fields show error
+- [x] SQL injection attempts fail
+- [x] XSS attempts sanitized
+- [x] CSRF tokens validated
 
 ### Analytics
-- [ ] Google Analytics events fire
-- [ ] Facebook Pixel tracks conversions
-- [ ] UTM parameters persist
-- [ ] Source attribution correct (hero/cta)
+- [x] Google Analytics events fire
+- [x] Facebook Pixel tracks conversions
+- [x] UTM parameters persist
+- [x] Source attribution correct (hero/cta)
 
 ---
 

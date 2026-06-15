@@ -248,6 +248,19 @@ class PoradnikRPMLeadFusion {
         global $wpdb;
 
         $revenue_table = $wpdb->prefix . 'rpmf_revenue';
+        $leads_table = $wpdb->prefix . 'poradnik_leads';
+
+        if ( ! self::table_exists( $revenue_table ) || ! self::table_exists( $leads_table ) ) {
+            return [
+                'total_revenue' => 0,
+                'revenue_by_source' => [],
+                'total_leads' => 0,
+                'lead_value_by_tier' => array_fill_keys( array_keys( self::LEAD_VALUE_TIERS ), [ 'count' => 0, 'value' => 0, 'total' => 0 ] ),
+                'total_views' => 0,
+                'overall_rpm' => 0,
+                'daily_trend' => [],
+            ];
+        }
 
         // Total revenue
         $total_revenue = $wpdb->get_var($wpdb->prepare(
@@ -265,7 +278,6 @@ class PoradnikRPMLeadFusion {
         ), ARRAY_A);
 
         // Lead stats
-        $leads_table = $wpdb->prefix . 'poradnik_leads';
         $total_leads = $wpdb->get_var($wpdb->prepare(
             "SELECT COUNT(*) FROM $leads_table WHERE created_at >= DATE_SUB(NOW(), INTERVAL %d DAY)",
             $days
@@ -469,6 +481,17 @@ class PoradnikRPMLeadFusion {
     }
 
     /**
+     * Check whether a database table exists.
+     */
+    private static function table_exists( string $table_name ): bool {
+        global $wpdb;
+
+        $found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table_name ) );
+
+        return $found === $table_name;
+    }
+
+    /**
      * AJAX: Get dashboard data
      */
     public static function ajax_get_dashboard_data() {
@@ -592,7 +615,14 @@ class PoradnikRPMLeadFusion {
         $summary = self::get_dashboard_summary(30);
         $top_posts = self::get_top_posts_by_rpm(10, 30);
 
-        require_once get_template_directory() . '/templates/admin/rpm-lead-fusion.php';
+        $template = get_template_directory() . '/templates/admin/rpm-lead-fusion.php';
+
+        if ( file_exists( $template ) ) {
+            require $template;
+            return;
+        }
+
+        echo '<div class="wrap"><h1>RPM Lead Fusion</h1><p>Dashboard template is missing. The page is running in fallback mode.</p></div>';
     }
 }
 
