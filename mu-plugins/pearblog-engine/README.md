@@ -30,7 +30,7 @@ composer install
 vendor/bin/phpunit
 ```
 
-**Test suite:** 1 760 tests, 0 failures (as of v9.0 session 11).
+**Test suite:** 1 760 tests, 0 failures.
 
 ---
 
@@ -454,8 +454,8 @@ LeadAI/
 | Namespace | Endpoints | Auth |
 |-----------|-----------|------|
 | `pearblog/v1/automation` | `/create-content`, `/process-content`, `/status` | API key |
-| `pearblog/v1/mobile` | `/dashboard`, `/queue`, `/approve`, `/reject`, `/alerts`, `/sites` | ****** |
-| `pearblog/v1/graphql` | `/query` | ****** + capability |
+| `pearblog/v1/mobile` | `/dashboard`, `/queue`, `/approve`, `/reject`, `/alerts`, `/sites` | Bearer token |
+| `pearblog/v1/graphql` | `/query` | Bearer token + capability |
 | `pearblog/v1/topics` | CRUD | Admin cookie |
 | `pearblog/v1/dashboard` | Stats aggregation | Admin cookie |
 | `pearblog/v1/roi` | `/`, `/{post_id}` | Admin cookie |
