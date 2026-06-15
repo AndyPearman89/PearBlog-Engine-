@@ -368,6 +368,84 @@
             transform: translateY(-1px);
         }
 
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .calc-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px;
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--gray-200);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .calc-card:hover {
+            box-shadow: 0 6px 20px rgba(108,43,217,0.10);
+            transform: translateY(-2px);
+        }
+
+        .calc-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #f0e8ff;
+            color: var(--purple-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .calc-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .lead-cta-section {
+            margin-top: 32px;
+            padding: 48px 32px;
+            background: linear-gradient(135deg, var(--purple-primary), #4c1d95);
+            border-radius: 24px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .lead-cta-section h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .lead-cta-section p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .lead-cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 10px;
+            background: var(--orange-cta);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .lead-cta-btn:hover { background: #ea580c; }
+
         .footer-note {
             padding-top: 12px;
             text-align: center;
@@ -647,6 +725,37 @@
                         <a href="#" class="tag-link">Najlepsze kancelarie nieruchomości Gdańsk</a>
                         <a href="#" class="tag-link">Adwokaci od odszkodowań Łódź</a>
                     </div>
+                </section>
+
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2 id="kalkulatory">Kalkulatory</h2>
+                    </div>
+                    <p>Oblicz koszty i zaplanuj działania z pomocą naszych narzędzi.</p>
+                    <div class="calc-grid">
+                        <a href="/kalkulator/alimenty" class="calc-card">
+                            <div class="calc-icon">🧮</div>
+                            <div class="calc-name">Kalkulator alimentów</div>
+                        </a>
+                        <a href="/kalkulator/odszkodowanie" class="calc-card">
+                            <div class="calc-icon">💰</div>
+                            <div class="calc-name">Kalkulator odszkodowania</div>
+                        </a>
+                        <a href="/kalkulator/koszty-sadowe" class="calc-card">
+                            <div class="calc-icon">⚖️</div>
+                            <div class="calc-name">Kalkulator kosztów sądowych</div>
+                        </a>
+                        <a href="/kalkulator/podatek-od-spadku" class="calc-card">
+                            <div class="calc-icon">📋</div>
+                            <div class="calc-name">Kalkulator podatku od spadku</div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="lead-cta-section">
+                    <h2>Potrzebujesz porady prawnej?</h2>
+                    <p>Opisz swoją sytuację i otrzymaj spersonalizowaną odpowiedź od zweryfikowanego eksperta w ciągu 24h.</p>
+                    <a href="/dla-specjalistow" class="lead-cta-btn">Wyślij zapytanie →</a>
                 </section>
             </div>
             <div class="footer-note">Szablon kategorii Poradnik.pro zaprojektowany w układzie zgodnym z wireframe dla platformy Poradnik.pro.</div>

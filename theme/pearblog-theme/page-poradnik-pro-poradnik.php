@@ -578,6 +578,27 @@
                             </div>
                         </div>
                     </section>
+
+                    <section style="margin-top: 40px;">
+                        <div class="section-title">
+                            <h2>Powiązane pytania</h2>
+                            <span>Q&amp;A</span>
+                        </div>
+                        <div class="faq-list">
+                            <div class="faq-item">
+                                <h3><a href="/pytanie/jak-sprawdzic-plan-zagospodarowania" style="color:inherit;">Jak sprawdzić plan zagospodarowania przestrzennego?</a></h3>
+                                <p>Dowiedz się, gdzie i jak uzyskać informacje o przeznaczeniu terenu w miejscowym planie zagospodarowania.</p>
+                            </div>
+                            <div class="faq-item">
+                                <h3><a href="/pytanie/ile-trwa-sprzedaz-dzialki" style="color:inherit;">Ile czasu trwa sprzedaż działki?</a></h3>
+                                <p>Średni czas sprzedaży i czynniki wpływające na szybkość transakcji.</p>
+                            </div>
+                            <div class="faq-item">
+                                <h3><a href="/pytanie/podatek-od-sprzedazy-dzialki" style="color:inherit;">Jaki podatek zapłacę od sprzedaży działki?</a></h3>
+                                <p>Zasady opodatkowania i zwolnienia przy sprzedaży nieruchomości gruntowej.</p>
+                            </div>
+                        </div>
+                    </section>
                 </article>
 
                 <aside class="sidebar">

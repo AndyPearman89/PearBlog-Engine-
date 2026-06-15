@@ -331,6 +331,121 @@
             color: var(--muted);
         }
 
+        .compare-section,
+        .experts-section,
+        .related-section {
+            margin-top: 32px;
+            padding: 28px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow);
+        }
+
+        .compare-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 18px;
+            font-size: 0.92rem;
+        }
+
+        .compare-table th,
+        .compare-table td {
+            padding: 14px 16px;
+            text-align: center;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .compare-table th { background: #faf7ff; font-weight: 700; }
+        .compare-table td:first-child { text-align: left; font-weight: 500; }
+        .compare-table tr:last-child td { border-bottom: none; }
+
+        .experts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 18px;
+        }
+
+        .expert-card {
+            text-align: center;
+            padding: 22px 16px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: #faf7ff;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .expert-card:hover {
+            box-shadow: 0 6px 20px rgba(108,43,217,0.10);
+            transform: translateY(-2px);
+        }
+
+        .expert-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple), #9b6bff);
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .expert-name { font-weight: 700; font-size: 0.95rem; margin-bottom: 3px; }
+        .expert-role { font-size: 0.85rem; color: var(--muted); margin-bottom: 8px; }
+        .expert-link {
+            display: inline-block;
+            padding: 6px 14px;
+            border-radius: 8px;
+            background: var(--purple);
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+        }
+        .expert-link:hover { background: var(--purple-dark); }
+
+        .related-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .related-item {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 16px 18px;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--line);
+            background: #fff;
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .related-item:hover {
+            border-color: var(--purple);
+            transform: translateY(-1px);
+        }
+
+        .related-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: #f0e8ff;
+            color: var(--purple);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .related-text { font-size: 0.92rem; font-weight: 500; flex: 1; }
+        .related-arrow { color: var(--muted); font-size: 1.1rem; }
+
         @media (max-width: 960px) {
             .header-inner { flex-wrap: wrap; padding: 14px 0; }
             .main-nav { order: 3; width: 100%; justify-content: center; gap: 18px; }
@@ -520,6 +635,104 @@
                             <p>Ranking jest odświeżany co miesiąc oraz po istotnych zmianach w tabelach opłat, regulaminach promocji i funkcjach aplikacji mobilnych.</p>
                         </div>
                     </details>
+                </div>
+            </section>
+
+            <section class="compare-section" aria-labelledby="compare-heading">
+                <h2 id="compare-heading">Porównanie wybranych ofert</h2>
+                <div style="overflow-x:auto;">
+                    <table class="compare-table">
+                        <thead>
+                            <tr>
+                                <th>Cecha</th>
+                                <th>mBank eKonto</th>
+                                <th>ING Konto Direct</th>
+                                <th>PKO BP iKonto</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Opłata za prowadzenie</td>
+                                <td>0 zł</td>
+                                <td>0 zł</td>
+                                <td>0 zł (z wpływem)</td>
+                            </tr>
+                            <tr>
+                                <td>Karta do konta</td>
+                                <td>0 zł (5 transakcji)</td>
+                                <td>0 zł (1 transakcja)</td>
+                                <td>7 zł/mies.</td>
+                            </tr>
+                            <tr>
+                                <td>Wypłaty z bankomatów</td>
+                                <td>Bez limitu własne</td>
+                                <td>1 darmowa/mies. obce</td>
+                                <td>Własne: 0 zł</td>
+                            </tr>
+                            <tr>
+                                <td>Aplikacja mobilna</td>
+                                <td>★★★★★</td>
+                                <td>★★★★☆</td>
+                                <td>★★★★☆</td>
+                            </tr>
+                            <tr>
+                                <td>BLIK</td>
+                                <td>Tak</td>
+                                <td>Tak</td>
+                                <td>Tak</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <section class="experts-section" aria-labelledby="experts-heading">
+                <h2 id="experts-heading">Polecani eksperci</h2>
+                <div class="experts-grid">
+                    <div class="expert-card">
+                        <div class="expert-avatar">MK</div>
+                        <div class="expert-name">Michał Kowalski</div>
+                        <div class="expert-role">Doradca finansowy</div>
+                        <a href="#" class="expert-link">Zobacz profil</a>
+                    </div>
+                    <div class="expert-card">
+                        <div class="expert-avatar">AZ</div>
+                        <div class="expert-name">Anna Zawadzka</div>
+                        <div class="expert-role">Analityk bankowy</div>
+                        <a href="#" class="expert-link">Zobacz profil</a>
+                    </div>
+                    <div class="expert-card">
+                        <div class="expert-avatar">PW</div>
+                        <div class="expert-name">Paweł Wiśniewski</div>
+                        <div class="expert-role">Ekspert kredytowy</div>
+                        <a href="#" class="expert-link">Zobacz profil</a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="related-section" aria-labelledby="related-heading">
+                <h2 id="related-heading">Powiązane rankingi</h2>
+                <div class="related-list">
+                    <a href="/ranking/najlepsze-konta-oszczednosciowe" class="related-item">
+                        <div class="related-icon">📊</div>
+                        <div class="related-text">Ranking kont oszczędnościowych 2026</div>
+                        <span class="related-arrow">›</span>
+                    </a>
+                    <a href="/ranking/najlepsze-kredyty-hipoteczne" class="related-item">
+                        <div class="related-icon">🏠</div>
+                        <div class="related-text">Ranking kredytów hipotecznych</div>
+                        <span class="related-arrow">›</span>
+                    </a>
+                    <a href="/ranking/najlepsze-karty-kredytowe" class="related-item">
+                        <div class="related-icon">💳</div>
+                        <div class="related-text">Ranking kart kredytowych</div>
+                        <span class="related-arrow">›</span>
+                    </a>
+                    <a href="/ranking/najlepsze-lokaty" class="related-item">
+                        <div class="related-icon">💰</div>
+                        <div class="related-text">Ranking lokat bankowych</div>
+                        <span class="related-arrow">›</span>
+                    </a>
                 </div>
             </section>
         </div>
