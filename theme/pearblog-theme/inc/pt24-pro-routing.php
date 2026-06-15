@@ -155,7 +155,7 @@ class PearBlog_PT24_Pro_Routing {
             'service-category'  => 'page-pt24-kategoria-uslugi.php',
             'services'          => 'page-pt24-kategoria-uslugi.php',
             'city'              => 'page-pt24-miasto.php',
-            'pro-dashboard'     => 'page-pt24-dla-fachowcow.php',
+            'pro-dashboard'     => 'page-pt24-panel-fachowca.php',
         ];
 
         if (isset($template_map[$page])) {

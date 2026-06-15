@@ -258,6 +258,14 @@ class PearBlog_Poradnik_Pro_Routing {
         ];
 
         if (isset($template_map[$type])) {
+            // Validate city-based routes — only route if city slug is recognized
+            if (in_array($type, ['city-specialists', 'city-category'], true)) {
+                $city = self::get_current_city();
+                if (!isset(self::$cities[$city])) {
+                    return $template;
+                }
+            }
+
             $custom_template = locate_template($template_map[$type]);
             if ($custom_template) {
                 return $custom_template;
