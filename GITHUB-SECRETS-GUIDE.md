@@ -20,20 +20,20 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 1. SSH_HOST
 - **Description:** Server IP address or hostname
-- **Value for poradnik.pro:** `204.48.27.118`
+- **Value for poradnik.pro:** `wordpress2614653.home.pl`
 - **Required for:** SSH connection to server
 - **Example:**
   ```
-  204.48.27.118
+  wordpress2614653.home.pl
   ```
 
 ### 2. SSH_USER
 - **Description:** SSH username for server access
-- **Value for poradnik.pro:** `root`
+- **Value for poradnik.pro:** `wordpress2614653`
 - **Required for:** SSH authentication
 - **Example:**
   ```
-  root
+  wordpress2614653
   ```
 
 ### 3. SSH_PRIVATE_KEY
@@ -45,7 +45,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ssh-keygen -t ed25519 -C "deploy-poradnik-pro" -f ~/.ssh/poradnik_deploy
 
   # Copy public key to server:
-  ssh-copy-id -i ~/.ssh/poradnik_deploy.pub root@204.48.27.118
+  ssh-copy-id -p 222 -i ~/.ssh/poradnik_deploy.pub wordpress2614653@wordpress2614653.home.pl
 
   # Display private key (copy this to GitHub Secret):
   cat ~/.ssh/poradnik_deploy
@@ -61,22 +61,22 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 4. WP_PATH
 - **Description:** Absolute path to WordPress installation on server
-- **Value for poradnik.pro:** `/var/www/poradnik.pro`
+- **Value for poradnik.pro:** `/home/wordpress2614653/domains/poradnik.pro/public_html`
 - **Required for:** Determining where to deploy files
 - **Example:**
   ```
-  /var/www/poradnik.pro
+  /home/wordpress2614653/domains/poradnik.pro/public_html
   ```
 
 ### 5. SSH_PORT (Optional)
 - **Description:** SSH port if different from default
-- **Default value:** `22`
+- **Default value:** `222` (home.pl shared hosting)
 - **Required for:** Custom SSH ports
 - **Example:**
   ```
-  22
+  222
   ```
-- **Note:** Only add if your server uses non-standard SSH port
+- **Note:** home.pl uses port 222 for SSH
 
 ### 6. SSH_PASSWORD (Only if password auth is enabled)
 - **Description:** SSH password for servers that explicitly allow password logins
