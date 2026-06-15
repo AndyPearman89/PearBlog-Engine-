@@ -59,6 +59,9 @@ require_once PEARBLOG_DIR . '/inc/poradnik-ads-layout-pro.php';
 require_once PEARBLOG_DIR . '/inc/poradnik-affiliate-copy-generator.php';
 require_once PEARBLOG_DIR . '/inc/poradnik-rpm-lead-fusion.php';
 
+// Poradnik.PRO URL Routing — Clean URL structure for all page types
+require_once PEARBLOG_DIR . '/inc/poradnik-pro-routing.php';
+
 // PT24.PRO Integration — Cross-Site Conversion Funnel
 require_once PEARBLOG_DIR . '/inc/pt24-integration.php';
 
