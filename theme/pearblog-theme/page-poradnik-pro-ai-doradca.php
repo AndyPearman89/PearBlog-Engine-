@@ -199,16 +199,24 @@
 <script>
 document.getElementById('ai-advisor-form').addEventListener('submit', function(e) {
     e.preventDefault();
-    const form = e.target;
-    const result = document.getElementById('ai-result');
-    const content = document.getElementById('ai-result-content');
+    var form = e.target;
+    var result = document.getElementById('ai-result');
+    var content = document.getElementById('ai-result-content');
 
-    // Gather form data
-    const data = {
-        category: (form.category && form.category.value) || '',
-        budget: (form.budget && form.budget.value) || '',
-        location: (form.location && form.location.value) || '',
-        goal: (form.goal && form.goal.value) || ''
+    // Safely escape HTML to prevent XSS
+    function escapeHtml(str) {
+        var div = document.createElement('div');
+        div.appendChild(document.createTextNode(str));
+        return div.innerHTML;
+    }
+
+    // Gather form data (handle RadioNodeList for radio buttons)
+    var checkedCategory = form.querySelector('input[name="category"]:checked');
+    var data = {
+        category: checkedCategory ? checkedCategory.value : '',
+        budget: form.elements['budget'] ? form.elements['budget'].value : '',
+        location: form.elements['location'] ? form.elements['location'].value : '',
+        goal: form.elements['goal'] ? form.elements['goal'].value : ''
     };
 
     // Show loading
@@ -217,18 +225,17 @@ document.getElementById('ai-advisor-form').addEventListener('submit', function(e
 
     // Simulated response (replace with real API call)
     setTimeout(function() {
-        content.innerHTML = `
-            <p><strong>Na podstawie Twoich odpowiedzi:</strong></p>
-            <ul class="list-disc list-inside space-y-2 ml-2">
-                <li>Kategoria: <strong>${data.category || 'nie wybrano'}</strong></li>
-                <li>Budżet: <strong>${data.budget || 'nie podano'}</strong></li>
-                <li>Lokalizacja: <strong>${data.location || 'nie podano'}</strong></li>
-            </ul>
-            <div class="mt-4 p-4 bg-white rounded-xl border border-purple-100">
-                <p class="font-semibold mb-2">💡 Rekomendacja:</p>
-                <p>Skonfiguruj integrację z API AI, aby otrzymać spersonalizowaną rekomendację. W międzyczasie sprawdź nasze <a href="/porownania/" class="text-brand underline">porównania</a> i <a href="/rankingi/" class="text-brand underline">rankingi</a>.</p>
-            </div>
-        `;
+        content.innerHTML =
+            '<p><strong>Na podstawie Twoich odpowiedzi:</strong></p>' +
+            '<ul class="list-disc list-inside space-y-2 ml-2">' +
+                '<li>Kategoria: <strong>' + escapeHtml(data.category || 'nie wybrano') + '</strong></li>' +
+                '<li>Budżet: <strong>' + escapeHtml(data.budget || 'nie podano') + '</strong></li>' +
+                '<li>Lokalizacja: <strong>' + escapeHtml(data.location || 'nie podano') + '</strong></li>' +
+            '</ul>' +
+            '<div class="mt-4 p-4 bg-white rounded-xl border border-purple-100">' +
+                '<p class="font-semibold mb-2">💡 Rekomendacja:</p>' +
+                '<p>Skonfiguruj integrację z API AI, aby otrzymać spersonalizowaną rekomendację. W międzyczasie sprawdź nasze <a href="/porownania/" class="text-brand underline">porównania</a> i <a href="/rankingi/" class="text-brand underline">rankingi</a>.</p>' +
+            '</div>';
     }, 1500);
 });
 </script>
