@@ -1,0 +1,326 @@
+name: Seed Poradnik Content (Categories, Pages & Articles)
+
+on:
+  workflow_dispatch:
+    inputs:
+      article_count:
+        description: "Number of articles to generate immediately (0 = skip, max 10)"
+        required: false
+        default: "5"
+      enable_autopilot:
+        description: "Enable autonomous content generation after seeding"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+      set_homepage:
+        description: "Set Poradnik V4 Home as front page"
+        required: false
+        default: "true"
+        type: choice
+        options:
+          - "true"
+          - "false"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: seed-poradnik-content
+  cancel-in-progress: false
+
+jobs:
+  seed:
+    name: Seed subpages and content on poradnik
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || 'wordpress2614653.home.pl' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'root' }}
+      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '22' }}
+      WP_PATH:  ${{ secrets.PORADNIK_WP_PATH  || secrets.WP_PATH  || '/var/www/wordpress2614653.home.pl/poradnik' }}
+      ARTICLE_COUNT:      ${{ github.event.inputs.article_count }}
+      ENABLE_AUTOPILOT:   ${{ github.event.inputs.enable_autopilot }}
+      SET_HOMEPAGE:       ${{ github.event.inputs.set_homepage }}
+
+    steps:
+      # ------------------------------------------------------------------ auth
+      - name: Resolve auth mode
+        id: auth
+        run: |
+          HAS_KEY=false
+          HAS_PASS=false
+          [[ -n "${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
+          [[ -n "${{ secrets.PORADNIK_SSH_PASSWORD || secrets.SSH_PASSWORD || secrets.ROOT_PASSWORD }}" ]] && HAS_PASS=true
+
+          if [[ "$HAS_PASS" == true ]]; then
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+            echo "==> Auth: sshpass (password)"
+          elif [[ "$HAS_KEY" == true ]]; then
+            echo "mode=key" >> "$GITHUB_OUTPUT"
+            echo "==> Auth: SSH key"
+          else
+            echo "::error::Missing auth secret. Set PORADNIK_SSH_PASSWORD (or ROOT_PASSWORD / SSH_PASSWORD) or PORADNIK_SSH_KEY."
+            exit 1
+          fi
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          ssh-keyscan -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Set up SSH agent (key mode)
+        if: steps.auth.outputs.mode == 'key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install sshpass (password mode)
+        if: steps.auth.outputs.mode == 'password'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+
+      - name: Build ssh/rssh wrapper
+        env:
+          AUTH_MODE: ${{ steps.auth.outputs.mode }}
+          SSH_PASSWORD: ${{ secrets.PORADNIK_SSH_PASSWORD || secrets.SSH_PASSWORD || secrets.ROOT_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/bin"
+          if [[ "$AUTH_MODE" == "password" ]]; then
+            umask 077
+            printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec sshpass -f "$HOME/.ssh/.poradnik_pass" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no "$@"' \
+              > "$HOME/bin/rssh"
+          else
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec ssh -o BatchMode=yes "$@"' \
+              > "$HOME/bin/rssh"
+          fi
+          chmod +x "$HOME/bin/rssh"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      # ------------------------------------------------------------ sanity check
+      - name: Sanity check SSH + WP-CLI
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "echo CONNECTED && wp --info --path='$WP_PATH' --allow-root 2>&1 | head -5"
+
+      # ------------------------------------------------------------ seed remote
+      - name: Seed categories, pages, topics, articles
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            WP_PATH="$WP_PATH" \
+            ARTICLE_COUNT="$ARTICLE_COUNT" \
+            ENABLE_AUTOPILOT="$ENABLE_AUTOPILOT" \
+            SET_HOMEPAGE="$SET_HOMEPAGE" \
+            bash -se <<'REMOTE'
+          set -euo pipefail
+          WP="wp --path=$WP_PATH --allow-root"
+
+          echo "==> WordPress path: $WP_PATH"
+          echo "==> WordPress version: $($WP core version)"
+
+          # ---- helper: normalise a display name to a URL slug ----
+          make_slug() {
+            local raw="$1"
+            # Try iconv transliteration first (handles Polish diacritics), then pure ASCII fallback
+            echo "$raw" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' \
+              | iconv -f utf-8 -t ascii//TRANSLIT 2>/dev/null \
+              | tr -cd '[:alnum:]-' \
+              || echo "$raw" | tr '[:upper:]' '[:lower:]' | tr ' ' '-' | tr -cd '[:alnum:]-'
+          }
+
+          # ---- 1. Flush rewrite rules so pretty permalinks work ----
+          echo "==> Setting permalink structure"
+          $WP rewrite structure '/%postname%/' --hard
+          $WP rewrite flush --hard
+
+          # ---- 2. Create categories ----
+          echo "==> Creating categories"
+          declare -A CATS=(
+            ["Remont"]="Porady dotyczące remontu i wykończenia mieszkania"
+            ["Budowa"]="Poradniki budowlane i wybór wykonawców"
+            ["Auto"]="Porady motoryzacyjne i serwis samochodowy"
+            ["Finanse"]="Kredyty, ubezpieczenia i planowanie finansów"
+            ["Zdrowie"]="Zdrowie, dieta i aktywny styl życia"
+            ["Dom i Ogród"]="Urządzanie domu, ogrodu i przestrzeni"
+          )
+          for NAME in "${!CATS[@]}"; do
+            DESC="${CATS[$NAME]}"
+            SLUG=$(make_slug "$NAME")
+            EXISTING=$($WP term list category --name="$NAME" --field=term_id --format=ids 2>/dev/null || true)
+            if [[ -z "$EXISTING" ]]; then
+              TID=$($WP term create category "$NAME" --slug="$SLUG" --description="$DESC" --porcelain)
+              echo "  Created category: $NAME (ID $TID)"
+            else
+              echo "  Category already exists: $NAME (ID $EXISTING)"
+            fi
+          done
+
+          # ---- 3. Create homepage page using Poradnik V4 Home template ----
+          if [[ "$SET_HOMEPAGE" == "true" ]]; then
+            echo "==> Creating / updating Homepage page"
+            HOME_ID=$($WP post list --post_type=page --post_title='Strona główna' --field=ID --format=ids 2>/dev/null || true)
+            if [[ -z "$HOME_ID" ]]; then
+              HOME_ID=$($WP post create \
+                --post_type=page \
+                --post_title='Strona główna' \
+                --post_status=publish \
+                --post_name='home' \
+                --page_template='page-poradnik-v4-home.php' \
+                --porcelain)
+              echo "  Created homepage page (ID $HOME_ID)"
+            else
+              $WP post meta update "$HOME_ID" _wp_page_template 'page-poradnik-v4-home.php' || true
+              echo "  Homepage page already exists (ID $HOME_ID), template refreshed"
+            fi
+
+            echo "==> Setting homepage as front page"
+            $WP option update show_on_front 'page'
+            $WP option update page_on_front "$HOME_ID"
+            echo "  Front page set to ID $HOME_ID"
+          fi
+
+          # ---- 4. Create category landing pages ----
+          echo "==> Creating category subpages"
+          declare -A CAT_PAGES=(
+            ["Remont"]="Remont - Poradniki i ceny"
+            ["Budowa"]="Budowa - Poradniki i koszty"
+            ["Auto"]="Auto - Porady motoryzacyjne"
+            ["Finanse"]="Finanse - Kredyty i ubezpieczenia"
+          )
+          for CAT in "${!CAT_PAGES[@]}"; do
+            TITLE="${CAT_PAGES[$CAT]}"
+            SLUG=$(make_slug "$CAT")
+            EXISTING=$($WP post list --post_type=page --post_name="$SLUG" --field=ID --format=ids 2>/dev/null || true)
+            if [[ -z "$EXISTING" ]]; then
+              PID=$($WP post create \
+                --post_type=page \
+                --post_title="$TITLE" \
+                --post_status=publish \
+                --post_name="$SLUG" \
+                --page_template='page-poradnik-v4-article.php' \
+                --porcelain)
+              echo "  Created page: $TITLE (ID $PID, slug /$SLUG/)"
+            else
+              echo "  Page already exists: $TITLE (ID $EXISTING)"
+            fi
+          done
+
+          # ---- 5. Seed content queue ----
+          echo "==> Seeding content topic queue"
+          TOPICS=(
+            "Ile kosztuje remont łazienki w 2026 roku"
+            "Ile kosztuje malowanie mieszkania - koszty i ceny"
+            "Jak wybrać dobrego elektryka - poradnik krok po kroku"
+            "Ile kosztuje budowa domu 100m2 - realne ceny 2026"
+            "Kredyt hipoteczny - jak wybrać najlepszą ofertę"
+            "Ile kosztuje wymiana okien - porównanie cen"
+            "Jak wybrać ubezpieczenie OC samochodu tanio"
+            "Ile kosztuje remont kuchni - koszty i wskazówki"
+            "Jak wybrać wykonawcę remontu - na co uważać"
+            "Ile kosztuje ocieplenie domu styropianem w 2026"
+            "Jak zaplanować domowy budżet krok po kroku"
+            "Ile kosztuje wymiana instalacji elektrycznej"
+            "Jak wybrać dobrego hydraulika - porady"
+            "Ile kosztuje przegląd samochodu - ceny serwisów"
+            "Jak remontować mieszkanie bez błędów - poradnik"
+          )
+
+          # Queue via WP-CLI pearblog command if available, else fall back to a WP option.
+          # Manual recovery when pearblog CLI is absent: log into WP Admin → PearBlog Engine →
+          # Queue, and paste the topics from the pearblog_seed_topics option; or run
+          # `wp option get pearblog_seed_topics --path=<WP_PATH>` and add them via the admin UI.
+          if $WP pearblog --help >/dev/null 2>&1; then
+            for TOPIC in "${TOPICS[@]}"; do
+              $WP pearblog queue add "$TOPIC" 2>/dev/null || true
+              echo "  Queued: $TOPIC"
+            done
+          else
+            echo "::warning::wp pearblog CLI not found — topics stored in pearblog_seed_topics option."
+            echo "           To process manually: WP Admin → PearBlog Engine → Queue, or run:"
+            echo "           wp option get pearblog_seed_topics --path=\$WP_PATH --allow-root"
+            $WP option update pearblog_seed_topics "$(printf '%s\n' "${TOPICS[@]}")" || true
+          fi
+
+          # ---- 6. Generate initial articles ----
+          # Validate that ARTICLE_COUNT is a non-negative integer (0–10).
+          COUNT="${ARTICLE_COUNT:-5}"
+          if ! [[ "$COUNT" =~ ^[0-9]+$ ]] || [[ "$COUNT" -gt 10 ]]; then
+            echo "::warning::Invalid article_count '$COUNT' (must be 0–10). Defaulting to 5."
+            COUNT=5
+          fi
+
+          if [[ "$COUNT" -gt 0 ]]; then
+            echo "==> Generating $COUNT initial article(s)"
+            FAILED=0
+            for i in $(seq 1 "$COUNT"); do
+              echo "  Generating article $i/$COUNT ..."
+              if ! OUTPUT=$($WP pearblog generate --allow-root 2>&1); then
+                FAILED=$((FAILED + 1))
+                echo "::warning::Article $i failed to generate. WP-CLI output:"
+                echo "$OUTPUT" | tail -5 | sed 's/^/    /'
+              else
+                echo "$OUTPUT" | tail -3 | sed 's/^/    /'
+              fi
+            done
+            if [[ "$FAILED" -gt 0 ]]; then
+              echo "::warning::$FAILED of $COUNT articles failed. Check OpenAI API key and PearBlog Engine logs."
+            fi
+          else
+            echo "==> Skipping article generation (article_count=0)"
+          fi
+
+          # ---- 7. Enable autonomous mode ----
+          if [[ "$ENABLE_AUTOPILOT" == "true" ]]; then
+            echo "==> Enabling autonomous content generation"
+            $WP option update pearblog_autonomous_mode '1' || true
+            if $WP pearblog autopilot start --allow-root >/dev/null 2>&1; then
+              echo "  Autopilot started"
+            else
+              echo "  Autopilot CLI not available; option set for engine to pick up on next cron"
+            fi
+          fi
+
+          # ---- 8. Flush cache ----
+          echo "==> Flushing WordPress object cache"
+          $WP cache flush || true
+          $WP rewrite flush --hard || true
+
+          # ---- 9. Summary ----
+          echo ""
+          echo "=== Summary ==="
+          echo "Posts published : $($WP post list --post_type=post  --post_status=publish --format=count 2>/dev/null || echo unknown)"
+          echo "Pages published : $($WP post list --post_type=page  --post_status=publish --format=count 2>/dev/null || echo unknown)"
+          echo "Categories      : $($WP term list category --format=count 2>/dev/null || echo unknown)"
+          echo "Site URL        : $($WP option get siteurl 2>/dev/null || echo unknown)"
+          echo "==============="
+          echo "OK — content seeding complete"
+          REMOTE
+
+      # ----------------------------------------------------------- smoke tests
+      - name: Smoke test — site responds
+        run: |
+          BASE="https://$SSH_HOST/poradnik"
+          echo "==> Testing $BASE/"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$BASE/")
+          echo "ROOT: $STATUS"
+          if [[ "$STATUS" != "200" && "$STATUS" != "301" && "$STATUS" != "302" ]]; then
+            echo "::warning::Unexpected status $STATUS — site may need further configuration"
+          fi
+
+          echo "==> Testing REST API namespace"
+          curl -s "$BASE/wp-json/" | grep -o '"pearblog/v1"' || \
+            echo "::warning::pearblog/v1 namespace not visible in REST API"
+
+      # -------------------------------------------------------------- cleanup
+      - name: Cleanup local secrets
+        if: always()
+        run: rm -f "$HOME/.ssh/.poradnik_pass" || true
