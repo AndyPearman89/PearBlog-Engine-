@@ -65,6 +65,9 @@ require_once PEARBLOG_DIR . '/inc/poradnik-pro-routing.php';
 // PT24.PRO Integration — Cross-Site Conversion Funnel
 require_once PEARBLOG_DIR . '/inc/pt24-integration.php';
 
+// PT24.PRO URL Routing — Clean URL structure for platform pages
+require_once PEARBLOG_DIR . '/inc/pt24-pro-routing.php';
+
 // PearBlog × PT24 Integration Helper Functions
 require_once PEARBLOG_DIR . '/inc/pearblog-integration.php';
 

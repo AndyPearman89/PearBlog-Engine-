@@ -71,6 +71,13 @@ class PearBlog_Poradnik_Pro_Routing {
      * Register rewrite rules for Poradnik.PRO URL structure
      */
     public static function add_rewrite_rules() {
+        // /poradniki (articles archive)
+        add_rewrite_rule(
+            '^poradniki/?$',
+            'index.php?poradnik_type=articles',
+            'top'
+        );
+
         // /poradnik/{slug}
         add_rewrite_rule(
             '^poradnik/([^/]+)/?$',
@@ -169,6 +176,13 @@ class PearBlog_Poradnik_Pro_Routing {
             'top'
         );
 
+        // /panel (user dashboard)
+        add_rewrite_rule(
+            '^panel/?$',
+            'index.php?poradnik_type=dashboard',
+            'top'
+        );
+
         // /kategoria/{slug}
         add_rewrite_rule(
             '^kategoria/([^/]+)/?$',
@@ -222,6 +236,7 @@ class PearBlog_Poradnik_Pro_Routing {
         }
 
         $template_map = [
+            'articles'         => 'page-poradnik-pro-poradniki.php',
             'article'          => 'page-poradnik-pro-article.php',
             'comparison'       => 'page-poradnik-pro-porownanie.php',
             'ranking'          => 'page-poradnik-pro-ranking.php',
@@ -236,6 +251,7 @@ class PearBlog_Poradnik_Pro_Routing {
             'pricing'          => 'page-poradnik-pro-cennik.php',
             'faq'              => 'page-poradnik-pro-faq.php',
             'contact'          => 'page-poradnik-pro-kontakt.php',
+            'dashboard'        => 'page-poradnik-pro-dashboard.php',
             'category'         => 'page-poradnik-pro-kategoria.php',
             'city-specialists' => 'page-poradnik-pro-specjalisci.php',
             'city-category'    => 'page-poradnik-pro-miasto.php',
@@ -328,6 +344,8 @@ class PearBlog_Poradnik_Pro_Routing {
         $base = home_url('/');
 
         switch ($type) {
+            case 'articles':
+                return $base . 'poradniki/';
             case 'article':
                 return $base . 'poradnik/' . $slug . '/';
             case 'comparison':
@@ -356,6 +374,8 @@ class PearBlog_Poradnik_Pro_Routing {
                 return $base . 'faq/';
             case 'contact':
                 return $base . 'kontakt/';
+            case 'dashboard':
+                return $base . 'panel/';
             case 'category':
                 return $base . 'kategoria/' . $slug . '/';
             case 'city-specialists':
