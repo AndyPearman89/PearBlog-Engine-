@@ -104,6 +104,7 @@ class TenantContextTest extends TestCase {
 
 	public function test_for_site_builds_context_from_options(): void {
 		// Bootstrap defines get_blog_option as get_option("1_{key}"), so we use prefixed keys.
+		$GLOBALS['_is_multisite']              = true;
 		$GLOBALS['_options']['1_pearblog_industry']     = 'travel';
 		$GLOBALS['_options']['1_pearblog_tone']         = 'informal';
 		$GLOBALS['_options']['1_pearblog_monetization'] = 'affiliate';
@@ -150,6 +151,7 @@ class TenantContextTest extends TestCase {
 	// -----------------------------------------------------------------------
 
 	public function test_for_site_coerces_publish_rate_to_int(): void {
+		$GLOBALS['_is_multisite']                       = true;
 		$GLOBALS['_options']['1_pearblog_publish_rate'] = '7';
 		$ctx = TenantContext::for_site( 1 );
 		$this->assertIsInt( $ctx->profile->publish_rate );

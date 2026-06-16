@@ -5,7 +5,10 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMAND="${1:-}"
 
 usage() {
-  echo "Usage: ./run dev" >&2
+  echo "Usage: ./run <command>" >&2
+  echo "Commands:" >&2
+  echo "  dev   Run development sanity checks (PHP syntax)" >&2
+  echo "  test  Run PHPUnit test suite" >&2
 }
 
 run_dev() {
@@ -27,9 +30,34 @@ run_dev() {
   echo "Development sanity checks passed."
 }
 
+run_tests() {
+  local engine_dir="$ROOT_DIR/mu-plugins/pearblog-engine"
+
+  # Prefer vendor binary (installed via composer); fall back to system phpunit.
+  local phpunit=""
+  if [ -x "$engine_dir/vendor/bin/phpunit" ]; then
+    phpunit="$engine_dir/vendor/bin/phpunit"
+  elif command -v phpunit >/dev/null 2>&1; then
+    phpunit="$(command -v phpunit)"
+  else
+    echo "✗ phpunit not found. Run: composer install -d $engine_dir" >&2
+    exit 1
+  fi
+
+  echo "Running PHPUnit test suite..."
+
+  cd "$engine_dir"
+  php -d "auto_prepend_file=$engine_dir/tests/php/prepend.php" \
+    -d "register_argc_argv=1" \
+    "$phpunit" --configuration phpunit.xml --no-coverage --testdox "$@"
+}
+
 case "$COMMAND" in
   dev)
     run_dev
+    ;;
+  test)
+    run_tests
     ;;
   *)
     usage

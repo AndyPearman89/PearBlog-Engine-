@@ -2,6 +2,168 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [9.0.0] — 2026-06-14
+
+### Added — v9.0 Scale, Intelligence & Ecosystem Expansion
+
+#### F1: GraphQL API Gateway
+- **`GraphQLController`** (`src/API/GraphQLController.php`) — Standalone REST GraphQL endpoint with WPGraphQL extension path; supports `queue`, `stats`, `topPosts`, `health` queries; bearer-token + capability auth; rate limiting via `RateLimiter`
+
+#### F2: Advanced Analytics Dashboard
+- **`PredictiveAnalytics`** (`src/Analytics/PredictiveAnalytics.php`) — Content performance forecasting, anomaly detection, trend analysis, revenue projection, and optimisation recommendations
+- **`CohortEngine`** (`src/Analytics/CohortEngine.php`) — Cohort & funnel analytics (Visit → Register → Lead → Conversion) with per-source breakdown and weekly snapshots
+- **`ContentROIEngine`** (`src/Analytics/ContentROIEngine.php`) — Unified ROI dashboard combining GA4 traffic, AI generation cost, and revenue data; REST endpoints `/pearblog/v1/roi` and `/pearblog/v1/roi/{post_id}`
+
+#### F3: Smart A/B Testing Engine
+- **`AIVariantGenerator`** (`src/Testing/AIVariantGenerator.php`) — Headline, CTA, meta description, and intro-paragraph variant generation with template fallback and AI-backed strategy
+- **`BayesianOptimizer`** (`src/Testing/BayesianOptimizer.php`) — Thompson Sampling multi-armed bandit with Monte-Carlo win probability calculation, impression/conversion tracking, and winner detection
+
+#### F4: Mobile Monitoring App — Backend
+- **`MobileAPIController`** (`src/API/MobileAPIController.php`) — REST backend for iOS/Android app; dashboard, queue, content approval/rejection, alerts, and multi-site endpoints under `/pearblog/v1/mobile/`
+
+#### F5: White-Label Platform
+- **`TenantContext`** / **`TenantIsolator`** / **`SiteProfile`** (`src/Tenant/`) — Multi-tenant site isolation and per-tenant AES-256-CBC option encryption with site-specific HKDF key derivation
+- **`BillingEngine`** (`src/Tenant/BillingEngine.php`) — AI token usage metering, configurable monthly quota, Stripe Billing metered-usage integration, 12-month history ring buffer
+- **`TenantOnboardingController`** (`src/Tenant/TenantOnboardingController.php`) — Agency onboarding workflow and REST endpoints
+
+#### F6: Smart Content Refresh Automation
+- **`ContentRefreshEngine`** (`src/Content/ContentRefreshEngine.php`) — Staleness detection, performance-based refresh prioritisation, AI-powered update scheduling, batch processing, manual override options
+
+#### F7: Multi-Provider AI Orchestration
+- **`SmartProviderRouter`** (`src/AI/SmartProviderRouter.php`) — Content-type-aware routing, Thompson-Sampling-inspired provider scoring, automatic failover, cost estimation, daily budget tracking, and automatic sidelining of low-success-rate providers
+
+#### F8: Advanced SEO Automation Suite
+- **`OrphanPageDetector`** (`src/SEO/OrphanPageDetector.php`) — Full published-content scan, internal-link graph analysis, inbound-link counting, cache management, keyword-similarity link suggestions, reviewed-post exclusion
+
+#### F9: Content Collaboration Platform
+- **`CollaborationManager`** (`src/Content/CollaborationManager.php`) — Multi-stage review workflows, inline comments, editorial assignment, version snapshots, and team workload management
+
+#### WP-CLI — `wp pearblog v9`
+- `forecast`, `revenue-forecast`, `anomalies`, `optimize` — PredictiveAnalytics commands
+- `collab assign/request-review/approve/reject/pending/workload/snapshot/history` — CollaborationManager commands
+- `mobile dashboard/queue` — MobileAPIController diagnostic commands
+- `ab generate/all/summary` — A/B testing variant commands
+- `router status/stats/reset-stats` — SmartProviderRouter commands
+- `orphans scan/detail/suggest/mark-reviewed` — OrphanPageDetector commands
+
+#### Security
+- **`PIIDetector`** (`src/Security/PIIDetector.php`) — Scans AI-generated content for PII (email, PESEL, NIP, phone, credit card, IBAN, IPv4, passport) before publication; redaction and post-meta persistence
+- **`SecurityAuditor`** (`src/Security/SecurityAuditor.php`) — Automated OWASP Top 10 2021 scanner with risk scoring and JSON export
+
+#### Tests — v9.0 Session 5 (+6 test classes, ~95 assertions)
+- **`CohortEngineTest`** — record_event, compute_snapshot funnel rates, refresh_snapshot
+- **`ContentROIEngineTest`** — compute_article_roi keys/ROI calc, build_snapshot aggregation, refresh/get_snapshot caching
+- **`BillingEngineTest`** — add_usage accumulation, get_usage_percentage, reset_billing_cycle history ring buffer (12-month cap)
+- **`TenantIsolatorTest`** — AES-256-CBC encrypt/decrypt round-trip, per-site key isolation, sensitive options list
+- **`PIIDetectorTest`** — email/PESEL/phone/CC/IBAN/IPv4/passport detection, allowlist, HTML stripping, redaction, scan_and_persist
+- **`SecurityAuditorTest`** — run_full_audit structure (10 OWASP checks), summary counts, risk score range, export_json
+
+#### Tests — v9.0 Session 6 (+3 test classes, 88 assertions) + CLI extensions + bug fixes
+- **`SiteProfileTest`** — constructor readonly properties, summary() content, independence of instances (14 tests)
+- **`TenantOnboardingControllerTest`** — provision single-site mode, plan rates, default options, tenant registry, list_tenants (22 tests)
+- **`ConversionFlowTrackerTest`** — get_conversion_metrics zero/data/edge cases, get_funnel_dropoff 3-stage logic, get_session_funnel events/timestamps/converted flag (20 tests)
+
+#### WP-CLI — `wp pearblog v9` extensions (session 6)
+- `billing usage` — display current cycle usage, quota, and percentage consumed
+- `billing reset` — reset billing cycle counters (BillingEngine)
+- `tenant create --domain=<d> [--plan=<p>] [--industry=<i>] [--language=<l>] [--tone=<t>] [--title=<t>] [--admin=<e>]` — provision new tenant
+- `tenant list` — table view of all provisioned tenants from the registry
+- `audit run [--export=<file>]` — run OWASP Top 10 audit; optional JSON export
+- `pii scan <post_id> [--redact]` — detect and optionally redact PII in a post
+- `roi article <post_id>` — per-article ROI report (sessions, cost, revenue, ROI %, RPM)
+- `roi snapshot [--refresh]` — site-wide ROI snapshot with optional refresh
+
+#### Bug fixes (discovered during session 6 testing)
+- **`TenantOnboardingController::provision()`** — replaced direct array access for optional keys (`title`, `industry`, `tone`, `language`, `plan`, `admin_email`) with null-coalescing `??` to prevent PHP 8 fatal errors when keys are omitted
+- **`ConversionFlowTracker::get_session_funnel()`** — replaced `isset()` check (always false for null-initialised values) with `array_key_exists()` so stage timestamps are correctly recorded
+
+#### Tests — v9.0 Session 7 (+5 test classes, 84 assertions) + CLI extensions + bootstrap stubs
+- **`ContentModeratorTest`** — is_enabled enabled/disabled paths, check disabled result (4 fields), check with API stub (pass action + post-meta persistence), option/meta constants (18 tests)
+- **`RBACManagerTest`** — CAPABILITIES constant (count + all 8 slugs), OPTION_OVERRIDES constant, assign_capabilities with no roles, assign_capabilities applies defaults to editor/author roles, current_user_can static helper (16 tests)
+- **`ComplianceExporterTest`** — build_report required keys (7 fields), report_id prefix, total_events=0 for empty log, period_days default/custom/capped-at-365, data_retention keys; to_csv UTF-8 BOM, header comment, column headers, report_id embed (18 tests)
+- **`AMPGeneratorTest`** — option constants (3), add_query_var (4), convert_to_amp_content img→amp-img, src/dimension/layout preservation, missing-src handling, script/iframe/style removal, passthrough for safe content (18 tests)
+- **`PushNotificationPublisherTest`** — option constants (5), is_enabled all enabled/disabled paths (OneSignal + FCM + unknown provider), notify returns disabled result (14 tests)
+
+#### WP-CLI — `wp pearblog v9` extensions (session 7)
+- `moderation status` — show whether ContentModerator is enabled plus action setting
+- `moderation check <post_id>` — run moderation check on a post and show result
+- `rbac list` — show PearBlog capability assignments per role
+- `rbac capabilities` — list all 8 registered PearBlog custom capabilities
+- `compliance report [--days=<d>] [--format=<f>]` — build GDPR/SOC2 compliance report; optional CSV export
+- `amp status` — show AMP enabled status and Analytics/AdSense configuration
+- `amp convert <post_id>` — convert a post's content to AMP HTML and preview
+
+#### Bootstrap stubs added (session 7)
+- `WP_Role` class stub with `add_cap` / `remove_cap` / `has_cap` support
+- `get_role()` function (controlled via `$GLOBALS['_wp_roles']` in tests)
+- `add_query_arg()` function
+- `wp_generate_uuid4()` function
+- `wp_remote_retrieve_body()` function
+- `wp_remote_retrieve_response_code()` function
+
+### Fixed — Test Suite (session 8, 78 → 0 failures)
+
+#### Bootstrap fixes (`tests/php/bootstrap.php`)
+- `get_post()` now returns the object directly when passed a `WP_Post` instance (avoids int cast)
+- `get_permalink()` handles `WP_Post` argument (extracts `->ID`)
+- `get_post_type()` falls back to `$GLOBALS['_post_type']` when no post is found
+- `get_post_time()` stub added (returns `gmdate($d, strtotime($post->post_date))`)
+- `get_the_tags()` stub added (reads `$GLOBALS['_post_tags'][$post_id]`)
+- `do_action()` now also dispatches handlers stored in `$GLOBALS['_action_handlers']`
+- `register_rest_route()` now populates `$GLOBALS['_rest_routes']`
+- `WP_REST_Request::__construct()` 2nd param accepts mixed (string route or array params)
+- Added constants: `WEEK_IN_SECONDS`, `MONTH_IN_SECONDS`, `YEAR_IN_SECONDS`
+- Added stubs: `add_rewrite_rule()`, `add_rewrite_tag()`, `wp_count_posts()`, `wp_hash()`, `url_to_postid()`, `get_site_option()`, `update_site_option()`
+- Global state reset block now includes `_action_handlers` and `_rest_routes`
+- Auto-creates `/tmp/wp-admin/includes/upgrade.php` stub to prevent fatal on `require_once`
+
+#### Test fixes
+- `AutopilotRunnerTest`, `ObjectCacheAdapterTest`, `MonetizationIntegrationTest` — replaced PHPUnit 9-only `assertMatchesRegularExpression()` with `assertRegExp()` (PHPUnit 8 compat)
+- `AlertManagerTest` — fixed dedup key hash from `md5()` to `hash('sha256', ...)` to match source
+- `TenantContextTest`, `TopicQueueTest` — added `$GLOBALS['_is_multisite'] = true` where blog-prefixed option keys are used
+- `ConversionFlowTrackerTest`, `TimeZoneSchedulerTest` — save/restore `$GLOBALS['wpdb']` in setUp/tearDown to prevent contaminating subsequent tests
+- `MonetizationIntegrationTest` — removed 'pricing' from MOFU test content (word triggered BOFU detection); updated ad-injection assertions to match `adsbygoogle`/`data-ad-client` output format
+- `AuthenticationIntegrationTest` — replaced flaky microsecond timing assertions with deterministic `hash_equals` boolean checks
+
+#### Source fix
+- `SecurityAuditor::run_full_audit()` — injects `name` key (derived from OWASP check ID) into each check result array so `test_each_check_has_name_key` passes
+
+### Added — Test Suite (session 11, +4 test classes, 86 tests)
+
+#### New test classes
+- **`AsyncQueueManagerTest`** — status constants (`STATUS_PENDING/PROCESSING/DONE/FAILED/DEAD`), option key + default constants, `get_backend` (default `wp_cron`, custom option), `get_stats` with `wp_cron` backend (zero counts, correct backend key, all required keys present), `push` with `wp_cron` backend (returns int timestamp, sets `_cron_scheduled` entry, uses correct job-type hook), `push` default priority, `execute_job` (fires type-specific action with payload, fires `pearblog_bg_job_completed` on success, fires `pearblog_bg_job_failed` on exception), `maybe_schedule` (schedules when absent, skips when already scheduled), `admin_permission` — 20 tests, 37 assertions
+- **`VideoScriptBuilderTest`** — platform constants (`PLATFORM_YOUTUBE/TIKTOK/SHORTS`) uniqueness, `get_scripts` (empty when no meta, single platform, multiple platforms, all three platforms, skips empty strings, only known platforms returned), `editor_permission` (false without capability, true with capability), `rest_get_scripts` (post_id in response, scripts array key, HTTP 200, empty scripts for missing meta) — 15 tests, 25 assertions
+- **`QuizEngineTest`** — `POST_TYPE`, `META_QUESTIONS`, `META_LEAD_CAPTURE`, `OPTION_LEADS` constants, `get_questions` (empty meta → `[]`, array meta returns questions, JSON string meta decoded, invalid JSON → `[]`, empty string → `[]`), `generate_recommendation` early returns (no questions → default message, empty answers → default message), `capture_lead` (stored in option, correct quiz_id, sanitized email, recommendation stored, append to existing, fires `pearblog_quiz_lead_captured` action, calls `wp_mail`, ring-buffer trims to 500, newest lead is last after overflow), `rest_get_leads` (empty response, count of stored leads, HTTP 200, caps at 50), `admin_permission` — 26 tests, 30 assertions
+- **`NewsletterBuilderTest`** — all 8 `OPTION_*` constants, `send_weekly_newsletter` disabled (returns disabled result, skips `last_sent` option update, does not fire `pearblog_newsletter_sent` action), `maybe_schedule` (no-op when disabled, schedules `pearblog_newsletter_send` when enabled, skips when already scheduled), `build_html` (returns string, contains `<!DOCTYPE html>`, contains site name, contains unsubscribe anchor, contains "Weekly Digest", contains site URL), `admin_permission` (false / true), `rest_preview` (HTTP 200, `html` key present, value is string) — 25 tests, 27 assertions
+
+
+
+#### New test classes
+- **`DistributedLockManagerTest`** — `acquire` (free lock, sets transient, double-acquire fails, cross-instance lock conflict, independent names), `release` (success, transient removed, not held, cannot release another instance's lock), acquire→release→re-acquire cycle, `is_locked` (false when absent, true after acquire, false after release), `with_lock` (callback value, auto-release, null on contention, releases on exception), option constants, unknown backend fallback — 20 tests, 22 assertions
+- **`CoreWebVitalsMonitorTest`** — option/default-threshold constants, `measure_url` (unavailable when disabled, expected keys, URL preserved, zero metrics, unavailable without API key, returns cached transient), `maybe_schedule` no-op when disabled, `rest_get_snapshot` (empty array, saved snapshot structure), `rest_measure_url` (WP_Error on missing URL, 200 response for valid URL), `admin_permission` — 19 tests, 35 assertions
+- **`FactCheckerTest`** — `is_enabled` (default false, true only with both flag + API key set), `is_factual_claim` (PLN/EUR/year-range/ponad/mln sentences pass; short/long/opinion sentences fail), `extract_claims` (empty for plain text, finds mln sentence, HTML stripped, 10-item cap, returns array), `check_and_annotate` returns unchanged content and writes no meta when disabled, constants (UNVERIFIED_MARKER, META_RESULTS, META_WARNINGS, DEFAULT_THRESHOLD), `verify_claim` structure/false-without-key/claim-preserved — 26 tests, 33 assertions
+- **`SmartCalculatorEngineTest`** — `calculate` (known service returns array, required keys, min<max, avg between min/max, cost_per_unit formula, service slug stored, unknown service fallback), standard multipliers (premium > sredni > podstawowy), location multipliers (miasto > wies, przedmiescia baseline), `validate_inputs` (null on missing/too-small/too-large metraz, invalid standard, invalid lokalizacja; accepts boundary values 10 and 1000), cost scales with area — 19 tests, 28 assertions
+
+### Added — Test Suite (session 9, +4 test classes, 82 tests)
+
+#### New test classes
+- **`CROEngineTest`** — `rest_permission`, `rest_create` (name/variants/post_id/status/winner fields), `rest_list` (all experiments + stats key), `rest_stats` (404 for unknown, 200 with stats), `rest_delete` (404 + confirmed removal), `rest_track` (impression 200, accumulation, conversion CVR, zero-CVR edge case), `evaluate_and_promote` (no winner with < 100 impressions, significant winner at 30% vs 5% CVR, skips completed experiments), `inject_cta_variants` (passthrough with no placeholder, replaces placeholder with winner HTML, skips in admin) — 21 tests, 37 assertions
+- **`RevenueTrackerTest`** — source constants, `get_article_data` default structure, `track` (event appended, `total_cents` accumulation, per-source totals, site cumulative total, meta passthrough), `calculate_roi` (structure, zero-cost, cost+revenue, rounding to 2 dp), `init_article_revenue` (creates entry, does not overwrite), `get_site_summary` (required keys, USD conversion), `rest_article_revenue` (ROI keys present), `rest_track_event` (200 for valid source, WP_Error for invalid), `admin_permission` — 20 tests, 48 assertions
+- **`AffiliateDiscoveryTest`** — option/meta constants, `is_enabled`, `extract_product_keywords` (capitalized phrases, action phrases, deduplication, empty text, max 15 limit), `discover_for_post` (disabled guard, post not found, manual link match, saves post meta), `inject_affiliate_links` (disabled, not singular, anchor injection, first-occurrence-only, skips entries without keyword) — 18 tests, 26 assertions
+- **`PaywallEngineTest`** — option/meta constants, `is_enabled`, `get_reads_count` (no cookie, cookie value, month reset, invalid cookie), `has_exceeded_free_limit` (below limit, at limit, custom limit), `has_access` (anonymous, manage_options admin, valid subscriber cookie, unknown token), `maybe_gate_content` (disabled, not singular, admin passthrough, gate on limit exceeded, gate for premium post), `create_checkout_session` throws when unconfigured, `rest_get_status` (required keys, remaining calculation) — 23 tests, 37 assertions
+
+#### Bootstrap additions (session 9)
+- `wp_kses_post()` stub (returns content unchanged)
+- `get_the_ID()` stub (reads `$GLOBALS['_current_post_id']`)
+- `is_ssl()` stub (reads `$GLOBALS['_is_ssl']`)
+- `is_user_logged_in()` stub (reads `$GLOBALS['_is_user_logged_in']`)
+- `rest_url()` stub
+- Constants: `COOKIEPATH`, `COOKIE_DOMAIN`
+- Global reset entries for `_current_post_id`, `_is_ssl`, `_is_user_logged_in`
+- `tests/php/namespace-stubs.php` — defines `PearBlogEngine\Monetization\setcookie()` as a no-op so that `PaywallEngine::increment_read_counter()` and `CROEngine::pick_variant_html()` don't trigger "headers already sent" errors during PHPUnit runs
+
+---
+
 ## [8.0.0] — 2026-05-04
 
 ### Added — v8.0 Enterprise Admin Complete

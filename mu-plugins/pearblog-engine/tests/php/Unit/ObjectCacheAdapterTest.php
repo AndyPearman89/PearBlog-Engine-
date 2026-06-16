@@ -174,7 +174,7 @@ class ObjectCacheAdapterTest extends TestCase {
 
 	public function test_cache_key_is_md5(): void {
 		$key = $this->adapter->cache_key( 'test_logical_key' );
-		$this->assertMatchesRegularExpression( '/^[a-f0-9]{32}$/', $key );
+		$this->assertRegExp( '/^[a-f0-9]{32}$/', $key );
 	}
 
 	public function test_cache_key_consistent(): void {

@@ -22,8 +22,12 @@ class RequestContextProcessorTest extends TestCase {
 	protected function setUp(): void {
 		parent::setUp();
 
-		// Reset $_SERVER
+		// Reset $_SERVER but preserve REQUEST_TIME_FLOAT (required by PHPUnit's timer).
+		$rtf = $_SERVER['REQUEST_TIME_FLOAT'] ?? null;
 		$_SERVER = [];
+		if ( $rtf !== null ) {
+			$_SERVER['REQUEST_TIME_FLOAT'] = $rtf;
+		}
 	}
 
 	/**

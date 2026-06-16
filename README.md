@@ -1,6 +1,6 @@
 # PearBlog Engine PRO
 
-**Autonomous AI content production system for WordPress — v8.0**
+**Autonomous AI content production system for WordPress — v9.0**
 
 **🚀 NEW: [Poradnik.pro Decision Platform →](PORADNIK-PRO-PLATFORM.md)** — Transform your content into a full decision engine with comparisons, rankings, calculators, expert marketplace, and lead generation.
 

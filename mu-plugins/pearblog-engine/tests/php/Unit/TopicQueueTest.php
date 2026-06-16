@@ -90,6 +90,7 @@ class TopicQueueTest extends TestCase {
 	}
 
 	public function test_multiple_sites_have_isolated_queues(): void {
+		$GLOBALS['_is_multisite'] = true;
 		$queue1 = new TopicQueue( 1 );
 		$queue2 = new TopicQueue( 2 );
 
