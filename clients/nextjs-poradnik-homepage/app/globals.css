@@ -1,0 +1,40 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --primary: 79 70 229;          /* #4F46E5 */
+    --secondary: 124 58 237;       /* #7C3AED */
+    --success: 16 185 129;         /* #10B981 */
+    --dark: 15 23 42;              /* #0F172A */
+    --background: 248 250 252;     /* #F8FAFC */
+    --border: 226 232 240;         /* #E2E8F0 */
+    --radius: 20px;
+  }
+
+  * {
+    @apply box-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply m-0 bg-background p-0 font-sans text-dark antialiased;
+  }
+
+  /* Focus ring — WCAG AA visible keyboard indicator */
+  :focus-visible {
+    @apply outline-2 outline-offset-2 outline-primary;
+  }
+}
+
+@layer utilities {
+  .glass-subtle {
+    background: rgba(255, 255, 255, 0.8);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+}

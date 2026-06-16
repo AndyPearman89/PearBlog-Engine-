@@ -1,153 +1,765 @@
-<?php
-/**
- * Template Name: Poradnik.PRO - Kategoria
- * Description: Category archive page (/prawo/, /finanse/, /nieruchomosci/ etc.)
- *
- * @package PearBlog
- * @version 5.0.0
- */
-?>
 <!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html lang="pl">
 <head>
-    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' }, accent: '#F59E0B' }, fontFamily: { display: ['Poppins','system-ui','sans-serif'], body: ['Inter','system-ui','sans-serif'] } } } };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
-    <?php wp_head(); ?>
+    <title>Prawo – Poradnik.pro</title>
+    <meta name="description" content="Kategoria Prawo na Poradnik.pro: praktyczne poradniki, pytania i odpowiedzi ekspertów, rankingi i najlepsi specjaliści.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        :root {
+            --purple-primary: #6c2bd9;
+            --purple-dark: #1a0a3e;
+            --purple-light: #8b5cf6;
+            --orange-cta: #f97316;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
+            --max-width: 1200px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            color: var(--gray-900);
+            background: var(--gray-50);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        ul { list-style: none; }
+
+        .container {
+            width: min(100%, var(--max-width));
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .header-inner {
+            min-height: 72px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--gray-900);
+            flex-shrink: 0;
+        }
+
+        .logo-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+            color: #fff;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+            font-weight: 800;
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 24px;
+            flex: 1;
+            flex-wrap: wrap;
+        }
+
+        .main-nav a {
+            font-size: 0.95rem;
+            font-weight: 500;
+            color: var(--gray-600);
+            transition: color 0.2s ease;
+        }
+
+        .main-nav a:hover,
+        .main-nav a.active { color: var(--purple-primary); }
+
+        .btn-primary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 44px;
+            padding: 0 20px;
+            border-radius: 999px;
+            background: var(--purple-primary);
+            color: #fff;
+            font-size: 0.95rem;
+            font-weight: 700;
+            white-space: nowrap;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .hero {
+            background:
+                radial-gradient(circle at top right, rgba(139,92,246,0.28), transparent 35%),
+                linear-gradient(135deg, #14082f 0%, var(--purple-dark) 45%, #2d1065 100%);
+            color: #fff;
+            padding: 80px 0 40px;
+        }
+
+        .hero-content {
+            max-width: 760px;
+        }
+
+        .hero-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 14px;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.08);
+            color: rgba(255,255,255,0.82);
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2.8rem, 7vw, 4.5rem);
+            line-height: 0.98;
+            margin-bottom: 20px;
+            letter-spacing: -0.04em;
+        }
+
+        .hero p {
+            max-width: 620px;
+            font-size: clamp(1rem, 2vw, 1.2rem);
+            color: rgba(255,255,255,0.78);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+            margin-top: 40px;
+        }
+
+        .stat-card {
+            padding: 22px;
+            border-radius: var(--radius-lg);
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            backdrop-filter: blur(8px);
+        }
+
+        .stat-value {
+            display: block;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .stat-label {
+            color: rgba(255,255,255,0.68);
+            font-size: 0.95rem;
+        }
+
+        main {
+            padding: 40px 0 72px;
+        }
+
+        .content-stack {
+            display: grid;
+            gap: 28px;
+        }
+
+        .section-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: 24px;
+            padding: 32px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .section-header h2 {
+            font-size: clamp(1.5rem, 3vw, 2rem);
+            line-height: 1.1;
+            color: var(--gray-900);
+        }
+
+        .section-header p {
+            color: var(--gray-500);
+            font-size: 0.98rem;
+            max-width: 560px;
+        }
+
+        .list-grid {
+            display: grid;
+            gap: 14px;
+        }
+
+        .list-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+            padding: 18px 20px;
+            border-radius: var(--radius-md);
+            background: var(--gray-50);
+            border: 1px solid var(--gray-100);
+            transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+        }
+
+        .list-item:hover {
+            transform: translateY(-1px);
+            border-color: rgba(108,43,217,0.2);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .list-copy {
+            min-width: 0;
+        }
+
+        .list-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 6px;
+            color: var(--purple-primary);
+            font-size: 0.78rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+
+        .list-title {
+            font-size: 1.06rem;
+            font-weight: 700;
+            color: var(--gray-800);
+        }
+
+        .list-meta {
+            flex-shrink: 0;
+            text-align: right;
+            color: var(--gray-500);
+            font-size: 0.92rem;
+            font-weight: 600;
+        }
+
+        .experts-row {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 18px;
+        }
+
+        .expert-card {
+            background: linear-gradient(180deg, #ffffff 0%, #faf7ff 100%);
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .expert-top {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 18px;
+        }
+
+        .expert-avatar {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            background: var(--gray-200);
+            color: var(--gray-700);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .expert-name {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 4px;
+        }
+
+        .expert-specialty {
+            color: var(--gray-500);
+            font-size: 0.92rem;
+        }
+
+        .expert-rating {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding-top: 16px;
+            border-top: 1px solid var(--gray-200);
+            color: var(--gray-600);
+            font-size: 0.92rem;
+        }
+
+        .rating-stars {
+            color: var(--orange-cta);
+            font-weight: 700;
+        }
+
+        .tag-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .tag-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 14px 18px;
+            border-radius: 999px;
+            background: #f4edff;
+            color: var(--purple-primary);
+            border: 1px solid rgba(108,43,217,0.14);
+            font-size: 0.95rem;
+            font-weight: 700;
+            transition: background 0.2s ease, transform 0.2s ease;
+        }
+
+        .tag-link:hover {
+            background: #ede4ff;
+            transform: translateY(-1px);
+        }
+
+        .calc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 16px;
+        }
+
+        .calc-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 18px 20px;
+            background: #fff;
+            border-radius: 14px;
+            border: 1px solid var(--gray-200);
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+
+        .calc-card:hover {
+            box-shadow: 0 6px 20px rgba(108,43,217,0.10);
+            transform: translateY(-2px);
+        }
+
+        .calc-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #f0e8ff;
+            color: var(--purple-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            flex-shrink: 0;
+        }
+
+        .calc-name {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--gray-900);
+        }
+
+        .lead-cta-section {
+            margin-top: 32px;
+            padding: 48px 32px;
+            background: linear-gradient(135deg, var(--purple-primary), #4c1d95);
+            border-radius: 24px;
+            text-align: center;
+            color: #fff;
+        }
+
+        .lead-cta-section h2 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            margin-bottom: 10px;
+        }
+
+        .lead-cta-section p {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 24px;
+            max-width: 480px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .lead-cta-btn {
+            display: inline-block;
+            padding: 14px 32px;
+            border-radius: 10px;
+            background: var(--orange-cta);
+            color: #fff;
+            font-size: 1rem;
+            font-weight: 700;
+            transition: background 0.2s;
+        }
+
+        .lead-cta-btn:hover { background: #ea580c; }
+
+        .footer-note {
+            padding-top: 12px;
+            text-align: center;
+            color: var(--gray-500);
+            font-size: 0.92rem;
+        }
+
+        @media (max-width: 1024px) {
+            .header-inner {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 16px 0;
+            }
+
+            .main-nav {
+                order: 3;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .stats-row,
+            .experts-row {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container { padding: 0 18px; }
+
+            .hero { padding: 56px 0 32px; }
+
+            .section-card {
+                padding: 24px 20px;
+                border-radius: 20px;
+            }
+
+            .section-header,
+            .list-item,
+            .expert-rating {
+                display: grid;
+                gap: 12px;
+            }
+
+            .list-meta {
+                text-align: left;
+            }
+
+            .stats-row,
+            .experts-row {
+                grid-template-columns: 1fr;
+            }
+
+            .main-nav {
+                gap: 14px 18px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .logo { width: 100%; justify-content: center; }
+            .btn-primary { width: 100%; }
+            .header-inner { gap: 16px; }
+        }
+    </style>
 </head>
-<body <?php body_class('bg-white text-slate-900 antialiased font-body'); ?>>
-<?php wp_body_open(); ?>
-
-<?php
-$cat_name = get_the_title() ?: 'Prawo';
-$cat_slug = sanitize_title($cat_name);
-$cat_desc = 'Poradniki, pytania i eksperci w kategorii „' . esc_html($cat_name) . '". Znajdź odpowiedzi i podejmij najlepszą decyzję.';
-?>
-
-<div class="min-h-screen">
-    <!-- HEADER -->
-    <header class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <a href="<?php echo esc_url(home_url('/')); ?>" class="font-display text-xl font-bold"><span class="text-brand">Poradnik</span>.PRO</a>
-            <a href="/zadaj-pytanie/" class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">Zadaj pytanie</a>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-inner">
+                <a href="/" class="logo" aria-label="Poradnik.pro">
+                    <span class="logo-icon">P</span>
+                    <span>Poradnik.pro</span>
+                </a>
+                <nav class="main-nav" aria-label="Główna nawigacja">
+                    <a href="/poradniki" class="active">Poradniki</a>
+                    <a href="/rankingi">Rankingi</a>
+                    <a href="/kalkulatory">Kalkulatory</a>
+                    <a href="/pytania-i-odpowiedzi">Pytania i Odpowiedzi</a>
+                    <a href="/specjalisci">Specjaliści</a>
+                    <a href="/kontakt">Kontakt</a>
+                </nav>
+                <a href="/specjalisci" class="btn-primary">Znajdź eksperta</a>
+            </div>
         </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <!-- HERO -->
-        <section class="mb-12 rounded-2xl bg-brand-light/50 p-8 sm:p-12">
-            <h1 class="font-display text-3xl font-bold sm:text-4xl"><?php echo esc_html($cat_name); ?></h1>
-            <p class="mt-2 max-w-2xl text-base text-slate-600"><?php echo esc_html($cat_desc); ?></p>
-        </section>
-
-        <!-- POPULARNE PORADNIKI -->
-        <section class="mb-14">
-            <h2 class="mb-6 font-display text-xl font-bold">Popularne poradniki</h2>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <?php
-                $guides = [
-                    ['Jak napisać testament — krok po kroku', '/poradnik/jak-napisac-testament/', '12 min czytania'],
-                    ['Rozwód — procedura i koszty 2026', '/poradnik/rozwod-procedura-koszty/', '15 min czytania'],
-                    ['Spadek — co musisz wiedzieć', '/poradnik/spadek-poradnik/', '10 min czytania'],
-                    ['Umowa najmu — wzór i pułapki', '/poradnik/umowa-najmu/', '8 min czytania'],
-                    ['Reklamacja towaru — prawa konsumenta', '/poradnik/reklamacja-towaru/', '7 min czytania'],
-                    ['Alimenty — jak ustalić kwotę', '/poradnik/alimenty-kwota/', '9 min czytania'],
-                ];
-                foreach ($guides as $g) :
-                ?>
-                <a href="<?php echo esc_url($g[1]); ?>" class="rounded-xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-                    <h3 class="text-sm font-semibold text-slate-900"><?php echo esc_html($g[0]); ?></h3>
-                    <p class="mt-1 text-xs text-slate-400"><?php echo esc_html($g[2]); ?></p>
-                </a>
-                <?php endforeach; ?>
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <div class="hero-label">Kategoria / Prawo</div>
+                <h1>Prawo</h1>
+                <p>Praktyczna wiedza, odpowiedzi ekspertów i najlepsi specjaliści w jednym miejscu.</p>
             </div>
-        </section>
-
-        <!-- NAJNOWSZE PYTANIA -->
-        <section class="mb-14">
-            <h2 class="mb-6 font-display text-xl font-bold">Najnowsze pytania</h2>
-            <div class="space-y-3">
-                <?php
-                $catQuestions = [
-                    ['Czy można odziedziczyć długi?', '5 odpowiedzi', '10 min temu'],
-                    ['Ile kosztuje akt notarialny?', '3 odpowiedzi', '25 min temu'],
-                    ['Jak wypisać się z testamentu?', '2 odpowiedzi', '1 godz. temu'],
-                ];
-                foreach ($catQuestions as $q) :
-                ?>
-                <a href="#" class="block rounded-lg border border-slate-200 p-4 transition hover:border-brand/30">
-                    <h3 class="text-sm font-semibold text-slate-900"><?php echo esc_html($q[0]); ?></h3>
-                    <p class="mt-1 text-xs text-slate-400"><?php echo esc_html($q[1]); ?> • <?php echo esc_html($q[2]); ?></p>
-                </a>
-                <?php endforeach; ?>
+            <div class="stats-row" aria-label="Statystyki kategorii Prawo">
+                <div class="stat-card">
+                    <span class="stat-value">2 430</span>
+                    <span class="stat-label">poradników</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">1 250</span>
+                    <span class="stat-label">specjalistów</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">320</span>
+                    <span class="stat-label">opinii</span>
+                </div>
+                <div class="stat-card">
+                    <span class="stat-value">18</span>
+                    <span class="stat-label">kalkulatorów</span>
+                </div>
             </div>
-        </section>
+        </div>
+    </section>
 
-        <!-- POLECANI EKSPERCI -->
-        <section class="mb-14">
-            <h2 class="mb-6 font-display text-xl font-bold">Polecani eksperci — <?php echo esc_html($cat_name); ?></h2>
-            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-                <?php
-                $catExperts = [
-                    ['Mec. Anna Kowalska', '4.9', 312],
-                    ['Mec. Jan Nowak', '4.8', 198],
-                    ['dr Katarzyna Wiśniewska', '4.7', 156],
-                ];
-                foreach ($catExperts as $e) :
-                ?>
-                <article class="rounded-xl border border-slate-200 bg-white p-5">
-                    <h3 class="text-sm font-semibold"><?php echo esc_html($e[0]); ?></h3>
-                    <p class="mt-1 text-xs text-slate-500">★ <?php echo esc_html($e[1]); ?> · <?php echo esc_html($e[2]); ?> odpowiedzi</p>
-                </article>
-                <?php endforeach; ?>
+    <main>
+        <div class="container">
+            <div class="content-stack">
+                <section class="section-card" aria-labelledby="popularne-poradniki">
+                    <div class="section-header">
+                        <div>
+                            <h2 id="popularne-poradniki">Popularne poradniki</h2>
+                        </div>
+                        <p>Najczęściej czytane materiały z kategorii prawo — od spraw spadkowych po umowy i rozwody.</p>
+                    </div>
+                    <div class="list-grid">
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Poradnik</span>
+                                <div class="list-title">Jak najtaniej przeprowadzić sprawę o spadek?</div>
+                            </div>
+                            <div class="list-meta">12 450 wyświetleń</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Poradnik</span>
+                                <div class="list-title">Rozwód bez orzekania o winie — ile trwa i ile kosztuje?</div>
+                            </div>
+                            <div class="list-meta">10 980 wyświetleń</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Poradnik</span>
+                                <div class="list-title">Wzór umowy najmu mieszkania 2026 — co musi zawierać?</div>
+                            </div>
+                            <div class="list-meta">9 340 wyświetleń</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Poradnik</span>
+                                <div class="list-title">Jak odzyskać dług bez sądu? Skuteczne kroki dla wierzyciela</div>
+                            </div>
+                            <div class="list-meta">8 615 wyświetleń</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Poradnik</span>
+                                <div class="list-title">Testament własnoręczny — najczęstsze błędy i jak ich uniknąć</div>
+                            </div>
+                            <div class="list-meta">7 820 wyświetleń</div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="section-card" aria-labelledby="najnowsze-pytania">
+                    <div class="section-header">
+                        <div>
+                            <h2 id="najnowsze-pytania">Najnowsze pytania</h2>
+                        </div>
+                        <p>Aktualne problemy użytkowników, na które odpowiadają prawnicy i doradcy z Poradnik.pro.</p>
+                    </div>
+                    <div class="list-grid">
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Pytanie użytkownika</span>
+                                <div class="list-title">Czy mogę wypowiedzieć umowę najmu okazjonalnego przed terminem?</div>
+                            </div>
+                            <div class="list-meta">14 odpowiedzi</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Pytanie użytkownika</span>
+                                <div class="list-title">Jak podzielić majątek po rozwodzie, jeśli mieszkanie jest na kredyt?</div>
+                            </div>
+                            <div class="list-meta">11 odpowiedzi</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Pytanie użytkownika</span>
+                                <div class="list-title">Czy zachowek przysługuje wnukom po śmierci dziadka?</div>
+                            </div>
+                            <div class="list-meta">9 odpowiedzi</div>
+                        </a>
+                        <a href="#" class="list-item">
+                            <div class="list-copy">
+                                <span class="list-kicker">Pytanie użytkownika</span>
+                                <div class="list-title">Jak napisać skuteczne wezwanie do zapłaty dla kontrahenta?</div>
+                            </div>
+                            <div class="list-meta">7 odpowiedzi</div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="section-card" aria-labelledby="najlepsi-eksperci">
+                    <div class="section-header">
+                        <div>
+                            <h2 id="najlepsi-eksperci">Najlepsi eksperci</h2>
+                        </div>
+                        <p>Sprawdzeni specjaliści z wysokimi ocenami i doświadczeniem w sprawach cywilnych, rodzinnych i spadkowych.</p>
+                    </div>
+                    <div class="experts-row">
+                        <a href="#" class="expert-card">
+                            <div class="expert-top">
+                                <div class="expert-avatar">AK</div>
+                                <div>
+                                    <div class="expert-name">Anna Kowalska</div>
+                                    <div class="expert-specialty">Prawo rodzinne</div>
+                                </div>
+                            </div>
+                            <div class="expert-rating">
+                                <span class="rating-stars">★ 4.9</span>
+                                <span>126 opinii</span>
+                            </div>
+                        </a>
+                        <a href="#" class="expert-card">
+                            <div class="expert-top">
+                                <div class="expert-avatar">MN</div>
+                                <div>
+                                    <div class="expert-name">Michał Nowak</div>
+                                    <div class="expert-specialty">Prawo spadkowe</div>
+                                </div>
+                            </div>
+                            <div class="expert-rating">
+                                <span class="rating-stars">★ 4.9</span>
+                                <span>98 opinii</span>
+                            </div>
+                        </a>
+                        <a href="#" class="expert-card">
+                            <div class="expert-top">
+                                <div class="expert-avatar">JP</div>
+                                <div>
+                                    <div class="expert-name">Joanna Piotrowska</div>
+                                    <div class="expert-specialty">Prawo nieruchomości</div>
+                                </div>
+                            </div>
+                            <div class="expert-rating">
+                                <span class="rating-stars">★ 4.9</span>
+                                <span>114 opinii</span>
+                            </div>
+                        </a>
+                        <a href="#" class="expert-card">
+                            <div class="expert-top">
+                                <div class="expert-avatar">TB</div>
+                                <div>
+                                    <div class="expert-name">Tomasz Bąk</div>
+                                    <div class="expert-specialty">Prawo pracy</div>
+                                </div>
+                            </div>
+                            <div class="expert-rating">
+                                <span class="rating-stars">★ 4.9</span>
+                                <span>87 opinii</span>
+                            </div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="section-card" aria-labelledby="popularne-rankingi">
+                    <div class="section-header">
+                        <div>
+                            <h2 id="popularne-rankingi">Najpopularniejsze rankingi</h2>
+                        </div>
+                        <p>Szybkie skróty do najlepiej ocenianych kancelarii i usług prawnych w największych miastach.</p>
+                    </div>
+                    <div class="tag-list">
+                        <a href="#" class="tag-link">Ranking kancelarii rozwodowych Warszawa</a>
+                        <a href="#" class="tag-link">Najlepsi adwokaci od spadków Kraków</a>
+                        <a href="#" class="tag-link">Ranking radców prawnych Wrocław</a>
+                        <a href="#" class="tag-link">Kancelarie od prawa pracy Poznań</a>
+                        <a href="#" class="tag-link">Najlepsze kancelarie nieruchomości Gdańsk</a>
+                        <a href="#" class="tag-link">Adwokaci od odszkodowań Łódź</a>
+                    </div>
+                </section>
+
+                <section class="section-card">
+                    <div class="section-header">
+                        <h2 id="kalkulatory">Kalkulatory</h2>
+                    </div>
+                    <p>Oblicz koszty i zaplanuj działania z pomocą naszych narzędzi.</p>
+                    <div class="calc-grid">
+                        <a href="/kalkulator/alimenty" class="calc-card">
+                            <div class="calc-icon">🧮</div>
+                            <div class="calc-name">Kalkulator alimentów</div>
+                        </a>
+                        <a href="/kalkulator/odszkodowanie" class="calc-card">
+                            <div class="calc-icon">💰</div>
+                            <div class="calc-name">Kalkulator odszkodowania</div>
+                        </a>
+                        <a href="/kalkulator/koszty-sadowe" class="calc-card">
+                            <div class="calc-icon">⚖️</div>
+                            <div class="calc-name">Kalkulator kosztów sądowych</div>
+                        </a>
+                        <a href="/kalkulator/podatek-od-spadku" class="calc-card">
+                            <div class="calc-icon">📋</div>
+                            <div class="calc-name">Kalkulator podatku od spadku</div>
+                        </a>
+                    </div>
+                </section>
+
+                <section class="lead-cta-section">
+                    <h2>Potrzebujesz porady prawnej?</h2>
+                    <p>Opisz swoją sytuację i otrzymaj spersonalizowaną odpowiedź od zweryfikowanego eksperta w ciągu 24h.</p>
+                    <a href="/dla-specjalistow" class="lead-cta-btn">Wyślij zapytanie →</a>
+                </section>
             </div>
-        </section>
-
-        <!-- RANKINGI -->
-        <section class="mb-14">
-            <h2 class="mb-6 font-display text-xl font-bold">Rankingi</h2>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <a href="/ranking/prawnicy-online/" class="rounded-xl border border-slate-200 p-5 hover:shadow-md">
-                    <h3 class="text-sm font-semibold">Najlepsi prawnicy online 2026</h3>
-                </a>
-                <a href="/ranking/kancelarie-podatkowe/" class="rounded-xl border border-slate-200 p-5 hover:shadow-md">
-                    <h3 class="text-sm font-semibold">Ranking kancelarii podatkowych</h3>
-                </a>
-            </div>
-        </section>
-
-        <!-- KALKULATORY -->
-        <section class="mb-14">
-            <h2 class="mb-6 font-display text-xl font-bold">Kalkulatory</h2>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <a href="/kalkulator/alimenty/" class="flex items-center gap-3 rounded-xl border border-slate-200 p-4 hover:shadow-sm">
-                    <span class="text-xl">🧮</span>
-                    <span class="text-sm font-semibold">Kalkulator alimentów</span>
-                </a>
-                <a href="/kalkulator/koszt-notariusza/" class="flex items-center gap-3 rounded-xl border border-slate-200 p-4 hover:shadow-sm">
-                    <span class="text-xl">🧮</span>
-                    <span class="text-sm font-semibold">Kalkulator kosztów notariusza</span>
-                </a>
-            </div>
-        </section>
-
-        <!-- LEAD CTA -->
-        <section class="rounded-2xl bg-slate-900 p-8 text-center text-white">
-            <h2 class="font-display text-xl font-bold">Potrzebujesz pomocy w kategorii „<?php echo esc_html($cat_name); ?>"?</h2>
-            <p class="mt-2 text-sm text-slate-300">Opisz swój problem — znajdziemy najlepszego eksperta.</p>
-            <a href="/zadaj-pytanie/?kategoria=<?php echo esc_attr($cat_slug); ?>" class="mt-6 inline-block rounded-lg bg-brand px-6 py-3 text-sm font-semibold text-white hover:bg-brand-dark">Zadaj pytanie →</a>
-        </section>
+            <div class="footer-note">Szablon kategorii Poradnik.pro zaprojektowany w układzie zgodnym z wireframe dla platformy Poradnik.pro.</div>
+        </div>
     </main>
-
-    <footer class="mt-10 border-t border-slate-100 py-8 text-center text-xs text-slate-400">
-        &copy; <?php echo esc_html(gmdate('Y')); ?> Poradnik.PRO
-    </footer>
-</div>
-
-<?php wp_footer(); ?>
 </body>
 </html>

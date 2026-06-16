@@ -1,141 +1,503 @@
-<?php
-/**
- * Template Name: Poradnik.PRO - Specjaliści
- * Description: Experts listing page with filters (/specjalisci/)
- *
- * @package PearBlog
- * @version 5.0.0
- */
-?>
 <!DOCTYPE html>
-<html <?php language_attributes(); ?>>
+<html lang="pl">
 <head>
-    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' } }, fontFamily: { display: ['Poppins','system-ui','sans-serif'], body: ['Inter','system-ui','sans-serif'] } } } };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
-    <?php wp_head(); ?>
-</head>
-<body <?php body_class('bg-white text-slate-900 antialiased font-body'); ?>>
-<?php wp_body_open(); ?>
+    <title>Specjaliści | Poradnik.pro</title>
+    <meta name="description" content="Znajdź najlepszego eksperta dla siebie na Poradnik.pro.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<div class="min-h-screen">
-    <header class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <a href="<?php echo esc_url(home_url('/')); ?>" class="font-display text-xl font-bold"><span class="text-brand">Poradnik</span>.PRO</a>
-            <a href="/dla-specjalistow/" class="rounded-lg bg-brand px-4 py-2 text-sm font-semibold text-white hover:bg-brand-dark">Dołącz jako ekspert</a>
+        :root {
+            --purple: #6c2bd9;
+            --purple-dark: #571fc0;
+            --purple-soft: #f4edff;
+            --text: #18181b;
+            --muted: #6b7280;
+            --border: #e5e7eb;
+            --bg: #f6f7fb;
+            --white: #ffffff;
+            --shadow: 0 16px 32px rgba(24, 24, 27, 0.08);
+            --radius: 12px;
+            --container: 1200px;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        a { color: inherit; text-decoration: none; }
+        button, input, select { font: inherit; }
+        button { cursor: pointer; }
+
+        .container {
+            width: min(var(--container), calc(100% - 32px));
+            margin: 0 auto;
+        }
+
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(229, 231, 235, 0.9);
+        }
+
+        .header-inner {
+            min-height: 76px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+        }
+
+        .logo {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+
+        .logo-mark {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--purple), #8d58ec);
+            color: var(--white);
+            font-weight: 800;
+        }
+
+        .main-nav {
+            display: flex;
+            align-items: center;
+            gap: 28px;
+            flex-wrap: wrap;
+        }
+
+        .main-nav a {
+            color: var(--muted);
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+        .main-nav a:hover,
+        .main-nav a.active { color: var(--purple); }
+
+        .header-cta,
+        .profile-link,
+        .page-arrow,
+        .page-number {
+            transition: all 0.2s ease;
+        }
+
+        .header-cta {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 22px;
+            border-radius: 999px;
+            background: var(--purple);
+            color: var(--white);
+            font-size: 0.95rem;
+            font-weight: 700;
+            border: 0;
+        }
+
+        .header-cta:hover { background: var(--purple-dark); }
+
+        .hero {
+            padding: 56px 0 28px;
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 4vw, 3rem);
+            line-height: 1.1;
+            margin-bottom: 12px;
+        }
+
+        .hero p {
+            max-width: 560px;
+            color: var(--muted);
+            font-size: 1.05rem;
+        }
+
+        .search-panel {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+            margin: 18px 0 18px;
+        }
+
+        .search-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 240px;
+            gap: 16px;
+        }
+
+        .search-input,
+        .search-select {
+            width: 100%;
+            min-height: 56px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            padding: 0 18px;
+            color: var(--text);
+            outline: none;
+        }
+
+        .search-input:focus,
+        .search-select:focus {
+            border-color: var(--purple);
+            box-shadow: 0 0 0 4px rgba(108, 43, 217, 0.12);
+        }
+
+        .search-input::placeholder { color: #9ca3af; }
+
+        .filters {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 28px;
+        }
+
+        .filter-tab {
+            min-height: 42px;
+            padding: 0 18px;
+            border-radius: 999px;
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .filter-tab.active,
+        .filter-tab:hover {
+            border-color: rgba(108, 43, 217, 0.2);
+            background: var(--purple-soft);
+            color: var(--purple);
+        }
+
+        .specialists-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 24px;
+        }
+
+        .specialist-card {
+            background: var(--white);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 28px;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            min-height: 100%;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .specialist-card:hover {
+            transform: translateY(-4px);
+            box-shadow: var(--shadow);
+        }
+
+        .card-top {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .avatar {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: #e5e7eb;
+            color: #6b7280;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.1rem;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .card-meta h2 {
+            font-size: 1.15rem;
+            margin-bottom: 4px;
+        }
+
+        .specialty {
+            color: var(--purple);
+            font-weight: 600;
+            font-size: 0.96rem;
+        }
+
+        .rating-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .stars {
+            color: #f4b400;
+            letter-spacing: 0.03em;
+            font-weight: 700;
+        }
+
+        .profile-link {
+            margin-top: auto;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 48px;
+            border-radius: 999px;
+            border: 2px solid var(--purple);
+            color: var(--purple);
+            background: transparent;
+            font-weight: 700;
+        }
+
+        .profile-link:hover {
+            background: var(--purple);
+            color: var(--white);
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            padding: 36px 0 56px;
+        }
+
+        .page-arrow,
+        .page-number,
+        .page-ellipsis {
+            min-width: 42px;
+            min-height: 42px;
+            border-radius: 999px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+        }
+
+        .page-arrow,
+        .page-number {
+            border: 1px solid var(--border);
+            background: var(--white);
+            color: var(--muted);
+        }
+
+        .page-number.active,
+        .page-number:hover,
+        .page-arrow:hover {
+            border-color: var(--purple);
+            color: var(--purple);
+            background: var(--purple-soft);
+        }
+
+        .page-number.active {
+            background: var(--purple);
+            color: var(--white);
+        }
+
+        @media (max-width: 1100px) {
+            .specialists-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 840px) {
+            .header-inner {
+                flex-wrap: wrap;
+                justify-content: center;
+                padding: 16px 0;
+            }
+
+            .main-nav {
+                justify-content: center;
+                gap: 18px;
+            }
+
+            .search-row { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 640px) {
+            .hero { padding-top: 40px; }
+            .specialists-grid { grid-template-columns: 1fr; }
+            .search-panel { padding: 18px; border-radius: 16px; }
+            .specialist-card { padding: 22px; }
+            .card-top { align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <div class="container">
+            <div class="header-inner">
+                <a class="logo" href="/">
+                    <span class="logo-mark">P</span>
+                    <span>Poradnik.pro</span>
+                </a>
+
+                <nav class="main-nav" aria-label="Główna nawigacja">
+                    <a href="/poradniki">Poradniki</a>
+                    <a href="/rankingi">Rankingi</a>
+                    <a href="/kalkulatory">Kalkulatory</a>
+                    <a href="/specjalisci" class="active">Specjaliści</a>
+                </nav>
+
+                <a class="header-cta" href="/specjalisci">Znajdź eksperta</a>
+            </div>
         </div>
     </header>
 
-    <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <h1 class="mb-8 font-display text-3xl font-bold">Specjaliści</h1>
-
-        <!-- FILTERS -->
-        <section class="mb-8 flex flex-wrap gap-3">
-            <select aria-label="Branża" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <option value="">Branża</option>
-                <option>Prawo</option>
-                <option>Finanse</option>
-                <option>Nieruchomości</option>
-                <option>Budowa domu</option>
-                <option>Motoryzacja</option>
-                <option>Zdrowie</option>
-                <option>Biznes</option>
-                <option>Technologia</option>
-            </select>
-            <select aria-label="Miasto" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <option value="">Miasto</option>
-                <option>Warszawa</option>
-                <option>Kraków</option>
-                <option>Katowice</option>
-                <option>Wrocław</option>
-                <option>Poznań</option>
-                <option>Gdańsk</option>
-            </select>
-            <select aria-label="Ocena" class="rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <option value="">Ocena</option>
-                <option>4.5+</option>
-                <option>4.0+</option>
-                <option>3.5+</option>
-            </select>
-            <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand">
-                <span>Premium</span>
-            </label>
-            <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand">
-                <span>Zweryfikowany</span>
-            </label>
-            <label class="flex items-center gap-2 rounded-lg border border-slate-200 px-3 py-2 text-sm">
-                <input type="checkbox" class="h-4 w-4 rounded border-slate-300 text-brand">
-                <span>Online</span>
-            </label>
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h1>Specjaliści</h1>
+                <p>Znajdź najlepszego eksperta dla siebie</p>
+            </div>
         </section>
 
-        <!-- KARTY SPECJALISTÓW -->
-        <section class="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <?php
-            $specialists = [
-                ['Mec. Anna Kowalska', 'Prawo cywilne', 'Warszawa', '4.9', 312, true, true, true],
-                ['dr Tomasz Nowak', 'Finanse osobiste', 'Kraków', '4.8', 245, true, true, false],
-                ['inż. Piotr Zieliński', 'Budownictwo', 'Katowice', '4.9', 189, true, false, true],
-                ['Karolina Wiśniewska', 'Nieruchomości', 'Wrocław', '4.7', 156, false, true, true],
-                ['Mec. Jan Nowak', 'Prawo podatkowe', 'Poznań', '4.8', 198, true, true, false],
-                ['dr Maria Lewandowska', 'Medycyna', 'Gdańsk', '4.9', 267, true, true, true],
-                ['Marcin Dąbrowski', 'IT / Technologia', 'Warszawa', '4.6', 134, false, true, false],
-                ['Agnieszka Wójcik', 'Psychologia', 'Kraków', '4.8', 221, true, false, true],
-                ['inż. Robert Kamiński', 'Motoryzacja', 'Katowice', '4.5', 98, false, true, false],
-            ];
-            foreach ($specialists as $s) :
-            ?>
-            <article class="rounded-xl border border-slate-200 bg-white p-5 transition hover:-translate-y-0.5 hover:shadow-md">
-                <div class="flex items-start justify-between">
-                    <div class="flex items-center gap-3">
-                        <div class="relative flex h-12 w-12 items-center justify-center rounded-full bg-brand/10 text-sm font-bold text-brand">
-                            <?php echo esc_html(mb_substr($s[0], 0, 1)); ?>
-                            <?php if ($s[7]) : ?>
-                            <span class="absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-white bg-green-500"></span>
-                            <?php endif; ?>
-                        </div>
-                        <div>
-                            <h2 class="text-sm font-bold text-slate-900"><?php echo esc_html($s[0]); ?></h2>
-                            <p class="text-xs text-slate-500"><?php echo esc_html($s[1]); ?> · <?php echo esc_html($s[2]); ?></p>
+        <section class="container">
+            <div class="search-panel">
+                <div class="search-row">
+                    <input class="search-input" type="text" placeholder="Czego szukasz?" aria-label="Czego szukasz?">
+                    <select class="search-select" aria-label="Wszystkie kategorie">
+                        <option>Wszystkie kategorie</option>
+                        <option>Nieruchomości</option>
+                        <option>Prawo</option>
+                        <option>Finanse</option>
+                        <option>Księgowość</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="filters" aria-label="Filtry specjalistów">
+                <button class="filter-tab active" type="button">Branża</button>
+                <button class="filter-tab" type="button">Lokalizacja</button>
+                <button class="filter-tab" type="button">Ocena</button>
+                <button class="filter-tab" type="button">Online</button>
+                <button class="filter-tab" type="button">Zweryfikowani</button>
+                <button class="filter-tab" type="button">Więcej</button>
+            </div>
+
+            <div class="specialists-grid">
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">JK</div>
+                        <div class="card-meta">
+                            <h2>Jan Kowalski</h2>
+                            <p class="specialty">Doradca nieruchomości</p>
                         </div>
                     </div>
-                </div>
-                <div class="mt-3 flex items-center gap-2">
-                    <?php if ($s[5]) : ?>
-                    <span class="rounded bg-amber-100 px-2 py-0.5 text-xs font-semibold text-amber-700">Premium</span>
-                    <?php endif; ?>
-                    <?php if ($s[6]) : ?>
-                    <span class="rounded bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">Zweryfikowany</span>
-                    <?php endif; ?>
-                </div>
-                <div class="mt-3 flex items-center gap-3 text-xs text-slate-500">
-                    <span class="font-semibold text-amber-500">★ <?php echo esc_html($s[3]); ?></span>
-                    <span><?php echo esc_html($s[4]); ?> odpowiedzi</span>
-                </div>
-                <a href="/specjalista/<?php echo esc_attr(sanitize_title($s[0])); ?>/" class="mt-4 block rounded-lg border border-brand/20 bg-brand/5 py-2 text-center text-sm font-semibold text-brand hover:bg-brand hover:text-white">Zobacz profil</a>
-            </article>
-            <?php endforeach; ?>
+                    <div class="rating-row"><span class="stars">★ 4.9</span><span>322 opinie</span></div>
+                    <a class="profile-link" href="/specjalisci/jan-kowalski">Zobacz profil</a>
+                </article>
+
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">AN</div>
+                        <div class="card-meta">
+                            <h2>Anna Nowak</h2>
+                            <p class="specialty">Prawnik</p>
+                        </div>
+                    </div>
+                    <div class="rating-row"><span class="stars">★ 4.8</span><span>425 opinie</span></div>
+                    <a class="profile-link" href="/specjalisci/anna-nowak">Zobacz profil</a>
+                </article>
+
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">PZ</div>
+                        <div class="card-meta">
+                            <h2>Piotr Zieliński</h2>
+                            <p class="specialty">Doradca kredytowy</p>
+                        </div>
+                    </div>
+                    <div class="rating-row"><span class="stars">★ 4.7</span><span>278 opinie</span></div>
+                    <a class="profile-link" href="/specjalisci/piotr-zielinski">Zobacz profil</a>
+                </article>
+
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">KW</div>
+                        <div class="card-meta">
+                            <h2>Karolina Wiśniewska</h2>
+                            <p class="specialty">Księgowa</p>
+                        </div>
+                    </div>
+                    <div class="rating-row"><span class="stars">★ 4.8</span><span>196 opinie</span></div>
+                    <a class="profile-link" href="/specjalisci/karolina-wisniewska">Zobacz profil</a>
+                </article>
+
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">KW</div>
+                        <div class="card-meta">
+                            <h2>Karolina Wiśniewska</h2>
+                            <p class="specialty">Specjalistka ds. podatków</p>
+                        </div>
+                    </div>
+                    <div class="rating-row"><span class="stars">★ 4.9</span><span>241 opinii</span></div>
+                    <a class="profile-link" href="/specjalisci/karolina-wisniewska-podatki">Zobacz profil</a>
+                </article>
+
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">TN</div>
+                        <div class="card-meta">
+                            <h2>Tomasz Nowak</h2>
+                            <p class="specialty">Doradca biznesowy</p>
+                        </div>
+                    </div>
+                    <div class="rating-row"><span class="stars">★ 4.8</span><span>214 opinii</span></div>
+                    <a class="profile-link" href="/specjalisci/tomasz-nowak">Zobacz profil</a>
+                </article>
+
+                <article class="specialist-card">
+                    <div class="card-top">
+                        <div class="avatar">ML</div>
+                        <div class="card-meta">
+                            <h2>Michał Lewandowski</h2>
+                            <p class="specialty">Konsultant finansowy</p>
+                        </div>
+                    </div>
+                    <div class="rating-row"><span class="stars">★ 4.7</span><span>189 opinii</span></div>
+                    <a class="profile-link" href="/specjalisci/michal-lewandowski">Zobacz profil</a>
+                </article>
+            </div>
+
+            <nav class="pagination" aria-label="Paginacja">
+                <a class="page-arrow" href="#" aria-label="Poprzednia strona">&larr;</a>
+                <a class="page-number active" href="#">1</a>
+                <a class="page-number" href="#">2</a>
+                <a class="page-number" href="#">3</a>
+                <a class="page-number" href="#">4</a>
+                <span class="page-ellipsis">...</span>
+                <a class="page-arrow" href="#" aria-label="Następna strona">&rarr;</a>
+            </nav>
         </section>
-
-        <!-- PAGINATION -->
-        <nav aria-label="Paginacja" class="mt-10 flex items-center justify-center gap-2">
-            <span class="flex h-9 w-9 items-center justify-center rounded-lg bg-brand text-sm font-semibold text-white">1</span>
-            <a href="?page=2" class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-sm hover:bg-slate-50">2</a>
-            <a href="?page=3" class="flex h-9 w-9 items-center justify-center rounded-lg border border-slate-200 text-sm hover:bg-slate-50">3</a>
-        </nav>
     </main>
-
-    <footer class="mt-10 border-t border-slate-100 py-8 text-center text-xs text-slate-400">
-        &copy; <?php echo esc_html(gmdate('Y')); ?> Poradnik.PRO
-    </footer>
-</div>
-
-<?php wp_footer(); ?>
 </body>
 </html>
