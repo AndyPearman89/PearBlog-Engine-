@@ -69,7 +69,7 @@ class PearBlog_PT24_Pro_Routing {
      * Initialize hooks
      */
     public static function init() {
-        add_action('init', [__CLASS__, 'add_rewrite_rules']);
+        add_action('init', [__CLASS__, 'add_rewrite_rules'], 20);
         add_filter('template_include', [__CLASS__, 'route_template'], 15);
     }
 
