@@ -21,43 +21,211 @@ Then add topics in **WP Admin → PearBlog Engine → Queue** and the pipeline r
 ## Architecture
 
 ```
-pearblog-engine.php              # Bootstrap & PSR-4 autoloader
+pearblog-engine.php              # Bootstrap & PSR-4 autoloader (version 8.0.0)
 assets/
-└── css/admin.css                # Admin panel styles (v5.1)
+└── css/admin.css                # Admin panel styles
 src/
 ├── Core/Plugin.php              # Singleton boot — registers all sub-systems
-├── Pipeline/ContentPipeline.php # 8-step autonomous content generation
-├── AI/
-│   ├── AIClient.php             # OpenAI Chat Completions (GPT-4o-mini)
-│   ├── ImageGenerator.php       # DALL-E 3 image generation
-│   └── ImageAnalyzer.php        # Media library audit + keyword suggestions (v5.1)
-├── Content/
-│   ├── PromptBuilder.php        # Base prompt builder
-│   ├── PromptBuilderFactory.php # Auto-selects builder by niche
+├── Pipeline/                    # 12-step autonomous content generation
+│   ├── ContentPipeline.php      # Main pipeline orchestrator
+│   ├── BackgroundProcessor.php  # Async WP-Cron queue processing
+│   ├── ContentImportExport.php  # Bulk topic import (CSV/JSON) + article export
+│   ├── PipelineAuditLog.php     # Ring-buffer audit log with REST read/append
+│   ├── ApprovalWorkflow.php     # Content approval workflow
+│   └── AsyncQueueManager.php   # Async queue management
+├── AI/                          # Multi-provider AI client layer
+│   ├── AIClient.php             # Provider-agnostic chat client (circuit breaker, cost tracking)
+│   ├── AIProviderInterface.php  # Provider contract
+│   ├── AIProviderFactory.php    # Factory: OpenAI / Anthropic / Gemini
+│   ├── OpenAIProvider.php       # OpenAI GPT-4o-mini + DALL-E 3
+│   ├── AnthropicProvider.php    # Anthropic Claude adapter
+│   ├── GeminiProvider.php       # Google Gemini adapter
+│   ├── ImageGenerator.php       # DALL-E 3 image generation (4 styles)
+│   ├── ImageAnalyzer.php        # Media library audit + keyword suggestions
+│   ├── ContentRewriter.php      # AI-powered content rewriting
+│   ├── FactChecker.php          # AI fact verification
+│   ├── PromptOptimizer.php      # Dynamic prompt optimization
+│   ├── VideoScriptBuilder.php   # Video script generation
+│   ├── PodcastGenerator.php     # Podcast script generation
+│   ├── StreamingAIClient.php    # Streaming response client
+│   └── RateLimitException.php   # Rate limit error
+├── Content/                     # 28+ content builders and processors
+│   ├── PromptBuilder.php        # Base prompt builder (SEO + monetization rules)
+│   ├── PromptBuilderFactory.php # Auto-selects builder by industry keywords
 │   ├── TravelPromptBuilder.php  # Travel content with mandatory sections
-│   ├── BeskidyPromptBuilder.php # Beskidy-specific builder
+│   ├── BeskidyPromptBuilder.php # Beskidy mountains (weather + day planner)
 │   ├── MultiLanguageTravelBuilder.php # PL/EN/DE localization
-│   ├── ContentValidator.php     # Validates structure & quality
-│   └── TopicQueue.php           # FIFO queue (WordPress option)
-├── SEO/
-│   ├── SEOEngine.php            # Meta tags & Schema.org injection
-│   └── ProgrammaticSEO.php      # Bulk audit, Open Graph, keyword density (v5.1)
-├── Monetization/
-│   └── MonetizationEngine.php   # AdSense + Affiliate + SaaS CTA
-├── Scheduler/CronManager.php    # WP-Cron hook registration (multisite-safe)
-├── Keywords/KeywordCluster.php  # Keyword grouping value object
-├── API/AutomationController.php # REST API for external automation
-├── Admin/
-│   ├── AdminPage.php            # Top-level WP admin menu (6 tabs, v5.1)
-│   └── DashboardWidget.php      # WP Dashboard pipeline stats widget (v5.1)
-└── Tenant/
-    ├── TenantContext.php         # Runtime context (domain + profile)
-    └── SiteProfile.php           # Value object: niche + strategy
+│   ├── PT24PromptBuilder.php    # PT24 service landing pages
+│   ├── PoradnikPromptBuilder.php# Poradnik.pro decision content
+│   ├── EcommercePromptBuilder.php # E-commerce content
+│   ├── FinancePromptBuilder.php # Finance/banking content
+│   ├── FoodPromptBuilder.php    # Food & recipe content
+│   ├── HealthPromptBuilder.php  # Health & wellness content
+│   ├── GlossaryBuilder.php      # Glossary / definition pages
+│   ├── PoradnikCostTemplateBuilder.php # Pricing/cost template
+│   ├── PoradnikV3TemplateBuilder.php   # Poradnik V3 template engine
+│   ├── ContentValidator.php     # Structure & quality validation (3 modes)
+│   ├── DuplicateDetector.php    # Similarity check (blocks if ≥ 80%)
+│   ├── QualityScorer.php        # 0–100 content quality score
+│   ├── ReadabilityAnalyzer.php  # Readability metrics
+│   ├── ContentRefreshEngine.php # Content freshness scoring & refresh queue
+│   ├── ContentScore.php         # Composite content score value object
+│   ├── FewShotEngine.php        # Few-shot prompt examples engine
+│   ├── PersonaBuilder.php       # Audience persona generation
+│   ├── CompetitiveGapEngine.php # SERP gap analysis
+│   ├── MultilingualManager.php  # Runtime language switching
+│   ├── LivePricingDataLayer.php # Live pricing data integration
+│   ├── PostMetaManager.php      # Post meta read/write helper
+│   ├── CTABlockCPT.php          # CTA custom post type
+│   ├── FAQBlockCPT.php          # FAQ custom post type
+│   └── SerpScraper.php          # SERP data extraction
+├── Analytics/                   # GA4 + advanced analytics
+│   ├── GA4Client.php            # GA4 Data API client (daily sync)
+│   ├── AnalyticsDashboard.php   # Dashboard widget + REST analytics
+│   ├── SearchIntentEngine.php   # Search intent classification
+│   ├── PredictiveEngine.php     # Predictive analytics
+│   ├── CohortEngine.php         # User cohort analysis
+│   ├── ContentROIEngine.php     # Content ROI calculation
+│   ├── ConversionFlowTracker.php# Conversion funnel tracking
+│   └── ConversionTracker.php    # Individual conversion events
+├── SEO/                         # Full SEO automation suite
+│   ├── SEOEngine.php            # Meta tags, Schema.org injection
+│   ├── ProgrammaticSEO.php      # Schema.org JSON-LD, OG, Twitter Cards, bulk audit
+│   ├── SchemaManager.php        # Advanced Schema.org types
+│   ├── InternalLinker.php       # Keyword-based internal link injection
+│   ├── ProgrammaticLocalSEO.php # Local SEO (city/service pages)
+│   ├── TopicalAuthorityEngine.php # Topical authority & pillar clusters
+│   ├── HreflangManager.php      # Hreflang tags for multilingual sites
+│   ├── XmlSitemapManager.php    # XML sitemap generation
+│   ├── SearchConsoleClient.php  # Google Search Console API client
+│   ├── KeywordDatabase.php      # Keyword database (v1)
+│   ├── KeywordDatabaseV3.php    # Keyword database (v3 — enterprise)
+│   ├── KeywordGeneratorCLI.php  # CLI keyword generation
+│   └── KeywordGeneratorV3CLI.php# CLI keyword generation v3
+├── Monetization/MonetizationEngine.php # AdSense + Affiliate + SaaS CTA
+├── Scheduler/                   # WP-Cron management
+│   ├── CronManager.php          # WP-Cron hook registration (multisite-safe)
+│   ├── PublishScheduler.php     # GA4-based optimal publish timing
+│   └── TimeZoneScheduler.php    # Time-zone-aware scheduling
+├── Keywords/                    # Keyword clustering
+│   ├── KeywordCluster.php       # Immutable value object (pillar + supporting keywords)
+│   └── KeywordClusterEngine.php # IDF-based GA4 keyword clustering
+├── Cache/                       # Cache & CDN layer
+│   ├── ContentCache.php         # Content fragment cache
+│   ├── ObjectCacheAdapter.php   # wp_cache_* adapter
+│   ├── CdnManager.php           # BunnyCDN + Cloudflare offloading
+│   └── QueryOptimizer.php       # DB query optimization
+├── API/                         # REST endpoints
+│   ├── AutomationController.php # Core automation endpoints
+│   ├── DashboardController.php  # Dashboard data REST API
+│   ├── TopicsController.php     # Topics queue REST API
+│   ├── GraphQLController.php    # GraphQL endpoint
+│   ├── PermissionManager.php    # RBAC + API key auth
+│   ├── RateLimiter.php          # Request rate limiting
+│   ├── PoradnikV3API.php        # Poradnik V3 REST API
+│   └── SearchSuggestAPI.php     # Search suggestions REST API
+├── Admin/                       # WP Admin interface (20 classes)
+│   ├── AdminPageV8Enterprise.php# Enterprise 15-tab admin dashboard (v8.0)
+│   ├── AdminPageV7.php          # V7 admin page
+│   ├── AdminPage.php            # Legacy admin page (6 tabs)
+│   ├── DashboardWidget.php      # WP Dashboard pipeline stats widget
+│   ├── OnboardingWizardV2.php   # Step-by-step onboarding (v2)
+│   ├── OnboardingWizard.php     # Step-by-step onboarding
+│   ├── ContentCalendar.php      # Visual content calendar
+│   ├── WhiteLabelManager.php    # White-label customization
+│   ├── DatabaseMigration.php    # DB migration runner
+│   └── [13 tab controllers]     # StrategyTab, ContentEngineTab, SEOTab, MonetizationTab, LeadsTab, AutomationTab, AnalyticsTab, MultisiteTab, PerformanceDashboardTab, SettingsTab, DashboardTab…
+├── Monitoring/                  # Observability & alerting
+│   ├── AlertManager.php         # Slack/Discord/email alerting
+│   ├── HealthController.php     # System health check REST endpoint
+│   ├── PerformanceDashboard.php # Performance metrics dashboard
+│   ├── Logger.php               # Structured logger
+│   ├── SLAManager.php           # SLA tracking & reporting
+│   └── ErrorTracker.php         # Error aggregation
+├── Social/                      # Social media & notifications
+│   ├── SocialPublisher.php      # Auto-publish to social platforms
+│   ├── SocialCalendar.php       # Social publishing calendar
+│   └── PushNotificationPublisher.php # Web push notifications
+├── CLI/                         # WP-CLI commands
+│   ├── PearBlogCommand.php      # Main `wp pearblog` command
+│   ├── AutopilotRunner.php      # 26-task autopilot (7 phases)
+│   ├── IntegrationCommand.php   # Integration management CLI
+│   ├── SEOV3Command.php         # SEO v3 CLI commands
+│   └── SecurityCommand.php      # Security CLI commands
+├── Tenant/                      # Multi-site context
+│   ├── TenantContext.php        # Runtime context (domain + profile)
+│   └── SiteProfile.php          # Value object: niche + strategy
+├── LeadAI/                      # PT24 AI Lead Engine V2 (DDD)
+│   ├── Domain/                  # Entities, value objects, domain events
+│   ├── Application/             # Use cases, services
+│   ├── Infrastructure/          # Persistence, external integrations
+│   ├── UI/                      # REST controllers, admin views
+│   └── LeadAIEngine.php         # Engine bootstrap
+├── Poradnik/                    # Poradnik.pro content engine
+│   ├── PoradnikEngine.php       # Main engine bootstrap
+│   ├── AIOptimizer.php          # AI content optimization
+│   ├── ScoringEngine.php        # Content scoring
+│   ├── DecisionEngine.php       # Decision-tree content logic
+│   ├── DataEngine.php           # Data aggregation
+│   ├── EventTracker.php         # Event tracking
+│   ├── WorkerManager.php        # Background worker management
+│   ├── CSVImporter.php          # CSV data import
+│   ├── DataScraper.php          # Data scraping
+│   └── PoradnikAPI.php          # REST API
+├── Security/                    # Security & compliance
+│   ├── RBACManager.php          # Role-based access control
+│   ├── SecurityAuditor.php      # Security audit & reporting
+│   ├── ContentModerator.php     # AI content moderation
+│   ├── PIIDetector.php          # PII detection & masking
+│   └── ComplianceExporter.php   # GDPR/compliance export
+├── DecisionPlatform/            # Full Decision Platform (Poradnik.pro)
+│   ├── DecisionPlatformManager.php # Platform bootstrap
+│   ├── DecisionPlatformAPI.php  # REST API
+│   ├── ComparisonEngine.php     # AI-generated comparisons (A vs B)
+│   ├── RankingEngine.php        # TOP rankings with local filtering
+│   ├── Calculator.php           # Interactive cost/ROI calculators
+│   ├── DecisionAssistant.php    # AI personalized recommendations
+│   ├── IntentDetector.php       # User intent detection
+│   ├── LinkGraph.php            # Internal link relationship graph
+│   ├── LeadGenerator.php        # Lead capture + matching
+│   ├── QuizEngine.php           # Decision quiz engine
+│   ├── PriceComparison.php      # Price comparison tool
+│   ├── BlockRenderer.php        # Gutenberg block renderer
+│   └── [value objects]          # Article, Comparison, Expert, Offer, Ranking
+├── Distribution/                # Content distribution
+│   ├── AMPGenerator.php         # AMP page generation
+│   └── RSSFeedBuilder.php       # Custom RSS feed builder
+├── Email/                       # Email marketing
+│   ├── EmailDigest.php          # Automated email digest
+│   └── NewsletterBuilder.php    # Newsletter content builder
+├── Integration/                 # External integrations
+│   ├── PT24Bridge.php           # PT24 platform bridge
+│   ├── ZapierManager.php        # Zapier webhook integration
+│   ├── CTAInjector.php          # Dynamic CTA injection
+│   ├── ContentLinker.php        # Cross-content linking
+│   ├── LeadAttributor.php       # Lead source attribution
+│   └── RankingSyncer.php        # External ranking data sync
+├── Logging/                     # Advanced structured logging
+│   ├── AdvancedLogger.php       # PSR-3 compatible advanced logger
+│   ├── DatabaseHandler.php      # DB log handler
+│   ├── AbstractHandler.php      # Base handler
+│   ├── LoggerInterface.php      # Logger interface
+│   ├── ProcessorInterface.php   # Processor interface
+│   ├── RequestContextProcessor.php  # HTTP request context
+│   ├── WordPressContextProcessor.php # WP context enrichment
+│   ├── MemoryUsageProcessor.php # Memory usage tracking
+│   └── LegacyLoggerHandler.php  # Legacy logger compatibility
+├── Database/                    # Schema management
+│   ├── PT24IntegrationSchema.php# PT24 DB schema (9 tables)
+│   ├── PoradnikSchema.php       # Poradnik DB schema
+│   └── PoradnikV3Schema.php     # Poradnik V3 DB schema
+├── Webhook/WebhookManager.php   # Outgoing webhook management
+└── Testing/ABTestEngine.php     # A/B test engine
 ```
 
 ---
 
-## Pipeline — 8 Steps
+## Pipeline — 12 Steps
 
 Each call to `ContentPipeline::run()` processes exactly one article (next topic from the queue):
 
@@ -66,12 +234,15 @@ Each call to `ContentPipeline::run()` processes exactly one article (next topic 
 | 1 | Pop topic from queue | `TopicQueue::pop()` |
 | 2 | Build prompt | `PromptBuilderFactory::create()` + `build()` |
 | 3 | Generate content | `AIClient::generate()` (GPT-4o-mini) |
-| 4 | Create draft post | `wp_insert_post()` |
-| 5 | Apply SEO metadata | `SEOEngine::apply()` |
-| 6 | Inject monetization | `MonetizationEngine::apply()` |
-| 6a | Generate featured image | `ImageGenerator::generate_and_attach()` (DALL-E 3) |
-| 6b | Auto-generate meta desc fallback | `ProgrammaticSEO::generate_meta_description()` |
-| 7 | Publish post | `wp_update_post()` with `post_status=publish` |
+| 4 | Duplicate check | `DuplicateDetector::is_duplicate()` (blocks if similarity ≥ 80%) |
+| 5 | Create draft post | `wp_insert_post()` |
+| 6 | Apply SEO metadata | `SEOEngine::apply()` |
+| 7 | Inject monetization | `MonetizationEngine::apply()` |
+| 8 | Inject internal links | `InternalLinker::inject()` (up to 5 links) |
+| 9 | Generate featured image | `ImageGenerator::generate_and_attach()` (DALL-E 3) |
+| 10 | Update duplicate index | `DuplicateDetector::index()` |
+| 11 | Publish post | `wp_update_post()` with `post_status=publish` |
+| 12 | Score + alert | `QualityScorer::score()` + `AlertManager::notify()` |
 
 Cost: **~$0.08 / article** · Time: **~55 seconds**
 
@@ -82,15 +253,25 @@ Cost: **~$0.08 / article** · Time: **~55 seconds**
 ### Core (`Core/Plugin.php`)
 
 Singleton that boots all sub-systems exactly once via `Plugin::boot()`.
-Registers: `CronManager`, `AdminPage`, `DashboardWidget`, `ProgrammaticSEO`, and REST routes.
+Registers all controllers, CLI commands, REST routes, cron schedules, and admin pages.
 
 ### AI (`AI/`)
 
 | Class | Description |
 |-------|-------------|
-| `AIClient` | Thin wrapper around OpenAI Chat Completions API |
-| `ImageGenerator` | DALL-E 3 image generation with 4 visual styles (photorealistic, illustration, artistic, minimal). Uploads to WordPress media library and sets featured image. |
-| `ImageAnalyzer` | **v5.1** — Media library audit: missing alt texts, posts without featured images, AI-generated image tracking, oversized image detection, keyword extraction for generation suggestions. Shared `STOP_WORDS` constant (EN + PL). |
+| `AIClient` | Provider-agnostic chat client with circuit breaker and cost tracking |
+| `AIProviderFactory` | Selects provider (OpenAI / Anthropic / Gemini) at runtime |
+| `OpenAIProvider` | OpenAI GPT-4o-mini Chat Completions |
+| `AnthropicProvider` | Anthropic Claude adapter |
+| `GeminiProvider` | Google Gemini adapter |
+| `ImageGenerator` | DALL-E 3 image generation — 4 styles (photorealistic, illustration, artistic, minimal); uploads to media library and sets featured image |
+| `ImageAnalyzer` | Media library audit: missing alt texts, posts without featured images, AI-generated image tracking, oversized image detection |
+| `ContentRewriter` | AI-powered content rewriting and improvement |
+| `FactChecker` | AI-backed fact verification |
+| `PromptOptimizer` | Dynamic prompt optimization based on performance signals |
+| `VideoScriptBuilder` | Video script generation from article content |
+| `PodcastGenerator` | Podcast episode script generation |
+| `StreamingAIClient` | Streaming response client for real-time output |
 
 ### Content (`Content/`)
 
@@ -99,14 +280,31 @@ Registers: `CronManager`, `AdminPage`, `DashboardWidget`, `ProgrammaticSEO`, and
 | `PromptBuilder` | Base prompt builder with SEO and monetization rules |
 | `PromptBuilderFactory` | Auto-selects builder based on industry keywords |
 | `TravelPromptBuilder` | Travel content with mandatory sections (extends PromptBuilder) |
-| `BeskidyPromptBuilder` | Beskidy-specific with weather and day planning (extends TravelPromptBuilder) |
+| `BeskidyPromptBuilder` | Beskidy mountains — weather and day planner (extends TravelPromptBuilder) |
 | `MultiLanguageTravelBuilder` | PL/EN/DE localization (extends BeskidyPromptBuilder) |
+| `PT24PromptBuilder` | PT24 service landing page builder |
+| `PoradnikPromptBuilder` | Poradnik.pro decision-content builder |
+| `EcommercePromptBuilder` | E-commerce product/category content |
+| `FinancePromptBuilder` | Finance and banking content |
+| `FoodPromptBuilder` | Food and recipe content |
+| `HealthPromptBuilder` | Health and wellness content |
+| `GlossaryBuilder` | Glossary / definition page builder |
 | `ContentValidator` | Validates structure and quality in 3 modes (generic/travel/beskidy) |
+| `DuplicateDetector` | Similarity check — blocks articles with ≥ 80% cosine similarity |
+| `QualityScorer` | 0–100 composite quality score saved as post meta |
+| `ReadabilityAnalyzer` | Flesch–Kincaid and custom readability metrics |
+| `ContentRefreshEngine` | Freshness scoring and refresh-queue management |
+| `FewShotEngine` | Few-shot prompt examples from high-performing articles |
+| `PersonaBuilder` | Audience persona generation for targeted prompts |
+| `CompetitiveGapEngine` | SERP gap analysis — identifies content opportunities |
+| `MultilingualManager` | Runtime language switching across content builders |
 | `TopicQueue` | FIFO topic queue persisted as WordPress option per site |
 
 **Builder selection** (via `PromptBuilderFactory`):
 - Beskidy keywords → `MultiLanguageTravelBuilder`
 - Travel keywords → `TravelPromptBuilder`
+- PT24 keywords → `PT24PromptBuilder`
+- Poradnik keywords → `PoradnikPromptBuilder`
 - Everything else → `PromptBuilder`
 - Override via `pearblog_prompt_builder_class` filter.
 
@@ -115,16 +313,15 @@ Registers: `CronManager`, `AdminPage`, `DashboardWidget`, `ProgrammaticSEO`, and
 | Class | Description |
 |-------|-------------|
 | `SEOEngine` | Parses AI content, extracts title/meta/Schema.org, stores post meta |
-| `ProgrammaticSEO` | **v5.1** — Schema.org JSON-LD (Article, BreadcrumbList, FAQPage), Open Graph, Twitter Cards, keyword density analysis, bulk SEO audit, internal link suggestions, meta description auto-generator |
-
-`ProgrammaticSEO::register()` hooks into `wp_head` for automated tag output. `ProgrammaticSEO::bulk_audit($n)` returns:
-```php
-[
-  'posts_audited' => int,
-  'issues_found'  => int,
-  'issues'        => [ $post_id => ['title' => string, 'issues' => string[]] ],
-]
-```
+| `ProgrammaticSEO` | Schema.org JSON-LD (Article, BreadcrumbList, FAQPage), Open Graph, Twitter Cards, keyword density analysis, bulk SEO audit, internal link suggestions, meta description auto-generator |
+| `SchemaManager` | Advanced Schema.org type management |
+| `InternalLinker` | Keyword-based automatic internal link injection (up to 5 per article) |
+| `ProgrammaticLocalSEO` | Local SEO — city/service page generation |
+| `TopicalAuthorityEngine` | Topical authority scoring and pillar-cluster management |
+| `HreflangManager` | Hreflang tag management for multilingual sites |
+| `XmlSitemapManager` | XML sitemap generation and submission |
+| `SearchConsoleClient` | Google Search Console API integration |
+| `KeywordDatabase` / `KeywordDatabaseV3` | Keyword database (v1 and v3 enterprise editions) |
 
 ### Monetization (`Monetization/MonetizationEngine.php`)
 
@@ -133,57 +330,93 @@ Three monetization layers injected into content:
 - **v2 — Affiliate**: Booking.com + Airbnb deep links
 - **v3 — SaaS CTA**: Keyword-matched product recommendations
 
-`pearblog_saas_products` option stores a **JSON string** — always `json_decode()` on read.
+Configurable via WP Admin → PearBlog Engine Enterprise → Monetization tab, or `pearblog_saas_products` filter.
 
-Configurable via WP Admin → PearBlog Engine → Monetization tab, or `pearblog_saas_products` filter.
+### Scheduler (`Scheduler/`)
 
-### Scheduler (`Scheduler/CronManager.php`)
+| Class | Description |
+|-------|-------------|
+| `CronManager` | Registers custom WP-Cron schedules; multisite-safe via `switch_to_blog()` / `restore_current_blog()` |
+| `PublishScheduler` | Analyses GA4 engagement data to find the optimal publish hour/day; falls back to configurable defaults (Tuesday 10:00) |
+| `TimeZoneScheduler` | Time-zone-aware scheduling for distributed deployments |
 
-- Registers custom WP-Cron schedules
-- **Multisite-safe**: calls `switch_to_blog()`/`restore_current_blog()` in `try/finally` per site
-- Triggers `ContentPipeline::run()` on each interval
+### Keywords (`Keywords/`)
 
-### Keywords (`Keywords/KeywordCluster.php`)
+| Class | Description |
+|-------|-------------|
+| `KeywordCluster` | Immutable value object: pillar keyword + supporting keywords |
+| `KeywordClusterEngine` | IDF-based GA4 keyword clustering — groups organic search terms into topical clusters |
 
-Immutable value object pairing a pillar keyword with its supporting keywords.
-Used by `PromptBuilder` to generate topically-focused content.
+### Cache (`Cache/`)
 
-### API (`API/AutomationController.php`)
+| Class | Description |
+|-------|-------------|
+| `ContentCache` | Content fragment caching with TTL |
+| `ObjectCacheAdapter` | Thin `wp_cache_*` adapter with typed helpers |
+| `CdnManager` | BunnyCDN + Cloudflare asset offloading and cache purging |
+| `QueryOptimizer` | DB query optimization and caching strategies |
 
-REST API at `pearblog/v1/automation/` with 3 endpoints:
+### API (`API/`)
 
-| Endpoint | Method | Auth | Description |
-|----------|--------|------|-------------|
-| `/create-content` | POST | API key | Queue and generate a new article |
-| `/process-content` | POST | API key | Process existing content through pipeline |
-| `/status` | GET | API key | Pipeline status and queue info |
+REST namespace: `pearblog/v1/`
 
-Auth: `pearblog_api_key` option (set in General tab) or WordPress admin cookie.
+| Endpoint group | Controller | Auth |
+|---------------|------------|------|
+| `/automation/*` | `AutomationController` | API key / admin |
+| `/dashboard/*` | `DashboardController` | admin |
+| `/topics/*` | `TopicsController` | admin |
+| `/graphql` | `GraphQLController` | API key / admin |
+| `/poradnik-v3/*` | `PoradnikV3API` | admin |
+| `/search-suggest` | `SearchSuggestAPI` | public |
 
-### Admin (`Admin/AdminPage.php`) — v5.1
+### Admin (`Admin/`) — v8.0 Enterprise
 
-Top-level **PearBlog Engine** menu item (position 25, custom icon) with 6 tabbed sections:
+| Class | Description |
+|-------|-------------|
+| `AdminPageV8Enterprise` | 15-tab enterprise dashboard: Strategy, Content Engine, SEO, Monetization, Leads, Automation, Analytics, Multisite, Performance Dashboard, Settings, and 5 custom tabs |
+| `AdminPageV7` | V7 admin page (legacy) |
+| `AdminPage` | Original 6-tab admin page (legacy) |
+| `DashboardWidget` | WP Dashboard pipeline stats widget |
+| `OnboardingWizardV2` | Guided setup wizard v2 |
+| `ContentCalendar` | Visual content publishing calendar |
+| `WhiteLabelManager` | White-label customization (logo, colors, branding) |
 
-| Tab | Content |
-|-----|---------|
-| **General** | OpenAI API key, Automation API key, niche, tone, language, publish rate |
-| **AI Images** | DALL-E 3 toggle, image style, stats, batch generation, missing alt-text fix |
-| **SEO** | Bulk audit results with issue tags, auto-fix meta descriptions button |
-| **Monetization** | AdSense ID, Booking.com affiliate ID, SaaS products JSON |
-| **Email** | ESP provider (Mailchimp/ConvertKit), API keys, list/form IDs |
-| **Queue** | Topic queue CRUD (view, add, clear) + site profile summary |
+### Monitoring (`Monitoring/`)
 
-Admin CSS: `assets/css/admin.css` (loaded via `PEARBLOG_ENGINE_URL`).  
-Tab state persisted to URL via `history.replaceState` (`?tab=<name>`).
+| Class | Description |
+|-------|-------------|
+| `AlertManager` | Slack/Discord/email alerting with configurable thresholds |
+| `HealthController` | REST health check (`GET /pearblog/v1/health`) |
+| `PerformanceDashboard` | Pipeline and system performance metrics |
+| `Logger` | Structured logger (PSR-3) |
+| `SLAManager` | SLA target tracking and breach reporting |
+| `ErrorTracker` | Error aggregation and trend analysis |
 
-### Dashboard Widget (`Admin/DashboardWidget.php`) — v5.1
+### Security (`Security/`)
 
-WordPress Dashboard widget (right column) showing live pipeline stats:
-- Queue size
-- Posts published today
-- Total AI-generated posts
-- Images missing alt text
-- Last pipeline run timestamp
+| Class | Description |
+|-------|-------------|
+| `RBACManager` | Role-based access control for all plugin features |
+| `SecurityAuditor` | Security audit reports and recommendations |
+| `ContentModerator` | AI-powered content moderation |
+| `PIIDetector` | Detects and masks personally identifiable information |
+| `ComplianceExporter` | GDPR / privacy compliance data export |
+
+### Decision Platform (`DecisionPlatform/`)
+
+Full decision platform for Poradnik.pro — transforms content into an enterprise decision engine:
+
+| Component | Description |
+|-----------|-------------|
+| `ComparisonEngine` | AI-generated comparison pages (Product A vs B) |
+| `RankingEngine` | TOP lists with local filtering (Best X in {city}) |
+| `Calculator` | Interactive cost/ROI calculators |
+| `DecisionAssistant` | AI-powered personalized recommendations |
+| `IntentDetector` | Automatic content enrichment based on user intent |
+| `LinkGraph` | Internal link relationship graph auto-discovery |
+| `LeadGenerator` | Lead capture, scoring, and matching |
+| `QuizEngine` | Decision quiz / product selector engine |
+| `PriceComparison` | Real-time price comparison tool |
 
 ### Tenant (`Tenant/`)
 
@@ -242,4 +475,4 @@ WordPress Dashboard widget (right column) showing live pipeline stats:
 
 ---
 
-*PearBlog Engine v5.1 — Namespace `PearBlogEngine`*
+*PearBlog Engine v8.0 — Namespace `PearBlogEngine`*

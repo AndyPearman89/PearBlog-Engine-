@@ -45,6 +45,14 @@ use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 use PearBlogEngine\Analytics\ConversionFlowTracker;
 use PearBlogEngine\Database\PoradnikV3Schema;
 use PearBlogEngine\Integration\PT24Bridge;
+use PearBlogEngine\Analytics\PredictiveAnalytics;
+use PearBlogEngine\AI\SmartProviderRouter;
+use PearBlogEngine\Content\ContentRefreshPrioritizer;
+use PearBlogEngine\Content\CollaborationManager;
+use PearBlogEngine\SEO\OrphanPageDetector;
+use PearBlogEngine\API\MobileAPIController;
+use PearBlogEngine\Tenant\BillingEngine;
+use PearBlogEngine\Tenant\TenantOnboardingController;
 
 /**
  * Plugin class – boots all sub-systems exactly once.
@@ -116,6 +124,8 @@ class Plugin {
 			( new TopicsController() )->register_routes();
 			( new PoradnikV3API() )->register_routes();
 			SearchSuggestAPI::register_routes();
+			// V9.0 – Mobile App API (F4).
+			( new MobileAPIController() )->register_routes();
 		} );
 
 		// SEO: Schema.org structured data output.
@@ -157,6 +167,27 @@ class Plugin {
 		// PT24 Integration – Content-to-Lead bridge.
 		( new PT24Bridge() )->init();
 
+		// V9.0 – Predictive Analytics (F2).
+		( new PredictiveAnalytics() )->register();
+
+		// V9.0 – Smart Provider Router (F7).
+		( new SmartProviderRouter() )->register();
+
+		// V9.0 – Content Refresh Prioritizer (F6).
+		( new ContentRefreshPrioritizer() )->register();
+
+		// V9.0 – Collaboration Manager (F9).
+		( new CollaborationManager() )->register();
+
+		// V9.0 – Orphan Page Detector (F8).
+		( new OrphanPageDetector() )->register();
+
+		// V9.0 – Billing Engine (metered AI usage + Stripe integration).
+		( new BillingEngine() )->register();
+
+		// V9.0 – Tenant Onboarding Controller (multisite provisioning REST API).
+		( new TenantOnboardingController() )->register();
+
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {
 			\WP_CLI::add_command( 'pearblog', \PearBlogEngine\CLI\PearBlogCommand::class );
@@ -166,6 +197,8 @@ class Plugin {
 			require_once PEARBLOG_PLUGIN_DIR . '/src/SEO/KeywordGeneratorCLI.php';
 			\WP_CLI::add_command( 'pearblog integration', \PearBlogEngine\CLI\IntegrationCommand::class );
 			\WP_CLI::add_command( 'pearblog security', \PearBlogEngine\CLI\SecurityCommand::class );
+			// V9.0 CLI commands.
+			\WP_CLI::add_command( 'pearblog v9', \PearBlogEngine\CLI\V9Command::class );
 		}
 	}
 

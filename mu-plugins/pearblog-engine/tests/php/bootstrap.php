@@ -155,6 +155,9 @@ if ( ! function_exists( 'do_action' ) ) {
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			( $GLOBALS['_action_handlers'][ $hook ] )( ...$args );
+		}
 	}
 }
 
@@ -335,6 +338,7 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
+		$GLOBALS['_rest_routes'][] = [ 'namespace' => $namespace, 'route' => $route ];
 		return true;
 	}
 }
@@ -588,7 +592,8 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
-		return 'https://example.com/post/' . (int) $post_id . '/';
+		$id = ( $post_id instanceof WP_Post ) ? $post_id->ID : (int) $post_id;
+		return 'https://example.com/post/' . $id . '/';
 	}
 }
 
@@ -706,6 +711,7 @@ $GLOBALS['_transients']     = [];
 $GLOBALS['_posts']          = [];
 $GLOBALS['_post_list']      = [];
 $GLOBALS['_actions']        = [];
+$GLOBALS['_action_handlers'] = [];
 $GLOBALS['_filters']        = [];
 $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
@@ -719,6 +725,8 @@ $GLOBALS['_db_level_counts'] = [];
 $GLOBALS['_db_channel_counts'] = [];
 $GLOBALS['_is_multisite']   = false;
 $GLOBALS['_current_blog_id'] = 1;
+$GLOBALS['_rest_routes']    = [];
+$GLOBALS['_rewrite_rules']  = [];
 
 // WordPress class stubs.
 if ( ! class_exists( 'WP_Post' ) ) {
@@ -867,6 +875,14 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 			return null;
 		}
 
+		public function get_row( string $query, string $output = OBJECT ) {
+			$row = $GLOBALS['_db_results'][0] ?? null;
+			if ( null === $row ) {
+				return null;
+			}
+			return $row;
+		}
+
 		public function esc_like( string $text ): string {
 			return addcslashes( $text, '_%\\' );
 		}
@@ -878,11 +894,318 @@ if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', '/tmp/' );
 }
 
+// Ensure wp-admin/includes/upgrade.php exists so DatabaseHandler can require_once it.
+// dbDelta itself is stubbed below; this file just needs to be present.
+if ( ! file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
+	@mkdir( ABSPATH . 'wp-admin/includes', 0777, true );
+	file_put_contents( ABSPATH . 'wp-admin/includes/upgrade.php', '<?php // stub' );
+}
+
 // dbDelta function stub
 if ( ! function_exists( 'dbDelta' ) ) {
 	function dbDelta( $queries ) {
 		$GLOBALS['_db_queries'][] = $queries;
 		return [ 'Created table wp_pearblog_logs' ];
+	}
+}
+
+// ---------------------------------------------------------------------------
+// v9.0 additional stubs
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'url_to_postid' ) ) {
+	function url_to_postid( string $url ): int {
+		return 0; // no resolution in unit tests
+	}
+}
+
+if ( ! function_exists( 'remove_all_filters' ) ) {
+	function remove_all_filters( string $hook, $priority = false ): bool {
+		if ( isset( $GLOBALS['_filters'][ $hook ] ) ) {
+			unset( $GLOBALS['_filters'][ $hook ] );
+		}
+		return true;
+	}
+}
+
+if ( ! function_exists( 'sanitize_textarea_field' ) ) {
+	function sanitize_textarea_field( string $str ): string {
+		return sanitize_text_field( $str );
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id(): int {
+		return (int) ( $GLOBALS['_current_user_id'] ?? 0 );
+	}
+}
+
+// ---------------------------------------------------------------------------
+// v9.0 session 6 additional stubs
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'sanitize_email' ) ) {
+	function sanitize_email( string $email ): string {
+		return filter_var( $email, FILTER_SANITIZE_EMAIL ) ?: '';
+	}
+}
+
+if ( ! function_exists( 'admin_url' ) ) {
+	function admin_url( string $path = '' ): string {
+		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'get_admin_url' ) ) {
+	function get_admin_url( int $blog_id = 0, string $path = '' ): string {
+		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'get_user_by' ) ) {
+	function get_user_by( string $field, $value ): object|false {
+		$users = $GLOBALS['_wp_users'] ?? [];
+		foreach ( $users as $user ) {
+			if ( isset( $user->$field ) && $user->$field === $value ) {
+				return $user;
+			}
+		}
+		return false;
+	}
+}
+
+if ( ! function_exists( 'get_network' ) ) {
+	function get_network(): ?object {
+		return $GLOBALS['_wp_network'] ?? null;
+	}
+}
+
+if ( ! function_exists( 'get_current_network_id' ) ) {
+	function get_current_network_id(): int {
+		return (int) ( $GLOBALS['_current_network_id'] ?? 1 );
+	}
+}
+
+if ( ! function_exists( 'wpmu_create_blog' ) ) {
+	function wpmu_create_blog( string $domain, string $path, string $title, int $user_id, array $options = [], int $network_id = 1 ): int|\WP_Error {
+		$result = $GLOBALS['_wpmu_create_blog_result'] ?? null;
+		if ( $result instanceof \WP_Error ) {
+			return $result;
+		}
+		$blog_id = (int) ( $GLOBALS['_wpmu_next_blog_id'] ?? 2 );
+		$GLOBALS['_wpmu_created_sites'][] = compact( 'domain', 'path', 'title', 'user_id', 'network_id' );
+		return $blog_id;
+	}
+}
+
+if ( ! function_exists( 'hash_equals' ) ) {
+	// PHP built-in; stub only when missing (very old PHP).
+	function hash_equals( string $known_string, string $user_string ): bool {
+		return $known_string === $user_string;
+	}
+}
+
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+	function wp_create_nonce( string $action = '-1' ): string {
+		return 'test_nonce_' . md5( $action );
+	}
+}
+
+if ( ! function_exists( 'plugins_url' ) ) {
+	function plugins_url( string $path = '', string $plugin = '' ): string {
+		return 'https://example.com/wp-content/plugins/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'wp_enqueue_script' ) ) {
+	function wp_enqueue_script( string $handle, string $src = '', array $deps = [], $ver = false, bool $in_footer = false ): void {}
+}
+
+if ( ! function_exists( 'wp_localize_script' ) ) {
+	function wp_localize_script( string $handle, string $name, array $data ): bool {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'is_ssl' ) ) {
+	function is_ssl(): bool {
+		return false;
+	}
+}
+
+if ( ! function_exists( 'is_singular' ) ) {
+	function is_singular( $post_types = '' ): bool {
+		return (bool) ( $GLOBALS['_is_singular'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID(): int|false {
+		return $GLOBALS['_current_post_id'] ?? false;
+	}
+}
+
+if ( ! function_exists( 'get_post_field' ) ) {
+	function get_post_field( string $field, $post_id = 0 ): string {
+		return (string) ( $GLOBALS['_post_fields'][ $post_id ][ $field ] ?? '' );
+	}
+}
+
+if ( ! defined( 'DAY_IN_SECONDS' ) ) {
+	define( 'DAY_IN_SECONDS', 86400 );
+}
+
+if ( ! defined( 'MONTH_IN_SECONDS' ) ) {
+	define( 'MONTH_IN_SECONDS', 2592000 );
+}
+
+if ( ! function_exists( 'current_time' ) ) {
+	function current_time( string $type ): string {
+		return gmdate( 'Y-m-d H:i:s' );
+	}
+}
+
+// ---------------------------------------------------------------------------
+// v9.0 session 9 additional stubs
+// ---------------------------------------------------------------------------
+
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ) {
+		if ( $post instanceof WP_Post ) {
+			return $post->post_type;
+		}
+		return $GLOBALS['_post_type'] ?? 'post';
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $redirect, string $after = 'bottom' ): void {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $redirect, $after ];
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post' ) {
+		$counts = $GLOBALS['_post_counts'][ $type ] ?? new \stdClass();
+		if ( ! isset( $counts->publish ) ) {
+			$counts->publish = 0;
+		}
+		return $counts;
+	}
+}
+
+if ( ! function_exists( 'wp_hash' ) ) {
+	function wp_hash( string $data, string $scheme = 'auth' ): string {
+		return hash( 'sha256', $data . $scheme );
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null ) {
+		return gmdate( $format, strtotime( '2026-01-15 12:00:00' ) );
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, string $more = null ): string {
+		$words = explode( ' ', $text );
+		if ( count( $words ) <= $num_words ) {
+			return $text;
+		}
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . ( $more ?? ' [&hellip;]' );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( int $post_id = 0 ) {
+		return $GLOBALS['_post_tags'][ $post_id ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'wp_generate_uuid4' ) ) {
+	function wp_generate_uuid4(): string {
+		return sprintf(
+			'%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+			mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0x0fff ) | 0x4000,
+			mt_rand( 0, 0x3fff ) | 0x8000,
+			mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+		);
+	}
+}
+
+if ( ! function_exists( 'get_queried_object' ) ) {
+	function get_queried_object() {
+		return $GLOBALS['_queried_object'] ?? null;
+	}
+}
+
+if ( ! function_exists( 'get_query_var' ) ) {
+	function get_query_var( string $var, $default = '' ) {
+		return $GLOBALS['_query_vars'][ $var ] ?? $default;
+	}
+}
+
+if ( ! function_exists( 'get_the_title' ) ) {
+	function get_the_title( $post = 0 ): string {
+		return $GLOBALS['_post_titles'][ (int) $post ] ?? 'Test Title';
+	}
+}
+
+if ( ! function_exists( 'wp_next_scheduled' ) ) {
+	function wp_next_scheduled( string $hook, array $args = [] ) {
+		return $GLOBALS['_scheduled'][ $hook ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_schedule_event' ) ) {
+	function wp_schedule_event( int $timestamp, string $recurrence, string $hook, array $args = [] ): bool {
+		$GLOBALS['_scheduled'][ $hook ] = $timestamp;
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_unschedule_event' ) ) {
+	function wp_unschedule_event( int $timestamp, string $hook, array $args = [] ): bool {
+		unset( $GLOBALS['_scheduled'][ $hook ] );
+		return true;
+	}
+}
+
+if ( ! function_exists( 'get_role' ) ) {
+	function get_role( string $role ) {
+		return $GLOBALS['_roles'][ $role ] ?? null;
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( string $text, bool $remove_breaks = false ): string {
+		return strip_tags( $text );
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+	function wp_remote_retrieve_body( $response ): string {
+		return $response['body'] ?? '';
+	}
+}
+
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+	function is_user_logged_in(): bool {
+		return (bool) ( $GLOBALS['_is_user_logged_in'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'wp_get_post_categories' ) ) {
+	function wp_get_post_categories( int $post_id, array $args = [] ): array {
+		return $GLOBALS['_post_categories'][ $post_id ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
+	function get_the_post_thumbnail_url( $post = null, string $size = 'post-thumbnail' ) {
+		return $GLOBALS['_thumbnail_url'] ?? '';
 	}
 }
 

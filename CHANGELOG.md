@@ -2,7 +2,69 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
-## [8.0.0] — 2026-05-04
+## [9.0.0] — 2026-06-14
+
+### Added — v9.0 AI-Powered Content Intelligence
+
+#### F2 – Predictive Analytics
+- **`PredictiveAnalytics`** (`src/Analytics/PredictiveAnalytics.php`) — Traffic forecasting via single exponential smoothing, anomaly detection with configurable threshold, revenue projection, and REST endpoints `GET /pearblog/v1/analytics/forecast` and `/anomalies`.
+
+#### F3 – AI A/B Testing Suite
+- **`AIVariantGenerator`** (`src/Testing/AIVariantGenerator.php`) — Generates A/B test content variants via AI prompt composition; produces headline and body variants from a base topic.
+- **`BayesianOptimizer`** (`src/Testing/BayesianOptimizer.php`) — Beta-Binomial Bayesian evaluation with 10 000-sample Monte Carlo simulation, Thompson sampling, and Marsaglia-Tsang gamma sampler for statistically rigorous winner selection (WIN_THRESHOLD = 0.95).
+
+#### F4 – Mobile App API
+- **`MobileAPIController`** (`src/API/MobileAPIController.php`) — Mobile REST backend with endpoints for pipeline summary, topic queue paging, pause/resume control, alert retrieval, and content approve/reject actions. Bearer-token + `manage_options` dual auth.
+
+#### F6 – Content Refresh Prioritizer
+- **`ContentRefreshPrioritizer`** (`src/Content/ContentRefreshPrioritizer.php`) — Multi-factor post scoring (trend 40 pts, age 30 pts, quality 20 pts, decay 10 pts) producing a ranked refresh queue; REST endpoints `GET /pearblog/v1/refresh/queue` and `/refresh/score/{id}`.
+
+#### F7 – Smart Provider Router
+- **`SmartProviderRouter`** (`src/AI/SmartProviderRouter.php`) — Strategy-based AI provider routing (cost_optimised / quality_first / round_robin / failover) with circuit-breaker (threshold = 3, cool-down 300 s) and per-provider stats tracking. REST endpoint `GET /pearblog/v1/ai/router/status`.
+
+#### F8 – Orphan Page Detector
+- **`OrphanPageDetector`** (`src/SEO/OrphanPageDetector.php`) — Internal-link graph scanner that identifies posts with zero inbound links; `apply_fix` action via WordPress filter for automated internal-link injection; REST endpoints `GET /pearblog/v1/seo/orphans` and `POST /pearblog/v1/seo/orphans/{id}/fix`.
+
+#### F9 – Collaboration Manager
+- **`CollaborationManager`** (`src/Content/CollaborationManager.php`) — Editorial review workflow (pending → in_review → approved / changes_requested / rejected) with inline comment threads, history log, and REST endpoints for status, assignment, review submission, and comment retrieval.
+
+#### CLI (`wp pearblog v9`)
+- **`V9Command`** (`src/CLI/V9Command.php`) — WP-CLI sub-commands: `analytics forecast|anomalies|refresh`, `ab generate|evaluate`, `router status|strategy`, `orphans scan|list|fix`, `refresh-score`, `refresh-rescore`, `collab status|assign|review`.
+
+#### v9.0 Session 6 — Billing, Tenant, Audit, PII & ROI
+
+- **`BillingEngine`** (`src/Tenant/BillingEngine.php`) — Registered in `Plugin::boot()`; meters AI token usage and image-generation costs per billing cycle; Stripe Billing metered usage integration; configurable monthly quota with over-threshold email alert; REST endpoints `GET /pearblog/v1/billing/usage` and `/billing/history`; monthly reset cron + daily Stripe reporting cron.
+- **`TenantOnboardingController`** (`src/Tenant/TenantOnboardingController.php`) — Registered in `Plugin::boot()`; multi-tenant provisioning REST API (`POST /pearblog/v1/tenant/provision`, `GET /pearblog/v1/tenant/list`); supports WordPress Multisite sub-site creation and single-site reconfiguration; `PLAN_RATES` maps starter/pro/enterprise to publish rates 1/3/10.
+- **`V9Command` extensions** — 8 new WP-CLI sub-commands added:
+  - `billing usage` — print current billing period AI spend vs. quota;
+  - `billing history` — tabular view of last 12 billing cycles;
+  - `tenant provision --domain=<d> [--plan|--industry|--language|--title|--admin]` — provision new tenant via CLI;
+  - `tenant list` — list all provisioned tenants;
+  - `audit log [--limit|--level]` — tail the pipeline audit ring-buffer;
+  - `pii scan <post_id>` — scan post content for PII via `PIIDetector`;
+  - `pii export [--days|--format]` — export GDPR compliance report via `ComplianceExporter`;
+  - `roi report [--days]` — print conversion totals and funnel view via `ConversionTracker`.
+
+### Fixed
+- **`ConversionFlowTracker::get_session_funnel`** — replaced `isset($funnel[$event_type])` with `array_key_exists($event_type, $funnel)` so funnel stage timestamps are correctly recorded (PHP `isset()` returns `false` for `null`-initialised keys).
+
+### Tests
+- **`SiteProfileTest`** (10 tests) — constructor, readonly enforcement, `summary()` content and idempotency.
+- **`TenantOnboardingControllerTest`** (18 tests) — single-site provision, plan publish-rate mapping, registry persistence, multisite sub-site creation, WP_Error on failure.
+- **`ConversionFlowTrackerTest`** (11 tests) — `get_session_funnel` timestamp recording and conversion flag, `get_conversion_metrics` rate calculation, `get_funnel_dropoff` stage rates and zero-denominator edge cases.
+- **`bootstrap.php`** — added stubs: `sanitize_email`, `admin_url`, `get_admin_url`, `get_user_by`, `get_network`, `get_current_network_id`, `wpmu_create_blog`, `wp_create_nonce`, `plugins_url`, `wp_enqueue_script`, `wp_localize_script`, `is_ssl`, `is_singular`, `get_the_ID`, `get_permalink`, `get_post_field`, `current_time`; added `get_row()` to `$wpdb` mock.
+
+#### v9.0 Session 11 — Coverage for remaining V9.0 modules
+
+- **`ComplianceExporterTest`** (16 tests) — `build_report()` structure and defaults, period-days cap, CSV generation with UTF-8 BOM, `rest_export()` for JSON and CSV formats, `admin_permission()` return type.
+- **`AMPGeneratorTest`** (17 tests) — option constants, `register()` enabled/disabled paths, `add_query_var()` appends `amp`, `convert_to_amp_content()` img→amp-img conversion, script/iframe/style removal, default dimensions, `output_amphtml_link()` suppressed when not singular.
+- **`PushNotificationPublisherTest`** (15 tests) — option constants, `is_enabled()` false by default and per provider, `notify()` disabled early-return, `on_publish()` skips non-post and already-notified, `notify()` with OneSignal stores post meta.
+- **`bootstrap.php`** — added stubs: `wp_get_post_categories`, `get_the_post_thumbnail_url`, `wp_generate_uuid4`, `is_user_logged_in`, `get_role`, `wp_strip_all_tags`, `wp_remote_retrieve_body`, `wp_next_scheduled`, `wp_schedule_event`, `wp_unschedule_event`, `get_queried_object`, `get_query_var`, `get_the_title`; added `wp-admin/includes/upgrade.php` stub for `DatabaseHandler`.
+
+### Changed
+- **`src/Core/Plugin.php`** — Registered all v9.0 modules; added `MobileAPIController` to `rest_api_init`; added `wp pearblog v9` CLI command.
+
+
 
 ### Added — v8.0 Enterprise Admin Complete
 

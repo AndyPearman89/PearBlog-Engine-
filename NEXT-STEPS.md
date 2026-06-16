@@ -228,9 +228,10 @@ These are known issues to resolve in the first patch releases:
 | [PRE-LAUNCH-CHECKLIST.md](PRE-LAUNCH-CHECKLIST.md) | Sign-off checklist |
 | [CHANGELOG.md](CHANGELOG.md) | Version history |
 | [API-DOCUMENTATION.md](API-DOCUMENTATION.md) | REST API reference |
-| [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | Visual roadmap v6→v7 |
-| [DOCUMENTATION-INDEX.md](DOCUMENTATION-INDEX.md) | All 25+ docs indexed |
+| [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | Visual roadmap v8.0+ |
+| [FEATURED-PLAN-v9.0.md](FEATURED-PLAN-v9.0.md) | v9.0 feature plan & roadmap |
+| [DOCUMENTATION-INDEX.md](DOCUMENTATION-INDEX.md) | All 150+ docs indexed |
 
 ---
 
-*Last updated: 2026-04-13 — v7.8.0 complete (TopicResearchEngine, ContentImportExport, PublishScheduler); 714 tests passing*
+*Last updated: 2026-06-14 — v8.0.0 released (Enterprise Admin V8, PT24 V2, Poradnik V2); v9.0 plan available at [FEATURED-PLAN-v9.0.md](FEATURED-PLAN-v9.0.md); 714 tests passing*
