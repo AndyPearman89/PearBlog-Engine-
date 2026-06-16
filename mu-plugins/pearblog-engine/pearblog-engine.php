@@ -35,20 +35,24 @@ if ( ! defined( 'PEARBLOG_ADMIN_VERSION' ) ) {
 	define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
 }
 
-// PSR-4 autoloader for src/ classes under the PearBlogEngine namespace.
+// PSR-4 autoloader for src/ classes. Handles both the canonical
+// PearBlogEngine\ namespace and the legacy PearBlog\ namespace used by some
+// dormant subsystems (LeadAI, Poradnik), both rooted at src/.
 spl_autoload_register( function ( string $class ): void {
-	$prefix   = 'PearBlogEngine\\';
 	$base_dir = PEARBLOG_ENGINE_DIR . 'src/';
 
-	if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+	foreach ( [ 'PearBlogEngine\\', 'PearBlog\\' ] as $prefix ) {
+		if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+			continue;
+		}
+
+		$relative = substr( $class, strlen( $prefix ) );
+		$file     = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
+
+		if ( file_exists( $file ) ) {
+			require $file;
+		}
 		return;
-	}
-
-	$relative  = substr( $class, strlen( $prefix ) );
-	$file      = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
-
-	if ( file_exists( $file ) ) {
-		require $file;
 	}
 } );
 

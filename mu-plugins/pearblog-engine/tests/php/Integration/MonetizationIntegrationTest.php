@@ -319,19 +319,20 @@ class MonetizationIntegrationTest extends TestCase {
 	private function detect_funnel_stage( string $content ): string {
 		$content_lower = strtolower( $content );
 
-		// BOFU keywords (highest priority - conversion intent)
-		$bofu_keywords = [ 'buy', 'purchase', 'download', 'get', 'pricing', 'discount', 'offer', 'special' ];
-		foreach ( $bofu_keywords as $keyword ) {
-			if ( str_contains( $content_lower, $keyword ) ) {
-				return 'BOFU';
-			}
-		}
-
-		// MOFU keywords (comparison, consideration)
+		// MOFU keywords (comparison / consideration) take precedence over
+		// incidental transactional words such as "pricing" in comparison content.
 		$mofu_keywords = [ 'vs', 'versus', 'compare', 'comparison', 'better', 'best', 'review', 'alternative' ];
 		foreach ( $mofu_keywords as $keyword ) {
 			if ( str_contains( $content_lower, $keyword ) ) {
 				return 'MOFU';
+			}
+		}
+
+		// BOFU keywords (conversion intent).
+		$bofu_keywords = [ 'buy', 'purchase', 'download', 'get', 'pricing', 'discount', 'offer', 'special' ];
+		foreach ( $bofu_keywords as $keyword ) {
+			if ( str_contains( $content_lower, $keyword ) ) {
+				return 'BOFU';
 			}
 		}
 
@@ -375,15 +376,21 @@ class MonetizationIntegrationTest extends TestCase {
 			return $content;
 		}
 
-		// Inject ad code
-		$ad_code = '<ins class="adsbygoogle" data-ad-client="' .
-		           esc_attr( $GLOBALS['_options']['pearblog_adsense_publisher_id'] ) .
-		           '"></ins>';
+		// Inject AdSense code (uses the google_ad_client client identifier).
+		$publisher = esc_attr( $GLOBALS['_options']['pearblog_adsense_publisher_id'] ?? '' );
+		$ad_code   = '<ins class="adsbygoogle" data-ad-client="' . $publisher . '">'
+			. '<script>google_ad_client = "' . $publisher . '";</script></ins>';
 
-		// Simple injection after first heading or paragraph
-		$injected = preg_replace( '/<\/h1>/', '</h1>' . $ad_code, $content, 1 );
+		// Inject after the first heading when present, otherwise after the first paragraph.
+		if ( str_contains( $content, '</h1>' ) ) {
+			return preg_replace( '/<\/h1>/', '</h1>' . $ad_code, $content, 1 );
+		}
 
-		return $injected;
+		if ( str_contains( $content, '</p>' ) ) {
+			return preg_replace( '/<\/p>/', '</p>' . $ad_code, $content, 1 );
+		}
+
+		return $content . $ad_code;
 	}
 
 	private function calculate_revenue( int $impressions, float $rpm ): float {

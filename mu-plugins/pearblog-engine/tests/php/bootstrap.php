@@ -152,8 +152,13 @@ if ( ! function_exists( 'apply_filters' ) ) {
 
 if ( ! function_exists( 'do_action' ) ) {
 	function do_action( string $hook, ...$args ): void {
+		$GLOBALS['_did_action'][ $hook ] = ( $GLOBALS['_did_action'][ $hook ] ?? 0 ) + 1;
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
+		}
+		// Single-handler spy used by several tests.
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) && is_callable( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			$GLOBALS['_action_handlers'][ $hook ]( ...$args );
 		}
 	}
 }
@@ -335,6 +340,11 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
+		$GLOBALS['_rest_routes'][] = [
+			'namespace' => $namespace,
+			'route'     => $route,
+			'args'      => $args,
+		];
 		return true;
 	}
 }
@@ -588,7 +598,8 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
-		return 'https://example.com/post/' . (int) $post_id . '/';
+		$id = is_object( $post_id ) ? ( $post_id->ID ?? 0 ) : (int) $post_id;
+		return 'https://example.com/post/' . (int) $id . '/';
 	}
 }
 
@@ -710,6 +721,10 @@ $GLOBALS['_filters']        = [];
 $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
 $GLOBALS['_is_singular']    = false;
+$GLOBALS['_rewrite_rules']  = [];
+$GLOBALS['_rest_routes']    = [];
+$GLOBALS['_action_handlers'] = [];
+$GLOBALS['_did_action']     = [];
 $GLOBALS['_is_admin']       = false;
 $GLOBALS['_db_inserts']     = [];
 $GLOBALS['_db_queries']     = [];
@@ -873,9 +888,83 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 	};
 }
 
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ) {
+		$id  = is_object( $post ) ? ( $post->ID ?? 0 ) : (int) $post;
+		$obj = $GLOBALS['_posts'][ $id ] ?? null;
+		if ( $obj && isset( $obj->post_type ) ) {
+			return $obj->post_type;
+		}
+		return $GLOBALS['_post_type'] ?? 'post';
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post', string $perm = '' ) {
+		$publish = $GLOBALS['_published_post_count']
+			?? count( $GLOBALS['_post_list'] ?? [] );
+		return (object) [ 'publish' => (int) $publish, 'draft' => 0, 'pending' => 0 ];
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $query, string $after = 'bottom' ): void {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $query, $after ];
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, ?string $more = null ): string {
+		$more = $more ?? '&hellip;';
+		$text = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( $text ) ) );
+		$words = $text === '' ? [] : explode( ' ', $text );
+		if ( count( $words ) <= $num_words ) {
+			return $text;
+		}
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . $more;
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( string $text, bool $remove_breaks = false ): string {
+		$text = strip_tags( $text );
+		return trim( $text );
+	}
+}
+
+if ( ! function_exists( 'wp_hash' ) ) {
+	function wp_hash( string $data, string $scheme = 'auth' ): string {
+		return hash_hmac( 'sha256', $data, $scheme . '_salt_key_here' );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( $post_id = 0 ) {
+		return $GLOBALS['_post_tags'][ (int) $post_id ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null ) {
+		$ts = is_object( $post ) && isset( $post->post_date_gmt )
+			? strtotime( (string) $post->post_date_gmt )
+			: time();
+		return gmdate( $format, $ts ?: time() );
+	}
+}
+
 // Define ABSPATH if not already defined
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', '/tmp/' );
+}
+
+// Provide a no-op wp-admin/includes/upgrade.php so production code that does
+// `require_once ABSPATH . 'wp-admin/includes/upgrade.php'` before dbDelta()
+// does not fatal in the unit-test environment.
+$pearblog_upgrade_stub = ABSPATH . 'wp-admin/includes/upgrade.php';
+if ( ! file_exists( $pearblog_upgrade_stub ) ) {
+	@mkdir( dirname( $pearblog_upgrade_stub ), 0777, true );
+	@file_put_contents( $pearblog_upgrade_stub, "<?php\n// Test stub for dbDelta(); real implementation provided in bootstrap.\n" );
 }
 
 // dbDelta function stub
@@ -888,17 +977,19 @@ if ( ! function_exists( 'dbDelta' ) ) {
 
 // PSR-4 autoloader for src/ classes.
 spl_autoload_register( function ( string $class ): void {
-	$prefix   = 'PearBlogEngine\\';
 	$base_dir = __DIR__ . '/../../src/';
 
-	if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+	foreach ( [ 'PearBlogEngine\\', 'PearBlog\\' ] as $prefix ) {
+		if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+			continue;
+		}
+
+		$relative = substr( $class, strlen( $prefix ) );
+		$file     = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
+
+		if ( file_exists( $file ) ) {
+			require $file;
+		}
 		return;
-	}
-
-	$relative = substr( $class, strlen( $prefix ) );
-	$file     = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
-
-	if ( file_exists( $file ) ) {
-		require $file;
 	}
 } );

@@ -20,6 +20,7 @@ class TopicQueueTest extends TestCase {
 		parent::setUp();
 		// Reset the WP option store before each test.
 		$GLOBALS['_options'] = [];
+		$GLOBALS['_is_multisite'] = true;
 		$this->queue = new TopicQueue( 1 );
 	}
 

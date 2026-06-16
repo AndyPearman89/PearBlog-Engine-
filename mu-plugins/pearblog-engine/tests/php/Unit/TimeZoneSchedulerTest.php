@@ -136,8 +136,8 @@ class TimeZoneSchedulerTest extends TestCase {
 	public function test_utc_and_local_datetimes_are_strings(): void {
 		$slots = $this->scheduler->get_upcoming_slots( 3 );
 		foreach ( $slots as $slot ) {
-			$this->assertRegExp( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $slot['local_datetime'] );
-			$this->assertRegExp( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $slot['utc_datetime'] );
+			$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $slot['local_datetime'] );
+			$this->assertMatchesRegularExpression( '/^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}$/', $slot['utc_datetime'] );
 		}
 	}
 

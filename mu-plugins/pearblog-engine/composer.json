@@ -11,13 +11,21 @@
     },
     "autoload": {
         "psr-4": {
-            "PearBlogEngine\\": "src/"
-        }
+            "PearBlogEngine\\": "src/",
+            "PearBlog\\": "src/"
+        },
+        "exclude-from-classmap": [
+            "src/SEO/KeywordGeneratorCLI.php",
+            "src/SEO/KeywordGeneratorV3CLI.php"
+        ]
     },
     "autoload-dev": {
         "psr-4": {
             "PearBlogEngine\\Tests\\": "tests/php/"
-        }
+        },
+        "exclude-from-classmap": [
+            "tests/php/bootstrap.php"
+        ]
     },
     "scripts": {
         "test": "phpunit",

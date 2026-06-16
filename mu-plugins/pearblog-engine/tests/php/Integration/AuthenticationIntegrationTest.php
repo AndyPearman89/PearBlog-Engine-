@@ -69,12 +69,20 @@ class AuthenticationIntegrationTest extends TestCase {
 		$token1 = 'test_api_key_12345';
 		$token2 = 'test_api_key_12344'; // Off by one character
 
+		// Accumulate many iterations so the measured durations are large enough
+		// to compare reliably (single hash_equals calls are too fast to time).
+		$iterations = 100000;
+
 		$start = microtime( true );
-		hash_equals( $token1, $token2 );
+		for ( $i = 0; $i < $iterations; $i++ ) {
+			hash_equals( $token1, $token2 );
+		}
 		$time1 = microtime( true ) - $start;
 
 		$start = microtime( true );
-		hash_equals( $token1, 'completely_different' );
+		for ( $i = 0; $i < $iterations; $i++ ) {
+			hash_equals( $token1, 'completely_different' );
+		}
 		$time2 = microtime( true ) - $start;
 
 		// Timing should be similar (not exploitable)
