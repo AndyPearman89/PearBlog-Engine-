@@ -26,6 +26,22 @@ if (!headers_sent()) {
 $industry_param = isset($_GET['industry']) ? sanitize_key(wp_unslash($_GET['industry'])) : '';
 $industry_param_alt = isset($_GET['plv5_industry']) ? sanitize_key(wp_unslash($_GET['plv5_industry'])) : '';
 $industry_candidate = $industry_param ?: $industry_param_alt;
+$industry_aliases = [
+    'budowa' => 'budownictwo',
+    'construction' => 'budownictwo',
+    'finance' => 'finanse',
+    'legal' => 'prawo',
+    'energy' => 'oze',
+    'nieruchomosci' => 'estate',
+    'real-estate' => 'estate',
+    'real_estate' => 'estate',
+    'estate-strong' => 'estate',
+    'estate_strong' => 'estate',
+];
+
+if (array_key_exists($industry_candidate, $industry_aliases)) {
+    $industry_candidate = $industry_aliases[$industry_candidate];
+}
 
 $industry_copy_map = [
     'general' => [
@@ -67,6 +83,14 @@ $industry_copy_map = [
         'cta_placeholder' => 'Np. magazyn energii + PV, audyt efektywności energetycznej',
         'panel_title' => 'Co dostajesz przy inwestycjach OZE?',
         'pills' => ['Sprawdzeni instalatorzy', 'Konkretne wyceny', 'Lepsza opłacalność'],
+    ],
+    'estate' => [
+        'hero_title' => 'Znajdź sprawdzonego specjalistę od nieruchomości bez błądzenia',
+        'hero_subtitle' => 'Zakup, sprzedaż, wynajem i finansowanie nieruchomości. Otrzymasz oferty od zweryfikowanych ekspertów i porównasz je na spokojnie.',
+        'hero_placeholder' => 'Np. sprzedaż mieszkania 58 m2, zakup domu pod Krakowem, najem inwestycyjny',
+        'cta_placeholder' => 'Np. wycena nieruchomości, home staging, doradztwo kredytowe do zakupu',
+        'panel_title' => 'Co zyskujesz przy tematach nieruchomości?',
+        'pills' => ['Eksperci od lokalnego rynku', 'Jasne porównanie kosztów i warunków', 'Mniej ryzyka przy decyzji'],
     ],
 ];
 
