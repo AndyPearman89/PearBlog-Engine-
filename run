@@ -69,7 +69,14 @@ EOF
 
   # Prevent RuntimeException in some phpunit environments lacking request start globals.
   export REQUEST_TIME="${REQUEST_TIME:-$(date +%s)}"
-  export REQUEST_TIME_FLOAT="${REQUEST_TIME_FLOAT:-$(date +%s.%6N)}"
+  if [ -z "${REQUEST_TIME_FLOAT:-}" ]; then
+    local request_time_float
+    request_time_float="$(date +%s.%6N 2>/dev/null || true)"
+    if [ -z "$request_time_float" ] || [[ "$request_time_float" == *N* ]]; then
+      request_time_float="$(php -r 'echo microtime(true);')"
+    fi
+    export REQUEST_TIME_FLOAT="$request_time_float"
+  fi
 
   (
     cd "$plugin_dir"
