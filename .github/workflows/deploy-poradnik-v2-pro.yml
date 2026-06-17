@@ -41,7 +41,7 @@ jobs:
       SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'wordpress2614653' }}
       SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '222' }}
       WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || secrets.PORADNIK_WP_PATH || secrets.WP_PATH || '/var/www/wordpress2614653.home.pl/poradnik' }}
-      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || format('{0}/wp-content/themes/pearblog-theme', secrets.PORADNIK_WEB_ROOT || secrets.PORADNIK_WP_PATH || secrets.WP_PATH || '/var/www/wordpress2614653.home.pl/poradnik') }}
+      THEME_PATH: ${{ secrets.PORADNIK_THEME_PATH || '' }}
       BRANCH: ${{ github.event.inputs.branch }}
       SET_HOMEPAGE: ${{ github.event.inputs.set_as_homepage }}
       SNAPSHOT: ${{ github.event.inputs.snapshot_before_deploy }}
@@ -207,6 +207,9 @@ jobs:
 
       - name: Deploy Landing V2 Pro
         run: |
+          if [[ -z "${THEME_PATH:-}" ]]; then
+            THEME_PATH="$WEB_ROOT/wp-content/themes/pearblog-theme"
+          fi
           rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
             BRANCH="$BRANCH" WEB_ROOT="$WEB_ROOT" THEME_PATH="$THEME_PATH" \
             SET_HOMEPAGE="$SET_HOMEPAGE" bash -se <<'REMOTE'

@@ -156,12 +156,12 @@ fi
 
 CATEGORY=$1
 CITY=$2
-WEB_ROOT="${WEB_ROOT:-/var/www/wordpress2614653.home.pl/pt24}"
+WP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-python3 scripts/pt24_generate_pages.py \
+python3 "$WP_ROOT/scripts/pt24_generate_pages.py" \
     --category "$CATEGORY" \
     --city "$CITY" \
-    --wp-path "$WEB_ROOT"
+    --wp-path "$WP_ROOT"
 
 SCRIPT
 
@@ -174,16 +174,16 @@ cat > "$WEB_ROOT/pt24-generate-bulk.sh" <<'SCRIPT'
 # Usage: ./pt24-generate-bulk.sh [csv_file]
 
 CSV_FILE=${1:-pt24-sample-pages.csv}
-WEB_ROOT="${WEB_ROOT:-/var/www/wordpress2614653.home.pl/pt24}"
+WP_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 if [ ! -f "$CSV_FILE" ]; then
     echo "Error: CSV file not found: $CSV_FILE"
     exit 1
 fi
 
-python3 scripts/pt24_generate_pages.py \
+python3 "$WP_ROOT/scripts/pt24_generate_pages.py" \
     --csv "$CSV_FILE" \
-    --wp-path "$WEB_ROOT" \
+    --wp-path "$WP_ROOT" \
     --rate-limit 2
 
 SCRIPT
