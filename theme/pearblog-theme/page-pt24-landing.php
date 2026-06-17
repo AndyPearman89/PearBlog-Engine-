@@ -18,6 +18,9 @@ $service = isset($_GET['service']) ? sanitize_text_field($_GET['service']) : 'us
 $city = isset($_GET['city']) ? sanitize_text_field($_GET['city']) : 'Twojej okolicy';
 $service_display = ucfirst(str_replace('-', ' ', $service));
 $city_display = ucfirst($city);
+$ranking_companies = function_exists('pb_pt24_get_ranking_companies')
+    ? pb_pt24_get_ranking_companies($service_display, $city_display)
+    : array();
 
 get_header('minimal');
 ?>
@@ -255,8 +258,29 @@ get_header('minimal');
                 </div>
             </div>
 
-            <div class="pt24-ranking-placeholder">
-                <p>🏆 Lista najlepszych firm będzie dostępna wkrótce</p>
+            <div class="pt24-ranking-grid">
+                <?php foreach ($ranking_companies as $index => $company) : ?>
+                    <article class="pt24-ranking-card">
+                        <div class="pt24-ranking-badge <?php echo esc_attr($company['badge_class']); ?>">
+                            <?php echo esc_html($company['badge']); ?>
+                        </div>
+                        <div class="pt24-ranking-number">#<?php echo esc_html((string) ($index + 1)); ?></div>
+                        <h3 class="pt24-ranking-company"><?php echo esc_html($company['name']); ?></h3>
+                        <div class="pt24-ranking-rating">
+                            <span class="pt24-stars">★★★★★</span>
+                            <span class="pt24-rating-value"><?php echo esc_html($company['rating']); ?></span>
+                            <span class="pt24-rating-count">(<?php echo esc_html($company['reviews']); ?> opinii)</span>
+                        </div>
+                        <ul class="pt24-ranking-meta">
+                            <li><?php echo esc_html($company['availability']); ?></li>
+                            <li><?php echo esc_html($company['response']); ?></li>
+                            <li>Zweryfikowany profil</li>
+                        </ul>
+                        <a href="#pt24-form" class="pt24-btn pt24-btn--primary pt24-btn--full pt24-smooth-scroll">
+                            Otrzymaj ofertę
+                        </a>
+                    </article>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>

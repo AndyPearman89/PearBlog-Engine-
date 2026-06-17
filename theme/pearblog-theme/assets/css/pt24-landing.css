@@ -444,17 +444,93 @@
     font-size: 1.125rem;
 }
 
-.pt24-ranking-placeholder {
-    text-align: center;
-    padding: 3rem 2rem;
-    background: var(--pt24-bg-light);
-    border-radius: var(--pt24-radius);
+.pt24-ranking-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
     margin-top: 2rem;
 }
 
-.pt24-ranking-placeholder p {
+.pt24-ranking-card {
+    position: relative;
+    background: var(--pt24-bg-light);
+    border-radius: var(--pt24-radius);
+    border: 1px solid #e5e7eb;
+    padding: 1.5rem;
+}
+
+.pt24-ranking-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    margin-bottom: 0.75rem;
+}
+
+.pt24-badge--top {
+    color: #78350f;
+    background: #fef3c7;
+}
+
+.pt24-badge--recommended {
+    color: #14532d;
+    background: #dcfce7;
+}
+
+.pt24-badge--verified {
+    color: #1e3a8a;
+    background: #dbeafe;
+}
+
+.pt24-ranking-number {
+    font-size: 1.5rem;
+    font-weight: 800;
+    color: var(--pt24-primary);
+    margin-bottom: 0.25rem;
+}
+
+.pt24-ranking-company {
     font-size: 1.25rem;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+}
+
+.pt24-ranking-rating {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.pt24-stars {
+    color: #f59e0b;
+    letter-spacing: 0.06em;
+}
+
+.pt24-rating-value {
+    font-weight: 700;
+    color: var(--pt24-text);
+}
+
+.pt24-rating-count {
     color: var(--pt24-text-light);
+    font-size: 0.875rem;
+}
+
+.pt24-ranking-meta {
+    margin: 0 0 1.25rem;
+    padding-left: 1rem;
+}
+
+.pt24-ranking-meta li {
+    margin-bottom: 0.35rem;
+    color: var(--pt24-text);
 }
 
 @media (min-width: 768px) {
@@ -462,6 +538,10 @@
         flex-direction: row;
         justify-content: center;
         gap: 2rem;
+    }
+
+    .pt24-ranking-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 

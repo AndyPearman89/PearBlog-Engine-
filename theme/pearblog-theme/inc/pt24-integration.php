@@ -613,3 +613,45 @@ add_action('init', ['PearBlog_PT24_Integration', 'init']);
 
 // Create tables on theme activation
 add_action('after_switch_theme', ['PearBlog_PT24_Integration', 'create_tables']);
+
+if (!function_exists('pb_pt24_get_ranking_companies')) {
+    /**
+     * Build default ranking card content for PT24 landing templates.
+     * Data is curated template/demo content used as a safe fallback UI dataset.
+     *
+     * @param string $service_display Service name for display.
+     * @param string $city_display City name for display.
+     * @return array<int, array<string, string>>
+     */
+    function pb_pt24_get_ranking_companies($service_display, $city_display) {
+        return array(
+            array(
+                'name' => sprintf('%s Premium %s', $service_display, $city_display),
+                'rating' => '4.9',
+                'reviews' => '127',
+                'availability' => 'Dostępny dziś',
+                'response' => 'Odpowiedź do 1h',
+                'badge' => 'TOP WYBÓR',
+                'badge_class' => 'pt24-badge--top',
+            ),
+            array(
+                'name' => sprintf('%s Expert Team', $service_display),
+                'rating' => '4.8',
+                'reviews' => '104',
+                'availability' => 'Dostępny jutro',
+                'response' => 'Odpowiedź do 3h',
+                'badge' => 'POLECANY',
+                'badge_class' => 'pt24-badge--recommended',
+            ),
+            array(
+                'name' => sprintf('%s 24/7 %s', $service_display, $city_display),
+                'rating' => '4.7',
+                'reviews' => '89',
+                'availability' => 'Dostępny w tym tygodniu',
+                'response' => 'Odpowiedź do 6h',
+                'badge' => 'ZWERYFIKOWANY',
+                'badge_class' => 'pt24-badge--verified',
+            ),
+        );
+    }
+}

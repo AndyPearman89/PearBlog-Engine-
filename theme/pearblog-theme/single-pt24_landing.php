@@ -16,6 +16,9 @@ $service_display = get_post_meta(get_the_ID(), 'pt24_service_display', true) ?: 
 $city_display = get_post_meta(get_the_ID(), 'pt24_city_display', true) ?: ucfirst($city);
 $h1 = get_post_meta(get_the_ID(), 'pt24_h1', true) ?: "$service_display $city_display — sprawdź ceny i dostępne firmy";
 $hero_text = get_post_meta(get_the_ID(), 'pt24_hero_text', true) ?: "Znajdź najlepszych specjalistów w $city_display i otrzymaj dopasowane oferty.";
+$ranking_companies = function_exists('pb_pt24_get_ranking_companies')
+    ? pb_pt24_get_ranking_companies($service_display, $city_display)
+    : array();
 
 // SEO meta
 $meta_title = get_post_meta(get_the_ID(), 'pt24_meta_title', true) ?: "$service_display $city_display — ceny i oferty";
@@ -269,8 +272,29 @@ get_header('minimal');
                 </div>
             </div>
 
-            <div class="pt24-ranking-placeholder">
-                <p>🏆 Lista najlepszych firm będzie dostępna wkrótce</p>
+            <div class="pt24-ranking-grid">
+                <?php foreach ($ranking_companies as $index => $company) : ?>
+                    <article class="pt24-ranking-card">
+                        <div class="pt24-ranking-badge <?php echo esc_attr($company['badge_class']); ?>">
+                            <?php echo esc_html($company['badge']); ?>
+                        </div>
+                        <div class="pt24-ranking-number">#<?php echo esc_html((string) ($index + 1)); ?></div>
+                        <h3 class="pt24-ranking-company"><?php echo esc_html($company['name']); ?></h3>
+                        <div class="pt24-ranking-rating">
+                            <span class="pt24-stars">★★★★★</span>
+                            <span class="pt24-rating-value"><?php echo esc_html($company['rating']); ?></span>
+                            <span class="pt24-rating-count">(<?php echo esc_html($company['reviews']); ?> opinii)</span>
+                        </div>
+                        <ul class="pt24-ranking-meta">
+                            <li><?php echo esc_html($company['availability']); ?></li>
+                            <li><?php echo esc_html($company['response']); ?></li>
+                            <li>Zweryfikowany profil</li>
+                        </ul>
+                        <a href="#pt24-form" class="pt24-btn pt24-btn--primary pt24-btn--full pt24-smooth-scroll">
+                            Otrzymaj ofertę
+                        </a>
+                    </article>
+                <?php endforeach; ?>
             </div>
         </div>
     </section>
