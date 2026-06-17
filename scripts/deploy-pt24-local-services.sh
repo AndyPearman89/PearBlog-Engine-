@@ -32,7 +32,7 @@ echo -e "${BLUE}║                                                            �
 echo -e "${BLUE}╚════════════════════════════════════════════════════════════╝${NC}"
 echo ""
 
-WEB_ROOT="/var/www/pt24.pro"
+WEB_ROOT="${WEB_ROOT:-/var/www/wordpress2614653.home.pl/pt24}"
 
 # Check if WordPress is installed
 if [ ! -f "$WEB_ROOT/wp-config.php" ]; then
@@ -156,11 +156,12 @@ fi
 
 CATEGORY=$1
 CITY=$2
+WEB_ROOT="${WEB_ROOT:-/var/www/wordpress2614653.home.pl/pt24}"
 
 python3 scripts/pt24_generate_pages.py \
     --category "$CATEGORY" \
     --city "$CITY" \
-    --wp-path /var/www/pt24.pro
+    --wp-path "$WEB_ROOT"
 
 SCRIPT
 
@@ -173,6 +174,7 @@ cat > "$WEB_ROOT/pt24-generate-bulk.sh" <<'SCRIPT'
 # Usage: ./pt24-generate-bulk.sh [csv_file]
 
 CSV_FILE=${1:-pt24-sample-pages.csv}
+WEB_ROOT="${WEB_ROOT:-/var/www/wordpress2614653.home.pl/pt24}"
 
 if [ ! -f "$CSV_FILE" ]; then
     echo "Error: CSV file not found: $CSV_FILE"
@@ -181,7 +183,7 @@ fi
 
 python3 scripts/pt24_generate_pages.py \
     --csv "$CSV_FILE" \
-    --wp-path /var/www/pt24.pro \
+    --wp-path "$WEB_ROOT" \
     --rate-limit 2
 
 SCRIPT

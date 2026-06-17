@@ -1,10 +1,10 @@
 #!/bin/bash
 
 ################################################################################
-# PearBlog Engine v8.0 - Automated Deployment Script for pt24.pro
+# PearBlog Engine v8.0 - Automated Deployment Script for PT24
 #
 # This script automates the complete deployment of PearBlog Engine v8.0
-# on a fresh Ubuntu/Debian server for the pt24.pro domain.
+# on a fresh Ubuntu/Debian server (default: wordpress2614653.home.pl/pt24).
 #
 # Usage:
 #   curl -sL https://raw.githubusercontent.com/AndyPearman89/PearBlog-Engine-/main/scripts/deploy-pt24-pro.sh | bash
@@ -31,13 +31,13 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # Configuration
-DOMAIN="pt24.pro"
-WWW_DOMAIN="www.pt24.pro"
-WEB_ROOT="/var/www/pt24.pro"
+DOMAIN="${DOMAIN:-wordpress2614653.home.pl/pt24}"
+WWW_DOMAIN="${WWW_DOMAIN:-wordpress2614653.home.pl/pt24}"
+WEB_ROOT="${WEB_ROOT:-/var/www/wordpress2614653.home.pl/pt24}"
 DB_NAME="pt24_db"
 DB_USER="pt24_user"
 DB_PASS=$(openssl rand -base64 32)
-ADMIN_EMAIL="admin@pt24.pro"
+ADMIN_EMAIL="${ADMIN_EMAIL:-admin@wordpress2614653.home.pl}"
 ADMIN_USER="admin"
 ADMIN_PASS=$(openssl rand -base64 16)
 PEARBLOG_VERSION="v8.0.0"
@@ -102,7 +102,7 @@ check_distro() {
 # Main Deployment Steps
 ################################################################################
 
-print_header "PearBlog Engine v8.0 - Deployment for pt24.pro"
+print_header "PearBlog Engine v8.0 - Deployment for PT24"
 print_info "Starting automated deployment..."
 print_info "Domain: $DOMAIN"
 print_info "Web Root: $WEB_ROOT"
@@ -388,7 +388,7 @@ print_info "After adding your API key, run: wp pearblog generate --allow-root"
 print_header "Deployment Complete! 🎉"
 
 echo ""
-print_success "pt24.pro has been successfully deployed!"
+print_success "PT24 has been successfully deployed!"
 echo ""
 
 print_info "=== Important Information ==="

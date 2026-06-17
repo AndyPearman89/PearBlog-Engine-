@@ -38,8 +38,8 @@ jobs:
 
     env:
       SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || 'wordpress2614653.home.pl' }}
-      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'root' }}
-      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '22' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'wordpress2614653' }}
+      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '222' }}
       WP_PATH:  ${{ secrets.PORADNIK_WP_PATH  || secrets.WP_PATH  || '/var/www/wordpress2614653.home.pl/poradnik' }}
       ARTICLE_COUNT:      ${{ github.event.inputs.article_count }}
       ENABLE_AUTOPILOT:   ${{ github.event.inputs.enable_autopilot }}
