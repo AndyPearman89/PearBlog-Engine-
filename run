@@ -45,7 +45,7 @@ run_test() {
     echo "Using vendor/bin/phpunit"
   elif command -v phpunit >/dev/null 2>&1; then
     phpunit_cmd=(phpunit)
-    legacy_config="$(mktemp /tmp/pearblog-phpunit-legacy-XXXXXX.xml)"
+    legacy_config="$(mktemp -t pearblog-phpunit-legacy-XXXXXX.xml)"
     cat > "$legacy_config" <<EOF
 <?xml version="1.0"?>
 <phpunit bootstrap="$plugin_dir/tests/php/bootstrap.php" colors="true" cacheResultFile="$plugin_dir/.phpunit.result.cache">
@@ -69,7 +69,7 @@ EOF
 
   # Prevent RuntimeException in some phpunit environments lacking request start globals.
   export REQUEST_TIME="${REQUEST_TIME:-$(date +%s)}"
-  export REQUEST_TIME_FLOAT="${REQUEST_TIME_FLOAT:-$(php -r 'echo microtime(true);')}"
+  export REQUEST_TIME_FLOAT="${REQUEST_TIME_FLOAT:-$(date +%s.%6N)}"
 
   (
     cd "$plugin_dir"
