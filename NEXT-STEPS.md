@@ -16,7 +16,7 @@
 - [x] Zidentyfikować najbliższy blokujący problem
 - [x] Naprawić kompatybilność testu `AutopilotRunnerTest` z używanym PHPUnit
 - [x] Domknąć walidację po zmianie i potwierdzić status baseline (`./run dev`, `AutopilotRunnerTest`, pełny przebieg testów)
-- [x] Ujednolicić uruchamianie testów do jednego wspieranego wejścia: `./run test` (Composer-managed PHPUnit)
+- [x] Ujednolicić uruchamianie testów do jednego wspieranego wejścia: `./run test`
 
 ### v9 Module 1 — Definition of Ready (DoR)
 

@@ -5,8 +5,8 @@ All notable changes to PearBlog Engine are documented in this file.
 ## [Unreleased]
 
 ### Changed
-- Added unified repository test entrypoint: `./run test [phpunit-args]`, which executes `mu-plugins/pearblog-engine` tests via Composer-managed PHPUnit.
-- Updated `./run` helper usage text and command behavior to keep test execution on a single supported PHPUnit variant.
+- Added unified repository test entrypoint: `./run test [phpunit-args]`, which executes `mu-plugins/pearblog-engine` tests through one stable command path.
+- Updated `./run` helper usage text and command behavior to prefer `vendor/bin/phpunit` and fallback to system PHPUnit when vendor binaries are unavailable.
 - Updated local development docs to include the new unified test command.
 
 ### Documentation
