@@ -7,6 +7,23 @@
 
 ---
 
+## 🎯 Sprint Priority (2026-06-17)
+
+**Selected direction:** Stabilizacja v8 (jako etap blokujący przed kolejnymi pracami v9).
+
+### First Minimal PR (in progress)
+- [x] Potwierdzić bazowy sanity check (`./run dev`)
+- [x] Zidentyfikować najbliższy blokujący problem
+- [x] Naprawić kompatybilność testu `AutopilotRunnerTest` z używanym PHPUnit
+- [ ] Domknąć walidację po zmianie i potwierdzić status baseline
+
+### Next Small Tasks (after this PR)
+1. Uporządkować uruchamianie testów pod jednym wspieranym wariantem PHPUnit.
+2. Ustalić i opisać „Definition of Ready” dla pierwszego modułu rozwojowego v9.
+3. Wybrać jeden moduł v9 do wdrożenia w małym zakresie z testami.
+
+---
+
 ## ✅ What's Done (v8.0.0)
 
 **Enterprise V8 Admin Complete** — All features integrated and released:
