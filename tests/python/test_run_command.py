@@ -33,4 +33,4 @@ def test_run_command_rejects_unknown_subcommand():
     )
 
     assert result.returncode == 1
-    assert "Usage: ./run dev" in result.stderr
+    assert "Usage: ./run dev | ./run test [phpunit-args]" in result.stderr

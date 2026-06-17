@@ -73,6 +73,7 @@ For local repository checks during development:
 
 ```bash
 ./run dev
+./run test --filter AutopilotRunnerTest
 ```
 
 See **[SETUP.md](SETUP.md)** for GitHub Actions setup and **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** for full activation.

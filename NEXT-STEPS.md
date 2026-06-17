@@ -15,12 +15,24 @@
 - [x] Potwierdzić bazowy sanity check (`./run dev`)
 - [x] Zidentyfikować najbliższy blokujący problem
 - [x] Naprawić kompatybilność testu `AutopilotRunnerTest` z używanym PHPUnit
-- [ ] Domknąć walidację po zmianie i potwierdzić status baseline
+- [x] Domknąć walidację po zmianie i potwierdzić status baseline (`./run dev`, `AutopilotRunnerTest`, pełny przebieg testów)
+- [x] Ujednolicić uruchamianie testów do jednego wspieranego wejścia: `./run test` (Composer-managed PHPUnit)
+
+### v9 Module 1 — Definition of Ready (DoR)
+
+**Wybrany moduł MVP:** F1 — GraphQL API Gateway (mały zakres, iteracja 1).
+
+Zespół zaczyna implementację dopiero gdy:
+- [x] Zakres MVP jest ograniczony do jednego celu technicznego (bez rozszerzeń pobocznych)
+- [x] Są jawne kryteria akceptacji dla API (co najmniej 1 success path + 1 fail path)
+- [x] Są przypisane testy jednostkowe/integracyjne do każdego kryterium akceptacji
+- [x] Komenda uruchomienia walidacji jest jednoznaczna i wspólna (`./run dev`, `./run test`)
+- [x] Ryzyka kompatybilności PHPUnit są wyeliminowane przez użycie jednego wspieranego wariantu
 
 ### Next Small Tasks (after this PR)
-1. Uporządkować uruchamianie testów pod jednym wspieranym wariantem PHPUnit.
-2. Ustalić i opisać „Definition of Ready” dla pierwszego modułu rozwojowego v9.
-3. Wybrać jeden moduł v9 do wdrożenia w małym zakresie z testami.
+1. Zaimplementować MVP F1: query complexity/depth guard dla GraphQL endpoint.
+2. Dodać testy dla success/fail path guardów i limity konfiguracyjne.
+3. Domknąć mini-iterację F1 przez walidację i update changelog/statusu.
 
 ---
 

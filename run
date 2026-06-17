@@ -5,7 +5,7 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 COMMAND="${1:-}"
 
 usage() {
-  echo "Usage: ./run dev" >&2
+  echo "Usage: ./run dev | ./run test [phpunit-args]" >&2
 }
 
 run_dev() {
@@ -27,9 +27,38 @@ run_dev() {
   echo "Development sanity checks passed."
 }
 
+run_test() {
+  local plugin_dir="$ROOT_DIR/mu-plugins/pearblog-engine"
+  echo "Running PearBlog PHPUnit checks with Composer-managed PHPUnit..."
+
+  if ! command -v php >/dev/null 2>&1; then
+    echo "✗ php not found; cannot run PHPUnit checks" >&2
+    exit 1
+  fi
+
+  if [ ! -x "$plugin_dir/vendor/bin/phpunit" ]; then
+    if command -v composer >/dev/null 2>&1; then
+      echo "Installing Composer dependencies for test execution..."
+      (cd "$plugin_dir" && composer install --no-interaction --no-progress --prefer-dist)
+    else
+      echo "✗ vendor/bin/phpunit not found and composer is unavailable" >&2
+      echo "  Run 'composer install' in $plugin_dir before executing tests." >&2
+      exit 1
+    fi
+  fi
+
+  (
+    cd "$plugin_dir"
+    ./vendor/bin/phpunit -c phpunit.xml "${@:1}"
+  )
+}
+
 case "$COMMAND" in
   dev)
     run_dev
+    ;;
+  test)
+    run_test "${@:2}"
     ;;
   *)
     usage

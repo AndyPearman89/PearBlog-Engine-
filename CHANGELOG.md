@@ -2,6 +2,17 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [Unreleased]
+
+### Changed
+- Added unified repository test entrypoint: `./run test [phpunit-args]`, which executes `mu-plugins/pearblog-engine` tests via Composer-managed PHPUnit.
+- Updated `./run` helper usage text and command behavior to keep test execution on a single supported PHPUnit variant.
+- Updated local development docs to include the new unified test command.
+
+### Documentation
+- Updated sprint section in `NEXT-STEPS.md` to mark baseline validation as complete.
+- Added Definition of Ready (DoR) for the first v9 MVP module and selected F1 GraphQL API Gateway as the next small implementation target.
+
 ## [8.0.0] — 2026-05-04
 
 ### Added — v8.0 Enterprise Admin Complete
