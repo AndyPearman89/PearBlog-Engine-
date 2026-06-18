@@ -584,6 +584,8 @@ body.pb-dark-mode {
   --pb-bg-alt: #1f2937;
   --pb-text: #f9fafb;
   --pb-text-light: #d1d5db;
+  --pb-border-soft: rgba(255, 255, 255, 0.12);
+  --pb-border-input: rgba(255, 255, 255, 0.18);
   --pb-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.4);
   --pb-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.4);
 }
@@ -677,7 +679,6 @@ textarea:focus,
 select:focus {
   border-color: var(--pb-primary);
   box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-  outline: none;
 }
 
 button,
