@@ -7,6 +7,7 @@
  *   wp pearblog queue list
  *   wp pearblog queue add <topic>
  *   wp pearblog queue clear
+ *   wp pearblog seed poradnik [--limit=<n>] [--reset-queue]
  *   wp pearblog stats [--days=<days>]
  *   wp pearblog refresh [--older-than=<days>] [--batch=<n>]
  *   wp pearblog quality score <post_id>
@@ -166,6 +167,71 @@ class PearBlogCommand {
 			default:
 				\WP_CLI::error( "Unknown subcommand: {$sub}. Use list, add, or clear." );
 		}
+	}
+
+	/**
+	 * Seed ready-to-use topic packs into the queue.
+	 *
+	 * ## OPTIONS
+	 *
+	 * <profile>
+	 * : Seed profile name. Currently supported: poradnik.
+	 *
+	 * [--limit=<n>]
+	 * : Limit number of queued topics (default: all).
+	 *
+	 * [--reset-queue]
+	 * : Clear existing queue before seeding.
+	 *
+	 * ## EXAMPLES
+	 *
+	 *   wp pearblog seed poradnik
+	 *   wp pearblog seed poradnik --limit=5 --reset-queue
+	 *
+	 * @subcommand seed
+	 */
+	public function seed( array $args, array $assoc_args ): void {
+		$profile = strtolower( (string) ( $args[0] ?? 'poradnik' ) );
+		if ( 'poradnik' !== $profile ) {
+			\WP_CLI::error( "Unknown seed profile: {$profile}. Available: poradnik." );
+			return;
+		}
+
+		$topics = [
+			'Ile kosztuje remont łazienki w 2026 roku',
+			'Ile kosztuje malowanie mieszkania - koszty i ceny',
+			'Jak wybrać dobrego elektryka - poradnik krok po kroku',
+			'Ile kosztuje budowa domu 100m2 - realne ceny 2026',
+			'Kredyt hipoteczny - jak wybrać najlepszą ofertę',
+			'Ile kosztuje wymiana okien - porównanie cen',
+			'Jak wybrać ubezpieczenie OC samochodu tanio',
+			'Ile kosztuje remont kuchni - koszty i wskazówki',
+			'Jak wybrać wykonawcę remontu - na co uważać',
+			'Ile kosztuje ocieplenie domu styropianem w 2026',
+			'Jak zaplanować domowy budżet krok po kroku',
+			'Ile kosztuje wymiana instalacji elektrycznej',
+			'Jak wybrać dobrego hydraulika - porady',
+			'Ile kosztuje przegląd samochodu - ceny serwisów',
+			'Jak remontować mieszkanie bez błędów - poradnik',
+		];
+
+		$limit = isset( $assoc_args['limit'] ) ? max( 1, (int) $assoc_args['limit'] ) : count( $topics );
+		$limit = min( $limit, count( $topics ) );
+		$queue = new TopicQueue( get_current_blog_id() );
+
+		if ( isset( $assoc_args['reset-queue'] ) ) {
+			$queue->clear();
+			\WP_CLI::log( 'Queue cleared before seeding.' );
+		}
+
+		$queued = array_slice( $topics, 0, $limit );
+		foreach ( $queued as $topic ) {
+			$queue->push( $topic );
+		}
+
+		update_option( 'pearblog_seed_topics', implode( "\n", $queued ) );
+
+		\WP_CLI::success( sprintf( 'Seeded %d topic(s) to queue (%s profile).', count( $queued ), $profile ) );
 	}
 
 	/**

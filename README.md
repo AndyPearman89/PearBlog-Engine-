@@ -75,6 +75,12 @@ For local repository checks during development:
 ./run dev
 ```
 
+To quickly seed Poradnik queue topics via WP-CLI:
+
+```bash
+wp pearblog seed poradnik --limit=10 --reset-queue
+```
+
 See **[SETUP.md](SETUP.md)** for GitHub Actions setup and **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** for full activation.
 
 ---
