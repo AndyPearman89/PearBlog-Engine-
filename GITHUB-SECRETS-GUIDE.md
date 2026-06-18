@@ -184,6 +184,62 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ---
 
+## Cloudflare Secrets (for poradnik.pro CDN & Cache)
+
+### 19. CF_ZONE_ID
+- **Description:** Cloudflare Zone ID for poradnik.pro
+- **Required for:** Cache purge after deployment
+- **Where to find:** Cloudflare Dashboard → poradnik.pro → Overview → right sidebar → Zone ID
+- **Example:**
+  ```
+  a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  ```
+
+### 20. CF_API_TOKEN_CACHE
+- **Description:** Cloudflare API Token with Cache Purge permission
+- **Required for:** Automatic cache purge after deploy
+- **How to create:**
+  1. Visit: https://dash.cloudflare.com/profile/api-tokens
+  2. Create Token → Custom Token
+  3. Permissions: Zone → Cache Purge → Edit
+  4. Zone Resources: Include → Specific zone → poradnik.pro
+- **Example:**
+  ```
+  ABCdefGHI123jklMNO456pqrSTU789vwx
+  ```
+
+### 21. CF_ACCOUNT_ID
+- **Description:** Cloudflare Account ID (for Cloudflare Images)
+- **Required for:** Image CDN offloading via CdnManager
+- **Where to find:** Cloudflare Dashboard → right sidebar → Account ID
+- **Example:**
+  ```
+  1234567890abcdef1234567890abcdef
+  ```
+
+### 22. CF_IMAGES_API_TOKEN
+- **Description:** Cloudflare API Token with Images permission
+- **Required for:** Uploading/managing images via Cloudflare Images API
+- **How to create:**
+  1. Visit: https://dash.cloudflare.com/profile/api-tokens
+  2. Create Token → Custom Token
+  3. Permissions: Account → Cloudflare Images → Edit
+- **Example:**
+  ```
+  XYZ987wvu654tsr321qpo098nml765kji
+  ```
+
+### 23. CF_IMAGES_DELIVERY_URL
+- **Description:** Cloudflare Images delivery URL
+- **Required for:** Serving optimized images from Cloudflare edge
+- **Where to find:** Cloudflare Dashboard → Images → Delivery URL
+- **Example:**
+  ```
+  https://imagedelivery.net/AbCdEfGhIjKlMnOpQrStUv
+  ```
+
+---
+
 ## Email Provider Secrets (Optional)
 
 ### 14. MAILCHIMP_API_KEY (Optional)
@@ -253,6 +309,16 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ✓ API_KEY             = [Generated API key]
 ✓ HEALTH_SECRET       = [Generated health secret]
 ✓ SLACK_WEBHOOK_URL   = https://hooks.slack.com/...
+✓ CF_ZONE_ID          = [Cloudflare Zone ID for poradnik.pro]
+✓ CF_API_TOKEN_CACHE  = [CF token with Cache Purge permission]
+```
+
+### Cloudflare Images Secrets (Optional — CDN image offloading)
+
+```
+✓ CF_ACCOUNT_ID           = [Cloudflare Account ID]
+✓ CF_IMAGES_API_TOKEN     = [CF token with Images permission]
+✓ CF_IMAGES_DELIVERY_URL  = https://imagedelivery.net/...
 ```
 
 ---

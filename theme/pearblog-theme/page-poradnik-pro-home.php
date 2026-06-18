@@ -874,16 +874,17 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
             Poradnik.pro
         </a>
         <nav class="main-nav">
-            <a href="<?php echo $pp_search( 'poradniki' ); ?>">Poradniki</a>
-            <a href="<?php echo $pp_search( 'rankingi' ); ?>">Rankingi</a>
-            <a href="<?php echo $pp_search( 'kalkulatory' ); ?>">Kalkulatory</a>
-            <a href="<?php echo $pp_search( 'pytania i odpowiedzi' ); ?>">Pytania i Odpowiedzi</a>
-            <a href="<?php echo $pp_search( 'specjaliści' ); ?>">Specjaliści</a>
+            <a href="<?php echo esc_url( home_url( '/poradniki/' ) ); ?>">Poradniki</a>
+            <a href="<?php echo esc_url( home_url( '/porownania/' ) ); ?>">Porównania</a>
+            <a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>">Rankingi</a>
+            <a href="<?php echo esc_url( home_url( '/kalkulatory/' ) ); ?>">Kalkulatory</a>
+            <a href="<?php echo esc_url( home_url( '/pytania/' ) ); ?>">Pytania i Odpowiedzi</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>">Specjaliści</a>
             <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>">Kontakt</a>
         </nav>
         <div class="header-actions">
             <button class="btn-search-icon" type="button" aria-label="Szukaj">🔍</button>
-            <a href="<?php echo $pp_search( 'specjalista' ); ?>" class="btn-find-specialist">Znajdź specjalistę</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>" class="btn-find-specialist">Znajdź specjalistę</a>
         </div>
     </div>
 </header>
@@ -948,59 +949,59 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Popularne kategorie</h2>
-            <a href="<?php echo $pp_search( 'kategorie' ); ?>" class="section-link">Zobacz wszystkie kategorie</a>
+            <a href="<?php echo esc_url( home_url( '/poradniki/' ) ); ?>" class="section-link">Zobacz wszystkie kategorie</a>
         </div>
         <div class="categories-grid">
-            <a href="<?php echo $pp_search( 'prawo' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/prawo/' ) ); ?>" class="category-card">
                 <div class="category-icon law">⚖️</div>
                 <div>
                     <div class="category-name">Prawo</div>
                     <div class="category-meta">2 430 poradników<br>1 250 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'finanse' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/finanse/' ) ); ?>" class="category-card">
                 <div class="category-icon finance">💰</div>
                 <div>
                     <div class="category-name">Finanse</div>
                     <div class="category-meta">3 120 poradników<br>1 780 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'nieruchomości' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/nieruchomosci/' ) ); ?>" class="category-card">
                 <div class="category-icon realestate">🏠</div>
                 <div>
                     <div class="category-name">Nieruchomości</div>
                     <div class="category-meta">2 850 poradników<br>1 620 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'budowa domu' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/budownictwo/' ) ); ?>" class="category-card">
                 <div class="category-icon construction">🏗️</div>
                 <div>
                     <div class="category-name">Budowa domu</div>
                     <div class="category-meta">3 410 poradników<br>1 980 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'motoryzacja' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/motoryzacja/' ) ); ?>" class="category-card">
                 <div class="category-icon auto">🚗</div>
                 <div>
                     <div class="category-name">Motoryzacja</div>
                     <div class="category-meta">1 890 poradników<br>980 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'zdrowie' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/zdrowie/' ) ); ?>" class="category-card">
                 <div class="category-icon health">❤️</div>
                 <div>
                     <div class="category-name">Zdrowie</div>
                     <div class="category-meta">2 210 poradników<br>1 430 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'biznes' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/biznes/' ) ); ?>" class="category-card">
                 <div class="category-icon business">💼</div>
                 <div>
                     <div class="category-name">Biznes</div>
                     <div class="category-meta">2 340 poradników<br>1 260 ekspertów</div>
                 </div>
             </a>
-            <a href="<?php echo $pp_search( 'technologia' ); ?>" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/technologia/' ) ); ?>" class="category-card">
                 <div class="category-icon tech">💻</div>
                 <div>
                     <div class="category-name">Technologia</div>
@@ -1016,7 +1017,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Polecani specjaliści</h2>
-            <a href="<?php echo $pp_search( 'specjaliści' ); ?>" class="section-link">Zobacz wszystkich specjalistów</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>" class="section-link">Zobacz wszystkich specjalistów</a>
         </div>
         <div class="specialists-carousel">
             <div class="specialist-card">
@@ -1027,7 +1028,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
                     <span class="stars">★★★★★</span> 4.9 (522)
                 </div>
                 <div class="specialist-location">📍 Warszawa</div>
-                <a href="<?php echo $pp_search( 'doradca kredytowy Warszawa' ); ?>" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/warszawa/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👨</div>
@@ -1037,7 +1038,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
                     <span class="stars">★★★★★</span> 4.8 (421)
                 </div>
                 <div class="specialist-location">📍 Kraków</div>
-                <a href="<?php echo $pp_search( 'prawnik Kraków' ); ?>" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/krakow/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👩</div>
@@ -1047,7 +1048,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
                     <span class="stars">★★★★★</span> 4.9 (309)
                 </div>
                 <div class="specialist-location">📍 Wrocław</div>
-                <a href="<?php echo $pp_search( 'architekt Wrocław' ); ?>" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/wroclaw/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👨</div>
@@ -1057,7 +1058,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
                     <span class="stars">★★★★★</span> 4.8 (278)
                 </div>
                 <div class="specialist-location">📍 Poznań</div>
-                <a href="<?php echo $pp_search( 'księgowy Poznań' ); ?>" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/poznan/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👩</div>
@@ -1067,7 +1068,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
                     <span class="stars">★★★★★</span> 4.9 (186)
                 </div>
                 <div class="specialist-location">📍 Gdańsk</div>
-                <a href="<?php echo $pp_search( 'ubezpieczenia Gdańsk' ); ?>" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/gdansk/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
         </div>
     </div>
@@ -1081,7 +1082,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
             <div>
                 <div class="section-header">
                     <h2 class="section-title">Najnowsze poradniki</h2>
-                    <a href="<?php echo $pp_search( 'poradnik' ); ?>" class="section-link">Zobacz wszystkie</a>
+                    <a href="<?php echo esc_url( home_url( '/poradniki/' ) ); ?>" class="section-link">Zobacz wszystkie</a>
                 </div>
                 <div class="questions-list">
                     <?php if ( ! empty( $pp_recent ) ) : ?>
@@ -1118,7 +1119,7 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
             <div>
                 <div class="section-header">
                     <h2 class="section-title">Popularne rankingi</h2>
-                    <a href="<?php echo $pp_search( 'ranking' ); ?>" class="section-link">Zobacz wszystkie</a>
+                    <a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>" class="section-link">Zobacz wszystkie</a>
                 </div>
                 <div class="rankings-grid">
                     <div class="ranking-card blue-bg">
@@ -1168,30 +1169,30 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Kalkulatory</h2>
-            <a href="<?php echo $pp_search( 'kalkulator' ); ?>" class="section-link">Zobacz wszystkie kalkulatory</a>
+            <a href="<?php echo esc_url( home_url( '/kalkulatory/' ) ); ?>" class="section-link">Zobacz wszystkie kalkulatory</a>
         </div>
         <div class="calculators-row">
-            <a href="<?php echo $pp_search( 'kalkulator kredytu hipotecznego' ); ?>" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/kredyt-hipoteczny/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">🏦</div>
                 <div class="calculator-name">Kredyt hipoteczny</div>
                 <div class="calculator-desc">Sprawdź raty i koszty</div>
             </a>
-            <a href="<?php echo $pp_search( 'zdolność kredytowa' ); ?>" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/zdolnosc-kredytowa/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">📋</div>
                 <div class="calculator-name">Zdolność kredytowa</div>
                 <div class="calculator-desc">Sprawdź swoją zdolność</div>
             </a>
-            <a href="<?php echo $pp_search( 'koszt budowy domu' ); ?>" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/koszt-budowy/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">🏠</div>
                 <div class="calculator-name">Koszt budowy domu</div>
                 <div class="calculator-desc">Oblicz koszty budowy</div>
             </a>
-            <a href="<?php echo $pp_search( 'kalkulator OC' ); ?>" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/oc/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">🚗</div>
                 <div class="calculator-name">Kalkulator OC</div>
                 <div class="calculator-desc">Oblicz składkę OC</div>
             </a>
-            <a href="<?php echo $pp_search( 'kalkulator wynagrodzeń' ); ?>" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/wynagrodzenia/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">💰</div>
                 <div class="calculator-name">Kalkulator wynagrodzeń</div>
                 <div class="calculator-desc">Sprawdź wynagrodzenie netto</div>
@@ -1281,14 +1282,14 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
     <div class="container">
         <h3>Najpopularniejsze wyszukiwania</h3>
         <div class="search-tags">
-            <a href="<?php echo $pp_search( 'prawo Warszawa' ); ?>">Prawo Warszawa</a>
-            <a href="<?php echo $pp_search( 'kredyt Kraków' ); ?>">Kredyt Kraków</a>
-            <a href="<?php echo $pp_search( 'architekt Katowice' ); ?>">Architekt Katowice</a>
-            <a href="<?php echo $pp_search( 'księgowy Wrocław' ); ?>">Księgowy Wrocław</a>
-            <a href="<?php echo $pp_search( 'doradca Gdańsk' ); ?>">Doradca Gdańsk</a>
-            <a href="<?php echo $pp_search( 'notariusz Poznań' ); ?>">Notariusz Poznań</a>
-            <a href="<?php echo $pp_search( 'radca prawny Łódź' ); ?>">Radca prawny Łódź</a>
-            <a href="<?php echo $pp_search( 'prawnik online' ); ?>">Prawnik online</a>
+            <a href="<?php echo esc_url( home_url( '/warszawa/prawo/' ) ); ?>">Prawo Warszawa</a>
+            <a href="<?php echo esc_url( home_url( '/krakow/finanse/' ) ); ?>">Kredyt Kraków</a>
+            <a href="<?php echo esc_url( home_url( '/katowice/specjalisci/' ) ); ?>">Architekt Katowice</a>
+            <a href="<?php echo esc_url( home_url( '/wroclaw/specjalisci/' ) ); ?>">Księgowy Wrocław</a>
+            <a href="<?php echo esc_url( home_url( '/gdansk/specjalisci/' ) ); ?>">Doradca Gdańsk</a>
+            <a href="<?php echo esc_url( home_url( '/poznan/specjalisci/' ) ); ?>">Notariusz Poznań</a>
+            <a href="<?php echo esc_url( home_url( '/lodz/prawo/' ) ); ?>">Radca prawny Łódź</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>">Prawnik online</a>
         </div>
     </div>
 </section>
@@ -1299,42 +1300,42 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
         <div class="footer-grid">
             <div class="footer-col">
                 <h4>Poradniki</h4>
-                <a href="<?php echo $pp_search( 'prawo' ); ?>">Prawo</a>
-                <a href="<?php echo $pp_search( 'finanse' ); ?>">Finanse</a>
-                <a href="<?php echo $pp_search( 'nieruchomości' ); ?>">Nieruchomości</a>
-                <a href="<?php echo $pp_search( 'budowa domu' ); ?>">Budowa domu</a>
-                <a href="<?php echo $pp_search( 'motoryzacja' ); ?>">Motoryzacja</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/prawo/' ) ); ?>">Prawo</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/finanse/' ) ); ?>">Finanse</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/nieruchomosci/' ) ); ?>">Nieruchomości</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/budownictwo/' ) ); ?>">Budownictwo</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/motoryzacja/' ) ); ?>">Motoryzacja</a>
             </div>
             <div class="footer-col">
                 <h4>Rankingi</h4>
-                <a href="<?php echo $pp_search( 'ranking kredyty' ); ?>">Kredyty</a>
-                <a href="<?php echo $pp_search( 'ranking konta bankowe' ); ?>">Konta bankowe</a>
-                <a href="<?php echo $pp_search( 'ranking ubezpieczenia' ); ?>">Ubezpieczenia</a>
-                <a href="<?php echo $pp_search( 'ranking pompy ciepła' ); ?>">Pompy ciepła</a>
-                <a href="<?php echo $pp_search( 'ranking programy księgowe' ); ?>">Programy księgowe</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/kredyty/' ) ); ?>">Kredyty</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/konta-bankowe/' ) ); ?>">Konta bankowe</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/ubezpieczenia/' ) ); ?>">Ubezpieczenia</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/pompy-ciepla/' ) ); ?>">Pompy ciepła</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/programy-ksiegowe/' ) ); ?>">Programy księgowe</a>
             </div>
             <div class="footer-col">
                 <h4>Kalkulatory</h4>
-                <a href="<?php echo $pp_search( 'kalkulator kredytu hipotecznego' ); ?>">Kredyt hipoteczny</a>
-                <a href="<?php echo $pp_search( 'zdolność kredytowa' ); ?>">Zdolność kredytowa</a>
-                <a href="<?php echo $pp_search( 'koszt budowy' ); ?>">Koszt budowy</a>
-                <a href="<?php echo $pp_search( 'kalkulator OC' ); ?>">Kalkulator OC</a>
-                <a href="<?php echo $pp_search( 'kalkulator wynagrodzeń' ); ?>">Wynagrodzenia</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/kredyt-hipoteczny/' ) ); ?>">Kredyt hipoteczny</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/zdolnosc-kredytowa/' ) ); ?>">Zdolność kredytowa</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/koszt-budowy/' ) ); ?>">Koszt budowy</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/oc/' ) ); ?>">Kalkulator OC</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/wynagrodzenia/' ) ); ?>">Wynagrodzenia</a>
             </div>
             <div class="footer-col">
                 <h4>Dla specjalistów</h4>
-                <a href="<?php echo $pp_search( 'dołącz jako ekspert' ); ?>">Dołącz jako ekspert</a>
-                <a href="<?php echo $pp_search( 'panel specjalisty' ); ?>">Panel specjalisty</a>
-                <a href="<?php echo $pp_search( 'cennik' ); ?>">Cennik</a>
-                <a href="<?php echo $pp_search( 'FAQ' ); ?>">FAQ</a>
+                <a href="<?php echo esc_url( home_url( '/dla-specjalistow/' ) ); ?>">Dołącz jako ekspert</a>
+                <a href="<?php echo esc_url( home_url( '/panel/' ) ); ?>">Panel specjalisty</a>
+                <a href="<?php echo esc_url( home_url( '/cennik/' ) ); ?>">Cennik</a>
+                <a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>">FAQ</a>
             </div>
             <div class="footer-col">
                 <h4>O nas</h4>
-                <a href="<?php echo esc_url( home_url( '/o-nas/' ) ); ?>">O Poradnik.pro</a>
-                <a href="<?php echo $pp_search( 'jak to działa' ); ?>">Jak to działa</a>
-                <a href="<?php echo $pp_home; ?>">Blog</a>
+                <a href="<?php echo $pp_home; ?>">O Poradnik.pro</a>
+                <a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">Blog</a>
                 <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>">Kontakt</a>
-                <a href="<?php echo esc_url( home_url( '/mapa-strony/' ) ); ?>">Mapa strony</a>
+                <a href="<?php echo esc_url( home_url( '/regulamin/' ) ); ?>">Regulamin</a>
+                <a href="<?php echo esc_url( home_url( '/polityka-prywatnosci/' ) ); ?>">Polityka prywatności</a>
             </div>
         </div>
         <div class="footer-bottom">
