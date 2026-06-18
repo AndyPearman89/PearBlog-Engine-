@@ -595,7 +595,7 @@ git clone https://github.com/AndyPearman89/PearBlog-Engine- pearblog-engine
    - Tag as v8.0.0
 
 2. ✅ **Create GitHub Release**
-   - Use GITHUB-RELEASE-v8.0.0.md template
+   - Use docs/archive/GITHUB-RELEASE-v8.0.0.md template
    - Upload pearblog-engine-v8.0.0.zip
    - Mark as "Latest Release"
 

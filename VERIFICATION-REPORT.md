@@ -485,7 +485,7 @@ All previously identified issues have been resolved:
 
 ### Release Artifacts
 - ✅ Git tag ready: `v8.0.0` (Created 2026-05-04)
-- ✅ GitHub Release ready (GITHUB-RELEASE-v8.0.0.md)
+- ✅ GitHub Release ready (docs/archive/GITHUB-RELEASE-v8.0.0.md)
 - ✅ Plugin ZIP packaged: `pearblog-engine-v8.0.0.zip` (556KB)
 - ✅ Version numbers consistent
 - ✅ CHANGELOG.md entry complete

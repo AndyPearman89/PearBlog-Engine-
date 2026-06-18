@@ -66,6 +66,12 @@
 | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | EN | Ops | Standalone pre-launch & weekly/monthly/quarterly operations checklists |
 | [NEXT-STEPS.md](NEXT-STEPS.md) | EN | Everyone | Post-v6.0 action plan: beta sprint, v7.0 launch, v7.1/v7.2/v7.3 feature roadmap |
 
+### Archive (Historical)
+
+| Document | Language | Audience | Summary |
+|----------|----------|----------|---------|
+| [docs/archive/README.md](docs/archive/README.md) | EN | Everyone | Index of archived launch-era and completion-report documents moved from repository root |
+
 ### Learning & Onboarding
 
 | Document | Language | Audience | Summary |

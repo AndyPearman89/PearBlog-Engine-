@@ -54,7 +54,7 @@ Zespół zaczyna implementację dopiero gdy:
 
 ## 📅 Immediate Post-Launch Actions (2026-05-04) — ✅ COMPLETED
 
-All 5 phases completed in ~9 minutes. See [POST-LAUNCH-ACTIONS-SUMMARY.md](POST-LAUNCH-ACTIONS-SUMMARY.md) for details.
+All 5 phases completed in ~9 minutes. See [docs/archive/POST-LAUNCH-ACTIONS-SUMMARY.md](docs/archive/POST-LAUNCH-ACTIONS-SUMMARY.md) for details.
 
 ### Phase 1: Version Alignment & Release Artifacts ✅ DONE
 - [x] Update plugin version to 8.0.0
@@ -65,7 +65,7 @@ All 5 phases completed in ~9 minutes. See [POST-LAUNCH-ACTIONS-SUMMARY.md](POST-
 ### Phase 2: Documentation Updates ✅ DONE
 - [x] Update CHANGELOG.md with v8.0.0 notes
 - [x] Update NEXT-STEPS.md to reflect v8.0 reality
-- [x] Create GITHUB-RELEASE-v8.0.0.md
+- [x] Create docs/archive/GITHUB-RELEASE-v8.0.0.md
 - [x] Restructure post-launch action items
 
 ### Phase 3: Testing & Validation ✅ DONE
@@ -81,7 +81,7 @@ All 5 phases completed in ~9 minutes. See [POST-LAUNCH-ACTIONS-SUMMARY.md](POST-
 - [x] Ready for merge
 
 ### Phase 5: Post-Release Cleanup ✅ DONE
-- [x] Create POST-LAUNCH-ACTIONS-SUMMARY.md
+- [x] Create docs/archive/POST-LAUNCH-ACTIONS-SUMMARY.md
 - [x] Document all decisions made
 - [x] Provide future recommendations
 - [x] Complete all phases
@@ -93,7 +93,7 @@ All 5 phases completed in ~9 minutes. See [POST-LAUNCH-ACTIONS-SUMMARY.md](POST-
 After merging PR #70:
 
 1. **Create GitHub Release v8.0.0**
-   - Use GITHUB-RELEASE-v8.0.0.md as template
+   - Use docs/archive/GITHUB-RELEASE-v8.0.0.md as template
    - Upload pearblog-engine-v8.0.0.zip
    - Tag as "Latest Release"
 

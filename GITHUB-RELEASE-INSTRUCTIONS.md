@@ -9,7 +9,7 @@
 ## Pre-Flight Checklist
 
 - [x] Plugin ZIP packaged: `releases/pearblog-engine-v8.0.0.zip` (556 KB)
-- [x] Release notes prepared: `GITHUB-RELEASE-v8.0.0.md`
+- [x] Release notes prepared: `docs/archive/GITHUB-RELEASE-v8.0.0.md`
 - [x] Technical release completed: v8.0.0 (2026-05-04)
 - [x] Upload ZIP to GitHub Releases
 - [x] Publish GitHub Release publicly (2026-05-10)
@@ -32,7 +32,7 @@ The v8.0.0 tag was already created on 2026-05-04. Now we need to publish the pub
    - **Release title:** `🚀 PearBlog Engine v8.0.0 - Enterprise Edition`
 
 3. **Release Description:**
-   - Copy content from `GITHUB-RELEASE-v8.0.0.md`
+   - Copy content from `docs/archive/GITHUB-RELEASE-v8.0.0.md`
 
 4. **Upload Assets:**
    - Click **"Attach binaries by dropping them here or selecting them"**
@@ -51,7 +51,7 @@ The v8.0.0 tag was already created on 2026-05-04. Now we need to publish the pub
 # Create release with notes from file
 gh release create v8.0.0 \
   --title "🚀 PearBlog Engine v8.0.0 - Enterprise Edition" \
-  --notes-file GITHUB-RELEASE-v8.0.0.md \
+  --notes-file docs/archive/GITHUB-RELEASE-v8.0.0.md \
   releases/pearblog-engine-v8.0.0.zip
 ```
 
@@ -97,9 +97,9 @@ cp -r mu-plugins/pearblog-engine /path/to/wp-content/mu-plugins/
 
 ## 📚 Documentation
 
-- **[Complete Release Notes](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/GITHUB-RELEASE-v8.0.0.md)**
+- **[Complete Release Notes](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/docs/archive/GITHUB-RELEASE-v8.0.0.md)**
 - **[Test Results](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/TEST-RESULTS-v8.0.0.md)**
-- **[Post-Launch Summary](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/POST-LAUNCH-ACTIONS-SUMMARY.md)**
+- **[Post-Launch Summary](https://github.com/AndyPearman89/PearBlog-Engine-/blob/main/docs/archive/POST-LAUNCH-ACTIONS-SUMMARY.md)**
 
 ## 🎯 Requirements
 
@@ -171,9 +171,9 @@ After successful release:
 ## Related Files
 
 - `releases/pearblog-engine-v8.0.0.zip` - Plugin package (556KB)
-- `GITHUB-RELEASE-v8.0.0.md` - Full release notes
+- `docs/archive/GITHUB-RELEASE-v8.0.0.md` - Full release notes
 - `TEST-RESULTS-v8.0.0.md` - Test results summary
-- `POST-LAUNCH-ACTIONS-SUMMARY.md` - Post-launch checklist
+- `docs/archive/POST-LAUNCH-ACTIONS-SUMMARY.md` - Post-launch checklist
 - `LAUNCH-DAY-PLAN.md` - Hour-by-hour runbook
 - `PRE-LAUNCH-CHECKLIST.md` - Final verification checklist
 

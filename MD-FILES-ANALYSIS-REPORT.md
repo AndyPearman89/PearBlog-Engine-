@@ -41,11 +41,11 @@ Pliki zaktualizowane w poprzedniej sesji:
 | LAUNCH-DAY-PLAN.md | v7.0 → v8.0.0 | ✅ |
 | ROADMAP-VISUAL.md | v7.0 → v8.0.0 | ✅ |
 | PRE-LAUNCH-CHECKLIST.md | v6.0 → v8.0.0 | ✅ |
-| LAUNCH-READINESS-SUMMARY.md | v6.0 → v8.0.0 | ✅ |
+| docs/archive/LAUNCH-READINESS-SUMMARY.md | v6.0 → v8.0.0 | ✅ |
 | VERIFICATION-REPORT.md | v6.0 → v8.0.0 | ✅ |
 | GITHUB-RELEASE-INSTRUCTIONS.md | v6.0 → v8.0.0 | ✅ |
 | docs/PRE-LAUNCH-CHECKLIST.md | v7.0.0 → v8.0.0 | ✅ |
-| MAY-10-2026-LAUNCH-CHECKLIST.md | Utworzono nowy | ✅ |
+| docs/archive/MAY-10-2026-LAUNCH-CHECKLIST.md | Utworzono nowy | ✅ |
 
 ### 2. **Bieżąca Sesja (2026-05-05 - Teraz)**
 Pliki zaktualizowane w tej sesji:
@@ -88,9 +88,9 @@ Pliki zaktualizowane w tej sesji:
 **Linia:** 153 w BETA-TESTING-PROGRAM.md
 
 ### Problem 6: Historyczne Pliki z Starymi Wersjami ⚠️ CELOWO POZOSTAWIONE
-**Opis:** Pliki jak GITHUB-RELEASE-v7.0.0.md zawierają stare wersje
+**Opis:** Pliki jak docs/archive/GITHUB-RELEASE-v7.0.0.md zawierają stare wersje
 **Decyzja:** Pozostawiono celowo jako dokumentację historyczną
-**Przykłady:** GITHUB-RELEASE-v7.0.0.md, P0-COMPLETION-SUMMARY.md
+**Przykłady:** docs/archive/GITHUB-RELEASE-v7.0.0.md, docs/archive/P0-COMPLETION-SUMMARY.md
 
 ---
 
@@ -144,9 +144,9 @@ Pliki zaktualizowane w tej sesji:
 ### Pliki Celowo Pozostawione Bez Zmian
 
 #### 1. Dokumentacja Historyczna
-- `GITHUB-RELEASE-v7.0.0.md` - Historyczne notatki wydania
-- `P0-COMPLETION-SUMMARY.md` - Dokumentacja z czasem v6/v7
-- `P1-COMPLETION-SUMMARY.md` - Dokumentacja z czasem v6/v7
+- `docs/archive/GITHUB-RELEASE-v7.0.0.md` - Historyczne notatki wydania
+- `docs/archive/P0-COMPLETION-SUMMARY.md` - Dokumentacja z czasem v6/v7
+- `docs/archive/P1-COMPLETION-SUMMARY.md` - Dokumentacja z czasem v6/v7
 
 #### 2. Pliki Specyficzne dla Wdrożeń
 - `DEPLOYMENT-pt24-pro.md` - Może zawierać stare referencje kontekstowe
@@ -164,14 +164,14 @@ Pliki zaktualizowane w tej sesji:
 
 ### Natychmiastowe (Przed 10 maja 2026)
 1. ✅ **Zakończono:** Zaktualizowano kluczowe pliki do v8.0.0
-2. ✅ **Zakończono:** Przygotowano MAY-10-2026-LAUNCH-CHECKLIST.md
+2. ✅ **Zakończono:** Przygotowano docs/archive/MAY-10-2026-LAUNCH-CHECKLIST.md
 3. ⏳ **Zalecane:** Przegląd plików DEPLOYMENT-*.md dla klientów
 4. ⏳ **Opcjonalne:** Dodanie sekcji "Version History" w README.md
 
 ### Krótkoterminowe (Maj-Czerwiec 2026)
 1. Aktualizacja pozostałych plików DEPLOYMENT po uruchomieniu
 2. Archiwizacja dokumentów v6.0/v7.0 w folderze `/docs/archive/`
-3. Utworzenie GITHUB-RELEASE-v8.0.0.md jako wzorca
+3. Utworzenie docs/archive/GITHUB-RELEASE-v8.0.0.md jako wzorca
 4. Przegląd wszystkich linków wewnętrznych
 
 ### Długoterminowe (Q3 2026)
@@ -259,7 +259,7 @@ Pliki: 5 zaktualizowanych
 
 **Gotowość do uruchomienia:** 100%
 
-**Następne kroki:** Patrz MAY-10-2026-LAUNCH-CHECKLIST.md dla szczegółowego planu uruchomienia
+**Następne kroki:** Patrz docs/archive/MAY-10-2026-LAUNCH-CHECKLIST.md dla szczegółowego planu uruchomienia
 
 ---
 

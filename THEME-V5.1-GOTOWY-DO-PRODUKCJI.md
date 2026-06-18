@@ -229,7 +229,7 @@ Wszystkie funkcje Theme v5.1 zostały w pełni zaimplementowane i są gotowe do 
 | [THEME-V5.1-PRODUCTION-CHECKLIST.md](THEME-V5.1-PRODUCTION-CHECKLIST.md) | Pełna checklista wdrożenia (ang.) |
 | [theme/pearblog-theme/README.md](theme/pearblog-theme/README.md) | Dokumentacja tematu |
 | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | Ogólna checklista produkcyjna |
-| [LAUNCH-READINESS-FINAL.md](LAUNCH-READINESS-FINAL.md) | Gotowość do uruchomienia v7.0 |
+| [docs/archive/LAUNCH-READINESS-FINAL.md](docs/archive/LAUNCH-READINESS-FINAL.md) | Gotowość do uruchomienia v7.0 |
 
 ---
 

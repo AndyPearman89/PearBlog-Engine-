@@ -146,6 +146,7 @@ W repo jest szeroki zestaw dokumentów domenowych i produktowych:
 - **Enterprise / V8 / V9**: pliki `ENTERPRISE-*`, `FEATURED-PLAN-v9.0.md`, `README-ENTERPRISE-V8.md`, `CHANGELOG.md`.
 
 Dokumenty o charakterze historycznym/planującym pozostają jako archiwum decyzji i przebiegu wdrożeń.
+Punkt wejścia do archiwum: `docs/archive/README.md`.
 
 ---
 
@@ -181,4 +182,3 @@ Kolejność rekomendowana:
 
 Ten plik jest **nadrzędnym opisem całości** i mapą wejścia.
 Szczegółowe instrukcje znajdują się w wyspecjalizowanych plikach tematycznych.
-

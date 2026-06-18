@@ -13,12 +13,12 @@
 - [x] Deploy to staging and run full regression test ✅ (743/743 tests passing)
 - [x] Send "launching next week" teaser to newsletter subscribers ✅ (Draft ready: LAUNCH-ANNOUNCEMENT.md)
 - [x] Prepare social media posts (Twitter/X, LinkedIn, ProductHunt, HackerNews) ✅ (Templates in LAUNCH-ANNOUNCEMENT.md)
-- [x] Draft ProductHunt listing copy and screenshots ✅ (See GITHUB-RELEASE-v7.0.0.md)
+- [x] Draft ProductHunt listing copy and screenshots ✅ (See docs/archive/GITHUB-RELEASE-v7.0.0.md)
 - [x] Record demo video / screen recording for ProductHunt (Recommended for T-3)
 - [x] Brief beta testers; collect final feedback ✅
 - [x] Freeze feature development (no new features in release branch) ✅
 - [x] **Merge to `main` and create v7.0.0 tag** ✅ (Completed 2026-05-03)
-- [x] **Prepare GitHub Release notes** ✅ (GITHUB-RELEASE-v7.0.0.md created)
+- [x] **Prepare GitHub Release notes** ✅ (docs/archive/GITHUB-RELEASE-v7.0.0.md created)
 
 ---
 
@@ -59,7 +59,7 @@
 
 ### 10:00 UTC — 🚀 LAUNCH
 
-- [x] Publish GitHub Release (v8.0.0) — Use GITHUB-RELEASE-v8.0.0.md as template
+- [x] Publish GitHub Release (v8.0.0) — Use docs/archive/GITHUB-RELEASE-v8.0.0.md as template
 - [x] Announce on Twitter/X — Use LAUNCH-ANNOUNCEMENT.md for copy
 - [x] Announce on LinkedIn — Use LAUNCH-ANNOUNCEMENT.md for copy
 - [x] Announce on WordPress.org forum (if submitted)
