@@ -37,6 +37,7 @@ class AdminPageV8Enterprise {
 	private const MENU_SLUG  = 'pearblog-enterprise-v8';
 	private const OPTION_GRP = 'pearblog_enterprise_v8';
 	private const VERSION    = '8.0.0';
+	private ?PerformanceDashboard $performance_dashboard = null;
 
 	/**
 	 * All 15 tabs in Enterprise v8.0
@@ -1026,66 +1027,87 @@ class AdminPageV8Enterprise {
 		];
 
 		$event_table = $wpdb->prefix . 'pearblog_events';
-		$table_check = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $event_table ) );
+		$now_timestamp    = time();
+		$five_minutes_ago = wp_date( 'Y-m-d H:i:s', $now_timestamp - ( 5 * MINUTE_IN_SECONDS ) );
+		$one_hour_ago     = wp_date( 'Y-m-d H:i:s', $now_timestamp - HOUR_IN_SECONDS );
 
-		if ( $event_table === $table_check ) {
-			$now_timestamp   = (int) current_time( 'timestamp' );
-			$five_minutes_ago = wp_date( 'Y-m-d H:i:s', $now_timestamp - 300 );
-			$one_hour_ago     = wp_date( 'Y-m-d H:i:s', $now_timestamp - HOUR_IN_SECONDS );
-
-			$stats['visitors'] = (int) $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(DISTINCT session_id)
-					FROM {$event_table}
-					WHERE event_type = %s
-					AND created_at >= %s
-					AND session_id IS NOT NULL
-					AND session_id <> ''",
-					'view',
-					$five_minutes_ago
-				)
-			);
-
-			$stats['conversions'] = (int) $wpdb->get_var(
-				$wpdb->prepare(
-					"SELECT COUNT(*)
-					FROM {$event_table}
-					WHERE event_type = %s
-					AND created_at >= %s",
-					'lead',
-					$one_hour_ago
-				)
-			);
-
-			$revenue_rows = $wpdb->get_col(
-				$wpdb->prepare(
-					"SELECT event_data
-					FROM {$event_table}
-					WHERE event_type = %s
-					AND created_at >= %s",
-					'revenue',
-					$one_hour_ago
-				)
-			);
-
-			if ( is_array( $revenue_rows ) ) {
-				$revenue_total = 0.0;
-				foreach ( $revenue_rows as $event_data ) {
-					$decoded = json_decode( (string) $event_data, true );
-					if ( is_array( $decoded ) && isset( $decoded['amount'] ) ) {
-						$revenue_total += (float) $decoded['amount'];
-					}
-				}
-				$stats['revenue'] = round( $revenue_total, 2 );
-			}
+		$visitors = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(DISTINCT session_id)
+				FROM %i
+				WHERE event_type = %s
+				AND created_at >= %s
+				AND session_id IS NOT NULL
+				AND session_id <> ''",
+				$event_table,
+				'view',
+				$five_minutes_ago
+			)
+		);
+		if ( null !== $visitors ) {
+			$stats['visitors'] = (int) $visitors;
 		}
 
-		$summary = ( new PerformanceDashboard() )->get_summary();
-		if ( is_array( $summary ) && isset( $summary['error_rate_pct'] ) ) {
-			$stats['errors'] = (float) $summary['error_rate_pct'];
+		$conversions = $wpdb->get_var(
+			$wpdb->prepare(
+				"SELECT COUNT(*)
+				FROM %i
+				WHERE event_type = %s
+				AND created_at >= %s",
+				$event_table,
+				'lead',
+				$one_hour_ago
+			)
+		);
+		if ( null !== $conversions ) {
+			$stats['conversions'] = (int) $conversions;
+		}
+
+		$revenue_rows = $wpdb->get_col(
+			$wpdb->prepare(
+				"SELECT event_data
+				FROM %i
+				WHERE event_type = %s
+				AND created_at >= %s",
+				$event_table,
+				'revenue',
+				$one_hour_ago
+			)
+		);
+
+		if ( is_array( $revenue_rows ) ) {
+			$revenue_total = 0.0;
+			foreach ( $revenue_rows as $event_data ) {
+				$decoded = json_decode( (string) $event_data, true, 64 );
+				if (
+					JSON_ERROR_NONE === json_last_error()
+					&& is_array( $decoded )
+					&& isset( $decoded['amount'] )
+				) {
+					$revenue_total += (float) $decoded['amount'];
+				}
+			}
+			$stats['revenue'] = round( $revenue_total, 2 );
+		}
+
+		try {
+			$summary = $this->get_performance_dashboard()->get_summary();
+			if ( is_array( $summary ) && isset( $summary['error_rate_pct'] ) ) {
+				$stats['errors'] = (float) $summary['error_rate_pct'];
+			}
+		} catch ( \Throwable $e ) {
+			// Keep default error rate when summary is unavailable.
 		}
 
 		return $stats;
+	}
+
+	private function get_performance_dashboard(): PerformanceDashboard {
+		if ( null === $this->performance_dashboard ) {
+			$this->performance_dashboard = new PerformanceDashboard();
+		}
+
+		return $this->performance_dashboard;
 	}
 
 	/**
