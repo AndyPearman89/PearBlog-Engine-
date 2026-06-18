@@ -351,7 +351,7 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 
 if ( ! function_exists( 'current_user_can' ) ) {
 	function current_user_can( string $capability ): bool {
-		// Support both globals while preferring the explicit modern test flag.
+		// Support both globals and prefer the explicitly set capability flag.
 		if ( isset( $GLOBALS['_current_user_can'] ) ) {
 			return (bool) $GLOBALS['_current_user_can'];
 		}
