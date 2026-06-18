@@ -52,33 +52,44 @@ jobs:
           echo "sftp_port=$SFTP_PORT"   >> "$GITHUB_OUTPUT"
           echo "SFTP base path: $SERVER_DIR  port: $SFTP_PORT"
 
-      - name: Deploy mu-plugin via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          protocol: sftp
-          server: ${{ secrets.FTP_HOST }}
-          port: ${{ steps.sftpvars.outputs.sftp_port }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./mu-plugins/pearblog-engine/
-          server-dir: ${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/
-          dry-run: ${{ github.event.inputs.dry_run == 'true' }}
-          log-level: standard
-          dangerous-clean-slate: false
+      - name: Install rsync and sshpass
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rsync sshpass
 
-      - name: Deploy theme via SFTP
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          protocol: sftp
-          server: ${{ secrets.FTP_HOST }}
-          port: ${{ steps.sftpvars.outputs.sftp_port }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          local-dir: ./theme/pearblog-theme/
-          server-dir: ${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/
-          dry-run: ${{ github.event.inputs.dry_run == 'true' }}
-          log-level: standard
-          dangerous-clean-slate: false
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -T 10 -p "${{ steps.sftpvars.outputs.sftp_port }}" -H "${{ secrets.FTP_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo "::warning::ssh-keyscan returned no keys, adding StrictHostKeyChecking=accept-new"
+            printf 'Host *\n  StrictHostKeyChecking accept-new\n' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy mu-plugin via rsync over SSH
+        env:
+          SSHPASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          FLAGS="-avz --delete"
+          [[ "${{ github.event.inputs.dry_run }}" == "true" ]] && FLAGS="$FLAGS --dry-run"
+          sshpass -e rsync $FLAGS \
+            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o BatchMode=no" \
+            ./mu-plugins/pearblog-engine/ \
+            "${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
+
+      - name: Deploy theme via rsync over SSH
+        env:
+          SSHPASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          FLAGS="-avz --delete"
+          [[ "${{ github.event.inputs.dry_run }}" == "true" ]] && FLAGS="$FLAGS --dry-run"
+          sshpass -e rsync $FLAGS \
+            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o BatchMode=no" \
+            ./theme/pearblog-theme/ \
+            "${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/"
 
       - name: Deployment summary
         run: |
