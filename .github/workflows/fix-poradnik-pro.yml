@@ -1,0 +1,297 @@
+name: Fix poradnik.pro (Database & Full Repair)
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "What to fix"
+        required: true
+        type: choice
+        options:
+          - "diagnose"
+          - "repair-database"
+          - "full-redeploy"
+          - "enable-wp-repair"
+        default: "diagnose"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fix-poradnik-pro
+  cancel-in-progress: false
+
+jobs:
+  fix:
+    name: Fix poradnik.pro
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.PORADNIK_SSH_HOST || secrets.SSH_HOST || 'wordpress2614653.home.pl' }}
+      SSH_USER: ${{ secrets.PORADNIK_SSH_USER || secrets.SSH_USER || 'tutsoff' }}
+      SSH_PORT: ${{ secrets.PORADNIK_SSH_PORT || secrets.SSH_PORT || '222' }}
+      WEB_ROOT: ${{ secrets.PORADNIK_WEB_ROOT || secrets.WP_PATH || '/home/tutsoff/public_html/poradnik' }}
+      ACTION: ${{ github.event.inputs.action }}
+
+    steps:
+      - name: Resolve auth mode
+        id: auth
+        run: |
+          HAS_KEY=false
+          HAS_PASS=false
+          [[ -n "${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
+          [[ -n "${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}" ]] && HAS_PASS=true
+          echo "has_key=$HAS_KEY" >> "$GITHUB_OUTPUT"
+          echo "has_pass=$HAS_PASS" >> "$GITHUB_OUTPUT"
+          if [[ "$HAS_PASS" == true ]]; then
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+          elif [[ "$HAS_KEY" == true ]]; then
+            echo "mode=key" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD or PORADNIK_SSH_KEY."
+            exit 1
+          fi
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -T 10 -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo -e "Host *\n  StrictHostKeyChecking accept-new" >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Set up SSH agent (existing key)
+        if: steps.auth.outputs.mode == 'key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PORADNIK_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install sshpass (password mode)
+        if: steps.auth.outputs.mode == 'password'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+
+      - name: Configure rssh wrapper
+        env:
+          AUTH_MODE: ${{ steps.auth.outputs.mode }}
+          SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PORADNIK_SSH_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/bin"
+          if [[ "$AUTH_MODE" == "password" ]]; then
+            umask 077
+            printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.poradnik_pass"
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec sshpass -f "$HOME/.ssh/.poradnik_pass" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no "$@"' \
+              > "$HOME/bin/rssh"
+          else
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec ssh -o BatchMode=yes "$@"' \
+              > "$HOME/bin/rssh"
+          fi
+          chmod +x "$HOME/bin/rssh"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Sanity check SSH
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" "echo CONNECTED && hostname"
+
+      - name: Diagnose
+        if: env.ACTION == 'diagnose'
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            WEB_ROOT="$WEB_ROOT" bash -se <<'REMOTE'
+          set -euo pipefail
+          echo "====== PORADNIK.PRO DIAGNOSTICS ======"
+          echo ""
+          echo "==> 1. Check wp-config.php exists"
+          if [[ -f "$WEB_ROOT/wp-config.php" ]]; then
+            echo "OK: wp-config.php found"
+          else
+            echo "ERROR: wp-config.php NOT FOUND at $WEB_ROOT/wp-config.php"
+            exit 1
+          fi
+
+          echo ""
+          echo "==> 2. Database credentials from wp-config"
+          grep -E "^define\(\s*'DB_(NAME|USER|HOST)" "$WEB_ROOT/wp-config.php" | sed "s/define.*'DB_/DB_/;s/'.*'/ = /;s/',.*//;s/'//"
+
+          echo ""
+          echo "==> 3. Test MySQL connection"
+          cd "$WEB_ROOT"
+          DB_NAME=$(php -r "define('ABSPATH','./'); include 'wp-config.php'; echo DB_NAME;" 2>/dev/null || grep "DB_NAME" wp-config.php | cut -d"'" -f4)
+          DB_USER=$(php -r "define('ABSPATH','./'); include 'wp-config.php'; echo DB_USER;" 2>/dev/null || grep "DB_USER" wp-config.php | cut -d"'" -f4)
+          DB_PASS=$(php -r "define('ABSPATH','./'); include 'wp-config.php'; echo DB_PASSWORD;" 2>/dev/null || grep "DB_PASSWORD" wp-config.php | cut -d"'" -f4)
+          DB_HOST=$(php -r "define('ABSPATH','./'); include 'wp-config.php'; echo DB_HOST;" 2>/dev/null || grep "DB_HOST" wp-config.php | cut -d"'" -f4)
+
+          if mysql -u"$DB_USER" -p"$DB_PASS" -h"$DB_HOST" "$DB_NAME" -e "SELECT 1;" 2>&1; then
+            echo "OK: MySQL connection successful"
+          else
+            echo "ERROR: Cannot connect to MySQL"
+            echo "Trying to connect without specifying database..."
+            mysql -u"$DB_USER" -p"$DB_PASS" -h"$DB_HOST" -e "SHOW DATABASES;" 2>&1 || echo "FAILED: Cannot connect at all"
+          fi
+
+          echo ""
+          echo "==> 4. Check WordPress tables"
+          TABLE_COUNT=$(mysql -u"$DB_USER" -p"$DB_PASS" -h"$DB_HOST" "$DB_NAME" -N -e "SHOW TABLES;" 2>/dev/null | wc -l || echo "0")
+          echo "Tables found: $TABLE_COUNT"
+
+          echo ""
+          echo "==> 5. Check PHP version"
+          php -v | head -1
+
+          echo ""
+          echo "==> 6. Check WP-CLI"
+          if command -v wp >/dev/null 2>&1; then
+            echo "WP-CLI available"
+            cd "$WEB_ROOT"
+            wp db check --allow-root 2>&1 | head -20 || true
+          else
+            echo "WP-CLI not available"
+          fi
+
+          echo ""
+          echo "==> 7. Check .htaccess"
+          if [[ -f "$WEB_ROOT/.htaccess" ]]; then
+            echo "OK: .htaccess exists ($(wc -l < "$WEB_ROOT/.htaccess") lines)"
+          else
+            echo "WARNING: .htaccess missing"
+          fi
+
+          echo ""
+          echo "==> 8. Check disk space"
+          df -h "$WEB_ROOT" | tail -1
+
+          echo ""
+          echo "==> 9. HTTP test"
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" "http://localhost/poradnik/" 2>/dev/null || echo "FAILED")
+          echo "Local HTTP status: $HTTP_CODE"
+
+          echo ""
+          echo "====== END DIAGNOSTICS ======"
+          REMOTE
+
+      - name: Repair database
+        if: env.ACTION == 'repair-database'
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            WEB_ROOT="$WEB_ROOT" bash -se <<'REMOTE'
+          set -euo pipefail
+          cd "$WEB_ROOT"
+          echo "==> Attempting database repair..."
+
+          if command -v wp >/dev/null 2>&1; then
+            echo "==> Using WP-CLI"
+            wp db repair --allow-root 2>&1 || true
+            wp db check --allow-root 2>&1 || true
+            wp cache flush --allow-root 2>&1 || true
+            echo ""
+            echo "==> Checking site URL"
+            wp option get siteurl --allow-root 2>&1 || echo "FAILED to get siteurl"
+            wp option get home --allow-root 2>&1 || echo "FAILED to get home"
+          else
+            echo "==> WP-CLI not found, using mysqlcheck"
+            DB_NAME=$(grep "DB_NAME" wp-config.php | cut -d"'" -f4)
+            DB_USER=$(grep "DB_USER" wp-config.php | cut -d"'" -f4)
+            DB_PASS=$(grep "DB_PASSWORD" wp-config.php | cut -d"'" -f4)
+            DB_HOST=$(grep "DB_HOST" wp-config.php | cut -d"'" -f4)
+            mysqlcheck -u"$DB_USER" -p"$DB_PASS" -h"$DB_HOST" --repair "$DB_NAME" 2>&1 || true
+            mysqlcheck -u"$DB_USER" -p"$DB_PASS" -h"$DB_HOST" --optimize "$DB_NAME" 2>&1 || true
+          fi
+          echo "==> Done"
+          REMOTE
+
+      - name: Enable WP repair mode
+        if: env.ACTION == 'enable-wp-repair'
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            WEB_ROOT="$WEB_ROOT" bash -se <<'REMOTE'
+          set -euo pipefail
+          CONFIG="$WEB_ROOT/wp-config.php"
+
+          if grep -q "WP_ALLOW_REPAIR" "$CONFIG"; then
+            echo "WP_ALLOW_REPAIR already present in wp-config.php"
+          else
+            echo "==> Adding WP_ALLOW_REPAIR to wp-config.php"
+            # Insert before wp-settings.php require
+            sed -i "/require_once.*wp-settings/i define('WP_ALLOW_REPAIR', true); // Added by fix workflow - REMOVE AFTER USE" "$CONFIG"
+            echo "Done. Visit: https://poradnik.pro/wp-admin/maint/repair.php"
+            echo ""
+            echo "⚠️  IMPORTANT: Remove this line after repair is complete!"
+          fi
+          REMOTE
+
+      - name: Checkout code
+        if: env.ACTION == 'full-redeploy'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Full redeploy
+        if: env.ACTION == 'full-redeploy'
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            WEB_ROOT="$WEB_ROOT" bash -se <<'REMOTE'
+          set -euo pipefail
+          echo "==> Full redeploy of poradnik.pro"
+
+          REPO_DIR=/tmp/PearBlog-Engine-
+          REPO_URL=https://github.com/AndyPearman89/PearBlog-Engine-.git
+          THEME_PATH="$WEB_ROOT/wp-content/themes/pearblog-theme"
+          MUPLUGIN_PATH="$WEB_ROOT/wp-content/mu-plugins/pearblog-engine"
+
+          # Clone/update repo
+          if [[ ! -d "$REPO_DIR/.git" ]]; then
+            rm -rf "$REPO_DIR"
+            git clone "$REPO_URL" "$REPO_DIR"
+          fi
+          cd "$REPO_DIR"
+          git fetch origin --prune
+          git checkout main
+          git reset --hard origin/main
+
+          # Backup
+          TS=$(date +%Y%m%d-%H%M%S)
+          echo "==> Backing up current files"
+          if [[ -f "$THEME_PATH/functions.php" ]]; then
+            cp "$THEME_PATH/functions.php" "$THEME_PATH/functions.php.backup.$TS"
+          fi
+
+          # Deploy theme
+          echo "==> Deploying theme"
+          mkdir -p "$THEME_PATH"
+          rsync -a --delete \
+            --exclude='*.backup.*' \
+            theme/pearblog-theme/ "$THEME_PATH/"
+
+          # Deploy mu-plugin
+          echo "==> Deploying mu-plugin"
+          mkdir -p "$MUPLUGIN_PATH"
+          rsync -a --delete \
+            --exclude='tests/' \
+            --exclude='vendor/' \
+            mu-plugins/pearblog-engine/ "$MUPLUGIN_PATH/"
+
+          # Fix permissions
+          echo "==> Setting permissions"
+          find "$THEME_PATH" -type d -exec chmod 755 {} \;
+          find "$THEME_PATH" -type f -exec chmod 644 {} \;
+          find "$MUPLUGIN_PATH" -type d -exec chmod 755 {} \;
+          find "$MUPLUGIN_PATH" -type f -exec chmod 644 {} \;
+
+          # Flush cache
+          echo "==> Flushing cache"
+          cd "$WEB_ROOT"
+          if command -v wp >/dev/null 2>&1; then
+            wp cache flush --allow-root || true
+            wp rewrite flush --allow-root || true
+          fi
+
+          echo "==> Full redeploy complete!"
+          REMOTE
