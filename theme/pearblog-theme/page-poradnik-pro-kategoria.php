@@ -1,10 +1,53 @@
+<?php
+$escape = static function ($value) {
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+};
+
+$fallbackCities = [
+    'warszawa' => 'Warszawa',
+    'krakow' => 'Kraków',
+    'wroclaw' => 'Wrocław',
+    'poznan' => 'Poznań',
+    'gdansk' => 'Gdańsk',
+    'katowice' => 'Katowice',
+    'lodz' => 'Łódź',
+    'szczecin' => 'Szczecin',
+    'lublin' => 'Lublin',
+    'bydgoszcz' => 'Bydgoszcz',
+];
+$cities = $fallbackCities;
+
+$categorySlug = 'prawo';
+$categoryName = 'Prawo';
+
+if (class_exists('PearBlog_Poradnik_Pro_Routing')) {
+    $detectedCategorySlug = PearBlog_Poradnik_Pro_Routing::get_current_category();
+    if (!empty($detectedCategorySlug)) {
+        $categorySlug = $detectedCategorySlug;
+    }
+
+    $categoryName = PearBlog_Poradnik_Pro_Routing::get_category_name($categorySlug);
+    if ($categoryName === '') {
+        $categoryName = ucfirst(str_replace('-', ' ', $categorySlug));
+    }
+    $cities = PearBlog_Poradnik_Pro_Routing::get_cities();
+}
+
+$cityCategoryLinks = [];
+foreach ($cities as $citySlug => $cityName) {
+    $cityCategoryLinks[] = [
+        'name' => $cityName,
+        'url' => '/' . rawurlencode($citySlug) . '/' . rawurlencode($categorySlug) . '/',
+    ];
+}
+?>
 <!DOCTYPE html>
 <html lang="pl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Prawo – Poradnik.pro</title>
-    <meta name="description" content="Kategoria Prawo na Poradnik.pro: praktyczne poradniki, pytania i odpowiedzi ekspertów, rankingi i najlepsi specjaliści.">
+    <title><?php echo $escape($categoryName); ?> – Poradnik.pro</title>
+    <meta name="description" content="Kategoria <?php echo $escape($categoryName); ?> na Poradnik.pro: praktyczne poradniki, pytania i odpowiedzi ekspertów, rankingi i najlepsi specjaliści.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -534,11 +577,11 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <div class="hero-label">Kategoria / Prawo</div>
-                <h1>Prawo</h1>
+                <div class="hero-label">Kategoria / <?php echo $escape($categoryName); ?></div>
+                <h1><?php echo $escape($categoryName); ?></h1>
                 <p>Praktyczna wiedza, odpowiedzi ekspertów i najlepsi specjaliści w jednym miejscu.</p>
             </div>
-            <div class="stats-row" aria-label="Statystyki kategorii Prawo">
+            <div class="stats-row" aria-label="Statystyki kategorii <?php echo $escape($categoryName); ?>">
                 <div class="stat-card">
                     <span class="stat-value">2 430</span>
                     <span class="stat-label">poradników</span>
@@ -567,7 +610,7 @@
                         <div>
                             <h2 id="popularne-poradniki">Popularne poradniki</h2>
                         </div>
-                        <p>Najczęściej czytane materiały z kategorii prawo — od spraw spadkowych po umowy i rozwody.</p>
+                        <p>Najczęściej czytane materiały z kategorii <?php echo $escape($categoryName); ?> — praktyczne poradniki, odpowiedzi ekspertów i rankingi.</p>
                     </div>
                     <div class="list-grid">
                         <a href="#" class="list-item">
@@ -724,6 +767,20 @@
                         <a href="#" class="tag-link">Kancelarie od prawa pracy Poznań</a>
                         <a href="#" class="tag-link">Najlepsze kancelarie nieruchomości Gdańsk</a>
                         <a href="#" class="tag-link">Adwokaci od odszkodowań Łódź</a>
+                    </div>
+                </section>
+
+                <section class="section-card" aria-labelledby="miasta-w-kategorii">
+                    <div class="section-header">
+                        <div>
+                            <h2 id="miasta-w-kategorii">Miasta w kategorii <?php echo $escape($categoryName); ?></h2>
+                        </div>
+                        <p>Przejdź do landingów tej kategorii w konkretnych miastach.</p>
+                    </div>
+                    <div class="tag-list">
+                        <?php foreach ($cityCategoryLinks as $cityCategoryLink) : ?>
+                            <a href="<?php echo $escape($cityCategoryLink['url']); ?>" class="tag-link"><?php echo $escape($cityCategoryLink['name']); ?></a>
+                        <?php endforeach; ?>
                     </div>
                 </section>
 

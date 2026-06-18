@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for AIVariantGenerator.
+ * Unit tests for AIVariantGenerator (V9.0 F3).
  *
  * @package PearBlogEngine\Tests\Unit
  */
@@ -14,183 +14,131 @@ use PearBlogEngine\Testing\AIVariantGenerator;
 
 class AIVariantGeneratorTest extends TestCase {
 
-	private AIVariantGenerator $gen;
+	// -----------------------------------------------------------------------
+	// build_prompt
+	// -----------------------------------------------------------------------
 
-	protected function setUp(): void {
-		parent::setUp();
-		$GLOBALS['_post_meta'] = [];
-		$GLOBALS['_options']   = [];
-		$GLOBALS['_posts']     = [];
-		$this->gen             = new AIVariantGenerator();
+	public function test_build_prompt_contains_original_text(): void {
+		$gen    = new AIVariantGenerator();
+		$prompt = $gen->build_prompt( 'post_title', 'Best Laptops 2026', 3 );
+		$this->assertStringContainsString( 'Best Laptops 2026', $prompt );
+	}
+
+	public function test_build_prompt_requests_correct_count(): void {
+		$gen    = new AIVariantGenerator();
+		$prompt = $gen->build_prompt( 'post_title', 'My Title', 5 );
+		$this->assertStringContainsString( '5', $prompt );
+	}
+
+	public function test_build_prompt_uses_article_headline_for_post_title(): void {
+		$gen    = new AIVariantGenerator();
+		$prompt = $gen->build_prompt( 'post_title', 'Test', 1 );
+		$this->assertStringContainsString( 'headline', $prompt );
+	}
+
+	public function test_build_prompt_uses_cta_label(): void {
+		$gen    = new AIVariantGenerator();
+		$prompt = $gen->build_prompt( 'cta_text', 'Sign Up Now', 2 );
+		$this->assertStringContainsString( 'call-to-action', $prompt );
+	}
+
+	public function test_build_prompt_uses_meta_description_label(): void {
+		$gen    = new AIVariantGenerator();
+		$prompt = $gen->build_prompt( 'meta_description', 'About us page.', 2 );
+		$this->assertStringContainsString( 'meta description', $prompt );
+	}
+
+	public function test_build_prompt_handles_unknown_field_type(): void {
+		$gen    = new AIVariantGenerator();
+		$prompt = $gen->build_prompt( 'unknown_field', 'Value', 1 );
+		$this->assertStringContainsString( 'Value', $prompt );
 	}
 
 	// -----------------------------------------------------------------------
-	// generate() — type validation
+	// parse_variants
 	// -----------------------------------------------------------------------
 
-	public function test_generate_defaults_to_headline_for_unknown_type(): void {
-		$result = $this->gen->generate( 1, 'unknown_type', 2, false );
-
-		$this->assertSame( AIVariantGenerator::TYPE_HEADLINE, $result['type'] );
+	public function test_parse_variants_strips_numbered_prefixes(): void {
+		$gen  = new AIVariantGenerator();
+		$raw  = "1. First variant\n2. Second variant\n3. Third variant";
+		$vars = $gen->parse_variants( $raw, 3 );
+		$this->assertCount( 3, $vars );
+		$this->assertSame( 'First variant', $vars[0] );
+		$this->assertSame( 'Second variant', $vars[1] );
+		$this->assertSame( 'Third variant', $vars[2] );
 	}
 
-	public function test_generate_returns_correct_structure(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_HEADLINE, 2, false );
-
-		$this->assertSame( 1, $result['post_id'] );
-		$this->assertSame( AIVariantGenerator::TYPE_HEADLINE, $result['type'] );
-		$this->assertArrayHasKey( 'original', $result );
-		$this->assertArrayHasKey( 'variants', $result );
-		$this->assertArrayHasKey( 'generated_at', $result );
-		$this->assertArrayHasKey( 'source', $result );
-		$this->assertIsArray( $result['variants'] );
+	public function test_parse_variants_strips_bullet_prefixes(): void {
+		$gen  = new AIVariantGenerator();
+		$raw  = "- Option A\n- Option B";
+		$vars = $gen->parse_variants( $raw, 2 );
+		$this->assertCount( 2, $vars );
+		$this->assertSame( 'Option A', $vars[0] );
 	}
 
-	// -----------------------------------------------------------------------
-	// Headline variants
-	// -----------------------------------------------------------------------
-
-	public function test_generate_headline_count_respected(): void {
-		$result = $this->gen->generate( 42, AIVariantGenerator::TYPE_HEADLINE, 3, false );
-
-		$this->assertCount( 3, $result['variants'] );
+	public function test_parse_variants_skips_empty_lines(): void {
+		$gen  = new AIVariantGenerator();
+		$raw  = "1. First\n\n\n2. Second";
+		$vars = $gen->parse_variants( $raw, 2 );
+		$this->assertCount( 2, $vars );
 	}
 
-	public function test_generate_headline_count_capped_at_max(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_HEADLINE, 999, false );
-
-		$this->assertLessThanOrEqual( AIVariantGenerator::MAX_VARIANTS, count( $result['variants'] ) );
+	public function test_parse_variants_trims_to_count(): void {
+		$gen  = new AIVariantGenerator();
+		$raw  = "1. A\n2. B\n3. C\n4. D\n5. E";
+		$vars = $gen->parse_variants( $raw, 3 );
+		$this->assertCount( 3, $vars );
 	}
 
-	public function test_generate_headline_count_min_one(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_HEADLINE, 0, false );
-
-		$this->assertCount( 1, $result['variants'] );
-	}
-
-	public function test_headline_variants_are_strings(): void {
-		$result = $this->gen->generate( 5, AIVariantGenerator::TYPE_HEADLINE, 5, false );
-
-		foreach ( $result['variants'] as $v ) {
-			$this->assertIsString( $v );
-			$this->assertNotEmpty( $v );
-		}
+	public function test_parse_variants_returns_empty_for_empty_raw(): void {
+		$gen  = new AIVariantGenerator();
+		$vars = $gen->parse_variants( '', 3 );
+		$this->assertSame( [], $vars );
 	}
 
 	// -----------------------------------------------------------------------
-	// CTA variants
+	// generate (using injected caller)
 	// -----------------------------------------------------------------------
 
-	public function test_generate_cta_returns_pool_items(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_CTA, 4, false );
-
-		$this->assertCount( 4, $result['variants'] );
-		foreach ( $result['variants'] as $v ) {
-			$this->assertIsString( $v );
-		}
+	public function test_generate_calls_injected_ai_caller(): void {
+		$called = false;
+		$gen    = new AIVariantGenerator( static function ( string $model, string $prompt ) use ( &$called ): string {
+			$called = true;
+			return "1. Var A\n2. Var B\n3. Var C";
+		} );
+		$vars = $gen->generate( 'post_title', 'Test Title', 3 );
+		$this->assertTrue( $called );
+		$this->assertCount( 3, $vars );
 	}
 
-	public function test_generate_cta_original_is_read_more(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_CTA, 1, false );
-
-		$this->assertSame( 'Read More', $result['original'] );
+	public function test_generate_clamps_count_to_max(): void {
+		$gen  = new AIVariantGenerator( static function ( string $m, string $p ): string {
+			return implode( "\n", array_map( static fn( int $i ) => "{$i}. Var {$i}", range( 1, 10 ) ) );
+		} );
+		$vars = $gen->generate( 'post_title', 'Title', AIVariantGenerator::MAX_VARIANTS + 5 );
+		$this->assertCount( AIVariantGenerator::MAX_VARIANTS, $vars );
 	}
 
-	// -----------------------------------------------------------------------
-	// Meta variants
-	// -----------------------------------------------------------------------
-
-	public function test_generate_meta_appends_suffix(): void {
-		$GLOBALS['_post_meta'][10]['_yoast_wpseo_metadesc'] = [ 'Best practices for SEO' ];
-		$result = $this->gen->generate( 10, AIVariantGenerator::TYPE_META, 2, false );
-
-		$this->assertCount( 2, $result['variants'] );
-		foreach ( $result['variants'] as $v ) {
-			$this->assertStringContainsString( 'Best practices for SEO', $v );
-		}
+	public function test_generate_returns_empty_when_ai_returns_empty(): void {
+		$gen  = new AIVariantGenerator( static fn() => '' );
+		$vars = $gen->generate( 'post_title', 'Any Title', 3 );
+		$this->assertSame( [], $vars );
 	}
 
-	// -----------------------------------------------------------------------
-	// Intro variants
-	// -----------------------------------------------------------------------
-
-	public function test_generate_intro_returns_sentence_openers(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_INTRO, 3, false );
-
-		$this->assertCount( 3, $result['variants'] );
-		foreach ( $result['variants'] as $v ) {
-			$this->assertIsString( $v );
-			$this->assertNotEmpty( $v );
-		}
+	public function test_generate_minimum_count_is_one(): void {
+		$gen  = new AIVariantGenerator( static fn() => '1. Only one' );
+		$vars = $gen->generate( 'post_title', 'Title', -5 );
+		$this->assertCount( 1, $vars );
 	}
 
-	// -----------------------------------------------------------------------
-	// generate_all()
-	// -----------------------------------------------------------------------
-
-	public function test_generate_all_covers_all_types(): void {
-		$results = $this->gen->generate_all( 1, 2 );
-
-		$this->assertArrayHasKey( AIVariantGenerator::TYPE_HEADLINE, $results );
-		$this->assertArrayHasKey( AIVariantGenerator::TYPE_CTA, $results );
-		$this->assertArrayHasKey( AIVariantGenerator::TYPE_META, $results );
-		$this->assertArrayHasKey( AIVariantGenerator::TYPE_INTRO, $results );
-	}
-
-	// -----------------------------------------------------------------------
-	// Cache
-	// -----------------------------------------------------------------------
-
-	public function test_cache_is_stored_and_returned(): void {
-		// First call: populate cache.
-		$first = $this->gen->generate( 99, AIVariantGenerator::TYPE_HEADLINE, 2, true );
-
-		// Second call: should hit cache.
-		$second = $this->gen->generate( 99, AIVariantGenerator::TYPE_HEADLINE, 2, true );
-
-		$this->assertSame( $first['variants'], $second['variants'] );
-	}
-
-	public function test_cache_miss_when_more_variants_requested(): void {
-		// Populate cache with 2 variants.
-		$this->gen->generate( 99, AIVariantGenerator::TYPE_HEADLINE, 2, true );
-
-		// Request 5 — should bypass cache (insufficient cached count) and regenerate.
-		$result = $this->gen->generate( 99, AIVariantGenerator::TYPE_HEADLINE, 5, true );
-
-		$this->assertCount( 5, $result['variants'] );
-	}
-
-	public function test_clear_cache_removes_cached_variants(): void {
-		$this->gen->generate( 99, AIVariantGenerator::TYPE_HEADLINE, 2, true );
-		$this->gen->clear_cache( 99, AIVariantGenerator::TYPE_HEADLINE );
-
-		// Meta should be empty now.
-		$raw = get_post_meta( 99, '_pearblog_ab_variants', true );
-		$decoded = json_decode( (string) $raw, true );
-
-		$this->assertFalse( isset( $decoded[ AIVariantGenerator::TYPE_HEADLINE ] ) );
-	}
-
-	public function test_clear_all_cache_removes_all_types(): void {
-		$this->gen->generate_all( 77, 2 );
-		$this->gen->clear_cache( 77 );
-
-		$raw = get_post_meta( 77, '_pearblog_ab_variants', true );
-		$this->assertSame( '', (string) $raw );
-	}
-
-	// -----------------------------------------------------------------------
-	// AI enabled flag
-	// -----------------------------------------------------------------------
-
-	public function test_ai_disabled_by_default(): void {
-		$this->assertFalse( $this->gen->is_ai_enabled() );
-	}
-
-	public function test_source_is_template_when_ai_disabled(): void {
-		$result = $this->gen->generate( 1, AIVariantGenerator::TYPE_HEADLINE, 1, false );
-
-		$this->assertSame( 'template', $result['source'] );
+	public function test_generate_passes_model_option_to_caller(): void {
+		$GLOBALS['_options'][ AIVariantGenerator::OPTION_MODEL ] = 'gpt-4o';
+		$capturedModel = '';
+		$gen = new AIVariantGenerator( static function ( string $model, string $p ) use ( &$capturedModel ): string {
+			$capturedModel = $model;
+			return '1. Var';
+		} );
+		$gen->generate( 'post_title', 'Title', 1 );
+		$this->assertSame( 'gpt-4o', $capturedModel );
 	}
 }

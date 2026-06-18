@@ -1,0 +1,102 @@
+name: Deploy via SFTP
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mu-plugins/**'
+      - 'theme/**'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (preview changes without uploading)'
+        required: false
+        default: 'false'
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-sftp:
+    name: Deploy plugin & theme via SFTP
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve SFTP configuration
+        id: sftpvars
+        run: |
+          MISSING=()
+          [[ -z "${{ secrets.FTP_HOST }}" ]]     && MISSING+=("FTP_HOST")
+          [[ -z "${{ secrets.FTP_USERNAME }}" ]] && MISSING+=("FTP_USERNAME")
+          [[ -z "${{ secrets.FTP_PASSWORD }}" ]] && MISSING+=("FTP_PASSWORD")
+          if [[ ${#MISSING[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${MISSING[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions:"
+            echo "  FTP_HOST       – SFTP server hostname (e.g. wordpress2614653.home.pl)"
+            echo "  FTP_USERNAME   – SFTP account username"
+            echo "  FTP_PASSWORD   – SFTP account password"
+            echo "  FTP_PORT       – (optional) SSH/SFTP port; defaults to 22"
+            echo "  FTP_SERVER_DIR – (optional) override base path; defaults to /poradnik/wp-content"
+            exit 1
+          fi
+          # Default WordPress base: /poradnik/wp-content
+          SERVER_DIR="${{ secrets.FTP_SERVER_DIR }}"
+          SERVER_DIR="${SERVER_DIR:-/poradnik/wp-content}"
+          SFTP_PORT="${{ secrets.FTP_PORT }}"
+          SFTP_PORT="${SFTP_PORT:-22}"
+          echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
+          echo "sftp_port=$SFTP_PORT"   >> "$GITHUB_OUTPUT"
+          echo "SFTP base path: $SERVER_DIR  port: $SFTP_PORT"
+
+      - name: Install rsync and sshpass
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq rsync sshpass
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+          ssh-keyscan -T 10 -p "${{ steps.sftpvars.outputs.sftp_port }}" -H "${{ secrets.FTP_HOST }}" >> ~/.ssh/known_hosts 2>/dev/null || true
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo "::warning::ssh-keyscan returned no keys, adding StrictHostKeyChecking=accept-new"
+            printf 'Host *\n  StrictHostKeyChecking accept-new\n' >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Deploy mu-plugin via rsync over SSH
+        env:
+          SSHPASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          FLAGS="-avz --delete"
+          [[ "${{ github.event.inputs.dry_run }}" == "true" ]] && FLAGS="$FLAGS --dry-run"
+          sshpass -e rsync $FLAGS \
+            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o BatchMode=no" \
+            ./mu-plugins/pearblog-engine/ \
+            "${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
+
+      - name: Deploy theme via rsync over SSH
+        env:
+          SSHPASS: ${{ secrets.FTP_PASSWORD }}
+        run: |
+          FLAGS="-avz --delete"
+          [[ "${{ github.event.inputs.dry_run }}" == "true" ]] && FLAGS="$FLAGS --dry-run"
+          sshpass -e rsync $FLAGS \
+            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o BatchMode=no" \
+            ./theme/pearblog-theme/ \
+            "${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/"
+
+      - name: Deployment summary
+        run: |
+          echo "✅ SFTP deploy complete"
+          echo "   Plugin : ${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
+          echo "   Theme  : ${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/"
+          echo "   Server : ${{ secrets.FTP_HOST }}  port: ${{ steps.sftpvars.outputs.sftp_port }}"
+          if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
+            echo "   ⚠️  Dry-run mode – no files were uploaded"
+          fi

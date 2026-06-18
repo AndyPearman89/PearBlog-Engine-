@@ -29,11 +29,11 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 2. SSH_USER
 - **Description:** SSH username for server access
-- **Value for poradnik.pro:** `wordpress2614653`
+- **Value for poradnik.pro:** `tutsoff`
 - **Required for:** SSH authentication
 - **Example:**
   ```
-  wordpress2614653
+  tutsoff
   ```
 
 ### 3. SSH_PRIVATE_KEY
@@ -45,7 +45,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ssh-keygen -t ed25519 -C "deploy-poradnik-pro" -f ~/.ssh/poradnik_deploy
 
   # Copy public key to server:
-  ssh-copy-id -p 222 -i ~/.ssh/poradnik_deploy.pub wordpress2614653@wordpress2614653.home.pl
+  ssh-copy-id -p 222 -i ~/.ssh/poradnik_deploy.pub tutsoff@wordpress2614653.home.pl
 
   # Display private key (copy this to GitHub Secret):
   cat ~/.ssh/poradnik_deploy
@@ -61,11 +61,11 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 4. WP_PATH
 - **Description:** Absolute path to WordPress installation on server
-- **Value for poradnik.pro:** `/home/wordpress2614653/domains/poradnik.pro/public_html`
+- **Value for poradnik.pro:** `/home/tutsoff/public_html/poradnik`
 - **Required for:** Determining where to deploy files
 - **Example:**
   ```
-  /home/wordpress2614653/domains/poradnik.pro/public_html
+  /home/tutsoff/public_html/poradnik
   ```
 
 ### 5. SSH_PORT (Optional)
@@ -184,6 +184,62 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ---
 
+## Cloudflare Secrets (for poradnik.pro CDN & Cache)
+
+### 19. CF_ZONE_ID
+- **Description:** Cloudflare Zone ID for poradnik.pro
+- **Required for:** Cache purge after deployment
+- **Where to find:** Cloudflare Dashboard → poradnik.pro → Overview → right sidebar → Zone ID
+- **Example:**
+  ```
+  a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6
+  ```
+
+### 20. CF_API_TOKEN_CACHE
+- **Description:** Cloudflare API Token with Cache Purge permission
+- **Required for:** Automatic cache purge after deploy
+- **How to create:**
+  1. Visit: https://dash.cloudflare.com/profile/api-tokens
+  2. Create Token → Custom Token
+  3. Permissions: Zone → Cache Purge → Edit
+  4. Zone Resources: Include → Specific zone → poradnik.pro
+- **Example:**
+  ```
+  ABCdefGHI123jklMNO456pqrSTU789vwx
+  ```
+
+### 21. CF_ACCOUNT_ID
+- **Description:** Cloudflare Account ID (for Cloudflare Images)
+- **Required for:** Image CDN offloading via CdnManager
+- **Where to find:** Cloudflare Dashboard → right sidebar → Account ID
+- **Example:**
+  ```
+  1234567890abcdef1234567890abcdef
+  ```
+
+### 22. CF_IMAGES_API_TOKEN
+- **Description:** Cloudflare API Token with Images permission
+- **Required for:** Uploading/managing images via Cloudflare Images API
+- **How to create:**
+  1. Visit: https://dash.cloudflare.com/profile/api-tokens
+  2. Create Token → Custom Token
+  3. Permissions: Account → Cloudflare Images → Edit
+- **Example:**
+  ```
+  XYZ987wvu654tsr321qpo098nml765kji
+  ```
+
+### 23. CF_IMAGES_DELIVERY_URL
+- **Description:** Cloudflare Images delivery URL
+- **Required for:** Serving optimized images from Cloudflare edge
+- **Where to find:** Cloudflare Dashboard → Images → Delivery URL
+- **Example:**
+  ```
+  https://imagedelivery.net/AbCdEfGhIjKlMnOpQrStUv
+  ```
+
+---
+
 ## Email Provider Secrets (Optional)
 
 ### 14. MAILCHIMP_API_KEY (Optional)
@@ -238,10 +294,10 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ### Minimum Required Secrets (Core Deployment)
 
 ```
-✓ SSH_HOST            = 204.48.27.118
-✓ SSH_USER            = root
+✓ SSH_HOST            = wordpress2614653.home.pl
+✓ SSH_USER            = tutsoff
 ✓ SSH_PRIVATE_KEY     = [SSH private key content]
-✓ WP_PATH             = /var/www/poradnik.pro
+✓ WP_PATH             = /home/tutsoff/public_html/poradnik
 ✓ ROOT_PASSWORD       = [MySQL root password]
 ✓ OPENAI_API_KEY      = sk-proj-...
 ```
@@ -253,6 +309,16 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ✓ API_KEY             = [Generated API key]
 ✓ HEALTH_SECRET       = [Generated health secret]
 ✓ SLACK_WEBHOOK_URL   = https://hooks.slack.com/...
+✓ CF_ZONE_ID          = [Cloudflare Zone ID for poradnik.pro]
+✓ CF_API_TOKEN_CACHE  = [CF token with Cache Purge permission]
+```
+
+### Cloudflare Images Secrets (Optional — CDN image offloading)
+
+```
+✓ CF_ACCOUNT_ID           = [Cloudflare Account ID]
+✓ CF_IMAGES_API_TOKEN     = [CF token with Images permission]
+✓ CF_IMAGES_DELIVERY_URL  = https://imagedelivery.net/...
 ```
 
 ---
@@ -262,7 +328,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ### Test SSH Connection
 ```bash
 # Test that SSH key works:
-ssh -i ~/.ssh/poradnik_deploy root@204.48.27.118 "echo 'SSH connection successful'"
+ssh -p 222 -i ~/.ssh/poradnik_deploy tutsoff@wordpress2614653.home.pl "echo 'SSH connection successful'"
 ```
 
 ### Test OpenAI API Key
@@ -310,7 +376,7 @@ mysql -u root -p -e "SELECT VERSION();"
 1. Verify SSH_HOST is correct
 2. Check SSH_PRIVATE_KEY is complete (including header/footer)
 3. Confirm public key is in `~/.ssh/authorized_keys` on server
-4. Test SSH manually: `ssh root@204.48.27.118`
+4. Test SSH manually: `ssh -p 222 tutsoff@wordpress2614653.home.pl`
 
 ### "MySQL access denied"
 1. Verify ROOT_PASSWORD is correct
@@ -333,13 +399,13 @@ mysql -u root -p -e "SELECT VERSION();"
 
 ## Environment-Specific Secrets
 
-### Production Site 1 (poradnik.pro)
+### Production Site 1 (poradnik — folder na wordpress2614653.home.pl)
 ```
-SSH_HOST=204.48.27.118
-SSH_USER=root
-WP_PATH=/var/www/poradnik.pro
+SSH_HOST=wordpress2614653.home.pl
+SSH_USER=tutsoff
+SSH_PORT=222
+WP_PATH=/home/tutsoff/public_html/poradnik
 SITE_URL=https://poradnik.pro
-ROOT_PASSWORD=[MySQL root password]
 OPENAI_API_KEY=sk-proj-...
 ```
 

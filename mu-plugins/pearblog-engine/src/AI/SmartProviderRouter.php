@@ -1,15 +1,18 @@
 <?php
 /**
- * Smart Provider Router — V9.0 F7
+ * Smart Provider Router – V9.0 F7: cost/latency-aware AI provider selection.
  *
- * Intelligent routing layer that automatically selects the best AI provider
- * (OpenAI, Anthropic, Gemini) based on content type, cost optimisation,
- * real-time availability, and historical performance scores. Provides
- * transparent failover so that callers never need to handle provider-specific
- * exceptions.
+ * Augments the existing AIProviderFactory by adding runtime intelligence:
+ *   - Routes requests to the cheapest provider that meets latency SLA
+ *   - Implements automatic failover when a provider exceeds error threshold
+ *   - Tracks per-provider cost, latency, and quality metrics
+ *   - Supports budget caps (daily spend limit per provider)
+ *
+ * Usage:
+ *   $router = new SmartProviderRouter();
+ *   $provider = $router->select( 'long-form', 3000 ); // content_type, max_tokens
  *
  * @package PearBlogEngine\AI
- * @since   9.0.0
  */
 
 declare(strict_types=1);
@@ -17,281 +20,258 @@ declare(strict_types=1);
 namespace PearBlogEngine\AI;
 
 /**
- * Routes AI completion requests to the optimal provider.
+ * Routes AI generation requests to the optimal provider.
  */
 class SmartProviderRouter {
 
-	// -----------------------------------------------------------------------
-	// Constants
-	// -----------------------------------------------------------------------
+	/** WP option: per-provider stats (latency, errors, cost). */
+	public const OPTION_STATS         = 'pearblog_provider_stats';
 
-	/** Supported content-type hints for routing decisions. */
-	public const CONTENT_LONG_FORM   = 'long_form';
-	public const CONTENT_SHORT_FORM  = 'short_form';
-	public const CONTENT_CODE        = 'code';
-	public const CONTENT_CREATIVE    = 'creative';
-	public const CONTENT_FACTUAL     = 'factual';
-	public const CONTENT_TRANSLATION = 'translation';
+	/** WP option: daily budget caps per provider (USD). */
+	public const OPTION_BUDGET_CAPS   = 'pearblog_provider_budget_caps';
 
-	/** Option key: global router enable flag. */
-	public const OPT_ENABLED = 'pearblog_smart_router_enabled';
+	/** WP option: daily spend per provider (resets at midnight UTC). */
+	public const OPTION_DAILY_SPEND   = 'pearblog_provider_daily_spend';
 
-	/** Option key: JSON performance stats per provider. */
-	public const OPT_STATS = 'pearblog_smart_router_stats';
+	/** WP option: provider circuit-breaker state. */
+	public const OPTION_CIRCUIT_STATE = 'pearblog_provider_circuit_state';
 
-	/** Option key: cost budget (USD cents) per day. */
-	public const OPT_DAILY_BUDGET_CENTS = 'pearblog_smart_router_daily_budget';
+	/** Error rate (%) above which a circuit is opened (provider disabled). */
+	public const ERROR_THRESHOLD_PCT  = 30.0;
 
-	/** Option key: today's accumulated cost (USD cents). */
-	public const OPT_TODAY_COST = 'pearblog_smart_router_today_cost';
+	/** Number of calls required before circuit evaluation. */
+	public const MIN_CALLS_FOR_EVAL   = 10;
 
-	/** Option key: date string of today's cost accumulation. */
-	public const OPT_TODAY_DATE = 'pearblog_smart_router_today_date';
-
-	/** Minimum success-rate threshold; providers below this are sidelined. */
-	public const MIN_SUCCESS_RATE = 0.80;
-
-	/**
-	 * Default routing preference per content type:
-	 * content_type => ordered list of provider slugs (best first).
-	 *
-	 * @var array<string, string[]>
-	 */
-	private const ROUTING_MAP = [
-		self::CONTENT_LONG_FORM   => [ 'anthropic', 'openai', 'gemini' ],
-		self::CONTENT_SHORT_FORM  => [ 'openai',    'gemini', 'anthropic' ],
-		self::CONTENT_CODE        => [ 'openai',    'anthropic', 'gemini' ],
-		self::CONTENT_CREATIVE    => [ 'anthropic', 'openai', 'gemini' ],
-		self::CONTENT_FACTUAL     => [ 'gemini',    'openai', 'anthropic' ],
-		self::CONTENT_TRANSLATION => [ 'gemini',    'openai', 'anthropic' ],
-	];
-
-	/** Cost weights per provider (lower is cheaper). Relative scale only. */
-	private const COST_WEIGHT = [
-		'openai'    => 1.0,
-		'anthropic' => 1.2,
-		'gemini'    => 0.7,
-	];
+	/** Default latency SLA in milliseconds. */
+	public const DEFAULT_SLA_MS       = 5000;
 
 	// -----------------------------------------------------------------------
-	// Public API
+	// Selection
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Route a completion request to the best available provider and return its result.
+	 * Select the optimal provider for a generation request.
 	 *
-	 * @param  string $prompt       Prompt text.
-	 * @param  int    $max_tokens   Maximum output tokens.
-	 * @param  string $content_type One of the CONTENT_* constants.
-	 * @param  bool   $cost_aware   When true, factor in cost optimisation.
-	 * @return array{
-	 *     content: string,
-	 *     provider: string,
-	 *     prompt_tokens: int,
-	 *     completion_tokens: int,
-	 *     cost_cents: float,
-	 *     fallback_used: bool,
-	 * }
-	 * @throws \RuntimeException When no provider is available.
+	 * @param string $content_type  'short-form' | 'long-form' | 'code' | 'image'
+	 * @param int    $max_tokens    Approximate token budget for the request.
+	 * @param int    $sla_ms        Maximum acceptable response latency in ms.
+	 * @return string               Provider name: 'openai' | 'anthropic' | 'gemini'
 	 */
-	public function route(
-		string $prompt,
-		int $max_tokens     = 1000,
-		string $content_type = self::CONTENT_SHORT_FORM,
-		bool $cost_aware    = true
-	): array {
-		$ordered  = $this->get_ordered_providers( $content_type, $cost_aware );
-		$last_exc = null;
-		$fallback = false;
+	public function select( string $content_type, int $max_tokens = 1000, int $sla_ms = self::DEFAULT_SLA_MS ): string {
+		$candidates = $this->get_available_providers();
 
-		foreach ( $ordered as $idx => $slug ) {
-			try {
-				$provider = AIProviderFactory::make( $slug );
-				$raw      = $provider->complete( $prompt, $max_tokens );
-
-				$cost = $this->estimate_cost_cents(
-					$slug,
-					$raw['prompt_tokens']     ?? 0,
-					$raw['completion_tokens'] ?? 0
-				);
-
-				$this->record_success( $slug, $raw['prompt_tokens'] ?? 0, $raw['completion_tokens'] ?? 0, $cost );
-				$this->accumulate_daily_cost( $cost );
-
-				return [
-					'content'           => $raw['content']            ?? '',
-					'provider'          => $slug,
-					'prompt_tokens'     => $raw['prompt_tokens']      ?? 0,
-					'completion_tokens' => $raw['completion_tokens']  ?? 0,
-					'cost_cents'        => $cost,
-					'fallback_used'     => $idx > 0 || $fallback,
-				];
-			} catch ( \Throwable $e ) {
-				$this->record_failure( $slug );
-				$last_exc = $e;
-				$fallback = true;
-			}
+		if ( empty( $candidates ) ) {
+			return 'openai'; // Fallback to primary provider.
 		}
 
-		throw new \RuntimeException(
-			'SmartProviderRouter: all providers failed. Last error: ' . ( $last_exc?->getMessage() ?? 'unknown' )
-		);
-	}
-
-	/**
-	 * Return the provider ranking for a given content type.
-	 *
-	 * @param  string $content_type One of the CONTENT_* constants.
-	 * @param  bool   $cost_aware   Factor cost into ranking.
-	 * @return string[] Ordered provider slugs (best first).
-	 */
-	public function get_ordered_providers( string $content_type, bool $cost_aware = true ): array {
-		$base  = self::ROUTING_MAP[ $content_type ] ?? self::ROUTING_MAP[ self::CONTENT_SHORT_FORM ];
-		$stats = $this->load_stats();
-
-		// Score each provider: base position + success rate bonus − cost penalty.
+		// Score each candidate.
 		$scored = [];
-		foreach ( $base as $pos => $slug ) {
-			$s           = $stats[ $slug ] ?? [];
-			$total       = ( $s['successes'] ?? 0 ) + ( $s['failures'] ?? 0 );
-			$success_rate = $total > 0 ? ( $s['successes'] ?? 0 ) / $total : 1.0;
-
-			// Sideline providers below the minimum success rate.
-			if ( $total > 5 && $success_rate < self::MIN_SUCCESS_RATE ) {
-				continue;
-			}
-
-			$score  = ( count( $base ) - $pos ) * 10;        // base position weight
-			$score += $success_rate * 5;                       // reliability bonus
-			if ( $cost_aware ) {
-				$score -= self::COST_WEIGHT[ $slug ] ?? 1.0;  // cost penalty
-			}
-
-			$scored[ $slug ] = $score;
-		}
-
-		if ( empty( $scored ) ) {
-			// Fallback: return original order without sidelining.
-			return $base;
+		foreach ( $candidates as $name ) {
+			$scored[ $name ] = $this->score_provider( $name, $content_type, $max_tokens, $sla_ms );
 		}
 
 		arsort( $scored );
-		return array_keys( $scored );
+
+		return (string) array_key_first( $scored );
 	}
 
 	/**
-	 * Return raw performance statistics for all providers.
+	 * Return providers not currently circuit-broken and within budget.
 	 *
-	 * @return array<string, array{successes: int, failures: int, total_tokens: int, total_cost_cents: float, avg_response_ms: float}>
+	 * @return string[]
 	 */
-	public function get_stats(): array {
-		return $this->load_stats();
+	public function get_available_providers(): array {
+		$all     = [ 'openai', 'anthropic', 'gemini' ];
+		$circuit = $this->load_circuit_state();
+		$spend   = $this->load_daily_spend();
+		$caps    = $this->load_budget_caps();
+
+		return array_filter( $all, function ( string $name ) use ( $circuit, $spend, $caps ): bool {
+			// Circuit-breaker check.
+			if ( ! empty( $circuit[ $name ]['open'] ) ) {
+				return false;
+			}
+			// Budget cap check.
+			$cap      = (float) ( $caps[ $name ] ?? PHP_FLOAT_MAX );
+			$used     = (float) ( $spend[ $name ][ gmdate( 'Y-m-d' ) ] ?? 0.0 );
+			return $used < $cap;
+		} );
 	}
 
 	/**
-	 * Reset performance statistics.
-	 */
-	public function reset_stats(): void {
-		update_option( self::OPT_STATS, wp_json_encode( [] ) );
-	}
-
-	/**
-	 * Return today's accumulated cost in USD cents.
-	 */
-	public function get_today_cost(): float {
-		$this->maybe_reset_daily_cost();
-		return (float) get_option( self::OPT_TODAY_COST, 0.0 );
-	}
-
-	/**
-	 * Return the daily budget in USD cents.
-	 */
-	public function get_daily_budget(): float {
-		return (float) get_option( self::OPT_DAILY_BUDGET_CENTS, 500.0 );
-	}
-
-	/**
-	 * Check whether the daily budget has been exhausted.
-	 */
-	public function is_budget_exhausted(): bool {
-		$budget = $this->get_daily_budget();
-		return $budget > 0.0 && $this->get_today_cost() >= $budget;
-	}
-
-	/**
-	 * Estimate the cost in USD cents for a completed request.
+	 * Score a provider (higher = better candidate).
 	 *
-	 * Uses fixed per-1k-token rates for each provider.
-	 *
-	 * @param  string $slug             Provider slug.
-	 * @param  int    $prompt_tokens    Input token count.
-	 * @param  int    $completion_tokens Output token count.
-	 * @return float Cost in USD cents.
+	 * @param string $provider
+	 * @param string $content_type
+	 * @param int    $max_tokens
+	 * @param int    $sla_ms
+	 * @return float
 	 */
-	public function estimate_cost_cents( string $slug, int $prompt_tokens, int $completion_tokens ): float {
-		// Rates in USD cents per 1 000 tokens (input / output).
-		$rates = [
-			'openai'    => [ 'in' => 0.5,  'out' => 1.5  ],
-			'anthropic' => [ 'in' => 0.8,  'out' => 2.4  ],
-			'gemini'    => [ 'in' => 0.35, 'out' => 1.05 ],
+	public function score_provider( string $provider, string $content_type, int $max_tokens, int $sla_ms ): float {
+		$stats   = $this->get_provider_stats( $provider );
+		$avg_lat = (float) ( $stats['avg_latency_ms'] ?? self::DEFAULT_SLA_MS );
+		$quality = (float) ( $stats['avg_quality'] ?? 70.0 );
+		$cost_pk = $this->cost_per_1k( $provider, $content_type ); // USD per 1K tokens.
+
+		// Penalise providers exceeding SLA.
+		if ( $avg_lat > $sla_ms ) {
+			return -1.0;
+		}
+
+		// Normalise: favour low cost, high quality, low latency.
+		$cost_score    = $cost_pk > 0 ? 1.0 / $cost_pk : 100.0;
+		$quality_score = $quality / 100.0;
+		$latency_score = 1.0 - min( 1.0, $avg_lat / $sla_ms );
+
+		return ( $cost_score * 0.5 ) + ( $quality_score * 0.3 ) + ( $latency_score * 0.2 );
+	}
+
+	// -----------------------------------------------------------------------
+	// Observation recording
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Record the result of a generation call.
+	 *
+	 * @param string $provider
+	 * @param int    $latency_ms
+	 * @param bool   $success
+	 * @param float  $quality_score 0–100
+	 * @param float  $cost_usd
+	 * @return void
+	 */
+	public function record_call(
+		string $provider,
+		int $latency_ms,
+		bool $success,
+		float $quality_score = 70.0,
+		float $cost_usd = 0.0
+	): void {
+		$stats = $this->load_stats();
+
+		$p = $stats[ $provider ] ?? [
+			'calls'          => 0,
+			'errors'         => 0,
+			'total_latency'  => 0,
+			'total_quality'  => 0.0,
 		];
 
-		$r = $rates[ $slug ] ?? [ 'in' => 1.0, 'out' => 2.0 ];
-		return round(
-			( $prompt_tokens / 1000 ) * $r['in'] + ( $completion_tokens / 1000 ) * $r['out'],
-			4
-		);
+		$p['calls']++;
+		if ( ! $success ) {
+			$p['errors']++;
+		}
+		$p['total_latency'] += $latency_ms;
+		$p['total_quality'] += $quality_score;
+
+		$p['avg_latency_ms'] = (int) round( $p['total_latency'] / $p['calls'] );
+		$p['avg_quality']    = round( $p['total_quality'] / $p['calls'], 2 );
+		$p['error_rate_pct'] = round( $p['errors'] / $p['calls'] * 100, 2 );
+
+		$stats[ $provider ] = $p;
+		update_option( self::OPTION_STATS, $stats );
+
+		// Update daily spend.
+		$this->record_spend( $provider, $cost_usd );
+
+		// Evaluate circuit breaker.
+		$this->evaluate_circuit( $provider, $p );
 	}
 
 	// -----------------------------------------------------------------------
-	// Stats persistence
+	// Circuit breaker
 	// -----------------------------------------------------------------------
 
 	/**
-	 * @return array<string, array>
+	 * Open or close a provider's circuit based on its error rate.
+	 *
+	 * @param string $provider
+	 * @param array{calls:int,errors:int,error_rate_pct:float} $stats
 	 */
-	private function load_stats(): array {
-		$raw     = (string) get_option( self::OPT_STATS, '' );
-		$decoded = $raw !== '' ? json_decode( $raw, true ) : null;
-		return is_array( $decoded ) ? $decoded : [];
-	}
-
-	private function record_success( string $slug, int $prompt_tokens, int $completion_tokens, float $cost_cents ): void {
-		$stats = $this->load_stats();
-		$s     = $stats[ $slug ] ?? [ 'successes' => 0, 'failures' => 0, 'total_tokens' => 0, 'total_cost_cents' => 0.0 ];
-
-		$s['successes']        = ( $s['successes'] ?? 0 ) + 1;
-		$s['total_tokens']     = ( $s['total_tokens'] ?? 0 ) + $prompt_tokens + $completion_tokens;
-		$s['total_cost_cents'] = round( ( $s['total_cost_cents'] ?? 0.0 ) + $cost_cents, 4 );
-		$stats[ $slug ]        = $s;
-
-		update_option( self::OPT_STATS, wp_json_encode( $stats ) );
-	}
-
-	private function record_failure( string $slug ): void {
-		$stats              = $this->load_stats();
-		$s                  = $stats[ $slug ] ?? [ 'successes' => 0, 'failures' => 0, 'total_tokens' => 0, 'total_cost_cents' => 0.0 ];
-		$s['failures']      = ( $s['failures'] ?? 0 ) + 1;
-		$stats[ $slug ]     = $s;
-		update_option( self::OPT_STATS, wp_json_encode( $stats ) );
-	}
-
-	// -----------------------------------------------------------------------
-	// Daily budget helpers
-	// -----------------------------------------------------------------------
-
-	private function accumulate_daily_cost( float $cost_cents ): void {
-		$this->maybe_reset_daily_cost();
-		$current = (float) get_option( self::OPT_TODAY_COST, 0.0 );
-		update_option( self::OPT_TODAY_COST, round( $current + $cost_cents, 4 ) );
-	}
-
-	private function maybe_reset_daily_cost(): void {
-		$today  = gmdate( 'Y-m-d' );
-		$stored = (string) get_option( self::OPT_TODAY_DATE, '' );
-		if ( $stored !== $today ) {
-			update_option( self::OPT_TODAY_DATE, $today );
-			update_option( self::OPT_TODAY_COST, 0.0 );
+	private function evaluate_circuit( string $provider, array $stats ): void {
+		if ( $stats['calls'] < self::MIN_CALLS_FOR_EVAL ) {
+			return;
 		}
+
+		$circuit = $this->load_circuit_state();
+
+		if ( $stats['error_rate_pct'] > self::ERROR_THRESHOLD_PCT ) {
+			$circuit[ $provider ]['open']       = true;
+			$circuit[ $provider ]['opened_at']  = time();
+		} else {
+			$circuit[ $provider ]['open']        = false;
+		}
+
+		update_option( self::OPTION_CIRCUIT_STATE, $circuit );
+	}
+
+	// -----------------------------------------------------------------------
+	// Stats & helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * @param string $provider
+	 * @return array{calls:int,errors:int,avg_latency_ms:int,avg_quality:float,error_rate_pct:float}
+	 */
+	public function get_provider_stats( string $provider ): array {
+		$stats = $this->load_stats();
+		return $stats[ $provider ] ?? [];
+	}
+
+	/**
+	 * Cost per 1,000 tokens in USD (approximate current pricing).
+	 *
+	 * @param string $provider
+	 * @param string $content_type
+	 * @return float
+	 */
+	public function cost_per_1k( string $provider, string $content_type ): float {
+		$table = [
+			'openai'    => [ 'default' => 0.0020, 'long-form' => 0.0060 ],
+			'anthropic' => [ 'default' => 0.0025, 'long-form' => 0.0080 ],
+			'gemini'    => [ 'default' => 0.0005, 'long-form' => 0.0020 ],
+		];
+
+		$provider_costs = $table[ $provider ] ?? [];
+		return (float) ( $provider_costs[ $content_type ] ?? $provider_costs['default'] ?? 0.002 );
+	}
+
+	/**
+	 * Record per-provider daily spend.
+	 *
+	 * @param string $provider
+	 * @param float  $amount_usd
+	 */
+	private function record_spend( string $provider, float $amount_usd ): void {
+		if ( $amount_usd <= 0.0 ) {
+			return;
+		}
+		$spend  = $this->load_daily_spend();
+		$today  = gmdate( 'Y-m-d' );
+		$spend[ $provider ][ $today ] = ( (float) ( $spend[ $provider ][ $today ] ?? 0.0 ) ) + $amount_usd;
+		update_option( self::OPTION_DAILY_SPEND, $spend );
+	}
+
+	/** @return array<string,array<string,float>> */
+	private function load_daily_spend(): array {
+		$raw = get_option( self::OPTION_DAILY_SPEND, [] );
+		return is_array( $raw ) ? $raw : [];
+	}
+
+	/** @return array<string,array{calls:int,errors:int,avg_latency_ms:int,avg_quality:float,error_rate_pct:float}> */
+	private function load_stats(): array {
+		$raw = get_option( self::OPTION_STATS, [] );
+		return is_array( $raw ) ? $raw : [];
+	}
+
+	/** @return array<string,array{open:bool,opened_at?:int}> */
+	private function load_circuit_state(): array {
+		$raw = get_option( self::OPTION_CIRCUIT_STATE, [] );
+		return is_array( $raw ) ? $raw : [];
+	}
+
+	/** @return array<string,float> */
+	private function load_budget_caps(): array {
+		$raw = get_option( self::OPTION_BUDGET_CAPS, [] );
+		return is_array( $raw ) ? $raw : [];
 	}
 }

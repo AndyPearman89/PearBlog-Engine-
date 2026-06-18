@@ -1,17 +1,26 @@
 <?php
 /**
- * Bayesian Optimizer — V9.0 F3
+ * Bayesian Optimizer – V9.0 F3: accelerates A/B test convergence.
  *
- * Implements a lightweight multi-armed bandit (Thompson Sampling) algorithm
- * for A/B test traffic allocation and winner selection. Uses Beta distribution
- * sampling over per-variant conversion statistics to determine the optimal
- * traffic split and identify statistically significant winners without
- * requiring a fixed sample size.
+ * Implements a Thompson-Sampling multi-armed bandit algorithm on top of the
+ * existing ABTestEngine.  Instead of splitting traffic 50/50 between variants
+ * and waiting for statistical significance, the optimizer progressively
+ * allocates more traffic to the currently winning variant (exploit) while
+ * still exploring alternatives (explore).
  *
- * All computation is pure-PHP; no external ML dependencies required.
+ * Model:
+ *   Each variant is modelled as a Beta distribution:  Beta(α, β)
+ *     α = successes (conversions / high-quality scores)
+ *     β = failures  (non-conversions / low-quality scores)
+ *
+ *   On every routing decision, one sample is drawn from each variant's
+ *   distribution; the variant with the highest sample wins the slot.
+ *
+ * Persistence:
+ *   Arm state is stored in the WP option `pearblog_bayes_arms`
+ *   as: { test_id: { variant_id: { alpha, beta } } }
  *
  * @package PearBlogEngine\Testing
- * @since   9.0.0
  */
 
 declare(strict_types=1);
@@ -19,312 +28,257 @@ declare(strict_types=1);
 namespace PearBlogEngine\Testing;
 
 /**
- * Bayesian optimizer for A/B test traffic allocation.
+ * Thompson-Sampling Bayesian A/B optimizer.
  */
 class BayesianOptimizer {
 
-	// -----------------------------------------------------------------------
-	// Constants
-	// -----------------------------------------------------------------------
+	/** WP option key for arm state storage. */
+	public const OPTION_KEY = 'pearblog_bayes_arms';
 
-	/** Minimum conversion rate confidence threshold (0–1) to declare a winner. */
-	public const WIN_PROBABILITY_THRESHOLD = 0.95;
-
-	/** Minimum total impressions before declaring a winner. */
-	public const MIN_IMPRESSIONS = 100;
-
-	/** Default Beta prior alpha (successes + 1). */
+	/** Minimum alpha / beta value (uninformed prior). */
 	public const PRIOR_ALPHA = 1;
-
-	/** Default Beta prior beta (failures + 1). */
-	public const PRIOR_BETA = 1;
-
-	/** Number of Monte-Carlo samples for win-probability estimation. */
-	public const MC_SAMPLES = 5000;
-
-	/** Meta key prefix for test statistics (JSON per test-id). */
-	private const META_STATS = '_pearblog_ab_stats';
+	public const PRIOR_BETA  = 1;
 
 	// -----------------------------------------------------------------------
-	// Public API
+	// Arm management
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Record an impression for a variant.
+	 * Register a new test and initialise prior distributions for each variant.
 	 *
-	 * @param  int    $post_id    Post ID running the test.
-	 * @param  string $test_id    Test identifier (e.g. 'headline_test_1').
-	 * @param  string $variant_id Variant identifier (e.g. 'A', 'B', 'control').
+	 * @param string   $test_id
+	 * @param string[] $variant_ids
+	 * @return void
 	 */
-	public function record_impression( int $post_id, string $test_id, string $variant_id ): void {
-		$stats = $this->load_stats( $post_id, $test_id );
-		$stats[ $variant_id ]['impressions'] = ( $stats[ $variant_id ]['impressions'] ?? 0 ) + 1;
-		$this->save_stats( $post_id, $test_id, $stats );
-	}
+	public function register_test( string $test_id, array $variant_ids ): void {
+		$arms               = $this->load_arms();
+		$arms[ $test_id ] ??= [];
 
-	/**
-	 * Record a conversion for a variant.
-	 *
-	 * @param  int    $post_id    Post ID.
-	 * @param  string $test_id    Test identifier.
-	 * @param  string $variant_id Variant identifier.
-	 */
-	public function record_conversion( int $post_id, string $test_id, string $variant_id ): void {
-		$stats = $this->load_stats( $post_id, $test_id );
-		$stats[ $variant_id ]['conversions'] = ( $stats[ $variant_id ]['conversions'] ?? 0 ) + 1;
-		$this->save_stats( $post_id, $test_id, $stats );
-	}
-
-	/**
-	 * Select which variant to serve based on Thompson Sampling.
-	 *
-	 * Returns the variant_id with the highest sampled Beta value.
-	 *
-	 * @param  int      $post_id  Post ID.
-	 * @param  string   $test_id  Test identifier.
-	 * @param  string[] $variants Ordered list of variant IDs.
-	 * @return string  The selected variant ID.
-	 */
-	public function select_variant( int $post_id, string $test_id, array $variants ): string {
-		if ( empty( $variants ) ) {
-			return '';
-		}
-
-		$stats     = $this->load_stats( $post_id, $test_id );
-		$best      = '';
-		$bestScore = -1.0;
-
-		foreach ( $variants as $variant_id ) {
-			$alpha = self::PRIOR_ALPHA + ( $stats[ $variant_id ]['conversions'] ?? 0 );
-			$beta  = self::PRIOR_BETA  + max( 0,
-				( $stats[ $variant_id ]['impressions'] ?? 0 ) -
-				( $stats[ $variant_id ]['conversions'] ?? 0 )
-			);
-			$score = $this->sample_beta( $alpha, $beta );
-			if ( $score > $bestScore ) {
-				$bestScore = $score;
-				$best      = $variant_id;
+		foreach ( $variant_ids as $vid ) {
+			if ( ! isset( $arms[ $test_id ][ $vid ] ) ) {
+				$arms[ $test_id ][ $vid ] = [
+					'alpha' => self::PRIOR_ALPHA,
+					'beta'  => self::PRIOR_BETA,
+				];
 			}
 		}
 
-		return $best !== '' ? $best : $variants[0];
+		$this->save_arms( $arms );
 	}
 
 	/**
-	 * Estimate win probabilities for all variants via Monte-Carlo simulation.
+	 * Record an observation for a variant.
 	 *
-	 * @param  int      $post_id  Post ID.
-	 * @param  string   $test_id  Test identifier.
-	 * @param  string[] $variants Variant IDs to compare.
-	 * @return array<string, float> variant_id → probability of being the best (0–1).
+	 * @param string $test_id
+	 * @param string $variant_id
+	 * @param bool   $success  True for conversion / high score, false otherwise.
+	 * @return void
 	 */
-	public function win_probabilities( int $post_id, string $test_id, array $variants ): array {
-		if ( empty( $variants ) ) {
-			return [];
+	public function record_observation( string $test_id, string $variant_id, bool $success ): void {
+		$arms = $this->load_arms();
+
+		$this->ensure_arm( $arms, $test_id, $variant_id );
+
+		if ( $success ) {
+			++$arms[ $test_id ][ $variant_id ]['alpha'];
+		} else {
+			++$arms[ $test_id ][ $variant_id ]['beta'];
 		}
 
-		$stats = $this->load_stats( $post_id, $test_id );
-		$wins  = array_fill_keys( $variants, 0 );
+		$this->save_arms( $arms );
+	}
 
-		for ( $s = 0; $s < self::MC_SAMPLES; $s++ ) {
-			$bestVariant = '';
-			$bestSample  = -1.0;
+	/**
+	 * Select the best variant using Thompson Sampling.
+	 *
+	 * @param string $test_id
+	 * @return string|null  Variant ID or null if test not found.
+	 */
+	public function select_variant( string $test_id ): ?string {
+		$arms = $this->load_arms();
 
-			foreach ( $variants as $variant_id ) {
-				$alpha  = self::PRIOR_ALPHA + ( $stats[ $variant_id ]['conversions'] ?? 0 );
-				$beta   = self::PRIOR_BETA  + max( 0,
-					( $stats[ $variant_id ]['impressions'] ?? 0 ) -
-					( $stats[ $variant_id ]['conversions'] ?? 0 )
-				);
-				$sample = $this->sample_beta( $alpha, $beta );
-				if ( $sample > $bestSample ) {
-					$bestSample  = $sample;
-					$bestVariant = $variant_id;
+		if ( empty( $arms[ $test_id ] ) ) {
+			return null;
+		}
+
+		$best_sample    = -1.0;
+		$best_variant   = null;
+
+		foreach ( $arms[ $test_id ] as $vid => $params ) {
+			$sample = $this->beta_sample( (float) $params['alpha'], (float) $params['beta'] );
+			if ( $sample > $best_sample ) {
+				$best_sample  = $sample;
+				$best_variant = $vid;
+			}
+		}
+
+		return $best_variant;
+	}
+
+	/**
+	 * Return the arm state for a test (for reporting).
+	 *
+	 * @param string $test_id
+	 * @return array<string,array{alpha:int,beta:int,probability_best:float}>
+	 */
+	public function get_arm_state( string $test_id ): array {
+		$arms = $this->load_arms();
+		$test_arms = $arms[ $test_id ] ?? [];
+
+		// Compute approximate probability of being best via Monte-Carlo (1000 draws).
+		$wins = array_fill_keys( array_keys( $test_arms ), 0 );
+		$draws = 1000;
+
+		for ( $i = 0; $i < $draws; $i++ ) {
+			$best_s  = -1.0;
+			$best_v  = null;
+			foreach ( $test_arms as $vid => $params ) {
+				$s = $this->beta_sample( (float) $params['alpha'], (float) $params['beta'] );
+				if ( $s > $best_s ) {
+					$best_s = $s;
+					$best_v = $vid;
 				}
 			}
-
-			if ( $bestVariant !== '' ) {
-				$wins[ $bestVariant ]++;
+			if ( null !== $best_v ) {
+				$wins[ $best_v ]++;
 			}
 		}
 
-		$probs = [];
-		foreach ( $variants as $variant_id ) {
-			$probs[ $variant_id ] = round( $wins[ $variant_id ] / self::MC_SAMPLES, 4 );
-		}
-		return $probs;
-	}
-
-	/**
-	 * Return a test summary: stats + win probabilities + winner (if any).
-	 *
-	 * @param  int      $post_id  Post ID.
-	 * @param  string   $test_id  Test identifier.
-	 * @param  string[] $variants Variant IDs.
-	 * @return array{
-	 *     test_id: string,
-	 *     variants: array<string, array{impressions: int, conversions: int, rate: float}>,
-	 *     win_probabilities: array<string, float>,
-	 *     winner: string|null,
-	 *     total_impressions: int,
-	 *     ready: bool,
-	 * }
-	 */
-	public function summary( int $post_id, string $test_id, array $variants ): array {
-		$stats     = $this->load_stats( $post_id, $test_id );
-		$totalImpr = 0;
-
-		$variantSummary = [];
-		foreach ( $variants as $v ) {
-			$impr   = $stats[ $v ]['impressions'] ?? 0;
-			$conv   = $stats[ $v ]['conversions'] ?? 0;
-			$rate   = $impr > 0 ? round( $conv / $impr, 4 ) : 0.0;
-			$totalImpr += $impr;
-			$variantSummary[ $v ] = [
-				'impressions' => $impr,
-				'conversions' => $conv,
-				'rate'        => $rate,
+		$result = [];
+		foreach ( $test_arms as $vid => $params ) {
+			$result[ $vid ] = [
+				'alpha'            => (int) $params['alpha'],
+				'beta'             => (int) $params['beta'],
+				'probability_best' => round( $wins[ $vid ] / $draws, 4 ),
 			];
 		}
 
-		$ready  = $totalImpr >= self::MIN_IMPRESSIONS;
-		$probs  = $ready ? $this->win_probabilities( $post_id, $test_id, $variants ) : array_fill_keys( $variants, 0.0 );
-		$winner = null;
+		return $result;
+	}
 
-		if ( $ready ) {
-			foreach ( $probs as $variant_id => $prob ) {
-				if ( $prob >= self::WIN_PROBABILITY_THRESHOLD ) {
-					$winner = $variant_id;
-					break;
-				}
-			}
-		}
-
-		return [
-			'test_id'           => $test_id,
-			'variants'          => $variantSummary,
-			'win_probabilities' => $probs,
-			'winner'            => $winner,
-			'total_impressions' => $totalImpr,
-			'ready'             => $ready,
+	/**
+	 * Return the estimated conversion rate (mean of Beta distribution).
+	 *
+	 * @param string $test_id
+	 * @param string $variant_id
+	 * @return float  0.0 – 1.0
+	 */
+	public function expected_conversion_rate( string $test_id, string $variant_id ): float {
+		$arms = $this->load_arms();
+		$arm  = $arms[ $test_id ][ $variant_id ] ?? [
+			'alpha' => self::PRIOR_ALPHA,
+			'beta'  => self::PRIOR_BETA,
 		];
-	}
+		$alpha = (float) $arm['alpha'];
+		$beta  = (float) $arm['beta'];
 
-	/**
-	 * Reset all statistics for a test.
-	 *
-	 * @param  int    $post_id Post ID.
-	 * @param  string $test_id Test identifier.
-	 */
-	public function reset( int $post_id, string $test_id ): void {
-		$all = $this->load_all( $post_id );
-		unset( $all[ $test_id ] );
-		update_post_meta( $post_id, self::META_STATS, wp_json_encode( $all ) );
+		return $alpha / ( $alpha + $beta );
 	}
 
 	// -----------------------------------------------------------------------
-	// Math helpers
+	// Internal helpers
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Sample from a Beta(α, β) distribution using the Johnk method.
+	 * Sample from a Beta(alpha, beta) distribution using the Johnk method
+	 * (approximation suitable for typical α/β ranges in A/B tests).
 	 *
-	 * @param  float $alpha Alpha shape parameter (>0).
-	 * @param  float $beta  Beta shape parameter (>0).
-	 * @return float Sample in [0, 1].
+	 * @param float $alpha
+	 * @param float $beta
+	 * @return float  Sample in [0, 1].
 	 */
-	public function sample_beta( float $alpha, float $beta ): float {
-		// Use ratio of Gamma samples: Gamma(α) / (Gamma(α) + Gamma(β)).
-		$ga = $this->sample_gamma( $alpha );
-		$gb = $this->sample_gamma( $beta );
-		$sum = $ga + $gb;
-		return $sum > 0.0 ? $ga / $sum : 0.5;
-	}
+	public function beta_sample( float $alpha, float $beta ): float {
+		// Use the relation: Beta(α,β) = Gamma(α) / (Gamma(α) + Gamma(β))
+		$g1 = $this->gamma_sample( $alpha );
+		$g2 = $this->gamma_sample( $beta );
 
-	/**
-	 * Sample from a Gamma(k, 1) distribution using Marsaglia–Tsang's method.
-	 *
-	 * @param  float $k Shape parameter (>0).
-	 * @return float Non-negative sample.
-	 */
-	private function sample_gamma( float $k ): float {
-		if ( $k < 1.0 ) {
-			// Boost small k using the Ahrens–Dieter transform.
-			return $this->sample_gamma( $k + 1.0 ) * ( mt_rand() / mt_getrandmax() ) ** ( 1.0 / $k );
+		$total = $g1 + $g2;
+		if ( $total <= 0.0 ) {
+			return 0.5;
 		}
+		return $g1 / $total;
+	}
 
-		$d = $k - 1.0 / 3.0;
+	/**
+	 * Marsaglia-Tsang Gamma sampler for shape >= 1.
+	 *
+	 * @param float $shape (alpha / beta of Gamma dist, shape >= 1 after adjustment).
+	 * @return float
+	 */
+	private function gamma_sample( float $shape ): float {
+		if ( $shape < 1.0 ) {
+			// Use the relation Gamma(s) = Gamma(s+1) * U^(1/s).
+			return $this->gamma_sample( $shape + 1.0 ) * ( mt_rand() / mt_getrandmax() ) ** ( 1.0 / $shape );
+		}
+		$d = $shape - 1.0 / 3.0;
 		$c = 1.0 / sqrt( 9.0 * $d );
 
-		while ( true ) {
+		do {
 			do {
-				$x = $this->normal();
+				$x = $this->std_normal();
 				$v = 1.0 + $c * $x;
 			} while ( $v <= 0.0 );
 
-			$v3 = $v ** 3;
-			$u  = mt_rand() / mt_getrandmax();
+			$v = $v ** 3;
+			$u = mt_rand() / mt_getrandmax();
 
-			if ( $u < 1.0 - 0.0331 * ( $x ** 2 ) ** 2 ) {
-				return $d * $v3;
+			if ( $u < 1.0 - 0.0331 * ( $x * $x ) ** 2 ) {
+				return $d * $v;
 			}
-			if ( log( $u ) < 0.5 * $x * $x + $d * ( 1.0 - $v3 + log( $v3 ) ) ) {
-				return $d * $v3;
+			if ( log( $u ) < 0.5 * $x * $x + $d * ( 1.0 - $v + log( $v ) ) ) {
+				return $d * $v;
 			}
-		}
+		} while ( true );
 	}
 
 	/**
-	 * Box–Muller standard normal sample.
+	 * Box-Muller standard-normal sample.
 	 */
-	private function normal(): float {
-		static $spare   = null;
-		static $hasSpare = false;
+	private function std_normal(): float {
+		static $has_spare = false;
+		static $spare     = 0.0;
 
-		if ( $hasSpare ) {
-			$hasSpare = false;
-			return $spare ?? 0.0;
+		if ( $has_spare ) {
+			$has_spare = false;
+			return $spare;
 		}
 
-		$u = $v = $s = 0.0;
 		do {
 			$u = mt_rand() / mt_getrandmax() * 2.0 - 1.0;
 			$v = mt_rand() / mt_getrandmax() * 2.0 - 1.0;
 			$s = $u * $u + $v * $v;
 		} while ( $s >= 1.0 || $s === 0.0 );
 
-		$mul     = sqrt( -2.0 * log( $s ) / $s );
-		$spare   = $v * $mul;
-		$hasSpare = true;
+		$mul       = sqrt( -2.0 * log( $s ) / $s );
+		$spare     = $v * $mul;
+		$has_spare = true;
+
 		return $u * $mul;
 	}
 
-	// -----------------------------------------------------------------------
-	// Persistence helpers
-	// -----------------------------------------------------------------------
-
 	/**
-	 * @return array<string, array<string, int>>
+	 * @param array<string,array<string,array{alpha:int,beta:int}>> &$arms
 	 */
-	private function load_all( int $post_id ): array {
-		$raw     = (string) get_post_meta( $post_id, self::META_STATS, true );
-		$decoded = $raw !== '' ? json_decode( $raw, true ) : null;
-		return is_array( $decoded ) ? $decoded : [];
+	private function ensure_arm( array &$arms, string $test_id, string $variant_id ): void {
+		$arms[ $test_id ]                ??= [];
+		$arms[ $test_id ][ $variant_id ] ??= [
+			'alpha' => self::PRIOR_ALPHA,
+			'beta'  => self::PRIOR_BETA,
+		];
 	}
 
 	/**
-	 * @param  int    $post_id Post ID.
-	 * @param  string $test_id Test identifier.
-	 * @return array<string, array<string, int>>
+	 * @return array<string,array<string,array{alpha:int,beta:int}>>
 	 */
-	private function load_stats( int $post_id, string $test_id ): array {
-		$all = $this->load_all( $post_id );
-		return $all[ $test_id ] ?? [];
+	private function load_arms(): array {
+		$raw = get_option( self::OPTION_KEY, [] );
+		return is_array( $raw ) ? $raw : [];
 	}
 
-	private function save_stats( int $post_id, string $test_id, array $stats ): void {
-		$all             = $this->load_all( $post_id );
-		$all[ $test_id ] = $stats;
-		update_post_meta( $post_id, self::META_STATS, wp_json_encode( $all ) );
+	/**
+	 * @param array<string,array<string,array{alpha:int,beta:int}>> $arms
+	 */
+	private function save_arms( array $arms ): void {
+		update_option( self::OPTION_KEY, $arms );
 	}
 }

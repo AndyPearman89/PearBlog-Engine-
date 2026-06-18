@@ -1,16 +1,19 @@
 <?php
 /**
- * Orphan Page Detector — V9.0 F8
+ * Orphan Page Detector – V9.0 F8: identifies pages with no internal links.
  *
- * Identifies published posts/pages that receive no internal links from other
- * published content, making them invisible to both crawlers and readers.
- * Provides scan results, link-suggestion hints, and remediation tracking.
+ * A page is considered "orphaned" when no other published post or page on the
+ * same site links to it.  Orphan pages receive little link equity and are
+ * typically poorly indexed by search engines.
  *
- * All computation is pure-PHP using WordPress meta/post APIs (stubbed for
- * unit testing).
+ * This module:
+ *   1. Scans all published posts for outbound internal links.
+ *   2. Compares the complete URL set against the linked-to set.
+ *   3. Marks orphans in WP option `pearblog_orphan_pages`.
+ *   4. Exposes results via REST GET /wp-json/pearblog/v1/seo/orphan-pages.
+ *   5. Fires action `pearblog_orphan_detected` for each newly found orphan.
  *
  * @package PearBlogEngine\SEO
- * @since   9.0.0
  */
 
 declare(strict_types=1);
@@ -18,329 +21,206 @@ declare(strict_types=1);
 namespace PearBlogEngine\SEO;
 
 /**
- * Detects and manages orphaned pages.
+ * Detects published posts/pages that have no internal inbound links.
  */
 class OrphanPageDetector {
 
-	// -----------------------------------------------------------------------
-	// Constants
-	// -----------------------------------------------------------------------
+	/** WP option: serialised orphan report. */
+	public const OPTION_ORPHANS  = 'pearblog_orphan_pages';
 
-	/** Option key: last-scan timestamp (Unix). */
-	public const OPT_LAST_SCAN = 'pearblog_orphan_last_scan';
+	/** WP option: last scan timestamp. */
+	public const OPTION_LAST_RUN = 'pearblog_orphan_last_run';
 
-	/** Option key: cached orphan post IDs (JSON array). */
-	public const OPT_ORPHAN_CACHE = 'pearblog_orphan_cache';
+	/** Cron hook. */
+	private const CRON_HOOK      = 'pearblog_orphan_scan';
 
-	/** Meta key: set to '1' on posts that have been manually reviewed/fixed. */
-	public const META_REVIEWED = '_pearblog_orphan_reviewed';
-
-	/** Meta key: JSON list of suggested linking post IDs. */
-	public const META_SUGGESTIONS = '_pearblog_orphan_suggestions';
-
-	/** Number of link-suggestion candidates to return per orphan. */
-	public const SUGGESTION_COUNT = 5;
-
-	/** Post types considered for orphan detection. */
-	private const SCAN_POST_TYPES = [ 'post', 'page' ];
+	/** REST namespace. */
+	private const REST_NAMESPACE = 'pearblog/v1';
 
 	// -----------------------------------------------------------------------
-	// Public API — Detection
+	// Registration
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Run a full orphan scan across all published content.
-	 *
-	 * @param  bool $force_refresh Bypass the cached result and re-scan.
-	 * @return array{
-	 *     orphans: int[],
-	 *     total_scanned: int,
-	 *     orphan_count: int,
-	 *     scanned_at: string,
-	 *     cached: bool,
-	 * }
+	 * Register WordPress hooks.
 	 */
-	public function scan( bool $force_refresh = false ): array {
-		if ( ! $force_refresh ) {
-			$cached = $this->get_cached_scan();
-			if ( null !== $cached ) {
-				return $cached;
-			}
+	public function register(): void {
+		add_action( self::CRON_HOOK, [ $this, 'scan' ] );
+		add_action( 'init', [ $this, 'maybe_schedule' ] );
+		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
+	}
+
+	/**
+	 * Schedule weekly scan if not already scheduled.
+	 */
+	public function maybe_schedule(): void {
+		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+			wp_schedule_event( time(), 'weekly', self::CRON_HOOK );
 		}
-
-		$all_ids     = $this->get_all_published_ids();
-		$linked_ids  = $this->get_internally_linked_ids( $all_ids );
-		$orphan_ids  = array_values( array_diff( $all_ids, $linked_ids ) );
-
-		// Exclude posts the editor has already reviewed/fixed.
-		$orphan_ids = array_values( array_filter(
-			$orphan_ids,
-			fn( int $id ): bool => ! $this->is_reviewed( $id )
-		) );
-
-		$result = [
-			'orphans'       => $orphan_ids,
-			'total_scanned' => count( $all_ids ),
-			'orphan_count'  => count( $orphan_ids ),
-			'scanned_at'    => gmdate( 'c' ),
-			'cached'        => false,
-		];
-
-		$this->save_scan_cache( $result );
-		return $result;
 	}
 
 	/**
-	 * Return detailed info for a single orphan post.
-	 *
-	 * @param  int $post_id Post ID.
-	 * @return array{
-	 *     post_id: int,
-	 *     title: string,
-	 *     url: string,
-	 *     post_type: string,
-	 *     published_at: string,
-	 *     inbound_count: int,
-	 *     is_reviewed: bool,
-	 *     suggestions: int[],
-	 * }
+	 * Register REST routes.
 	 */
-	public function get_orphan_detail( int $post_id ): array {
-		$all_ids      = $this->get_all_published_ids();
-		$inbound      = $this->count_inbound_links( $post_id, $all_ids );
-
-		return [
-			'post_id'      => $post_id,
-			'title'        => (string) get_the_title( $post_id ),
-			'url'          => (string) get_permalink( $post_id ),
-			'post_type'    => (string) get_post_field( 'post_type', $post_id ),
-			'published_at' => (string) get_post_field( 'post_date_gmt', $post_id ),
-			'inbound_count' => $inbound,
-			'is_reviewed'  => $this->is_reviewed( $post_id ),
-			'suggestions'  => $this->get_suggestions( $post_id ),
-		];
+	public function register_routes(): void {
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/seo/orphan-pages',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'rest_get_orphans' ],
+				'permission_callback' => static fn() => current_user_can( 'manage_options' ),
+			]
+		);
 	}
 
 	// -----------------------------------------------------------------------
-	// Public API — Remediation
+	// Scanning
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Mark a post as reviewed/fixed so it is excluded from future scans.
+	 * Scan all published posts/pages for orphans.
 	 *
-	 * @param  int $post_id Post ID to mark.
+	 * @param string[]|null $post_permalinks Optional: inject set of all post URLs (for testing).
+	 * @param string[]|null $linked_urls     Optional: inject set of all inbound-linked URLs (for testing).
+	 * @return array<int,array{post_id:int,permalink:string,age_days:int}> Orphan list.
 	 */
-	public function mark_reviewed( int $post_id ): void {
-		update_post_meta( $post_id, self::META_REVIEWED, '1' );
-		$this->invalidate_cache();
-	}
+	public function scan( ?array $post_permalinks = null, ?array $linked_urls = null ): array {
+		$post_types = apply_filters( 'pearblog_orphan_post_types', [ 'post', 'page' ] );
 
-	/**
-	 * Clear the reviewed flag, re-exposing the post to future scans.
-	 *
-	 * @param  int $post_id Post ID.
-	 */
-	public function unmark_reviewed( int $post_id ): void {
-		delete_post_meta( $post_id, self::META_REVIEWED );
-		$this->invalidate_cache();
-	}
-
-	/**
-	 * Generate and persist linking suggestions for an orphan post.
-	 *
-	 * Finds published posts whose titles share the most words with the orphan's
-	 * title, returning up to SUGGESTION_COUNT candidates.
-	 *
-	 * @param  int $post_id Orphan post ID.
-	 * @return int[] Suggested post IDs.
-	 */
-	public function generate_suggestions( int $post_id ): array {
-		$all_ids     = $this->get_all_published_ids();
-		$candidates  = array_diff( $all_ids, [ $post_id ] );
-		$orphan_title = strtolower( (string) get_the_title( $post_id ) );
-		$orphan_words = $this->title_words( $orphan_title );
-
-		$scores = [];
-		foreach ( $candidates as $cid ) {
-			$cwords          = $this->title_words( strtolower( (string) get_the_title( $cid ) ) );
-			$common          = count( array_intersect( $orphan_words, $cwords ) );
-			if ( $common > 0 ) {
-				$scores[ $cid ] = $common;
-			}
-		}
-
-		arsort( $scores );
-		$suggestions = array_slice( array_keys( $scores ), 0, self::SUGGESTION_COUNT );
-		update_post_meta( $post_id, self::META_SUGGESTIONS, wp_json_encode( $suggestions ) );
-		return $suggestions;
-	}
-
-	/**
-	 * Retrieve previously generated suggestions for a post.
-	 *
-	 * @param  int $post_id Post ID.
-	 * @return int[]
-	 */
-	public function get_suggestions( int $post_id ): array {
-		$raw     = (string) get_post_meta( $post_id, self::META_SUGGESTIONS, true );
-		$decoded = $raw !== '' ? json_decode( $raw, true ) : null;
-		return is_array( $decoded ) ? array_map( 'intval', $decoded ) : [];
-	}
-
-	/**
-	 * Invalidate the orphan scan cache, forcing a fresh scan on next call.
-	 */
-	public function invalidate_cache(): void {
-		delete_option( self::OPT_ORPHAN_CACHE );
-		delete_option( self::OPT_LAST_SCAN );
-	}
-
-	// -----------------------------------------------------------------------
-	// Internal helpers — Link analysis
-	// -----------------------------------------------------------------------
-
-	/**
-	 * Return all published post IDs across the configured post types.
-	 *
-	 * @return int[]
-	 */
-	private function get_all_published_ids(): array {
-		$raw = get_posts( [
-			'post_type'      => self::SCAN_POST_TYPES,
+		// Build map: permalink → post_id.
+		$all_posts   = get_posts( [
 			'post_status'    => 'publish',
+			'post_type'      => $post_types,
 			'posts_per_page' => -1,
 			'fields'         => 'ids',
 		] );
-		return array_map( 'intval', is_array( $raw ) ? $raw : [] );
-	}
 
-	/**
-	 * Return post IDs that appear at least once as an href in another post's content.
-	 *
-	 * @param  int[] $all_ids All published post IDs.
-	 * @return int[] IDs that are linked to.
-	 */
-	private function get_internally_linked_ids( array $all_ids ): array {
-		$linked = [];
+		$permalink_map = [];
+		foreach ( $all_posts as $id ) {
+			$url = get_permalink( (int) $id );
+			if ( $url ) {
+				$permalink_map[ $this->normalise_url( $url ) ] = (int) $id;
+			}
+		}
 
-		foreach ( $all_ids as $source_id ) {
-			$content = (string) get_post_field( 'post_content', $source_id );
-			if ( '' === $content ) {
+		if ( null !== $post_permalinks ) {
+			$permalink_map = [];
+			foreach ( $post_permalinks as $url ) {
+				$permalink_map[ $this->normalise_url( $url ) ] = 0;
+			}
+		}
+
+		// Collect all internally linked URLs from post content.
+		if ( null === $linked_urls ) {
+			$linked_urls = $this->collect_linked_urls( $all_posts );
+		}
+
+		$linked_set = [];
+		foreach ( $linked_urls as $url ) {
+			$linked_set[ $this->normalise_url( $url ) ] = true;
+		}
+
+		// Compute orphans.
+		$previous_orphans = $this->load_orphans();
+		$orphans          = [];
+
+		foreach ( $permalink_map as $norm_url => $post_id ) {
+			if ( isset( $linked_set[ $norm_url ] ) ) {
 				continue;
 			}
 
-			// Extract href attribute values from <a> tags.
-			preg_match_all( '/<a\s[^>]*href=["\']([^"\']+)["\'][^>]*>/i', $content, $matches );
-			$hrefs = $matches[1] ?? [];
+			$age = 0;
+			if ( $post_id > 0 ) {
+				$modified = get_post_modified_time( 'U', true, $post_id );
+				$age      = $modified ? (int) floor( ( time() - (int) $modified ) / DAY_IN_SECONDS ) : 0;
+			}
 
-			foreach ( $hrefs as $href ) {
-				// Try to resolve the URL to a post ID.
-				$target_id = $this->url_to_post_id( $href );
-				if ( $target_id > 0 && $target_id !== $source_id ) {
-					$linked[ $target_id ] = true;
-				}
+			$orphans[] = [
+				'post_id'   => $post_id,
+				'permalink' => $norm_url,
+				'age_days'  => $age,
+			];
+
+			// Fire action for newly detected orphans.
+			$was_orphan = array_filter( $previous_orphans, static fn( $o ) => $o['post_id'] === $post_id );
+			if ( $post_id > 0 && empty( $was_orphan ) ) {
+				do_action( 'pearblog_orphan_detected', $post_id );
 			}
 		}
 
-		return array_keys( $linked );
+		update_option( self::OPTION_ORPHANS, $orphans );
+		update_option( self::OPTION_LAST_RUN, gmdate( 'Y-m-d\TH:i:s\Z' ) );
+
+		return $orphans;
 	}
 
 	/**
-	 * Count how many posts link to a given target post.
+	 * Extract all internal hrefs from post content.
 	 *
-	 * @param  int   $target_id Target post ID.
-	 * @param  int[] $all_ids   All published post IDs (scope of search).
-	 * @return int
-	 */
-	private function count_inbound_links( int $target_id, array $all_ids ): int {
-		$target_url = (string) get_permalink( $target_id );
-		$count      = 0;
-
-		foreach ( $all_ids as $source_id ) {
-			if ( $source_id === $target_id ) {
-				continue;
-			}
-			$content = (string) get_post_field( 'post_content', $source_id );
-			if ( $content !== '' && str_contains( $content, $target_url ) ) {
-				$count++;
-			}
-		}
-
-		return $count;
-	}
-
-	/**
-	 * Map a URL string to a WordPress post ID (0 if not matched).
-	 *
-	 * Uses `url_to_postid()` when available; falls back to searching _posts global.
-	 *
-	 * @param  string $url URL to resolve.
-	 * @return int Post ID or 0.
-	 */
-	private function url_to_post_id( string $url ): int {
-		if ( function_exists( 'url_to_postid' ) ) {
-			return (int) url_to_postid( $url );
-		}
-
-		// Test-environment fallback: search _posts global.
-		$posts = $GLOBALS['_posts'] ?? [];
-		foreach ( $posts as $post ) {
-			if ( isset( $post->guid ) && $post->guid === $url ) {
-				return (int) $post->ID;
-			}
-		}
-
-		return 0;
-	}
-
-	// -----------------------------------------------------------------------
-	// Internal helpers — Misc
-	// -----------------------------------------------------------------------
-
-	/**
-	 * Check whether a post has been marked as reviewed.
-	 *
-	 * @param  int $post_id Post ID.
-	 * @return bool
-	 */
-	private function is_reviewed( int $post_id ): bool {
-		return '1' === (string) get_post_meta( $post_id, self::META_REVIEWED, true );
-	}
-
-	/**
-	 * Split a title string into an array of meaningful words (stop-words removed).
-	 *
-	 * @param  string $title Lowercase title.
+	 * @param int[] $post_ids
 	 * @return string[]
 	 */
-	private function title_words( string $title ): array {
-		$stop  = [ 'the', 'a', 'an', 'is', 'in', 'on', 'at', 'to', 'for', 'of', 'and', 'or', 'but', 'with', 'how', 'what', 'why', 'when', 'where' ];
-		$words = preg_split( '/\W+/', $title, -1, PREG_SPLIT_NO_EMPTY ) ?: [];
-		return array_values( array_diff( $words, $stop ) );
+	public function collect_linked_urls( array $post_ids ): array {
+		$home = trailingslashit( home_url() );
+		$urls = [];
+
+		foreach ( $post_ids as $id ) {
+			$content = get_post_field( 'post_content', (int) $id );
+			if ( ! $content ) {
+				continue;
+			}
+
+			preg_match_all(
+				'/<a\s[^>]*href=["\'](' . preg_quote( $home, '/' ) . '[^"\']*)["\'][^>]*>/i',
+				$content,
+				$matches
+			);
+
+			foreach ( $matches[1] ?? [] as $url ) {
+				$urls[] = $url;
+			}
+		}
+
+		return array_unique( $urls );
+	}
+
+	/**
+	 * Normalise a URL for comparison (strip trailing slash, query string, fragment).
+	 *
+	 * @param string $url
+	 * @return string
+	 */
+	public function normalise_url( string $url ): string {
+		$url = strtok( $url, '?' );
+		$url = strtok( (string) $url, '#' );
+		return rtrim( (string) $url, '/' );
 	}
 
 	// -----------------------------------------------------------------------
-	// Cache helpers
+	// REST handler
 	// -----------------------------------------------------------------------
 
 	/**
-	 * @return array|null Cached scan result or null if absent/expired.
+	 * @param \WP_REST_Request $request
+	 * @return \WP_REST_Response
 	 */
-	private function get_cached_scan(): ?array {
-		$raw = (string) get_option( self::OPT_ORPHAN_CACHE, '' );
-		if ( '' === $raw ) {
-			return null;
-		}
-		$result = json_decode( $raw, true );
-		if ( ! is_array( $result ) ) {
-			return null;
-		}
-		$result['cached'] = true;
-		return $result;
+	public function rest_get_orphans( \WP_REST_Request $request ): \WP_REST_Response {
+		return new \WP_REST_Response( [
+			'orphans'  => $this->load_orphans(),
+			'last_run' => get_option( self::OPTION_LAST_RUN, null ),
+		], 200 );
 	}
 
-	private function save_scan_cache( array $result ): void {
-		update_option( self::OPT_ORPHAN_CACHE, wp_json_encode( $result ) );
-		update_option( self::OPT_LAST_SCAN, time() );
+	// -----------------------------------------------------------------------
+	// Helpers
+	// -----------------------------------------------------------------------
+
+	/**
+	 * @return array<int,array{post_id:int,permalink:string,age_days:int}>
+	 */
+	private function load_orphans(): array {
+		$raw = get_option( self::OPTION_ORPHANS, [] );
+		return is_array( $raw ) ? $raw : [];
 	}
 }

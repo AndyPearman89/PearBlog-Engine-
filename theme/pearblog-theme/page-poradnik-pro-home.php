@@ -1,9 +1,42 @@
+<?php
+/**
+ * Template Name: Poradnik.pro - Home (Standalone)
+ *
+ * Standalone landing homepage for Poradnik.pro. Self-contained markup with
+ * inline styles; wired into WordPress via wp_head()/wp_footer() so plugins,
+ * the admin bar and PearBlog SEO meta load correctly.
+ *
+ * @package PearBlog
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+/**
+ * Build an on-site search URL for a query term (robust: always resolves).
+ */
+$pp_search = static function ( string $query ): string {
+	return esc_url( home_url( '/?s=' . rawurlencode( $query ) ) );
+};
+
+$pp_home = esc_url( home_url( '/' ) );
+
+/** Most recent published posts, used to populate the "latest" section. */
+$pp_recent = get_posts(
+	array(
+		'numberposts' => 4,
+		'post_status' => 'publish',
+		'orderby'     => 'date',
+		'order'       => 'DESC',
+	)
+);
+
+$pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Poradnik.pro – Znajdź odpowiedź specjalisty</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -829,27 +862,29 @@
             .footer-grid { grid-template-columns: repeat(2, 1fr); }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
+<body <?php body_class(); ?>>
 
 <!-- ===== HEADER ===== -->
 <header class="site-header">
     <div class="container header-inner">
-        <a href="#" class="logo">
+        <a href="<?php echo $pp_home; ?>" class="logo">
             <div class="logo-icon">P</div>
             Poradnik.pro
         </a>
         <nav class="main-nav">
-            <a href="#">Poradniki</a>
-            <a href="#">Rankingi</a>
-            <a href="#">Kalkulatory</a>
-            <a href="#">Pytania i Odpowiedzi</a>
-            <a href="#">Specjaliści</a>
-            <a href="#">Kontakt</a>
+            <a href="<?php echo esc_url( home_url( '/poradniki/' ) ); ?>">Poradniki</a>
+            <a href="<?php echo esc_url( home_url( '/porownania/' ) ); ?>">Porównania</a>
+            <a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>">Rankingi</a>
+            <a href="<?php echo esc_url( home_url( '/kalkulatory/' ) ); ?>">Kalkulatory</a>
+            <a href="<?php echo esc_url( home_url( '/pytania/' ) ); ?>">Pytania i Odpowiedzi</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>">Specjaliści</a>
+            <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>">Kontakt</a>
         </nav>
         <div class="header-actions">
-            <button class="btn-search-icon">🔍</button>
-            <button class="btn-find-specialist">Znajdź specjalistę</button>
+            <button class="btn-search-icon" type="button" aria-label="Szukaj">🔍</button>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>" class="btn-find-specialist">Znajdź specjalistę</a>
         </div>
     </div>
 </header>
@@ -859,18 +894,18 @@
     <div class="container hero-content">
         <h1>Znajdź odpowiedź<br><span>specjalisty.</span></h1>
         <p class="hero-subtitle">Poradniki, rankingi, kalkulatory i eksperci w jednym miejscu.</p>
-        <div class="search-bar">
-            <input type="text" placeholder="Czego szukasz? Np. kredyt hipoteczny, działka budowlana...">
+        <form class="search-bar" action="<?php echo $pp_home; ?>" method="get" role="search">
+            <input type="text" name="s" value="<?php echo esc_attr( get_search_query() ); ?>" placeholder="Czego szukasz? Np. kredyt hipoteczny, działka budowlana...">
             <div class="search-category">Wszystkie kategorie</div>
-            <button class="btn-search">Szukaj</button>
-        </div>
+            <button class="btn-search" type="submit">Szukaj</button>
+        </form>
         <div class="popular-tags">
             <span>Popularne wyszukiwania:</span>
-            <a href="#">Kredyt hipoteczny</a>
-            <a href="#">Działka budowlana</a>
-            <a href="#">Rozliczenie PIT</a>
-            <a href="#">Pompa ciepła</a>
-            <a href="#">Zdolność kredytowa</a>
+            <a href="<?php echo $pp_search( 'kredyt hipoteczny' ); ?>">Kredyt hipoteczny</a>
+            <a href="<?php echo $pp_search( 'działka budowlana' ); ?>">Działka budowlana</a>
+            <a href="<?php echo $pp_search( 'rozliczenie PIT' ); ?>">Rozliczenie PIT</a>
+            <a href="<?php echo $pp_search( 'pompa ciepła' ); ?>">Pompa ciepła</a>
+            <a href="<?php echo $pp_search( 'zdolność kredytowa' ); ?>">Zdolność kredytowa</a>
         </div>
     </div>
 </section>
@@ -914,59 +949,59 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Popularne kategorie</h2>
-            <a href="#" class="section-link">Zobacz wszystkie kategorie</a>
+            <a href="<?php echo esc_url( home_url( '/poradniki/' ) ); ?>" class="section-link">Zobacz wszystkie kategorie</a>
         </div>
         <div class="categories-grid">
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/prawo/' ) ); ?>" class="category-card">
                 <div class="category-icon law">⚖️</div>
                 <div>
                     <div class="category-name">Prawo</div>
                     <div class="category-meta">2 430 poradników<br>1 250 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/finanse/' ) ); ?>" class="category-card">
                 <div class="category-icon finance">💰</div>
                 <div>
                     <div class="category-name">Finanse</div>
                     <div class="category-meta">3 120 poradników<br>1 780 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/nieruchomosci/' ) ); ?>" class="category-card">
                 <div class="category-icon realestate">🏠</div>
                 <div>
                     <div class="category-name">Nieruchomości</div>
                     <div class="category-meta">2 850 poradników<br>1 620 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/budownictwo/' ) ); ?>" class="category-card">
                 <div class="category-icon construction">🏗️</div>
                 <div>
                     <div class="category-name">Budowa domu</div>
                     <div class="category-meta">3 410 poradników<br>1 980 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/motoryzacja/' ) ); ?>" class="category-card">
                 <div class="category-icon auto">🚗</div>
                 <div>
                     <div class="category-name">Motoryzacja</div>
                     <div class="category-meta">1 890 poradników<br>980 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/zdrowie/' ) ); ?>" class="category-card">
                 <div class="category-icon health">❤️</div>
                 <div>
                     <div class="category-name">Zdrowie</div>
                     <div class="category-meta">2 210 poradników<br>1 430 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/biznes/' ) ); ?>" class="category-card">
                 <div class="category-icon business">💼</div>
                 <div>
                     <div class="category-name">Biznes</div>
                     <div class="category-meta">2 340 poradników<br>1 260 ekspertów</div>
                 </div>
             </a>
-            <a href="#" class="category-card">
+            <a href="<?php echo esc_url( home_url( '/kategoria/technologia/' ) ); ?>" class="category-card">
                 <div class="category-icon tech">💻</div>
                 <div>
                     <div class="category-name">Technologia</div>
@@ -982,7 +1017,7 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Polecani specjaliści</h2>
-            <a href="#" class="section-link">Zobacz wszystkich specjalistów</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>" class="section-link">Zobacz wszystkich specjalistów</a>
         </div>
         <div class="specialists-carousel">
             <div class="specialist-card">
@@ -993,7 +1028,7 @@
                     <span class="stars">★★★★★</span> 4.9 (522)
                 </div>
                 <div class="specialist-location">📍 Warszawa</div>
-                <a href="#" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/warszawa/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👨</div>
@@ -1003,7 +1038,7 @@
                     <span class="stars">★★★★★</span> 4.8 (421)
                 </div>
                 <div class="specialist-location">📍 Kraków</div>
-                <a href="#" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/krakow/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👩</div>
@@ -1013,7 +1048,7 @@
                     <span class="stars">★★★★★</span> 4.9 (309)
                 </div>
                 <div class="specialist-location">📍 Wrocław</div>
-                <a href="#" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/wroclaw/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👨</div>
@@ -1023,7 +1058,7 @@
                     <span class="stars">★★★★★</span> 4.8 (278)
                 </div>
                 <div class="specialist-location">📍 Poznań</div>
-                <a href="#" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/poznan/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
             <div class="specialist-card">
                 <div class="specialist-avatar">👩</div>
@@ -1033,7 +1068,7 @@
                     <span class="stars">★★★★★</span> 4.9 (186)
                 </div>
                 <div class="specialist-location">📍 Gdańsk</div>
-                <a href="#" class="btn-profile">Zobacz profil</a>
+                <a href="<?php echo esc_url( home_url( '/gdansk/specjalisci/' ) ); ?>" class="btn-profile">Zobacz profil</a>
             </div>
         </div>
     </div>
@@ -1046,62 +1081,37 @@
             <!-- Questions -->
             <div>
                 <div class="section-header">
-                    <h2 class="section-title">Najnowsze pytania</h2>
-                    <a href="#" class="section-link">Zobacz wszystkie</a>
+                    <h2 class="section-title">Najnowsze poradniki</h2>
+                    <a href="<?php echo esc_url( home_url( '/poradniki/' ) ); ?>" class="section-link">Zobacz wszystkie</a>
                 </div>
                 <div class="questions-list">
-                    <div class="question-item">
-                        <div class="question-left">
-                            <div class="question-dot purple"></div>
-                            <div>
-                                <div class="question-text">Czy mogę wybudować dom na działce rolnej?</div>
-                                <div class="question-category">Nieruchomości • Prawo</div>
+                    <?php if ( ! empty( $pp_recent ) ) : ?>
+                        <?php foreach ( $pp_recent as $pp_i => $pp_post ) : ?>
+                            <a class="question-item" href="<?php echo esc_url( get_permalink( $pp_post ) ); ?>" style="text-decoration:none;color:inherit;">
+                                <div class="question-left">
+                                    <div class="question-dot <?php echo esc_attr( $pp_dot_colors[ $pp_i % count( $pp_dot_colors ) ] ); ?>"></div>
+                                    <div>
+                                        <div class="question-text"><?php echo esc_html( get_the_title( $pp_post ) ); ?></div>
+                                        <div class="question-category"><?php echo esc_html( get_the_date( 'j M Y', $pp_post ) ); ?></div>
+                                    </div>
+                                </div>
+                                <div class="question-answers">
+                                    <div class="question-count">›</div>
+                                    <div class="question-count-label"><?php echo esc_html( human_time_diff( (int) get_post_time( 'U', true, $pp_post ), time() ) ); ?> temu</div>
+                                </div>
+                            </a>
+                        <?php endforeach; ?>
+                    <?php else : ?>
+                        <div class="question-item">
+                            <div class="question-left">
+                                <div class="question-dot purple"></div>
+                                <div>
+                                    <div class="question-text">Wkrótce pojawią się tu najnowsze poradniki.</div>
+                                    <div class="question-category">Poradnik.pro</div>
+                                </div>
                             </div>
                         </div>
-                        <div class="question-answers">
-                            <div class="question-count">4</div>
-                            <div class="question-count-label">2 godz. temu</div>
-                        </div>
-                    </div>
-                    <div class="question-item">
-                        <div class="question-left">
-                            <div class="question-dot orange"></div>
-                            <div>
-                                <div class="question-text">Jak obniżyć ratę kredytu hipotecznego?</div>
-                                <div class="question-category">Finanse</div>
-                            </div>
-                        </div>
-                        <div class="question-answers">
-                            <div class="question-count">7</div>
-                            <div class="question-count-label">3 godz. temu</div>
-                        </div>
-                    </div>
-                    <div class="question-item">
-                        <div class="question-left">
-                            <div class="question-dot blue"></div>
-                            <div>
-                                <div class="question-text">Jak rozliczyć działalność nierejestrowaną?</div>
-                                <div class="question-category">Biznes • Finanse</div>
-                            </div>
-                        </div>
-                        <div class="question-answers">
-                            <div class="question-count">3</div>
-                            <div class="question-count-label">5 godz. temu</div>
-                        </div>
-                    </div>
-                    <div class="question-item">
-                        <div class="question-left">
-                            <div class="question-dot green"></div>
-                            <div>
-                                <div class="question-text">Jaka pompa ciepła do domu 150m2?</div>
-                                <div class="question-category">Budowa domu • Ogrzewanie</div>
-                            </div>
-                        </div>
-                        <div class="question-answers">
-                            <div class="question-count">6</div>
-                            <div class="question-count-label">6 godz. temu</div>
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -1109,7 +1119,7 @@
             <div>
                 <div class="section-header">
                     <h2 class="section-title">Popularne rankingi</h2>
-                    <a href="#" class="section-link">Zobacz wszystkie</a>
+                    <a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>" class="section-link">Zobacz wszystkie</a>
                 </div>
                 <div class="rankings-grid">
                     <div class="ranking-card blue-bg">
@@ -1159,30 +1169,30 @@
     <div class="container">
         <div class="section-header">
             <h2 class="section-title">Kalkulatory</h2>
-            <a href="#" class="section-link">Zobacz wszystkie kalkulatory</a>
+            <a href="<?php echo esc_url( home_url( '/kalkulatory/' ) ); ?>" class="section-link">Zobacz wszystkie kalkulatory</a>
         </div>
         <div class="calculators-row">
-            <a href="#" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/kredyt-hipoteczny/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">🏦</div>
                 <div class="calculator-name">Kredyt hipoteczny</div>
                 <div class="calculator-desc">Sprawdź raty i koszty</div>
             </a>
-            <a href="#" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/zdolnosc-kredytowa/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">📋</div>
                 <div class="calculator-name">Zdolność kredytowa</div>
                 <div class="calculator-desc">Sprawdź swoją zdolność</div>
             </a>
-            <a href="#" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/koszt-budowy/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">🏠</div>
                 <div class="calculator-name">Koszt budowy domu</div>
                 <div class="calculator-desc">Oblicz koszty budowy</div>
             </a>
-            <a href="#" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/oc/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">🚗</div>
                 <div class="calculator-name">Kalkulator OC</div>
                 <div class="calculator-desc">Oblicz składkę OC</div>
             </a>
-            <a href="#" class="calculator-card">
+            <a href="<?php echo esc_url( home_url( '/kalkulator/wynagrodzenia/' ) ); ?>" class="calculator-card">
                 <div class="calculator-icon">💰</div>
                 <div class="calculator-name">Kalkulator wynagrodzeń</div>
                 <div class="calculator-desc">Sprawdź wynagrodzenie netto</div>
@@ -1272,14 +1282,14 @@
     <div class="container">
         <h3>Najpopularniejsze wyszukiwania</h3>
         <div class="search-tags">
-            <a href="#">Prawo Warszawa</a>
-            <a href="#">Kredyt Kraków</a>
-            <a href="#">Architekt Katowice</a>
-            <a href="#">Księgowy Wrocław</a>
-            <a href="#">Doradca Gdańsk</a>
-            <a href="#">Notariusz Poznań</a>
-            <a href="#">Radca prawny Łódź</a>
-            <a href="#">Prawnik online</a>
+            <a href="<?php echo esc_url( home_url( '/warszawa/prawo/' ) ); ?>">Prawo Warszawa</a>
+            <a href="<?php echo esc_url( home_url( '/krakow/finanse/' ) ); ?>">Kredyt Kraków</a>
+            <a href="<?php echo esc_url( home_url( '/katowice/specjalisci/' ) ); ?>">Architekt Katowice</a>
+            <a href="<?php echo esc_url( home_url( '/wroclaw/specjalisci/' ) ); ?>">Księgowy Wrocław</a>
+            <a href="<?php echo esc_url( home_url( '/gdansk/specjalisci/' ) ); ?>">Doradca Gdańsk</a>
+            <a href="<?php echo esc_url( home_url( '/poznan/specjalisci/' ) ); ?>">Notariusz Poznań</a>
+            <a href="<?php echo esc_url( home_url( '/lodz/prawo/' ) ); ?>">Radca prawny Łódź</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>">Prawnik online</a>
         </div>
     </div>
 </section>
@@ -1290,54 +1300,55 @@
         <div class="footer-grid">
             <div class="footer-col">
                 <h4>Poradniki</h4>
-                <a href="#">Prawo</a>
-                <a href="#">Finanse</a>
-                <a href="#">Nieruchomości</a>
-                <a href="#">Budowa domu</a>
-                <a href="#">Motoryzacja</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/prawo/' ) ); ?>">Prawo</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/finanse/' ) ); ?>">Finanse</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/nieruchomosci/' ) ); ?>">Nieruchomości</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/budownictwo/' ) ); ?>">Budownictwo</a>
+                <a href="<?php echo esc_url( home_url( '/kategoria/motoryzacja/' ) ); ?>">Motoryzacja</a>
             </div>
             <div class="footer-col">
                 <h4>Rankingi</h4>
-                <a href="#">Kredyty</a>
-                <a href="#">Konta bankowe</a>
-                <a href="#">Ubezpieczenia</a>
-                <a href="#">Pompy ciepła</a>
-                <a href="#">Programy księgowe</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/kredyty/' ) ); ?>">Kredyty</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/konta-bankowe/' ) ); ?>">Konta bankowe</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/ubezpieczenia/' ) ); ?>">Ubezpieczenia</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/pompy-ciepla/' ) ); ?>">Pompy ciepła</a>
+                <a href="<?php echo esc_url( home_url( '/ranking/programy-ksiegowe/' ) ); ?>">Programy księgowe</a>
             </div>
             <div class="footer-col">
                 <h4>Kalkulatory</h4>
-                <a href="#">Kredyt hipoteczny</a>
-                <a href="#">Zdolność kredytowa</a>
-                <a href="#">Koszt budowy</a>
-                <a href="#">Kalkulator OC</a>
-                <a href="#">Wynagrodzenia</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/kredyt-hipoteczny/' ) ); ?>">Kredyt hipoteczny</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/zdolnosc-kredytowa/' ) ); ?>">Zdolność kredytowa</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/koszt-budowy/' ) ); ?>">Koszt budowy</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/oc/' ) ); ?>">Kalkulator OC</a>
+                <a href="<?php echo esc_url( home_url( '/kalkulator/wynagrodzenia/' ) ); ?>">Wynagrodzenia</a>
             </div>
             <div class="footer-col">
                 <h4>Dla specjalistów</h4>
-                <a href="#">Dołącz jako ekspert</a>
-                <a href="#">Panel specjalisty</a>
-                <a href="#">Cennik</a>
-                <a href="#">FAQ</a>
+                <a href="<?php echo esc_url( home_url( '/dla-specjalistow/' ) ); ?>">Dołącz jako ekspert</a>
+                <a href="<?php echo esc_url( home_url( '/panel/' ) ); ?>">Panel specjalisty</a>
+                <a href="<?php echo esc_url( home_url( '/cennik/' ) ); ?>">Cennik</a>
+                <a href="<?php echo esc_url( home_url( '/faq/' ) ); ?>">FAQ</a>
             </div>
             <div class="footer-col">
                 <h4>O nas</h4>
-                <a href="#">O Poradnik.pro</a>
-                <a href="#">Jak to działa</a>
-                <a href="#">Blog</a>
-                <a href="#">Kontakt</a>
-                <a href="#">Mapa strony</a>
+                <a href="<?php echo $pp_home; ?>">O Poradnik.pro</a>
+                <a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">Blog</a>
+                <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>">Kontakt</a>
+                <a href="<?php echo esc_url( home_url( '/regulamin/' ) ); ?>">Regulamin</a>
+                <a href="<?php echo esc_url( home_url( '/polityka-prywatnosci/' ) ); ?>">Polityka prywatności</a>
             </div>
         </div>
         <div class="footer-bottom">
-            <span>© 2026 Poradnik.pro. Wszelkie prawa zastrzeżone.</span>
+            <span>© <?php echo esc_html( gmdate( 'Y' ) ); ?> <?php echo esc_html( get_bloginfo( 'name' ) ); ?>. Wszelkie prawa zastrzeżone.</span>
             <div class="footer-links">
-                <a href="#">Regulamin</a>
-                <a href="#">Polityka prywatności</a>
-                <a href="#">Kontakt</a>
+                <a href="<?php echo esc_url( home_url( '/regulamin/' ) ); ?>">Regulamin</a>
+                <a href="<?php echo esc_url( home_url( '/polityka-prywatnosci/' ) ); ?>">Polityka prywatności</a>
+                <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>">Kontakt</a>
             </div>
         </div>
     </div>
 </footer>
 
+<?php wp_footer(); ?>
 </body>
 </html>

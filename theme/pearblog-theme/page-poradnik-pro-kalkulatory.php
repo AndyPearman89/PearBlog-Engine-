@@ -1,77 +1,53 @@
+<?php
+/**
+ * Template Name: Poradnik.pro - Kalkulatory
+ *
+ * Calculators listing page for Poradnik.pro. Uses the shared design system
+ * (purple Inter-based, no Tailwind) with WordPress integration.
+ *
+ * @package PearBlog
+ * @subpackage PoradnikPro
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulatory – Poradnik.pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1a1a2e;
-            background: #f8f9fc;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { text-decoration: none; color: inherit; }
-        button { cursor: pointer; border: none; font-family: inherit; }
-        ul { list-style: none; }
-
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --orange-hover: #ea580c;
-            --blue-accent: #3b82f6;
-            --green-accent: #10b981;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --max-width: 1200px;
+        /* ===== PAGE HERO (green variant for calculators) ===== */
+        .page-hero {
+            background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%);
+            padding: 48px 0;
         }
 
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
+        /* ===== CALCULATORS SECTION ===== */
+        .calculators-section { padding: 48px 0 64px; }
+        .section-intro {
+            text-align: center;
+            max-width: 640px;
+            margin: 0 auto 40px;
+        }
+        .section-intro h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+        .section-intro p {
+            font-size: 15px;
+            color: var(--gray-500);
+        }
 
-        /* ===== HEADER ===== */
-        .site-header { background: #fff; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-        .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--gray-900); }
-        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--purple-primary), var(--purple-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
-        .main-nav { display: flex; align-items: center; gap: 28px; }
-        .main-nav a { font-size: 14px; font-weight: 500; color: var(--gray-600); transition: color 0.2s; }
-        .main-nav a:hover { color: var(--purple-primary); }
-        .main-nav a.active { color: var(--purple-primary); font-weight: 600; }
-        .header-actions { display: flex; align-items: center; gap: 16px; }
-        .btn-find-specialist { background: var(--purple-primary); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .btn-find-specialist:hover { background: var(--purple-dark); }
-
-        /* ===== PAGE HERO ===== */
-        .page-hero { background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%); padding: 48px 0; }
-        .page-hero h1 { font-size: 32px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; }
-        .page-hero p { font-size: 16px; color: var(--gray-600); max-width: 560px; }
-        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-400); margin-bottom: 16px; }
-        .breadcrumb a { color: var(--gray-500); }
-        .breadcrumb a:hover { color: var(--purple-primary); }
-        .breadcrumb .sep { color: var(--gray-300); }
-
-        /* ===== CALCULATORS GRID ===== */
-        .calculators-section { padding: 48px 0; }
+        /* ===== CALCULATOR GRID ===== */
         .calculators-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -84,6 +60,9 @@
             padding: 28px;
             text-align: center;
             transition: box-shadow 0.2s, transform 0.2s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
         .calc-card:hover {
             box-shadow: var(--shadow-md);
@@ -96,8 +75,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            margin: 0 auto 16px;
+            font-size: 28px;
+            margin-bottom: 16px;
         }
         .calc-icon.green { background: #d1fae5; }
         .calc-icon.blue { background: #dbeafe; }
@@ -105,9 +84,30 @@
         .calc-icon.purple { background: #f3e8ff; }
         .calc-icon.red { background: #fee2e2; }
         .calc-icon.yellow { background: #fef3c7; }
-        .calc-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
-        .calc-desc { font-size: 13px; color: var(--gray-500); line-height: 1.5; margin-bottom: 16px; }
-        .calc-stats { display: flex; align-items: center; justify-content: center; gap: 16px; font-size: 12px; color: var(--gray-400); margin-bottom: 16px; }
+        .calc-icon.teal { background: #ccfbf1; }
+        .calc-icon.pink { background: #fce7f3; }
+        .calc-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+        .calc-desc {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.6;
+            margin-bottom: 16px;
+            flex-grow: 1;
+        }
+        .calc-meta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--gray-400);
+            margin-bottom: 16px;
+        }
         .btn-calc {
             display: inline-block;
             background: var(--green-accent);
@@ -151,56 +151,48 @@
             align-items: center;
             justify-content: center;
             font-weight: 700;
+            font-size: 16px;
             margin: 0 auto 12px;
         }
-        .step-title { font-size: 14px; font-weight: 600; color: var(--gray-800); margin-bottom: 6px; }
-        .step-desc { font-size: 13px; color: var(--gray-500); }
+        .step-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 6px;
+        }
+        .step-desc {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.5;
+        }
 
-        /* ===== FOOTER ===== */
-        .site-footer { background: var(--gray-900); color: rgba(255,255,255,0.6); padding: 48px 0 24px; }
-        .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.5); transition: color 0.2s; }
-        .footer-links a:hover { color: #fff; }
-
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .calculators-grid { grid-template-columns: repeat(2, 1fr); }
+        }
         @media (max-width: 768px) {
             .calculators-grid { grid-template-columns: 1fr; }
-            .steps { grid-template-columns: 1fr; }
-            .main-nav { display: none; }
+            .steps { grid-template-columns: 1fr; gap: 24px; }
+            .page-hero h1 { font-size: 26px; }
+            .how-it-works { padding: 24px; }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
+<body <?php body_class(); ?>>
 
-<!-- HEADER -->
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a href="/" class="logo"><div class="logo-icon">P</div> Poradnik.pro</a>
-            <nav class="main-nav">
-                <a href="/poradniki">Poradniki</a>
-                <a href="/porownania">Porównania</a>
-                <a href="/rankingi">Rankingi</a>
-                <a href="/kalkulatory" class="active">Kalkulatory</a>
-                <a href="/eksperci">Eksperci</a>
-            </nav>
-            <div class="header-actions">
-                <a href="/dla-specjalistow" class="btn-find-specialist">Dla specjalistów</a>
-            </div>
-        </div>
-    </div>
-</header>
+<?php pp_pro_header( 'kalkulatory' ); ?>
 
 <!-- PAGE HERO -->
 <section class="page-hero">
     <div class="container">
         <div class="breadcrumb">
-            <a href="/">Strona główna</a>
+            <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona glowna</a>
             <span class="sep">/</span>
             <span>Kalkulatory</span>
         </div>
-        <h1>🧮 Kalkulatory</h1>
-        <p>Sprawdź liczby zanim podejmiesz decyzję. Wynik w kilka sekund + dopasowani wykonawcy.</p>
+        <h1>Kalkulatory</h1>
+        <p>Sprawdz liczby zanim podejmiesz decyzje. Precyzyjne wyliczenia w kilka sekund, oparte na aktualnych danych rynkowych.</p>
     </div>
 </section>
 
@@ -208,165 +200,166 @@
 <section class="calculators-section">
     <div class="container">
         <div class="how-it-works">
-            <h2>Jak działają nasze kalkulatory?</h2>
+            <h2>Jak dzialaja nasze kalkulatory?</h2>
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
                     <h3 class="step-title">Podaj parametry</h3>
-                    <p class="step-desc">Metraż, lokalizacja, zakres prac — kilka kliknięć</p>
+                    <p class="step-desc">Kwota, okres, oprocentowanie lub metraz - wypelnienie formularza zajmie kilka chwil.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                    <h3 class="step-title">Otrzymaj wycenę</h3>
-                    <p class="step-desc">Realna kalkulacja oparta na aktualnych cenach rynkowych</p>
+                    <h3 class="step-title">Otrzymaj wyliczenie</h3>
+                    <p class="step-desc">Realna kalkulacja oparta na aktualnych wskaznikach i cenach rynkowych.</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
-                    <h3 class="step-title">Znajdź wykonawcę</h3>
-                    <p class="step-desc">Dopasowani specjaliści z Twojej okolicy</p>
+                    <h3 class="step-title">Podejmij decyzje</h3>
+                    <p class="step-desc">Porownaj warianty i wybierz najlepsza opcje dla Twojej sytuacji finansowej.</p>
                 </div>
             </div>
+        </div>
+
+        <div class="section-intro">
+            <h2>Wybierz kalkulator</h2>
+            <p>Wszystkie kalkulatory sa bezplatne i nie wymagaja rejestracji. Wyniki otrzymasz natychmiast.</p>
         </div>
 
         <!-- CALCULATORS GRID -->
         <div class="calculators-grid">
-            <a href="#" class="calc-card">
-                <div class="calc-icon green">🏠</div>
-                <h3 class="calc-title">Kalkulator remontu</h3>
-                <p class="calc-desc">Oblicz koszt remontu mieszkania lub domu na podstawie metrażu i zakresu prac.</p>
-                <div class="calc-stats">
-                    <span>📊 23k użyć</span>
-                    <span>⏱️ ~2 min</span>
+
+            <!-- 1. Kredyt hipoteczny -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/kredyt-hipoteczny/' ) ); ?>" class="calc-card">
+                <div class="calc-icon green">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz koszt</span>
+                <h3 class="calc-title">Kredyt hipoteczny</h3>
+                <p class="calc-desc">Oblicz miesieczna rate kredytu hipotecznego, calkowity koszt zobowiazania i harmonogram splat dla roznych wariantow oprocentowania.</p>
+                <div class="calc-meta">
+                    <span>~2 min</span>
+                    <span>34k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon blue">🏗️</div>
-                <h3 class="calc-title">Kalkulator budowy domu</h3>
-                <p class="calc-desc">Sprawdź realny koszt budowy domu — od fundamentów po wykończenie.</p>
-                <div class="calc-stats">
-                    <span>📊 18k użyć</span>
-                    <span>⏱️ ~3 min</span>
+            <!-- 2. Zdolnosc kredytowa -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/zdolnosc-kredytowa/' ) ); ?>" class="calc-card">
+                <div class="calc-icon blue">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz koszt</span>
+                <h3 class="calc-title">Zdolnosc kredytowa</h3>
+                <p class="calc-desc">Sprawdz jaka maksymalna kwote kredytu mozesz uzyskac na podstawie Twoich dochodow, zobowiazan i wydatkow gospodarstwa domowego.</p>
+                <div class="calc-meta">
+                    <span>~3 min</span>
+                    <span>28k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon orange">🌡️</div>
-                <h3 class="calc-title">Kalkulator pompy ciepła</h3>
-                <p class="calc-desc">Ile kosztuje instalacja i ile zaoszczędzisz rocznie? Policz zwrot inwestycji.</p>
-                <div class="calc-stats">
-                    <span>📊 15k użyć</span>
-                    <span>⏱️ ~2 min</span>
+            <!-- 3. Koszt budowy domu -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/koszt-budowy-domu/' ) ); ?>" class="calc-card">
+                <div class="calc-icon orange">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#ea580c" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="6" width="22" height="16" rx="2"/><path d="M1 10h22"/><path d="M12 6V2"/><path d="M8 2h8"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz koszt</span>
+                <h3 class="calc-title">Koszt budowy domu</h3>
+                <p class="calc-desc">Oszacuj calkowity koszt budowy domu jednorodzinnego - od fundamentow po wykonczenie, z uwzglednieniem aktualnych cen materialow.</p>
+                <div class="calc-meta">
+                    <span>~3 min</span>
+                    <span>21k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon purple">☀️</div>
-                <h3 class="calc-title">Kalkulator fotowoltaiki</h3>
-                <p class="calc-desc">Czy panele się opłacają? Sprawdź oszczędności i czas zwrotu inwestycji.</p>
-                <div class="calc-stats">
-                    <span>📊 12k użyć</span>
-                    <span>⏱️ ~2 min</span>
+            <!-- 4. Kalkulator OC -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/oc/' ) ); ?>" class="calc-card">
+                <div class="calc-icon red">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz koszt</span>
+                <h3 class="calc-title">Kalkulator OC</h3>
+                <p class="calc-desc">Porownaj ceny ubezpieczenia OC i AC od roznych towarzystw. Wprowadz dane pojazdu i sprawdz orientacyjna skladke roczna.</p>
+                <div class="calc-meta">
+                    <span>~2 min</span>
+                    <span>19k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon red">💳</div>
-                <h3 class="calc-title">Kalkulator kredytu</h3>
-                <p class="calc-desc">Rata, odsetki, całkowity koszt kredytu — porównaj oferty banków.</p>
-                <div class="calc-stats">
-                    <span>📊 31k użyć</span>
-                    <span>⏱️ ~1 min</span>
+            <!-- 5. Kalkulator wynagrodzen -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/wynagrodzenia/' ) ); ?>" class="calc-card">
+                <div class="calc-icon purple">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" ry="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz ratę</span>
+                <h3 class="calc-title">Kalkulator wynagrodzen</h3>
+                <p class="calc-desc">Przelicz wynagrodzenie brutto na netto i odwrotnie. Uwzglednij forme zatrudnienia: UoP, zlecenie, dzielo lub B2B.</p>
+                <div class="calc-meta">
+                    <span>~1 min</span>
+                    <span>45k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon yellow">🚗</div>
-                <h3 class="calc-title">Kalkulator kosztów auta</h3>
-                <p class="calc-desc">Paliwo, ubezpieczenie, serwis — ile naprawdę kosztuje Cię samochód rocznie?</p>
-                <div class="calc-stats">
-                    <span>📊 9k użyć</span>
-                    <span>⏱️ ~2 min</span>
+            <!-- 6. ROI fotowoltaiki -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/roi-fotowoltaiki/' ) ); ?>" class="calc-card">
+                <div class="calc-icon yellow">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d97706" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz koszt</span>
+                <h3 class="calc-title">ROI fotowoltaiki</h3>
+                <p class="calc-desc">Czy panele sloneczne sie oplaca? Oblicz zwrot z inwestycji, roczne oszczednosci i czas amortyzacji instalacji fotowoltaicznej.</p>
+                <div class="calc-meta">
+                    <span>~2 min</span>
+                    <span>16k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon green">🏡</div>
-                <h3 class="calc-title">Kalkulator docieplenia</h3>
-                <p class="calc-desc">Oblicz koszt termomodernizacji domu i roczne oszczędności na ogrzewaniu.</p>
-                <div class="calc-stats">
-                    <span>📊 7k użyć</span>
-                    <span>⏱️ ~3 min</span>
+            <!-- 7. Koszt remontu -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/koszt-remontu/' ) ); ?>" class="calc-card">
+                <div class="calc-icon teal">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#0d9488" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz oszczędności</span>
+                <h3 class="calc-title">Koszt remontu</h3>
+                <p class="calc-desc">Oszacuj budzet remontu mieszkania lub domu. Podaj metraz, zakres prac i standard wykonczenia, a otrzymasz szacunkowy kosztorys.</p>
+                <div class="calc-meta">
+                    <span>~2 min</span>
+                    <span>23k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon blue">🏢</div>
-                <h3 class="calc-title">Kalkulator wynajmu vs kupna</h3>
-                <p class="calc-desc">Wynajem czy kupno mieszkania? Sprawdź, co się bardziej opłaca w Twojej sytuacji.</p>
-                <div class="calc-stats">
-                    <span>📊 14k użyć</span>
-                    <span>⏱️ ~3 min</span>
+            <!-- 8. Rata leasingu -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/rata-leasingu/' ) ); ?>" class="calc-card">
+                <div class="calc-icon pink">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>
                 </div>
-                <span class="btn-calc">Porównaj opcje</span>
+                <h3 class="calc-title">Rata leasingu</h3>
+                <p class="calc-desc">Oblicz miesieczna rate leasingu operacyjnego lub finansowego. Porownaj calkowity koszt dla roznych okresow i wplat wlasnych.</p>
+                <div class="calc-meta">
+                    <span>~2 min</span>
+                    <span>12k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon purple">💡</div>
-                <h3 class="calc-title">Kalkulator oszczędności energii</h3>
-                <p class="calc-desc">Ile zaoszczędzisz wymieniając okna, ocieplając dom lub montując rekuperator?</p>
-                <div class="calc-stats">
-                    <span>📊 6k użyć</span>
-                    <span>⏱️ ~2 min</span>
+            <!-- 9. Kalkulator oszczednosci energii -->
+            <a href="<?php echo esc_url( home_url( '/kalkulator/oszczednosc-energii/' ) ); ?>" class="calc-card">
+                <div class="calc-icon green">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#059669" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
                 </div>
-                <span class="btn-calc">Oblicz oszczędności</span>
+                <h3 class="calc-title">Oszczednosc energii</h3>
+                <p class="calc-desc">Ile zaoszczedzisz wymieniajac okna, ocieplajac dom lub instalujac pompe ciepla? Oblicz roczna redukcje kosztow ogrzewania.</p>
+                <div class="calc-meta">
+                    <span>~2 min</span>
+                    <span>9k obliczen</span>
+                </div>
+                <span class="btn-calc">Oblicz</span>
             </a>
 
-            <a href="#" class="calc-card">
-                <div class="calc-icon orange">⚖️</div>
-                <h3 class="calc-title">Kalkulator alimentów</h3>
-                <p class="calc-desc">Orientacyjna kwota alimentów na podstawie dochodów i potrzeb dziecka.</p>
-                <div class="calc-stats">
-                    <span>📊 19k użyć</span>
-                    <span>⏱️ ~2 min</span>
-                </div>
-                <span class="btn-calc">Oblicz kwotę</span>
-            </a>
-
-            <a href="#" class="calc-card">
-                <div class="calc-icon red">🦷</div>
-                <h3 class="calc-title">Kalkulator kosztów leczenia</h3>
-                <p class="calc-desc">Implanty, korony, ortodoncja — sprawdź orientacyjne koszty zabiegów stomatologicznych.</p>
-                <div class="calc-stats">
-                    <span>📊 8k użyć</span>
-                    <span>⏱️ ~2 min</span>
-                </div>
-                <span class="btn-calc">Oblicz koszt</span>
-            </a>
-        </div>
+        </div><!-- .calculators-grid -->
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-bottom">
-            <span>© 2026 Poradnik.pro. Wszelkie prawa zastrzeżone.</span>
-            <div class="footer-links">
-                <a href="#">Regulamin</a>
-                <a href="#">Polityka prywatności</a>
-                <a href="#">Kontakt</a>
-            </div>
-        </div>
-    </div>
-</footer>
+<?php pp_pro_footer(); ?>
 
+<?php wp_footer(); ?>
 </body>
 </html>

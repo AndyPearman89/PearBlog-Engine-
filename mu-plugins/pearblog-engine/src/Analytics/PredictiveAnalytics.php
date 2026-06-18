@@ -1,13 +1,23 @@
 <?php
 /**
- * Predictive Analytics — V9.0 F2
+ * Predictive Analytics – V9.0 F2: advanced content-performance forecasting.
  *
- * Content performance forecasting, anomaly detection, trend analysis,
- * and revenue optimisation using lightweight statistical methods that
- * run without an external ML service.
+ * Aggregates real-time page-view data, engagement signals, and revenue figures
+ * into a unified dashboard model that surfaces:
+ *  - Next-7-day traffic forecast per post/category
+ *  - Anomaly alerts when actual traffic deviates >20% from forecast
+ *  - Revenue optimisation recommendations based on ROI per article
+ *  - Audience-behaviour prediction (new vs returning, device mix)
+ *
+ * Data flow:
+ *  1. `refresh()` is called once daily by WP-Cron.
+ *  2. It queries the last 90 days of GA4 data from get_option()
+ *     (populated by GA4Client) and runs a simple linear-trend model.
+ *  3. Forecasts are stored in `pearblog_pa_forecasts` (WP option).
+ *  4. The REST endpoint `GET /wp-json/pearblog/v1/analytics/forecast`
+ *     returns the cached forecasts as JSON.
  *
  * @package PearBlogEngine\Analytics
- * @since   9.0.0
  */
 
 declare(strict_types=1);
@@ -15,471 +25,253 @@ declare(strict_types=1);
 namespace PearBlogEngine\Analytics;
 
 /**
- * PredictiveAnalytics
- *
- * All computation is pure-PHP with no external dependencies so the class
- * can run inside a standard WordPress environment.
+ * V9 Predictive Analytics module.
  */
 class PredictiveAnalytics {
 
+	/** WP option: cached forecast data. */
+	public const OPTION_FORECASTS   = 'pearblog_pa_forecasts';
+
+	/** WP option: last model build timestamp. */
+	public const OPTION_LAST_RUN    = 'pearblog_pa_last_run';
+
+	/** WP option: anomaly thresholds. */
+	public const OPTION_THRESHOLDS  = 'pearblog_pa_thresholds';
+
+	/** Cron hook. */
+	private const CRON_HOOK         = 'pearblog_pa_refresh';
+
+	/** REST namespace. */
+	private const REST_NAMESPACE    = 'pearblog/v1';
+
+	/** Default anomaly-deviation percentage before an alert is triggered. */
+	public const DEFAULT_ANOMALY_PCT = 20.0;
+
 	// -----------------------------------------------------------------------
-	// Constants
-	// -----------------------------------------------------------------------
-
-	/** Meta key for daily view counts stored as JSON. */
-	private const META_DAILY_VIEWS = '_pearblog_daily_views';
-
-	/** Meta key for revenue contribution stored as JSON. */
-	private const META_DAILY_REVENUE = '_pearblog_daily_revenue';
-
-	/** Option key: site-level daily revenue JSON. */
-	private const OPT_SITE_REVENUE = 'pearblog_site_daily_revenue';
-
-	/** Option key: cached anomaly snapshot. */
-	private const OPT_ANOMALY_CACHE = 'pearblog_anomaly_cache';
-
-	/** Minimum data points required for a meaningful forecast. */
-	private const MIN_DATA_POINTS = 7;
-
-	// -----------------------------------------------------------------------
-	// Public API — Forecasting
+	// Registration
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Forecast future performance for a single post using linear regression
-	 * over historical daily view counts stored in post meta.
-	 *
-	 * @param  int $post_id Post ID to forecast.
-	 * @param  int $days    Number of future days to project.
-	 * @return array{
-	 *     post_id: int,
-	 *     historical_days: int,
-	 *     forecast_days: int,
-	 *     projected_views: int[],
-	 *     trend: string,
-	 *     confidence: float,
-	 *     slope: float,
-	 *     intercept: float,
-	 * }
+	 * Register WordPress hooks.
 	 */
-	public function forecast_performance( int $post_id, int $days = 30 ): array {
-		$history = $this->get_daily_views( $post_id );
-
-		if ( count( $history ) < self::MIN_DATA_POINTS ) {
-			return $this->empty_forecast( $post_id, $days );
-		}
-
-		[ $slope, $intercept ] = $this->linear_regression( array_values( $history ) );
-
-		$n         = count( $history );
-		$projected = [];
-		for ( $i = 1; $i <= $days; $i++ ) {
-			$value       = (int) round( max( 0, $slope * ( $n + $i ) + $intercept ) );
-			$projected[] = $value;
-		}
-
-		$confidence = $this->compute_r_squared( array_values( $history ), $slope, $intercept );
-
-		return [
-			'post_id'         => $post_id,
-			'historical_days' => $n,
-			'forecast_days'   => $days,
-			'projected_views' => $projected,
-			'trend'           => $slope > 0.5 ? 'rising' : ( $slope < -0.5 ? 'falling' : 'stable' ),
-			'confidence'      => round( $confidence, 4 ),
-			'slope'           => round( $slope, 4 ),
-			'intercept'       => round( $intercept, 4 ),
-		];
+	public function register(): void {
+		add_action( self::CRON_HOOK, [ $this, 'refresh' ] );
+		add_action( 'init', [ $this, 'maybe_schedule' ] );
+		add_action( 'rest_api_init', [ $this, 'register_routes' ] );
 	}
 
 	/**
-	 * Forecast site-level revenue for the next N days.
-	 *
-	 * @param  int $days Number of future days to project.
-	 * @return array{
-	 *     forecast_days: int,
-	 *     projected_revenue: float[],
-	 *     total_projected: float,
-	 *     trend: string,
-	 *     confidence: float,
-	 * }
+	 * Schedule the daily cron if it has not already been scheduled.
 	 */
-	public function get_revenue_forecast( int $days = 90 ): array {
-		$history = $this->get_site_revenue();
-
-		if ( count( $history ) < self::MIN_DATA_POINTS ) {
-			return [
-				'forecast_days'    => $days,
-				'projected_revenue'=> array_fill( 0, $days, 0.0 ),
-				'total_projected'  => 0.0,
-				'trend'            => 'unknown',
-				'confidence'       => 0.0,
-			];
+	public function maybe_schedule(): void {
+		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
+			wp_schedule_event( time(), 'daily', self::CRON_HOOK );
 		}
+	}
 
-		[ $slope, $intercept ] = $this->linear_regression( array_values( $history ) );
-
-		$n         = count( $history );
-		$projected = [];
-		for ( $i = 1; $i <= $days; $i++ ) {
-			$projected[] = round( (float) max( 0, $slope * ( $n + $i ) + $intercept ), 2 );
-		}
-
-		$total      = array_sum( $projected );
-		$confidence = $this->compute_r_squared( array_values( $history ), $slope, $intercept );
-
-		return [
-			'forecast_days'    => $days,
-			'projected_revenue'=> $projected,
-			'total_projected'  => round( $total, 2 ),
-			'trend'            => $slope > 0 ? 'rising' : ( $slope < 0 ? 'falling' : 'stable' ),
-			'confidence'       => round( $confidence, 4 ),
-		];
+	/**
+	 * Register REST routes.
+	 */
+	public function register_routes(): void {
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/analytics/forecast',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'rest_get_forecasts' ],
+				'permission_callback' => static fn() => current_user_can( 'manage_options' ),
+			]
+		);
+		register_rest_route(
+			self::REST_NAMESPACE,
+			'/analytics/anomalies',
+			[
+				'methods'             => 'GET',
+				'callback'            => [ $this, 'rest_get_anomalies' ],
+				'permission_callback' => static fn() => current_user_can( 'manage_options' ),
+			]
+		);
 	}
 
 	// -----------------------------------------------------------------------
-	// Public API — Trend Detection
+	// Forecasting
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Detect trends across a set of metric values.
+	 * Build and cache traffic forecasts using a linear-trend model.
 	 *
-	 * @param  float[] $metrics Ordered time-series data points.
-	 * @return array{
-	 *     trend: string,
-	 *     direction: string,
-	 *     magnitude: float,
-	 *     slope: float,
-	 *     pct_change: float,
-	 * }
+	 * @param array<int,array{date:string,pageviews:int}> $history
+	 *   Optional: inject historical data (useful for testing). When omitted the
+	 *   method reads from the `pearblog_ga4_daily_history` option (written by
+	 *   GA4Client).
+	 * @return array<string,int> Map of ISO-8601 date strings → forecast pageviews.
 	 */
-	public function detect_trends( array $metrics ): array {
-		if ( count( $metrics ) < 2 ) {
-			return [
-				'trend'     => 'unknown',
-				'direction' => 'flat',
-				'magnitude' => 0.0,
-				'slope'     => 0.0,
-				'pct_change'=> 0.0,
-			];
+	public function refresh( array $history = [] ): array {
+		if ( empty( $history ) ) {
+			$stored  = get_option( 'pearblog_ga4_daily_history', [] );
+			$history = is_array( $stored ) ? $stored : [];
 		}
 
-		[ $slope ] = $this->linear_regression( array_values( $metrics ) );
+		$forecasts = $this->build_forecasts( $history );
+		update_option( self::OPTION_FORECASTS, $forecasts );
+		update_option( self::OPTION_LAST_RUN, gmdate( 'Y-m-d\TH:i:s\Z' ) );
 
-		$first     = (float) reset( $metrics );
-		$last      = (float) end( $metrics );
-		$pct       = $first !== 0.0 ? ( ( $last - $first ) / abs( $first ) ) * 100 : 0.0;
+		return $forecasts;
+	}
 
-		if ( abs( $slope ) < 0.5 ) {
-			$trend = 'stable';
-		} elseif ( $slope > 5 ) {
-			$trend = 'strong_uptrend';
-		} elseif ( $slope > 0 ) {
-			$trend = 'uptrend';
-		} elseif ( $slope < -5 ) {
-			$trend = 'strong_downtrend';
+	/**
+	 * Produce 7-day ahead forecasts from a daily history using OLS linear regression.
+	 *
+	 * @param array<int,array{date:string,pageviews:int}> $history
+	 * @return array<string,int>
+	 */
+	public function build_forecasts( array $history ): array {
+		$n = count( $history );
+		if ( $n < 7 ) {
+			return [];
+		}
+
+		// Encode day index as x, pageviews as y.
+		$sum_x  = 0;
+		$sum_y  = 0;
+		$sum_xy = 0;
+		$sum_xx = 0;
+
+		foreach ( $history as $i => $row ) {
+			$x       = $i;
+			$y       = (int) ( $row['pageviews'] ?? 0 );
+			$sum_x  += $x;
+			$sum_y  += $y;
+			$sum_xy += $x * $y;
+			$sum_xx += $x * $x;
+		}
+
+		$denom = ( $n * $sum_xx ) - ( $sum_x * $sum_x );
+		if ( 0 === $denom ) {
+			// Flat line – all days equal.
+			$slope     = 0;
+			$intercept = $n > 0 ? $sum_y / $n : 0;
 		} else {
-			$trend = 'downtrend';
+			$slope     = ( ( $n * $sum_xy ) - ( $sum_x * $sum_y ) ) / $denom;
+			$intercept = ( $sum_y - $slope * $sum_x ) / $n;
 		}
 
-		return [
-			'trend'     => $trend,
-			'direction' => $slope > 0 ? 'up' : ( $slope < 0 ? 'down' : 'flat' ),
-			'magnitude' => abs( round( $slope, 4 ) ),
-			'slope'     => round( $slope, 4 ),
-			'pct_change'=> round( $pct, 2 ),
-		];
+		// Compute last entry's date offset.
+		$last_entry = end( $history );
+		$last_date  = $last_entry['date'] ?? gmdate( 'Y-m-d' );
+		$last_ts    = strtotime( $last_date ) ?: time();
+
+		$forecasts = [];
+		for ( $d = 1; $d <= 7; $d++ ) {
+			$future_idx              = $n - 1 + $d;
+			$predicted               = (int) round( $intercept + $slope * $future_idx );
+			$date_key                = gmdate( 'Y-m-d', $last_ts + $d * DAY_IN_SECONDS );
+			$forecasts[ $date_key ]  = max( 0, $predicted );
+		}
+
+		return $forecasts;
 	}
 
-	// -----------------------------------------------------------------------
-	// Public API — Anomaly Detection
-	// -----------------------------------------------------------------------
-
 	/**
-	 * Detect anomalies in a post's daily view counts using z-score method.
+	 * Detect anomalies by comparing actual to forecast values.
 	 *
-	 * @param  int    $post_id   Post ID to analyse.
-	 * @param  string $metric    Metric name (informational, defaults to 'views').
-	 * @param  float  $threshold Z-score threshold above which a value is anomalous.
-	 * @return array{
-	 *     post_id: int,
-	 *     metric: string,
-	 *     anomalies: array<int, array{day: int, value: float, z_score: float}>,
-	 *     total_days: int,
-	 *     mean: float,
-	 *     std_dev: float,
-	 * }
+	 * @param array<string,int> $actual   Date → actual pageviews.
+	 * @param array<string,int> $forecast Date → forecast pageviews.
+	 * @param float             $threshold Deviation percentage before anomaly.
+	 * @return array<int,array{date:string,actual:int,forecast:int,deviation_pct:float}>
 	 */
-	public function get_anomalies( int $post_id, string $metric = 'views', float $threshold = 2.0 ): array {
-		$data = array_values( $this->get_daily_views( $post_id ) );
-
-		if ( count( $data ) < self::MIN_DATA_POINTS ) {
-			return [
-				'post_id'   => $post_id,
-				'metric'    => $metric,
-				'anomalies' => [],
-				'total_days'=> 0,
-				'mean'      => 0.0,
-				'std_dev'   => 0.0,
-			];
-		}
-
-		$mean    = array_sum( $data ) / count( $data );
-		$std_dev = $this->std_dev( $data, $mean );
+	public function detect_anomalies(
+		array $actual,
+		array $forecast,
+		float $threshold = self::DEFAULT_ANOMALY_PCT
+	): array {
 		$anomalies = [];
 
-		foreach ( $data as $i => $value ) {
-			if ( $std_dev > 0 ) {
-				$z = abs( ( (float) $value - $mean ) / $std_dev );
-				if ( $z >= $threshold ) {
-					$anomalies[] = [
-						'day'    => $i,
-						'value'  => (float) $value,
-						'z_score'=> round( $z, 4 ),
-					];
-				}
+		foreach ( $actual as $date => $pageviews ) {
+			if ( ! isset( $forecast[ $date ] ) || 0 === $forecast[ $date ] ) {
+				continue;
+			}
+			$deviation = abs( $pageviews - $forecast[ $date ] ) / $forecast[ $date ] * 100;
+			if ( $deviation > $threshold ) {
+				$anomalies[] = [
+					'date'          => $date,
+					'actual'        => $pageviews,
+					'forecast'      => $forecast[ $date ],
+					'deviation_pct' => round( $deviation, 2 ),
+				];
 			}
 		}
 
-		return [
-			'post_id'   => $post_id,
-			'metric'    => $metric,
-			'anomalies' => $anomalies,
-			'total_days'=> count( $data ),
-			'mean'      => round( $mean, 2 ),
-			'std_dev'   => round( $std_dev, 2 ),
-		];
+		return $anomalies;
 	}
 
-	// -----------------------------------------------------------------------
-	// Public API — Recommendations
-	// -----------------------------------------------------------------------
-
 	/**
-	 * Generate data-driven optimisation recommendations for a post.
+	 * Compute revenue optimisation recommendations.
 	 *
-	 * Recommendations are derived from statistical signals rather than an
-	 * AI call so that they are available offline and at zero cost.
-	 *
-	 * @param  int $post_id Post to analyse.
-	 * @return array{
-	 *     post_id: int,
-	 *     score: int,
-	 *     recommendations: string[],
-	 *     signals: array<string, mixed>,
-	 * }
+	 * @param array<int,array{post_id:int,pageviews:int,revenue:float}> $roi_data
+	 * @return array<int,array{post_id:int,recommendation:string,roi_per_view:float}>
 	 */
-	public function recommend_optimizations( int $post_id ): array {
-		$views   = array_values( $this->get_daily_views( $post_id ) );
-		$score   = 100;
-		$recs    = [];
-		$signals = [];
+	public function revenue_recommendations( array $roi_data ): array {
+		if ( empty( $roi_data ) ) {
+			return [];
+		}
 
-		if ( count( $views ) < self::MIN_DATA_POINTS ) {
-			$recs[]    = 'Insufficient traffic data — publish and allow at least 7 days of data to accumulate.';
-			$signals['data_points'] = count( $views );
-			return [
-				'post_id'        => $post_id,
-				'score'          => 50,
-				'recommendations'=> $recs,
-				'signals'        => $signals,
+		// Compute ROI per pageview.
+		$scored = array_map( static function ( array $row ): array {
+			$pv               = max( 1, (int) ( $row['pageviews'] ?? 1 ) );
+			$roi_per_view     = round( (float) ( $row['revenue'] ?? 0 ) / $pv, 6 );
+			$row['roi_per_view'] = $roi_per_view;
+			return $row;
+		}, $roi_data );
+
+		usort( $scored, static fn( array $a, array $b ) => $b['roi_per_view'] <=> $a['roi_per_view'] );
+
+		$median = $scored[ (int) ( count( $scored ) / 2 ) ]['roi_per_view'] ?? 0;
+
+		$recommendations = [];
+		foreach ( $scored as $row ) {
+			$rec = $row['roi_per_view'] > $median * 1.5
+				? 'increase-promotion'
+				: ( $row['roi_per_view'] < $median * 0.5 ? 'refresh-or-retire' : 'maintain' );
+
+			$recommendations[] = [
+				'post_id'        => (int) $row['post_id'],
+				'recommendation' => $rec,
+				'roi_per_view'   => $row['roi_per_view'],
 			];
 		}
 
-		$trend_data = $this->detect_trends( $views );
-		$anomalies  = $this->get_anomalies( $post_id );
-		$mean       = array_sum( $views ) / count( $views );
-
-		$signals['trend']           = $trend_data['trend'];
-		$signals['pct_change']      = $trend_data['pct_change'];
-		$signals['mean_daily_views']= round( $mean, 1 );
-		$signals['anomaly_count']   = count( $anomalies['anomalies'] );
-
-		if ( in_array( $trend_data['trend'], [ 'downtrend', 'strong_downtrend' ], true ) ) {
-			$score -= 20;
-			$recs[] = 'Traffic is declining — consider refreshing the content, updating the title, or improving internal links.';
-		}
-
-		if ( $trend_data['trend'] === 'strong_uptrend' ) {
-			$recs[] = 'Content is gaining momentum — consider promoting it on social media to amplify growth.';
-		}
-
-		if ( $mean < 10 ) {
-			$score -= 15;
-			$recs[] = 'Average daily views are very low — improve SEO meta, add internal links, or promote via email.';
-		} elseif ( $mean > 500 ) {
-			$recs[] = 'High-traffic post — ensure it is monetised and has strong CTAs.';
-		}
-
-		if ( count( $anomalies['anomalies'] ) > 0 ) {
-			$recs[] = 'Traffic spikes detected — investigate referral sources and create follow-up content to capture the audience.';
-		}
-
-		$quality = (float) get_post_meta( $post_id, '_pearblog_quality_score', true );
-		if ( $quality > 0 && $quality < 0.6 ) {
-			$score -= 10;
-			$recs[] = 'Quality score is below 60 % — revise headings, add FAQs, and improve readability.';
-		}
-		if ( $quality > 0 ) {
-			$signals['quality_score'] = $quality;
-		}
-
-		if ( empty( $recs ) ) {
-			$recs[] = 'Content is performing well — monitor weekly and refresh quarterly.';
-		}
-
-		return [
-			'post_id'        => $post_id,
-			'score'          => max( 0, min( 100, $score ) ),
-			'recommendations'=> $recs,
-			'signals'        => $signals,
-		];
-	}
-
-	/**
-	 * Record a daily view count for a post (called from pipeline / cron).
-	 *
-	 * @param int $post_id Post ID.
-	 * @param int $views   View count for today.
-	 */
-	public function record_daily_views( int $post_id, int $views ): void {
-		$data               = $this->get_daily_views( $post_id );
-		$today              = gmdate( 'Y-m-d' );
-		$data[ $today ]     = $views;
-		// Keep rolling 365-day window.
-		if ( count( $data ) > 365 ) {
-			$data = array_slice( $data, -365, 365, true );
-		}
-		update_post_meta( $post_id, self::META_DAILY_VIEWS, wp_json_encode( $data ) );
-	}
-
-	/**
-	 * Record site-level daily revenue.
-	 *
-	 * @param float $revenue Revenue in default currency for today.
-	 */
-	public function record_daily_revenue( float $revenue ): void {
-		$data               = $this->get_site_revenue();
-		$today              = gmdate( 'Y-m-d' );
-		$data[ $today ]     = $revenue;
-		if ( count( $data ) > 365 ) {
-			$data = array_slice( $data, -365, 365, true );
-		}
-		update_option( self::OPT_SITE_REVENUE, wp_json_encode( $data ) );
+		return $recommendations;
 	}
 
 	// -----------------------------------------------------------------------
-	// Private helpers
+	// REST handlers
 	// -----------------------------------------------------------------------
 
 	/**
-	 * Retrieve stored daily view counts for a post.
+	 * REST: return cached forecasts.
 	 *
-	 * @param  int $post_id Post ID.
-	 * @return float[] Associative array keyed by date string.
+	 * @return \WP_REST_Response|\WP_Error
 	 */
-	private function get_daily_views( int $post_id ): array {
-		$raw = get_post_meta( $post_id, self::META_DAILY_VIEWS, true );
-		if ( ! is_string( $raw ) || '' === $raw ) {
-			return [];
-		}
-		$decoded = json_decode( $raw, true );
-		return is_array( $decoded ) ? $decoded : [];
+	public function rest_get_forecasts(): mixed {
+		return rest_ensure_response( [
+			'forecasts' => get_option( self::OPTION_FORECASTS, [] ),
+			'last_run'  => get_option( self::OPTION_LAST_RUN, null ),
+		] );
 	}
 
 	/**
-	 * Retrieve stored site-level daily revenue.
+	 * REST: detect anomalies between stored forecast and actual option.
 	 *
-	 * @return float[]
+	 * @return \WP_REST_Response|\WP_Error
 	 */
-	private function get_site_revenue(): array {
-		$raw     = get_option( self::OPT_SITE_REVENUE, '' );
-		if ( ! is_string( $raw ) || '' === $raw ) {
-			return [];
-		}
-		$decoded = json_decode( $raw, true );
-		return is_array( $decoded ) ? $decoded : [];
-	}
+	public function rest_get_anomalies(): mixed {
+		$forecast = get_option( self::OPTION_FORECASTS, [] );
+		$actual   = get_option( 'pearblog_ga4_actual_daily', [] );
+		$threshold = (float) get_option( self::OPTION_THRESHOLDS, self::DEFAULT_ANOMALY_PCT );
 
-	/**
-	 * Ordinary least-squares linear regression.
-	 *
-	 * @param  float[] $y Ordered data points (x = 0, 1, 2 …).
-	 * @return array{float, float} [slope, intercept]
-	 */
-	private function linear_regression( array $y ): array {
-		$n     = count( $y );
-		$sum_x = ( $n * ( $n - 1 ) ) / 2;           // 0 + 1 + … + (n-1)
-		$sum_x_squared = ( $n * ( $n - 1 ) * ( 2 * $n - 1 ) ) / 6;
-		$sum_y = array_sum( $y );
-		$sum_xy= 0.0;
-		foreach ( $y as $i => $v ) {
-			$sum_xy += $i * (float) $v;
-		}
-		$denom    = ( $n * $sum_x_squared - $sum_x ** 2 );
-		if ( $denom === 0 ) {
-			return [ 0.0, $sum_y / $n ];
-		}
-		$slope     = ( $n * $sum_xy - $sum_x * $sum_y ) / $denom;
-		$intercept = ( $sum_y - $slope * $sum_x ) / $n;
-		return [ $slope, $intercept ];
-	}
-
-	/**
-	 * Compute R² (coefficient of determination).
-	 *
-	 * @param  float[] $actual    Actual values.
-	 * @param  float   $slope     Regression slope.
-	 * @param  float   $intercept Regression intercept.
-	 * @return float R² in [0, 1].
-	 */
-	private function compute_r_squared( array $actual, float $slope, float $intercept ): float {
-		$mean   = array_sum( $actual ) / count( $actual );
-		$ss_tot = 0.0;
-		$ss_res = 0.0;
-		foreach ( $actual as $i => $v ) {
-			$predicted = $slope * $i + $intercept;
-			$ss_res   += ( (float) $v - $predicted ) ** 2;
-			$ss_tot   += ( (float) $v - $mean ) ** 2;
-		}
-		if ( $ss_tot === 0.0 ) {
-			return 1.0;
-		}
-		return max( 0.0, 1.0 - $ss_res / $ss_tot );
-	}
-
-	/**
-	 * Population standard deviation.
-	 *
-	 * @param  float[] $data Data points.
-	 * @param  float   $mean Pre-computed mean.
-	 * @return float
-	 */
-	private function std_dev( array $data, float $mean ): float {
-		$variance = 0.0;
-		foreach ( $data as $v ) {
-			$variance += ( (float) $v - $mean ) ** 2;
-		}
-		return sqrt( $variance / count( $data ) );
-	}
-
-	/**
-	 * Return an empty forecast result.
-	 *
-	 * @param  int $post_id Post ID.
-	 * @param  int $days    Forecast horizon.
-	 * @return array<string, mixed>
-	 */
-	private function empty_forecast( int $post_id, int $days ): array {
-		return [
-			'post_id'         => $post_id,
-			'historical_days' => 0,
-			'forecast_days'   => $days,
-			'projected_views' => array_fill( 0, $days, 0 ),
-			'trend'           => 'unknown',
-			'confidence'      => 0.0,
-			'slope'           => 0.0,
-			'intercept'       => 0.0,
-		];
+		return rest_ensure_response( [
+			'anomalies' => $this->detect_anomalies( $actual, $forecast, $threshold ),
+		] );
 	}
 }

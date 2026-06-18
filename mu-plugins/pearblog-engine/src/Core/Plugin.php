@@ -49,6 +49,16 @@ use PearBlogEngine\Content\CollaborationManager;
 use PearBlogEngine\Database\PoradnikV3Schema;
 use PearBlogEngine\Integration\PT24Bridge;
 
+// V9.0 modules.
+use PearBlogEngine\Analytics\PredictiveAnalytics;
+use PearBlogEngine\Testing\AIVariantGenerator;
+use PearBlogEngine\Testing\BayesianOptimizer;
+use PearBlogEngine\API\MobileAPIController;
+use PearBlogEngine\Content\ContentRefreshPrioritizer;
+use PearBlogEngine\AI\SmartProviderRouter;
+use PearBlogEngine\SEO\OrphanPageDetector;
+use PearBlogEngine\Pipeline\CollaborationManager;
+
 /**
  * Plugin class – boots all sub-systems exactly once.
  */
@@ -160,8 +170,15 @@ class Plugin {
 		// PT24 Integration – Content-to-Lead bridge.
 		( new PT24Bridge() )->init();
 
-		// V9.0 — Mobile API (F4 backend).
-		( new MobileAPIController() )->register();
+		// V9.0 modules.
+		( new PredictiveAnalytics() )->register();
+		( new ContentRefreshPrioritizer() )->register();
+		( new OrphanPageDetector() )->register();
+		( new CollaborationManager() )->register();
+
+		add_action( 'rest_api_init', static function (): void {
+			( new MobileAPIController() )->register_routes();
+		} );
 
 		// WP-CLI commands.
 		if ( defined( 'WP_CLI' ) && WP_CLI ) {

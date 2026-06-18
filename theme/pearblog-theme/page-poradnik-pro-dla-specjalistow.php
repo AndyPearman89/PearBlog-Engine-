@@ -1,86 +1,77 @@
+<?php
+/**
+ * Template Name: Poradnik.PRO - Dla Specjalistow
+ *
+ * Landing page for specialists (Dla Specjalistow) on Poradnik.pro.
+ * Showcases benefits, how-it-works process, testimonials, pricing preview,
+ * and registration CTAs for professionals joining the platform.
+ *
+ * @package PearBlog
+ * @subpackage PoradnikPro
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dla Specjalistów – Poradnik.pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1a1a2e;
-            background: #f8f9fc;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { text-decoration: none; color: inherit; }
-        button { cursor: pointer; border: none; font-family: inherit; }
-        ul { list-style: none; }
-
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --orange-hover: #ea580c;
-            --blue-accent: #3b82f6;
-            --green-accent: #10b981;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
-            --max-width: 1200px;
-        }
-
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
-
-        /* ===== HEADER ===== */
-        .site-header { background: #fff; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-        .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--gray-900); }
-        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--purple-primary), var(--purple-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
-        .main-nav { display: flex; align-items: center; gap: 28px; }
-        .main-nav a { font-size: 14px; font-weight: 500; color: var(--gray-600); transition: color 0.2s; }
-        .main-nav a:hover { color: var(--purple-primary); }
-        .header-actions { display: flex; align-items: center; gap: 16px; }
-        .btn-login { font-size: 14px; font-weight: 500; color: var(--gray-700); padding: 8px 16px; }
-        .btn-register { background: var(--orange-cta); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .btn-register:hover { background: var(--orange-hover); }
-
-        /* ===== HERO ===== */
-        .hero {
-            background: linear-gradient(135deg, #0f0626 0%, #1a0a3e 40%, #2d1b69 100%);
-            padding: 80px 0;
+        /* ===== HERO SECTION ===== */
+        .specialist-hero {
+            background: linear-gradient(135deg, #1a0a3e 0%, #6c2bd9 100%);
+            padding: 80px 0 100px;
             position: relative;
             overflow: hidden;
         }
-        .hero::before {
+        .specialist-hero::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: radial-gradient(ellipse at 70% 20%, rgba(139,92,246,0.15) 0%, transparent 60%);
+            top: -50%;
+            right: -20%;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(139,92,246,0.2) 0%, transparent 70%);
+            border-radius: 50%;
         }
-        .hero-content { position: relative; z-index: 2; text-align: center; max-width: 700px; margin: 0 auto; }
-        .hero h1 { color: #fff; font-size: 38px; font-weight: 800; margin-bottom: 16px; line-height: 1.2; }
-        .hero h1 span { background: linear-gradient(90deg, var(--orange-cta), #fb923c); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
-        .hero-subtitle { color: rgba(255,255,255,0.7); font-size: 17px; margin-bottom: 36px; line-height: 1.6; }
-        .btn-hero {
+        .specialist-hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(249,115,22,0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .hero-content {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        .hero-content h1 {
+            color: #fff;
+            font-size: 42px;
+            font-weight: 800;
+            line-height: 1.2;
+            margin-bottom: 20px;
+        }
+        .hero-content .hero-subtitle {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 18px;
+            line-height: 1.7;
+            margin-bottom: 36px;
+        }
+        .btn-cta-hero {
             display: inline-block;
             background: var(--orange-cta);
             color: #fff;
@@ -90,10 +81,17 @@
             font-weight: 700;
             transition: background 0.2s, transform 0.2s;
         }
-        .btn-hero:hover { background: var(--orange-hover); transform: translateY(-1px); }
-        .hero-note { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 16px; }
+        .btn-cta-hero:hover {
+            background: var(--orange-hover);
+            transform: translateY(-2px);
+        }
+        .hero-note {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 13px;
+            margin-top: 16px;
+        }
 
-        /* ===== STATS ===== */
+        /* ===== STATS BAR ===== */
         .stats-bar {
             background: #fff;
             border-radius: var(--radius-lg);
@@ -103,17 +101,43 @@
             grid-template-columns: repeat(3, 1fr);
             gap: 32px;
             max-width: 800px;
-            margin: -40px auto 48px;
+            margin: -50px auto 0;
             position: relative;
             z-index: 10;
             text-align: center;
         }
-        .stat-value { font-size: 28px; font-weight: 800; color: var(--purple-primary); }
-        .stat-label { font-size: 13px; color: var(--gray-500); margin-top: 4px; }
+        .stat-item {}
+        .stat-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--purple-primary);
+        }
+        .stat-label {
+            font-size: 13px;
+            color: var(--gray-500);
+            margin-top: 4px;
+        }
 
-        /* ===== BENEFITS ===== */
-        .benefits-section { padding: 64px 0; }
-        .benefits-section h2 { font-size: 26px; font-weight: 800; color: var(--gray-900); text-align: center; margin-bottom: 40px; }
+        /* ===== BENEFITS SECTION ===== */
+        .benefits-section {
+            padding: 80px 0 64px;
+        }
+        .section-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: var(--gray-900);
+            text-align: center;
+            margin-bottom: 16px;
+        }
+        .section-subtitle {
+            font-size: 16px;
+            color: var(--gray-500);
+            text-align: center;
+            margin-bottom: 48px;
+            max-width: 560px;
+            margin-left: auto;
+            margin-right: auto;
+        }
         .benefits-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
@@ -125,76 +149,87 @@
             border-radius: var(--radius-lg);
             padding: 32px;
             text-align: center;
-            transition: box-shadow 0.2s;
+            transition: box-shadow 0.2s, transform 0.2s;
         }
-        .benefit-card:hover { box-shadow: var(--shadow-md); }
-        .benefit-icon { font-size: 40px; margin-bottom: 16px; }
-        .benefit-title { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; }
-        .benefit-desc { font-size: 13px; color: var(--gray-500); line-height: 1.6; }
+        .benefit-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-4px);
+        }
+        .benefit-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 auto 16px;
+        }
+        .benefit-icon.purple { background: #f3e8ff; }
+        .benefit-icon.orange { background: #fff7ed; }
+        .benefit-icon.green { background: #ecfdf5; }
+        .benefit-title {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 10px;
+        }
+        .benefit-desc {
+            font-size: 14px;
+            color: var(--gray-500);
+            line-height: 1.6;
+        }
 
-        /* ===== PRICING ===== */
-        .pricing-section { padding: 64px 0; background: var(--gray-50); }
-        .pricing-section h2 { font-size: 26px; font-weight: 800; color: var(--gray-900); text-align: center; margin-bottom: 12px; }
-        .pricing-subtitle { font-size: 15px; color: var(--gray-500); text-align: center; margin-bottom: 40px; }
-        .pricing-grid {
+        /* ===== HOW IT WORKS ===== */
+        .how-section {
+            padding: 64px 0;
+            background: var(--gray-50);
+        }
+        .steps-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(4, 1fr);
             gap: 24px;
-            max-width: 1000px;
-            margin: 0 auto;
+            margin-top: 48px;
         }
-        .pricing-card {
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 32px;
+        .step-card {
             text-align: center;
-            transition: box-shadow 0.2s;
-        }
-        .pricing-card.featured {
-            border: 2px solid var(--purple-primary);
-            box-shadow: var(--shadow-lg);
             position: relative;
         }
-        .pricing-badge {
-            position: absolute;
-            top: -12px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: var(--purple-primary);
+        .step-number {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
             color: #fff;
-            padding: 4px 16px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 600;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            font-weight: 800;
+            margin: 0 auto 16px;
         }
-        .pricing-name { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 8px; }
-        .pricing-price { font-size: 36px; font-weight: 800; color: var(--gray-900); margin-bottom: 4px; }
-        .pricing-price span { font-size: 14px; font-weight: 500; color: var(--gray-500); }
-        .pricing-desc { font-size: 13px; color: var(--gray-500); margin-bottom: 24px; }
-        .pricing-features { display: flex; flex-direction: column; gap: 12px; text-align: left; margin-bottom: 28px; }
-        .pricing-feature { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--gray-700); }
-        .pricing-feature::before { content: '✓'; color: var(--green-accent); font-weight: 700; }
-        .btn-pricing {
-            display: block;
-            padding: 12px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            text-align: center;
-            transition: all 0.2s;
+        .step-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 8px;
         }
-        .btn-pricing.primary { background: var(--purple-primary); color: #fff; }
-        .btn-pricing.primary:hover { background: var(--purple-dark); }
-        .btn-pricing.outline { border: 1px solid var(--gray-300); color: var(--gray-700); background: #fff; }
-        .btn-pricing.outline:hover { border-color: var(--purple-primary); color: var(--purple-primary); }
+        .step-desc {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.6;
+        }
+        .step-connector {
+            display: none;
+        }
 
         /* ===== TESTIMONIALS ===== */
-        .testimonials-section { padding: 64px 0; }
-        .testimonials-section h2 { font-size: 26px; font-weight: 800; color: var(--gray-900); text-align: center; margin-bottom: 40px; }
+        .testimonials-section {
+            padding: 64px 0;
+        }
         .testimonials-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
         .testimonial-card {
@@ -202,206 +237,322 @@
             border: 1px solid var(--gray-200);
             border-radius: var(--radius-md);
             padding: 28px;
+            transition: box-shadow 0.2s;
         }
-        .testimonial-quote { font-size: 14px; color: var(--gray-700); line-height: 1.6; margin-bottom: 16px; font-style: italic; }
-        .testimonial-author { display: flex; align-items: center; gap: 12px; }
-        .testimonial-avatar { width: 40px; height: 40px; border-radius: 50%; background: var(--gray-200); display: flex; align-items: center; justify-content: center; font-size: 18px; }
-        .testimonial-name { font-size: 13px; font-weight: 600; color: var(--gray-800); }
-        .testimonial-role { font-size: 12px; color: var(--gray-500); }
+        .testimonial-card:hover {
+            box-shadow: var(--shadow-md);
+        }
+        .testimonial-stars {
+            color: #f59e0b;
+            font-size: 14px;
+            margin-bottom: 12px;
+            letter-spacing: 2px;
+        }
+        .testimonial-quote {
+            font-size: 14px;
+            color: var(--gray-700);
+            line-height: 1.7;
+            margin-bottom: 20px;
+            font-style: italic;
+        }
+        .testimonial-author {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .testimonial-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-weight: 700;
+            font-size: 16px;
+        }
+        .testimonial-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-800);
+        }
+        .testimonial-role {
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        /* ===== PRICING PREVIEW ===== */
+        .pricing-preview-section {
+            padding: 64px 0;
+            background: var(--gray-50);
+        }
+        .pricing-preview-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
+            padding: 48px;
+            text-align: center;
+            max-width: 700px;
+            margin: 0 auto;
+            box-shadow: var(--shadow-sm);
+        }
+        .pricing-preview-card h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 12px;
+        }
+        .pricing-preview-card p {
+            font-size: 15px;
+            color: var(--gray-500);
+            margin-bottom: 8px;
+            line-height: 1.6;
+        }
+        .pricing-highlight {
+            font-size: 36px;
+            font-weight: 800;
+            color: var(--purple-primary);
+            margin: 24px 0 8px;
+        }
+        .pricing-highlight-note {
+            font-size: 14px;
+            color: var(--gray-500);
+            margin-bottom: 28px;
+        }
+        .btn-pricing-link {
+            display: inline-block;
+            background: var(--purple-primary);
+            color: #fff;
+            padding: 14px 32px;
+            border-radius: 50px;
+            font-size: 15px;
+            font-weight: 600;
+            transition: background 0.2s;
+        }
+        .btn-pricing-link:hover {
+            background: var(--purple-dark);
+        }
 
         /* ===== FINAL CTA ===== */
-        .final-cta {
-            background: linear-gradient(135deg, #1a0a3e, #6c2bd9);
-            border-radius: var(--radius-lg);
-            padding: 56px;
+        .final-cta-section {
+            padding: 64px 0 80px;
+        }
+        .final-cta-box {
+            background: linear-gradient(135deg, #1a0a3e 0%, #6c2bd9 100%);
+            border-radius: var(--radius-xl);
+            padding: 64px 48px;
             text-align: center;
-            margin: 0 24px 48px;
-            max-width: calc(var(--max-width) - 48px);
+            position: relative;
+            overflow: hidden;
+        }
+        .final-cta-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+        .final-cta-box h2 {
+            color: #fff;
+            font-size: 30px;
+            font-weight: 800;
+            margin-bottom: 16px;
+            position: relative;
+            z-index: 2;
+        }
+        .final-cta-box p {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            margin-bottom: 32px;
+            max-width: 500px;
             margin-left: auto;
             margin-right: auto;
+            position: relative;
+            z-index: 2;
         }
-        .final-cta h2 { color: #fff; font-size: 28px; font-weight: 800; margin-bottom: 12px; }
-        .final-cta p { color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 28px; }
-        .final-cta .btn-hero { font-size: 15px; padding: 14px 36px; }
+        .final-cta-box .btn-cta-hero {
+            position: relative;
+            z-index: 2;
+        }
 
-        /* ===== FOOTER ===== */
-        .site-footer { background: var(--gray-900); color: rgba(255,255,255,0.6); padding: 48px 0 24px; }
-        .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.5); transition: color 0.2s; }
-        .footer-links a:hover { color: #fff; }
-
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .steps-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 32px;
+            }
+        }
         @media (max-width: 768px) {
-            .benefits-grid, .pricing-grid { grid-template-columns: 1fr; }
-            .testimonials-grid { grid-template-columns: 1fr; }
-            .stats-bar { grid-template-columns: 1fr; padding: 24px; }
-            .main-nav { display: none; }
-            .hero h1 { font-size: 28px; }
+            .specialist-hero {
+                padding: 56px 0 80px;
+            }
+            .hero-content h1 {
+                font-size: 28px;
+            }
+            .hero-content .hero-subtitle {
+                font-size: 15px;
+            }
+            .stats-bar {
+                grid-template-columns: 1fr;
+                padding: 24px;
+                gap: 20px;
+                margin-top: -40px;
+            }
+            .benefits-grid {
+                grid-template-columns: 1fr;
+            }
+            .steps-grid {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .testimonials-grid {
+                grid-template-columns: 1fr;
+            }
+            .pricing-preview-card {
+                padding: 32px 24px;
+            }
+            .final-cta-box {
+                padding: 40px 24px;
+            }
+            .final-cta-box h2 {
+                font-size: 24px;
+            }
+            .section-title {
+                font-size: 22px;
+            }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
+<body <?php body_class(); ?>>
 
-<!-- HEADER -->
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a href="/" class="logo"><div class="logo-icon">P</div> Poradnik.pro</a>
-            <nav class="main-nav">
-                <a href="/poradniki">Poradniki</a>
-                <a href="/porownania">Porównania</a>
-                <a href="/rankingi">Rankingi</a>
-                <a href="/kalkulatory">Kalkulatory</a>
-                <a href="/eksperci">Eksperci</a>
-            </nav>
-            <div class="header-actions">
-                <a href="#" class="btn-login">Zaloguj się</a>
-                <a href="#" class="btn-register">Dołącz za darmo</a>
-            </div>
-        </div>
-    </div>
-</header>
+<?php pp_pro_header( '' ); ?>
 
-<!-- HERO -->
-<section class="hero">
+<!-- HERO SECTION -->
+<section class="specialist-hero">
     <div class="container">
         <div class="hero-content">
-            <h1>Klienci już tu są.<br>Pytanie: czy Cię <span>znajdą?</span></h1>
-            <p class="hero-subtitle">Dołącz do platformy, na której użytkownicy aktywnie szukają specjalistów. Widoczność w rankingach, zapytania od klientów, budowa marki eksperta.</p>
-            <a href="#" class="btn-hero">Dołącz i odbieraj leady</a>
-            <p class="hero-note">Bezpłatna rejestracja • Bez zobowiązań • Pierwszy miesiąc gratis</p>
+            <h1>Dolacz do sieci ekspertow Poradnik.pro</h1>
+            <p class="hero-subtitle">Zbuduj swoja widocznosc online, pozyskuj nowych klientow i rozwijaj praktyke dzieki platformie, na ktorej tysiace uzytkownikow codziennie szuka specjalistow.</p>
+            <a href="<?php echo esc_url( home_url( '/rejestracja-specjalisty/' ) ); ?>" class="btn-cta-hero">Zaloz profil za darmo</a>
+            <p class="hero-note">Bez zobowiazan &bull; Rejestracja w 2 minuty &bull; Pierwszy miesiac gratis</p>
         </div>
     </div>
 </section>
 
-<!-- STATS -->
-<div class="stats-bar">
-    <div>
-        <div class="stat-value">+100 000</div>
-        <div class="stat-label">użytkowników miesięcznie</div>
-    </div>
-    <div>
-        <div class="stat-value">+20 000</div>
-        <div class="stat-label">zapytań do specjalistów</div>
-    </div>
-    <div>
-        <div class="stat-value">87%</div>
-        <div class="stat-label">konwersja na kontakt</div>
+<!-- STATS BAR -->
+<div class="container">
+    <div class="stats-bar">
+        <div class="stat-item">
+            <div class="stat-value">2,400+</div>
+            <div class="stat-label">specjalistow na platformie</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">180,000+</div>
+            <div class="stat-label">uzytkownikow miesiecznie</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">50,000+</div>
+            <div class="stat-label">pytan od uzytkownikow</div>
+        </div>
     </div>
 </div>
 
-<!-- BENEFITS -->
+<!-- BENEFITS SECTION -->
 <section class="benefits-section">
     <div class="container">
-        <h2>Co zyskujesz jako specjalista?</h2>
+        <h2 class="section-title">Dlaczego warto dolaczyc?</h2>
+        <p class="section-subtitle">Poradnik.pro to platforma, ktora laczy ekspertow z osobami potrzebujacymi profesjonalnej pomocy</p>
         <div class="benefits-grid">
             <div class="benefit-card">
-                <div class="benefit-icon">📊</div>
-                <h3 class="benefit-title">Widoczność w rankingach</h3>
-                <p class="benefit-desc">Twój profil pojawia się w wynikach wyszukiwania i rankingach branżowych.</p>
+                <div class="benefit-icon purple">&#128200;</div>
+                <h3 class="benefit-title">Wiekszy zasieg</h3>
+                <p class="benefit-desc">Twoj profil widoczny dla tysiecy uzytkownikow szukajacych specjalistow w Twojej branze. Dotrzesz do klientow, ktorych nie znajdziesz nigdzie indziej.</p>
             </div>
             <div class="benefit-card">
-                <div class="benefit-icon">📩</div>
-                <h3 class="benefit-title">Zapytania od klientów</h3>
-                <p class="benefit-desc">Otrzymujesz bezpośrednie zapytania od osób gotowych do współpracy.</p>
+                <div class="benefit-icon orange">&#11088;</div>
+                <h3 class="benefit-title">Buduj reputacje</h3>
+                <p class="benefit-desc">Zbieraj opinie, odpowiadaj na pytania i buduj wizerunek eksperta. Twoja aktywnosc przeksztaica sie w zaufanie klientow.</p>
             </div>
             <div class="benefit-card">
-                <div class="benefit-icon">⭐</div>
-                <h3 class="benefit-title">Budowa marki eksperta</h3>
-                <p class="benefit-desc">Opinie, oceny i odznaczenia budują Twój autorytet w branży.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon">📈</div>
-                <h3 class="benefit-title">Statystyki i analityka</h3>
-                <p class="benefit-desc">Sprawdzaj ile osób zobaczyło Twój profil i skąd przychodzą klienci.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon">🎯</div>
-                <h3 class="benefit-title">Targetowane leady</h3>
-                <p class="benefit-desc">Otrzymujesz zapytania dopasowane do Twojej specjalizacji i lokalizacji.</p>
-            </div>
-            <div class="benefit-card">
-                <div class="benefit-icon">🛡️</div>
-                <h3 class="benefit-title">Odznaka zweryfikowanego</h3>
-                <p class="benefit-desc">Wyróżnij się od konkurencji odznaką zaufanego specjalisty.</p>
+                <div class="benefit-icon green">&#128176;</div>
+                <h3 class="benefit-title">Pozyskuj klientow</h3>
+                <p class="benefit-desc">Otrzymuj bezposrednie zapytania od osob gotowych do wspolpracy. Konwertuj zainteresowanie w realne zlecenia.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- PRICING -->
-<section class="pricing-section">
+<!-- HOW IT WORKS SECTION -->
+<section class="how-section">
     <div class="container">
-        <h2>Prosty cennik, jasne zasady</h2>
-        <p class="pricing-subtitle">Wybierz plan dopasowany do Twoich potrzeb</p>
-        <div class="pricing-grid">
-            <div class="pricing-card">
-                <h3 class="pricing-name">Start</h3>
-                <div class="pricing-price">0 zł <span>/ mies.</span></div>
-                <p class="pricing-desc">Idealne na początek</p>
-                <div class="pricing-features">
-                    <div class="pricing-feature">Profil specjalisty</div>
-                    <div class="pricing-feature">3 zapytania / miesiąc</div>
-                    <div class="pricing-feature">Podstawowa widoczność</div>
-                    <div class="pricing-feature">Opinie klientów</div>
-                </div>
-                <a href="#" class="btn-pricing outline">Zarejestruj się</a>
+        <h2 class="section-title">Jak to dziala?</h2>
+        <p class="section-subtitle">Cztery proste kroki do Twoich nowych klientow</p>
+        <div class="steps-grid">
+            <div class="step-card">
+                <div class="step-number">1</div>
+                <h3 class="step-title">Zaloz profil</h3>
+                <p class="step-desc">Zarejestruj sie za darmo i utworz swoj profesjonalny profil specjalisty na platformie.</p>
             </div>
-
-            <div class="pricing-card featured">
-                <span class="pricing-badge">Najpopularniejszy</span>
-                <h3 class="pricing-name">Pro</h3>
-                <div class="pricing-price">149 zł <span>/ mies.</span></div>
-                <p class="pricing-desc">Dla aktywnych specjalistów</p>
-                <div class="pricing-features">
-                    <div class="pricing-feature">Wszystko z planu Start</div>
-                    <div class="pricing-feature">Nielimitowane zapytania</div>
-                    <div class="pricing-feature">Priorytet w rankingach</div>
-                    <div class="pricing-feature">Odznaka zweryfikowanego</div>
-                    <div class="pricing-feature">Statystyki profilu</div>
-                </div>
-                <a href="#" class="btn-pricing primary">Wybierz Pro</a>
+            <div class="step-card">
+                <div class="step-number">2</div>
+                <h3 class="step-title">Uzupelnij dane</h3>
+                <p class="step-desc">Dodaj swoje doswiadczenie, specjalizacje, certyfikaty i obszar dzialania.</p>
             </div>
-
-            <div class="pricing-card">
-                <h3 class="pricing-name">Premium</h3>
-                <div class="pricing-price">349 zł <span>/ mies.</span></div>
-                <p class="pricing-desc">Maksymalna widoczność</p>
-                <div class="pricing-features">
-                    <div class="pricing-feature">Wszystko z planu Pro</div>
-                    <div class="pricing-feature">Top pozycja w rankingach</div>
-                    <div class="pricing-feature">Wyróżniony profil</div>
-                    <div class="pricing-feature">Dedykowany opiekun</div>
-                    <div class="pricing-feature">Kampanie marketingowe</div>
-                </div>
-                <a href="#" class="btn-pricing outline">Wybierz Premium</a>
+            <div class="step-card">
+                <div class="step-number">3</div>
+                <h3 class="step-title">Odpowiadaj na pytania</h3>
+                <p class="step-desc">Pomagaj uzytkownikom, odpowiadajac na ich pytania. Buduj widocznosc i autorytet.</p>
+            </div>
+            <div class="step-card">
+                <div class="step-number">4</div>
+                <h3 class="step-title">Zdobywaj klientow</h3>
+                <p class="step-desc">Zainteresowani uzytkownicy kontaktuja sie z Toba bezposrednio. Rozwijaj swoja praktyke.</p>
             </div>
         </div>
     </div>
 </section>
 
-<!-- TESTIMONIALS -->
+<!-- TESTIMONIALS SECTION -->
 <section class="testimonials-section">
     <div class="container">
-        <h2>Co mówią nasi specjaliści?</h2>
+        <h2 class="section-title">Co mowia nasi specjalisci?</h2>
+        <p class="section-subtitle">Dolacz do grona zadowolonych ekspertow, ktorzy rozwijaja swoja dzialalnosc dzieki Poradnik.pro</p>
         <div class="testimonials-grid">
             <div class="testimonial-card">
-                <p class="testimonial-quote">"Od kiedy jestem na Poradnik.pro, mam stały napływ klientów. Nie muszę już szukać zleceń — to zlecenia znajdują mnie."</p>
+                <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="testimonial-quote">&ldquo;Od kiedy jestem na Poradnik.pro, mam staly naplyw klientow. Nie musze juz szukac zlecen &mdash; to zlecenia znajduja mnie. Polecam kazdemu specjaliscie.&rdquo;</p>
                 <div class="testimonial-author">
-                    <div class="testimonial-avatar">👷</div>
+                    <div class="testimonial-avatar">MK</div>
                     <div>
-                        <div class="testimonial-name">Marek K.</div>
-                        <div class="testimonial-role">Firma remontowa, Katowice</div>
+                        <div class="testimonial-name">Marek Kowalski</div>
+                        <div class="testimonial-role">Radca prawny, Warszawa</div>
                     </div>
                 </div>
             </div>
             <div class="testimonial-card">
-                <p class="testimonial-quote">"Platforma generuje mi 15-20 zapytań miesięcznie. Konwersja na klientów to około 40%. Lepszy ROI niż jakiekolwiek reklamy."</p>
+                <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="testimonial-quote">&ldquo;Platforma generuje mi 15-20 zapytan miesiecznie. Konwersja na klientow to okolo 40%. Lepszy ROI niz jakiekolwiek reklamy w Google.&rdquo;</p>
                 <div class="testimonial-author">
-                    <div class="testimonial-avatar">👨‍⚖️</div>
+                    <div class="testimonial-avatar">AN</div>
                     <div>
-                        <div class="testimonial-name">mec. Anna W.</div>
-                        <div class="testimonial-role">Kancelaria prawna, Warszawa</div>
+                        <div class="testimonial-name">Anna Nowak</div>
+                        <div class="testimonial-role">Doradca finansowy, Krakow</div>
+                    </div>
+                </div>
+            </div>
+            <div class="testimonial-card">
+                <div class="testimonial-stars">&#9733;&#9733;&#9733;&#9733;&#9733;</div>
+                <p class="testimonial-quote">&ldquo;Dzieki profilowi na Poradnik.pro zdobylem rozpoznawalnosc w swoim regionie. Klienci cenia sobie moje odpowiedzi i wracaja z konkretnymi zleceniami.&rdquo;</p>
+                <div class="testimonial-author">
+                    <div class="testimonial-avatar">PW</div>
+                    <div>
+                        <div class="testimonial-name">Piotr Wisniewski</div>
+                        <div class="testimonial-role">Architekt, Poznan</div>
                     </div>
                 </div>
             </div>
@@ -409,26 +560,35 @@
     </div>
 </section>
 
-<!-- FINAL CTA -->
-<div class="final-cta">
-    <h2>Zacznij odbierać leady już dziś</h2>
-    <p>Dołącz do +20 000 specjalistów na Poradnik.pro</p>
-    <a href="#" class="btn-hero">Zarejestruj się za darmo</a>
-</div>
-
-<!-- FOOTER -->
-<footer class="site-footer">
+<!-- PRICING PREVIEW SECTION -->
+<section class="pricing-preview-section">
     <div class="container">
-        <div class="footer-bottom">
-            <span>© 2026 Poradnik.pro. Wszelkie prawa zastrzeżone.</span>
-            <div class="footer-links">
-                <a href="#">Regulamin</a>
-                <a href="#">Polityka prywatności</a>
-                <a href="#">Kontakt</a>
-            </div>
+        <h2 class="section-title">Prosty i przejrzysty cennik</h2>
+        <p class="section-subtitle">Zacznij za darmo, rozwijaj sie w swoim tempie</p>
+        <div class="pricing-preview-card">
+            <h3>Darmowy start dla kazdego specjalisty</h3>
+            <p>Zaloz profil, odpowiadaj na pytania i pozyskuj pierwszych klientow bez zadnych oplat. Gdy bedziesz gotowy na wiecej &mdash; wybierz plan Premium.</p>
+            <div class="pricing-highlight">0 zl</div>
+            <p class="pricing-highlight-note">Plan FREE &mdash; na zawsze, bez zobowiazan</p>
+            <p style="font-size: 14px; color: var(--gray-500); margin-bottom: 28px;">Plany Premium juz od <strong style="color: var(--gray-900);">149 zl/mies.</strong> z pelnym dostepem do leadow i priorytetowa widocznoscia.</p>
+            <a href="<?php echo esc_url( home_url( '/cennik/' ) ); ?>" class="btn-pricing-link">Zobacz pelny cennik</a>
         </div>
     </div>
-</footer>
+</section>
 
+<!-- FINAL CTA SECTION -->
+<section class="final-cta-section">
+    <div class="container">
+        <div class="final-cta-box">
+            <h2>Zacznij pozyskiwac klientow juz dzis</h2>
+            <p>Dolacz do ponad 2,400 specjalistow, ktorzy rozwijaja swoja dzialalnosc dzieki Poradnik.pro. Rejestracja jest darmowa.</p>
+            <a href="<?php echo esc_url( home_url( '/rejestracja-specjalisty/' ) ); ?>" class="btn-cta-hero">Zarejestruj sie za darmo</a>
+        </div>
+    </div>
+</section>
+
+<?php pp_pro_footer(); ?>
+
+<?php wp_footer(); ?>
 </body>
 </html>

@@ -1,11 +1,6 @@
 <?php
 /**
- * Unit tests for SmartProviderRouter.
- *
- * The router delegates actual HTTP calls to AIProviderFactory::make(), which
- * in a unit-test context will fail because no real providers are registered.
- * We test the pure-logic paths (routing order, cost estimation, stats
- * persistence, budget tracking) without touching network I/O.
+ * Unit tests for SmartProviderRouter (V9.0 F7).
  *
  * @package PearBlogEngine\Tests\Unit
  */
@@ -28,166 +23,135 @@ class SmartProviderRouterTest extends TestCase {
 	}
 
 	// -----------------------------------------------------------------------
-	// get_ordered_providers — routing table
+	// get_available_providers
 	// -----------------------------------------------------------------------
 
-	public function test_long_form_defaults_to_anthropic_first(): void {
-		$providers = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_LONG_FORM );
-
-		$this->assertSame( 'anthropic', $providers[0] );
+	public function test_all_providers_available_by_default(): void {
+		$available = $this->router->get_available_providers();
+		$this->assertContains( 'openai', $available );
+		$this->assertContains( 'anthropic', $available );
+		$this->assertContains( 'gemini', $available );
 	}
 
-	public function test_code_defaults_to_openai_first(): void {
-		$providers = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_CODE );
-
-		$this->assertSame( 'openai', $providers[0] );
+	public function test_provider_excluded_when_circuit_open(): void {
+		update_option( SmartProviderRouter::OPTION_CIRCUIT_STATE, [
+			'anthropic' => [ 'open' => true ],
+		] );
+		$available = $this->router->get_available_providers();
+		$this->assertNotContains( 'anthropic', $available );
+		$this->assertContains( 'openai', $available );
 	}
 
-	public function test_factual_defaults_to_gemini_first(): void {
-		$providers = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_FACTUAL );
-
-		$this->assertSame( 'gemini', $providers[0] );
-	}
-
-	public function test_unknown_content_type_falls_back_to_short_form_order(): void {
-		$default   = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_SHORT_FORM );
-		$unknown   = $this->router->get_ordered_providers( 'unknown_type_xyz' );
-
-		$this->assertSame( $default, $unknown );
-	}
-
-	public function test_all_providers_present_in_result(): void {
-		$providers = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_SHORT_FORM );
-
-		$this->assertContains( 'openai', $providers );
-		$this->assertContains( 'anthropic', $providers );
-		$this->assertContains( 'gemini', $providers );
+	public function test_provider_excluded_when_budget_exceeded(): void {
+		$today = gmdate( 'Y-m-d' );
+		update_option( SmartProviderRouter::OPTION_BUDGET_CAPS, [ 'gemini' => 0.01 ] );
+		update_option( SmartProviderRouter::OPTION_DAILY_SPEND, [ 'gemini' => [ $today => 1.00 ] ] );
+		$available = $this->router->get_available_providers();
+		$this->assertNotContains( 'gemini', $available );
 	}
 
 	// -----------------------------------------------------------------------
-	// Stats persistence
+	// select
 	// -----------------------------------------------------------------------
 
-	public function test_get_stats_returns_empty_array_initially(): void {
-		$this->assertSame( [], $this->router->get_stats() );
+	public function test_select_returns_string(): void {
+		$provider = $this->router->select( 'short-form' );
+		$this->assertIsString( $provider );
 	}
 
-	public function test_reset_stats_clears_data(): void {
-		// Manually populate stats via the option.
-		update_option( SmartProviderRouter::OPT_STATS, wp_json_encode( [ 'openai' => [ 'successes' => 5 ] ] ) );
-
-		$this->router->reset_stats();
-
-		$this->assertSame( [], $this->router->get_stats() );
-	}
-
-	// -----------------------------------------------------------------------
-	// estimate_cost_cents
-	// -----------------------------------------------------------------------
-
-	public function test_openai_cost_estimation(): void {
-		$cost = $this->router->estimate_cost_cents( 'openai', 1000, 500 );
-
-		// 1000 input * 0.5 / 1000 + 500 output * 1.5 / 1000 = 0.5 + 0.75 = 1.25
-		$this->assertEqualsWithDelta( 1.25, $cost, 0.001 );
-	}
-
-	public function test_anthropic_cost_estimation(): void {
-		$cost = $this->router->estimate_cost_cents( 'anthropic', 1000, 1000 );
-
-		// 1 * 0.8 + 1 * 2.4 = 3.2
-		$this->assertEqualsWithDelta( 3.2, $cost, 0.001 );
-	}
-
-	public function test_gemini_cost_is_cheapest(): void {
-		$openai    = $this->router->estimate_cost_cents( 'openai', 1000, 1000 );
-		$anthropic = $this->router->estimate_cost_cents( 'anthropic', 1000, 1000 );
-		$gemini    = $this->router->estimate_cost_cents( 'gemini', 1000, 1000 );
-
-		$this->assertLessThan( $openai, $gemini );
-		$this->assertLessThan( $anthropic, $gemini );
-	}
-
-	public function test_zero_tokens_costs_nothing(): void {
-		$cost = $this->router->estimate_cost_cents( 'openai', 0, 0 );
-		$this->assertSame( 0.0, $cost );
-	}
-
-	public function test_unknown_provider_returns_fallback_cost(): void {
-		$cost = $this->router->estimate_cost_cents( 'mystery_ai', 1000, 1000 );
-		// Falls back to in=1.0, out=2.0 => 1.0 + 2.0 = 3.0
-		$this->assertEqualsWithDelta( 3.0, $cost, 0.001 );
+	public function test_select_falls_back_to_openai_when_no_candidates(): void {
+		// Disable all providers.
+		update_option( SmartProviderRouter::OPTION_CIRCUIT_STATE, [
+			'openai'    => [ 'open' => true ],
+			'anthropic' => [ 'open' => true ],
+			'gemini'    => [ 'open' => true ],
+		] );
+		$provider = $this->router->select( 'short-form' );
+		$this->assertSame( 'openai', $provider );
 	}
 
 	// -----------------------------------------------------------------------
-	// Daily budget
+	// record_call
 	// -----------------------------------------------------------------------
 
-	public function test_get_daily_budget_default(): void {
-		$this->assertSame( 500.0, $this->router->get_daily_budget() );
+	public function test_record_call_increments_call_count(): void {
+		$this->router->record_call( 'openai', 200, true, 80.0, 0.001 );
+		$stats = $this->router->get_provider_stats( 'openai' );
+		$this->assertSame( 1, $stats['calls'] );
 	}
 
-	public function test_get_today_cost_starts_at_zero(): void {
-		$this->assertSame( 0.0, $this->router->get_today_cost() );
+	public function test_record_call_tracks_errors(): void {
+		$this->router->record_call( 'openai', 500, false, 0.0 );
+		$stats = $this->router->get_provider_stats( 'openai' );
+		$this->assertSame( 1, $stats['errors'] );
 	}
 
-	public function test_budget_not_exhausted_when_no_cost(): void {
-		$this->assertFalse( $this->router->is_budget_exhausted() );
+	public function test_record_call_computes_avg_latency(): void {
+		$this->router->record_call( 'openai', 200, true );
+		$this->router->record_call( 'openai', 400, true );
+		$stats = $this->router->get_provider_stats( 'openai' );
+		$this->assertSame( 300, $stats['avg_latency_ms'] );
 	}
 
-	public function test_budget_exhausted_when_cost_meets_limit(): void {
-		// Set a tiny budget then simulate spending it.
-		update_option( SmartProviderRouter::OPT_DAILY_BUDGET_CENTS, 1.0 );
-		update_option( SmartProviderRouter::OPT_TODAY_COST, 1.0 );
-		update_option( SmartProviderRouter::OPT_TODAY_DATE, gmdate( 'Y-m-d' ) );
-
-		$this->assertTrue( $this->router->is_budget_exhausted() );
-	}
-
-	public function test_budget_not_exhausted_when_zero_budget_set(): void {
-		// Budget = 0 means unlimited.
-		update_option( SmartProviderRouter::OPT_DAILY_BUDGET_CENTS, 0.0 );
-		update_option( SmartProviderRouter::OPT_TODAY_COST, 999.0 );
-		update_option( SmartProviderRouter::OPT_TODAY_DATE, gmdate( 'Y-m-d' ) );
-
-		$this->assertFalse( $this->router->is_budget_exhausted() );
-	}
-
-	public function test_daily_cost_resets_on_new_day(): void {
-		// Set a cost for yesterday.
-		update_option( SmartProviderRouter::OPT_TODAY_DATE, '2000-01-01' );
-		update_option( SmartProviderRouter::OPT_TODAY_COST, 999.0 );
-
-		// get_today_cost() should detect the stale date and reset.
-		$this->assertSame( 0.0, $this->router->get_today_cost() );
+	public function test_record_call_computes_avg_quality(): void {
+		$this->router->record_call( 'gemini', 100, true, 60.0 );
+		$this->router->record_call( 'gemini', 100, true, 80.0 );
+		$stats = $this->router->get_provider_stats( 'gemini' );
+		$this->assertEqualsWithDelta( 70.0, $stats['avg_quality'], 0.1 );
 	}
 
 	// -----------------------------------------------------------------------
-	// Sidelining low-success-rate providers
+	// circuit breaker
 	// -----------------------------------------------------------------------
 
-	public function test_low_success_rate_provider_is_sidelined(): void {
-		// Record many failures for openai.
-		$stats = [
-			'openai' => [ 'successes' => 0, 'failures' => 10, 'total_tokens' => 0, 'total_cost_cents' => 0.0 ],
-		];
-		update_option( SmartProviderRouter::OPT_STATS, wp_json_encode( $stats ) );
+	public function test_circuit_opens_after_high_error_rate(): void {
+		// Need MIN_CALLS_FOR_EVAL calls, all failures.
+		$min = SmartProviderRouter::MIN_CALLS_FOR_EVAL;
+		for ( $i = 0; $i < $min; $i++ ) {
+			$this->router->record_call( 'anthropic', 500, false );
+		}
 
-		$providers = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_CODE );
-
-		// openai should be removed when it has 0 % success rate over >5 attempts.
-		$this->assertNotContains( 'openai', $providers );
+		$available = $this->router->get_available_providers();
+		$this->assertNotContains( 'anthropic', $available );
 	}
 
-	public function test_provider_not_sidelined_below_min_sample(): void {
-		// Only 3 failures — below the 5-attempt threshold.
-		$stats = [
-			'openai' => [ 'successes' => 0, 'failures' => 3, 'total_tokens' => 0, 'total_cost_cents' => 0.0 ],
-		];
-		update_option( SmartProviderRouter::OPT_STATS, wp_json_encode( $stats ) );
+	public function test_circuit_stays_closed_with_low_error_rate(): void {
+		$min = SmartProviderRouter::MIN_CALLS_FOR_EVAL;
+		for ( $i = 0; $i < $min; $i++ ) {
+			$this->router->record_call( 'openai', 200, true );
+		}
+		$this->router->record_call( 'openai', 200, false ); // 1 failure.
 
-		$providers = $this->router->get_ordered_providers( SmartProviderRouter::CONTENT_CODE );
+		$available = $this->router->get_available_providers();
+		$this->assertContains( 'openai', $available );
+	}
 
-		$this->assertContains( 'openai', $providers );
+	// -----------------------------------------------------------------------
+	// score_provider
+	// -----------------------------------------------------------------------
+
+	public function test_score_provider_returns_negative_when_latency_exceeds_sla(): void {
+		update_option( SmartProviderRouter::OPTION_STATS, [
+			'openai' => [ 'avg_latency_ms' => 10000, 'avg_quality' => 80.0 ],
+		] );
+		$score = $this->router->score_provider( 'openai', 'short-form', 500, 3000 );
+		$this->assertSame( -1.0, $score );
+	}
+
+	// -----------------------------------------------------------------------
+	// cost_per_1k
+	// -----------------------------------------------------------------------
+
+	public function test_cost_per_1k_returns_float(): void {
+		$cost = $this->router->cost_per_1k( 'openai', 'short-form' );
+		$this->assertIsFloat( $cost );
+		$this->assertGreaterThan( 0.0, $cost );
+	}
+
+	public function test_gemini_cheaper_than_openai_default(): void {
+		$openai_cost = $this->router->cost_per_1k( 'openai', 'default' );
+		$gemini_cost = $this->router->cost_per_1k( 'gemini', 'default' );
+		// openai_cost (0.002) should be greater than gemini_cost (0.0005).
+		$this->assertGreaterThan( $gemini_cost, $openai_cost );
 	}
 }

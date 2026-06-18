@@ -152,12 +152,13 @@ if ( ! function_exists( 'apply_filters' ) ) {
 
 if ( ! function_exists( 'do_action' ) ) {
 	function do_action( string $hook, ...$args ): void {
+		$GLOBALS['_did_action'][ $hook ] = ( $GLOBALS['_did_action'][ $hook ] ?? 0 ) + 1;
 		foreach ( $GLOBALS['_actions'][ $hook ] ?? [] as $callback ) {
 			$callback( ...$args );
 		}
-		// Support direct handler assignment pattern used in some tests.
-		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) ) {
-			( $GLOBALS['_action_handlers'][ $hook ] )( ...$args );
+		// Single-handler spy used by several tests.
+		if ( isset( $GLOBALS['_action_handlers'][ $hook ] ) && is_callable( $GLOBALS['_action_handlers'][ $hook ] ) ) {
+			$GLOBALS['_action_handlers'][ $hook ]( ...$args );
 		}
 	}
 }
@@ -339,16 +340,31 @@ if ( ! function_exists( 'sprintf' ) ) {
 // REST / HTTP stubs.
 if ( ! function_exists( 'register_rest_route' ) ) {
 	function register_rest_route( string $namespace, string $route, array $args = [], bool $override = false ): bool {
-		$GLOBALS['_rest_routes'][] = [ 'namespace' => $namespace, 'route' => $route, 'args' => $args ];
+		$GLOBALS['_rest_routes'][] = [
+			'namespace' => $namespace,
+			'route'     => $route,
+			'args'      => $args,
+		];
 		return true;
 	}
 }
 
 if ( ! function_exists( 'current_user_can' ) ) {
 	function current_user_can( string $capability ): bool {
-		// Default to false so existing permission-denial tests keep passing.
-		// Tests that need a privileged user can set $GLOBALS['_current_user_can'] = true.
-		return (bool) ( $GLOBALS['_current_user_can'] ?? false );
+		// Support both globals, prioritizing _current_user_can when set.
+		if ( isset( $GLOBALS['_current_user_can'] ) ) {
+			return (bool) $GLOBALS['_current_user_can'];
+		}
+		if ( isset( $GLOBALS['_user_can'] ) ) {
+			return (bool) $GLOBALS['_user_can'];
+		}
+		return false;
+	}
+}
+
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID() {
+		return $GLOBALS['_current_post_id'] ?? 0;
 	}
 }
 
@@ -374,21 +390,6 @@ if ( ! function_exists( 'wp_remote_get' ) ) {
 	}
 }
 
-if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
-	function wp_remote_retrieve_body( $response ): string {
-		if ( is_array( $response ) && isset( $response['body'] ) ) {
-			return (string) $response['body'];
-		}
-		return '';
-	}
-}
-
-if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
-	function wp_remote_retrieve_response_code( $response ): int {
-		return (int) ( $response['response']['code'] ?? 200 );
-	}
-}
-
 if ( ! function_exists( 'wp_remote_request' ) ) {
 	function wp_remote_request( string $url, array $args = [] ): array {
 		return $GLOBALS['_http_response'] ?? [ 'response' => [ 'code' => 200 ], 'body' => '' ];
@@ -410,6 +411,117 @@ if ( ! function_exists( 'wp_remote_retrieve_response_code' ) ) {
 if ( ! function_exists( 'is_wp_error' ) ) {
 	function is_wp_error( $thing ): bool {
 		return ( $thing instanceof \WP_Error );
+	}
+}
+
+if ( ! function_exists( 'wp_remote_retrieve_body' ) ) {
+	function wp_remote_retrieve_body( $response ): string {
+		if ( is_array( $response ) && isset( $response['body'] ) ) {
+			return (string) $response['body'];
+		}
+		return $GLOBALS['_remote_body'] ?? '';
+	}
+}
+
+if ( ! function_exists( 'sanitize_email' ) ) {
+	function sanitize_email( string $email ): string {
+		return filter_var( $email, FILTER_SANITIZE_EMAIL ) ?: '';
+	}
+}
+
+if ( ! function_exists( 'register_post_type' ) ) {
+	function register_post_type( string $post_type, array $args = [] ): void {
+		$GLOBALS['_registered_post_types'][ $post_type ] = $args;
+	}
+}
+
+if ( ! function_exists( 'add_shortcode' ) ) {
+	function add_shortcode( string $tag, $callback ): void {
+		$GLOBALS['_shortcodes'][ $tag ] = $callback;
+	}
+}
+
+if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
+	function get_the_post_thumbnail_url( $post_id = null, $size = 'post-thumbnail' ): string {
+		$id = is_object( $post_id ) ? ( $post_id->ID ?? 0 ) : (int) $post_id;
+		return $GLOBALS['_thumbnail_urls'][ $id ] ?? '';
+	}
+}
+
+if ( ! function_exists( 'wp_kses_post' ) ) {
+	function wp_kses_post( string $data ): string {
+		return $data;
+	}
+}
+
+if ( ! function_exists( 'add_meta_box' ) ) {
+	function add_meta_box( string $id, string $title, $callback, $screen = null, string $context = 'advanced', string $priority = 'default', array $callback_args = null ): void {
+		$GLOBALS['_meta_boxes'][] = compact( 'id', 'title', 'context' );
+	}
+}
+
+if ( ! function_exists( 'wp_nonce_field' ) ) {
+	function wp_nonce_field( string $action = '', string $name = '_wpnonce', bool $referer = true, bool $echo = true ): string {
+		return '';
+	}
+}
+
+if ( ! function_exists( 'check_admin_referer' ) ) {
+	function check_admin_referer( string $action = '-1', string $query_arg = '_wpnonce' ): bool {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_get_post_categories' ) ) {
+	function wp_get_post_categories( int $post_id, array $args = [] ): array {
+		return $GLOBALS['_post_categories'][ $post_id ] ?? [];
+	}
+}
+
+if ( ! function_exists( 'get_query_var' ) ) {
+	function get_query_var( string $var, $default = '' ) {
+		return $GLOBALS['_query_vars'][ $var ] ?? $default;
+	}
+}
+
+if ( ! function_exists( 'get_queried_object' ) ) {
+	function get_queried_object() {
+		return $GLOBALS['_queried_object'] ?? null;
+	}
+}
+
+if ( ! function_exists( 'status_header' ) ) {
+	function status_header( int $code, string $description = '' ): void {}
+}
+
+if ( ! function_exists( 'nocache_headers' ) ) {
+	function nocache_headers(): void {}
+}
+
+if ( ! function_exists( 'add_query_arg' ) ) {
+	function add_query_arg( $key, $value = '', string $url = '' ): string {
+		if ( is_array( $key ) ) {
+			return $url . '?' . http_build_query( $key );
+		}
+		return $url . '?' . urlencode( $key ) . '=' . urlencode( (string) $value );
+	}
+}
+
+if ( ! function_exists( 'get_role' ) ) {
+	function get_role( string $role ) {
+		$roles = $GLOBALS['_roles'] ?? [];
+		return $roles[ $role ] ?? null;
+	}
+}
+
+if ( ! class_exists( 'WP_Role' ) ) {
+	class WP_Role {
+		public string $name;
+		public array  $capabilities;
+		public function __construct( string $role, array $capabilities = [] ) {
+			$this->name         = $role;
+			$this->capabilities = $capabilities;
+		}
 	}
 }
 
@@ -589,29 +701,8 @@ if ( ! function_exists( 'sanitize_key' ) ) {
 	}
 }
 
-if ( ! function_exists( 'sanitize_email' ) ) {
-	function sanitize_email( string $email ): string {
-		return filter_var( $email, FILTER_SANITIZE_EMAIL ) ?: '';
-	}
-}
-
-if ( ! function_exists( 'admin_url' ) ) {
-	function admin_url( string $path = '' ): string {
-		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
-	}
-}
-
-if ( ! function_exists( 'get_admin_url' ) ) {
-	function get_admin_url( int $blog_id = 0, string $path = '' ): string {
-		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
-	}
-}
-
 if ( ! function_exists( 'get_post' ) ) {
 	function get_post( $post = null ) {
-		if ( $post instanceof WP_Post ) {
-			return $post;
-		}
 		return $GLOBALS['_posts'][ (int) $post ] ?? null;
 	}
 }
@@ -629,10 +720,8 @@ if ( ! function_exists( 'get_posts' ) ) {
 
 if ( ! function_exists( 'get_permalink' ) ) {
 	function get_permalink( $post_id = null ): string {
-		if ( $post_id instanceof WP_Post ) {
-			$post_id = $post_id->ID;
-		}
-		return 'https://example.com/post/' . (int) $post_id . '/';
+		$id = is_object( $post_id ) ? ( $post_id->ID ?? 0 ) : (int) $post_id;
+		return 'https://example.com/post/' . (int) $id . '/';
 	}
 }
 
@@ -731,15 +820,6 @@ if ( ! defined( 'HOUR_IN_SECONDS' ) ) {
 if ( ! defined( 'MINUTE_IN_SECONDS' ) ) {
 	define( 'MINUTE_IN_SECONDS', 60 );
 }
-if ( ! defined( 'WEEK_IN_SECONDS' ) ) {
-	define( 'WEEK_IN_SECONDS', 604800 );
-}
-if ( ! defined( 'MONTH_IN_SECONDS' ) ) {
-	define( 'MONTH_IN_SECONDS', 2592000 );
-}
-if ( ! defined( 'YEAR_IN_SECONDS' ) ) {
-	define( 'YEAR_IN_SECONDS', 31536000 );
-}
 
 // WordPress database result types
 if ( ! defined( 'OBJECT' ) ) {
@@ -759,11 +839,14 @@ $GLOBALS['_transients']     = [];
 $GLOBALS['_posts']          = [];
 $GLOBALS['_post_list']      = [];
 $GLOBALS['_actions']        = [];
-$GLOBALS['_action_handlers'] = [];
 $GLOBALS['_filters']        = [];
 $GLOBALS['_cron_scheduled'] = [];
 $GLOBALS['_mail_log']       = [];
 $GLOBALS['_is_singular']    = false;
+$GLOBALS['_rewrite_rules']  = [];
+$GLOBALS['_rest_routes']    = [];
+$GLOBALS['_action_handlers'] = [];
+$GLOBALS['_did_action']     = [];
 $GLOBALS['_is_admin']       = false;
 $GLOBALS['_db_inserts']     = [];
 $GLOBALS['_db_queries']     = [];
@@ -771,11 +854,8 @@ $GLOBALS['_db_results']     = [];
 $GLOBALS['_db_affected_rows'] = 0;
 $GLOBALS['_db_level_counts'] = [];
 $GLOBALS['_db_channel_counts'] = [];
-$GLOBALS['_is_multisite']        = false;
-$GLOBALS['_current_blog_id']     = 1;
-$GLOBALS['_current_post_id']     = 0;
-$GLOBALS['_is_ssl']              = false;
-$GLOBALS['_is_user_logged_in']   = false;
+$GLOBALS['_is_multisite']   = false;
+$GLOBALS['_current_blog_id'] = 1;
 
 // WordPress class stubs.
 if ( ! class_exists( 'WP_Post' ) ) {
@@ -819,48 +899,24 @@ if ( ! class_exists( 'WP_Error' ) ) {
 	class WP_Error {
 		private string $code;
 		private string $message;
-		public array   $data;
 		public function __construct( string $code = '', string $message = '', $data = '' ) {
 			$this->code    = $code;
 			$this->message = $message;
-			// Wrap in numeric array so $err->data[0]['status'] works.
-			$this->data    = [ is_array( $data ) ? $data : (array) $data ];
 		}
 		public function get_error_code(): string { return $this->code; }
 		public function get_error_message( string $code = '' ): string { return $this->message; }
-		public function get_error_data(): mixed { return $this->data[0] ?? []; }
 	}
 }
 
 if ( ! class_exists( 'WP_REST_Request' ) ) {
-	class WP_REST_Request implements ArrayAccess {
-		private array $params      = [];
-		private array $headers     = [];
-		private array $route_attrs = [];
-		/**
-		 * @param string       $method         HTTP method.
-		 * @param string|array $route_or_params Route URL (string, ignored in tests) or params array (legacy).
-		 * @param array        $route_attrs     Named URL parameters.
-		 */
-		public function __construct( string $method = 'GET', $route_or_params = '', array $route_attrs = [] ) {
-			// Accept either a URL string (real WP signature) or a params array (legacy test usage).
-			$this->params      = is_array( $route_or_params ) ? $route_or_params : [];
-			$this->route_attrs = $route_attrs;
-		}
-		public function get_param( string $key ) { return $this->route_attrs[ $key ] ?? $this->params[ $key ] ?? null; }
+	class WP_REST_Request {
+		private array $params  = [];
+		private array $headers = [];
+		public function get_param( string $key ) { return $this->params[ $key ] ?? null; }
 		public function set_param( string $key, $value ): void { $this->params[ $key ] = $value; }
-		public function get_params(): array { return array_merge( $this->params, $this->route_attrs ); }
+		public function get_params(): array { return $this->params; }
 		public function get_header( string $name ): ?string { return $this->headers[ strtolower( $name ) ] ?? null; }
 		public function set_header( string $name, string $value ): void { $this->headers[ strtolower( $name ) ] = $value; }
-		// ArrayAccess — allows $request['id'] syntax used in WP REST route callbacks.
-		public function offsetExists( $offset ): bool {
-			return isset( $this->route_attrs[ $offset ] ) || isset( $this->params[ $offset ] );
-		}
-		public function offsetGet( $offset ): mixed {
-			return $this->route_attrs[ $offset ] ?? $this->params[ $offset ] ?? null;
-		}
-		public function offsetSet( $offset, $value ): void { $this->route_attrs[ $offset ] = $value; }
-		public function offsetUnset( $offset ): void { unset( $this->route_attrs[ $offset ], $this->params[ $offset ] ); }
 	}
 }
 
@@ -883,14 +939,20 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 	}
 }
 
+if ( ! function_exists( 'rest_ensure_response' ) ) {
+	function rest_ensure_response( $response ) {
+		if ( $response instanceof \WP_REST_Response ) {
+			return $response;
+		}
+		return new \WP_REST_Response( $response, 200 );
+	}
+}
+
 // Mock wpdb class for database testing
 if ( ! isset( $GLOBALS['wpdb'] ) ) {
 	$GLOBALS['wpdb'] = new class {
-		public string $prefix   = 'wp_';
-		public string $postmeta = 'wp_postmeta';
-		public string $posts    = 'wp_posts';
-		public string $options  = 'wp_options';
-		public int $insert_id   = 1;
+		public string $prefix = 'wp_';
+		public int $insert_id = 1;
 		public string $last_error = '';
 
 		public function get_charset_collate(): string {
@@ -957,9 +1019,83 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 	};
 }
 
+if ( ! function_exists( 'get_post_type' ) ) {
+	function get_post_type( $post = null ) {
+		$id  = is_object( $post ) ? ( $post->ID ?? 0 ) : (int) $post;
+		$obj = $GLOBALS['_posts'][ $id ] ?? null;
+		if ( $obj && isset( $obj->post_type ) ) {
+			return $obj->post_type;
+		}
+		return $GLOBALS['_post_type'] ?? 'post';
+	}
+}
+
+if ( ! function_exists( 'wp_count_posts' ) ) {
+	function wp_count_posts( string $type = 'post', string $perm = '' ) {
+		$publish = $GLOBALS['_published_post_count']
+			?? count( $GLOBALS['_post_list'] ?? [] );
+		return (object) [ 'publish' => (int) $publish, 'draft' => 0, 'pending' => 0 ];
+	}
+}
+
+if ( ! function_exists( 'add_rewrite_rule' ) ) {
+	function add_rewrite_rule( string $regex, string $query, string $after = 'bottom' ): void {
+		$GLOBALS['_rewrite_rules'][] = [ $regex, $query, $after ];
+	}
+}
+
+if ( ! function_exists( 'wp_trim_words' ) ) {
+	function wp_trim_words( string $text, int $num_words = 55, ?string $more = null ): string {
+		$more = $more ?? '&hellip;';
+		$text = trim( preg_replace( '/\s+/', ' ', wp_strip_all_tags( $text ) ) );
+		$words = $text === '' ? [] : explode( ' ', $text );
+		if ( count( $words ) <= $num_words ) {
+			return $text;
+		}
+		return implode( ' ', array_slice( $words, 0, $num_words ) ) . $more;
+	}
+}
+
+if ( ! function_exists( 'wp_strip_all_tags' ) ) {
+	function wp_strip_all_tags( string $text, bool $remove_breaks = false ): string {
+		$text = strip_tags( $text );
+		return trim( $text );
+	}
+}
+
+if ( ! function_exists( 'wp_hash' ) ) {
+	function wp_hash( string $data, string $scheme = 'auth' ): string {
+		return hash_hmac( 'sha256', $data, $scheme . '_salt_key_here' );
+	}
+}
+
+if ( ! function_exists( 'get_the_tags' ) ) {
+	function get_the_tags( $post_id = 0 ) {
+		return $GLOBALS['_post_tags'][ (int) $post_id ] ?? false;
+	}
+}
+
+if ( ! function_exists( 'get_post_time' ) ) {
+	function get_post_time( string $format = 'U', bool $gmt = false, $post = null ) {
+		$ts = is_object( $post ) && isset( $post->post_date_gmt )
+			? strtotime( (string) $post->post_date_gmt )
+			: time();
+		return gmdate( $format, $ts ?: time() );
+	}
+}
+
 // Define ABSPATH if not already defined
 if ( ! defined( 'ABSPATH' ) ) {
 	define( 'ABSPATH', '/tmp/' );
+}
+
+// Provide a no-op wp-admin/includes/upgrade.php so production code that does
+// `require_once ABSPATH . 'wp-admin/includes/upgrade.php'` before dbDelta()
+// does not fatal in the unit-test environment.
+$pearblog_upgrade_stub = ABSPATH . 'wp-admin/includes/upgrade.php';
+if ( ! file_exists( $pearblog_upgrade_stub ) ) {
+	@mkdir( dirname( $pearblog_upgrade_stub ), 0777, true );
+	@file_put_contents( $pearblog_upgrade_stub, "<?php\n// Test stub for dbDelta(); real implementation provided in bootstrap.\n" );
 }
 
 // dbDelta function stub
@@ -970,131 +1106,16 @@ if ( ! function_exists( 'dbDelta' ) ) {
 	}
 }
 
-// -----------------------------------------------------------------------
-// V9.0 stubs — PredictiveAnalytics, CollaborationManager, MobileAPIController
-// -----------------------------------------------------------------------
-
-if ( ! function_exists( 'sanitize_textarea_field' ) ) {
-	function sanitize_textarea_field( $str ): string {
-		return is_string( $str ) ? trim( $str ) : '';
-	}
-}
-
-if ( ! function_exists( 'absint' ) ) {
-	function absint( $maybeint ): int {
-		return abs( (int) $maybeint );
-	}
-}
-
-if ( ! function_exists( 'get_current_user_id' ) ) {
-	function get_current_user_id(): int {
-		return $GLOBALS['_current_user_id'] ?? 1;
-	}
-}
-
-if ( ! function_exists( 'human_time_diff' ) ) {
-	function human_time_diff( int $from, int $to = 0 ): string {
-		$diff = abs( ( $to ?: time() ) - $from );
-		if ( $diff < 60 ) {
-			return $diff . ' seconds';
+// V9.0 stubs.
+if ( ! function_exists( 'get_post_modified_time' ) ) {
+	function get_post_modified_time( string $format = 'U', bool $gmt = false, $post = null ) {
+		$id      = is_numeric( $post ) ? (int) $post : 0;
+		$stored  = $GLOBALS['_post_meta'][ $id ]['_pearblog_modified_time'][0] ?? null;
+		$ts      = $stored ?? ( time() - 200 * DAY_IN_SECONDS );
+		if ( 'U' === $format ) {
+			return (int) $ts;
 		}
-		if ( $diff < 3600 ) {
-			return (int) ( $diff / 60 ) . ' minutes';
-		}
-		return (int) ( $diff / 3600 ) . ' hours';
-	}
-}
-
-if ( ! function_exists( 'wp_trim_words' ) ) {
-	function wp_trim_words( string $text, int $num_words = 55, string $more = '…' ): string {
-		$words = explode( ' ', $text );
-		if ( count( $words ) <= $num_words ) {
-			return $text;
-		}
-		return implode( ' ', array_slice( $words, 0, $num_words ) ) . $more;
-	}
-}
-
-if ( ! function_exists( 'wp_trash_post' ) ) {
-	function wp_trash_post( int $post_id ): void {
-		$GLOBALS['_trashed_posts'][] = $post_id;
-		if ( isset( $GLOBALS['_posts'][ $post_id ] ) ) {
-			$GLOBALS['_posts'][ $post_id ]->post_status = 'trash';
-		}
-	}
-}
-
-
-if ( ! function_exists( 'rest_ensure_response' ) ) {
-	function rest_ensure_response( $data ) {
-		if ( $data instanceof \WP_REST_Response ) {
-			return $data;
-		}
-		return new \WP_REST_Response( $data );
-	}
-}
-
-if ( ! function_exists( 'get_sites' ) ) {
-	function get_sites( array $args = [] ): array {
-		return $GLOBALS['_sites'] ?? [];
-	}
-}
-
-if ( ! function_exists( 'switch_to_blog' ) ) {
-	function switch_to_blog( int $blog_id ): bool {
-		$GLOBALS['_current_blog_id'] = $blog_id;
-		return true;
-	}
-}
-
-if ( ! function_exists( 'restore_current_blog' ) ) {
-	function restore_current_blog(): bool {
-		$GLOBALS['_current_blog_id'] = 1;
-		return true;
-	}
-}
-
-if ( ! function_exists( 'is_wp_error' ) ) {
-	function is_wp_error( $thing ): bool {
-		return $thing instanceof \WP_Error;
-	}
-}
-
-if ( ! class_exists( 'WP_Role' ) ) {
-	class WP_Role {
-		/** @var array<string, bool> */
-		public array $capabilities = [];
-		public string $name;
-
-		public function __construct( string $name = 'subscriber' ) {
-			$this->name = $name;
-		}
-
-		public function add_cap( string $cap, bool $grant = true ): void {
-			$this->capabilities[ $cap ] = $grant;
-		}
-
-		public function remove_cap( string $cap ): void {
-			unset( $this->capabilities[ $cap ] );
-		}
-
-		public function has_cap( string $cap ): bool {
-			return (bool) ( $this->capabilities[ $cap ] ?? false );
-		}
-	}
-}
-
-if ( ! function_exists( 'get_role' ) ) {
-	function get_role( string $role ): ?\WP_Role {
-		$roles = $GLOBALS['_wp_roles'] ?? [];
-		return $roles[ $role ] ?? null;
-	}
-}
-
-if ( ! function_exists( 'add_query_arg' ) ) {
-	function add_query_arg( string $key, string $value, string $url = '' ): string {
-		$sep = strpos( $url, '?' ) === false ? '?' : '&';
-		return $url . $sep . $key . '=' . $value;
+		return gmdate( $format, (int) $ts );
 	}
 }
 
@@ -1114,169 +1135,102 @@ if ( ! function_exists( 'wp_generate_uuid4' ) ) {
 	}
 }
 
-// -----------------------------------------------------------------------
-// Additional WP stubs required by various source classes under test.
-// -----------------------------------------------------------------------
-
-if ( ! function_exists( 'add_rewrite_rule' ) ) {
-	function add_rewrite_rule( string $regex, string $redirect, string $after = 'bottom' ): void {
-		$GLOBALS['_rewrite_rules'][] = [ $regex, $redirect, $after ];
-	}
-}
-
-if ( ! function_exists( 'add_rewrite_tag' ) ) {
-	function add_rewrite_tag( string $tag, string $regex ): void {}
-}
-
-if ( ! function_exists( 'get_post_type' ) ) {
-	function get_post_type( $post = null ): string {
-		$post_obj = get_post( $post );
-		return $post_obj ? $post_obj->post_type : ( $GLOBALS['_post_type'] ?? 'post' );
-	}
-}
-
-if ( ! function_exists( 'wp_count_posts' ) ) {
-	function wp_count_posts( string $type = 'post' ): object {
-		return (object) [
-			'publish'    => (int) ( $GLOBALS['_post_counts'][ $type ]['publish'] ?? 0 ),
-			'draft'      => (int) ( $GLOBALS['_post_counts'][ $type ]['draft'] ?? 0 ),
-			'pending'    => (int) ( $GLOBALS['_post_counts'][ $type ]['pending'] ?? 0 ),
-			'trash'      => (int) ( $GLOBALS['_post_counts'][ $type ]['trash'] ?? 0 ),
-			'private'    => (int) ( $GLOBALS['_post_counts'][ $type ]['private'] ?? 0 ),
-			'future'     => (int) ( $GLOBALS['_post_counts'][ $type ]['future'] ?? 0 ),
-			'inherit'    => (int) ( $GLOBALS['_post_counts'][ $type ]['inherit'] ?? 0 ),
-			'auto-draft' => (int) ( $GLOBALS['_post_counts'][ $type ]['auto-draft'] ?? 0 ),
-		];
-	}
-}
-
-if ( ! function_exists( 'wp_hash' ) ) {
-	function wp_hash( string $data, string $scheme = 'auth' ): string {
-		return hash_hmac( 'md5', $data, 'test-secret-key' );
-	}
-}
-
-if ( ! function_exists( 'url_to_postid' ) ) {
-	function url_to_postid( string $url ): int {
-		// Match bootstrap's get_permalink format: https://example.com/post/{id}/
-		if ( preg_match( '#/post/(\d+)/#', $url, $m ) ) {
-			return (int) $m[1];
+if ( ! function_exists( 'wp_publish_post' ) ) {
+	function wp_publish_post( int $post_id ): int {
+		if ( isset( $GLOBALS['_posts'][ $post_id ] ) ) {
+			$GLOBALS['_posts'][ $post_id ]['post_status'] = 'publish';
 		}
-		// Also check posts by guid.
-		foreach ( $GLOBALS['_posts'] ?? [] as $post ) {
-			if ( isset( $post->guid ) && $post->guid === $url ) {
-				return (int) $post->ID;
-			}
+		return $post_id;
+	}
+}
+
+if ( ! function_exists( 'wp_trash_post' ) ) {
+	function wp_trash_post( int $post_id ): void {
+		if ( isset( $GLOBALS['_posts'][ $post_id ] ) ) {
+			$GLOBALS['_posts'][ $post_id ]['post_status'] = 'trash';
 		}
-		return 0;
 	}
 }
 
-if ( ! function_exists( 'get_site_option' ) ) {
-	function get_site_option( string $option, $default = false ) {
-		return $GLOBALS['_site_options'][ $option ] ?? $default;
-	}
-}
-
-if ( ! function_exists( 'update_site_option' ) ) {
-	function update_site_option( string $option, $value ): bool {
-		$GLOBALS['_site_options'][ $option ] = $value;
-		return true;
-	}
-}
-
-// Create a stub wp-admin/includes/upgrade.php so that classes calling
-// require_once ABSPATH . 'wp-admin/includes/upgrade.php' don't fail.
-// ABSPATH is defined as '/tmp/' in this bootstrap.
-if ( ! file_exists( ABSPATH . 'wp-admin/includes/upgrade.php' ) ) {
-	@mkdir( ABSPATH . 'wp-admin/includes', 0777, true );
-	file_put_contents( ABSPATH . 'wp-admin/includes/upgrade.php', "<?php\n// Stub for unit tests – dbDelta is already defined in bootstrap.php.\n" );
-}
-
-if ( ! function_exists( 'get_post_time' ) ) {
-	function get_post_time( string $d = 'U', bool $gmt = false, $post = null, bool $translate = false ) {
-		$post_obj = get_post( $post );
-		$date_str = $post_obj ? $post_obj->post_date : gmdate( 'Y-m-d H:i:s' );
-		$ts = strtotime( $date_str );
-		if ( 'U' === $d ) {
-			return $ts;
-		}
-		return gmdate( $d, $ts );
-	}
-}
-
-if ( ! function_exists( 'get_the_tags' ) ) {
-	function get_the_tags( $post_id = 0 ) {
-		$tags = $GLOBALS['_post_tags'][ (int) $post_id ] ?? false;
-		return $tags;
-	}
-}
-
-if ( ! function_exists( 'wp_kses_post' ) ) {
-	function wp_kses_post( string $content ): string {
-		return $content;
-	}
-}
-
-if ( ! function_exists( 'get_the_ID' ) ) {
-	function get_the_ID(): int {
-		return (int) ( $GLOBALS['_current_post_id'] ?? 0 );
-	}
-}
-
-if ( ! function_exists( 'is_ssl' ) ) {
-	function is_ssl(): bool {
-		return (bool) ( $GLOBALS['_is_ssl'] ?? false );
+if ( ! function_exists( 'trailingslashit' ) ) {
+	function trailingslashit( string $value ): string {
+		return rtrim( $value, '/' ) . '/';
 	}
 }
 
 if ( ! function_exists( 'is_user_logged_in' ) ) {
 	function is_user_logged_in(): bool {
-		return (bool) ( $GLOBALS['_is_user_logged_in'] ?? false );
+		return $GLOBALS['_user_logged_in'] ?? true;
 	}
 }
 
-if ( ! function_exists( 'rest_url' ) ) {
-	function rest_url( string $path = '' ): string {
-		return 'http://example.com/wp-json/' . ltrim( $path, '/' );
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id(): int {
+		return $GLOBALS['_current_user_id'] ?? 1;
 	}
 }
 
-if ( ! defined( 'COOKIEPATH' ) ) {
-	define( 'COOKIEPATH', '/' );
+if ( ! function_exists( 'get_userdata' ) ) {
+	function get_userdata( int $user_id ) {
+		$users = $GLOBALS['_users'] ?? [];
+		if ( ! isset( $users[ $user_id ] ) ) {
+			return false;
+		}
+		return (object) $users[ $user_id ];
+	}
 }
 
-if ( ! defined( 'COOKIE_DOMAIN' ) ) {
-	define( 'COOKIE_DOMAIN', '' );
+if ( ! function_exists( 'shortcode_atts' ) ) {
+	function shortcode_atts( array $defaults, array $atts, string $shortcode = '' ): array {
+		$out = [];
+		foreach ( $defaults as $key => $default ) {
+			$out[ $key ] = array_key_exists( $key, $atts ) ? $atts[ $key ] : $default;
+		}
+		return $out;
+	}
 }
 
-// Namespace-level setcookie stubs so that classes calling setcookie() without a
-// leading backslash inside their own namespace don't trigger header-already-sent
-// errors during unit tests.  PHP resolves unqualified built-in calls via
-// namespace first, then global scope; defining these here causes them to be
-// found in the namespace before the real built-in.
-// Namespace-level setcookie stubs so that classes calling setcookie() without a
-// leading backslash inside their own namespace don't trigger header-already-sent
-// errors during unit tests.  PHP resolves unqualified built-in calls via
-// namespace first, then global scope; defining these here causes them to be
-// found in the namespace before the real built-in.
-// These must be defined in a separate include to avoid mixing namespace and
-// non-namespace declarations in a file with declare(strict_types=1).
-require_once __DIR__ . '/namespace-stubs.php';
+if ( ! function_exists( 'wp_create_nonce' ) ) {
+	function wp_create_nonce( string $action = '' ): string {
+		return 'test_nonce_' . md5( $action );
+	}
+}
+
+if ( ! function_exists( 'selected' ) ) {
+	function selected( $selected, $current = true, bool $echo = true ): string {
+		$result = $selected == $current ? ' selected="selected"' : '';
+		if ( $echo ) {
+			echo $result;
+		}
+		return $result;
+	}
+}
+
+if ( ! function_exists( 'checked' ) ) {
+	function checked( $checked, $current = true, bool $echo = true ): string {
+		$result = $checked == $current ? ' checked="checked"' : '';
+		if ( $echo ) {
+			echo $result;
+		}
+		return $result;
+	}
+}
 
 // PSR-4 autoloader for src/ classes.
 spl_autoload_register( function ( string $class ): void {
-	$prefix   = 'PearBlogEngine\\';
 	$base_dir = __DIR__ . '/../../src/';
 
-	if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+	foreach ( [ 'PearBlogEngine\\', 'PearBlog\\' ] as $prefix ) {
+		if ( strncmp( $prefix, $class, strlen( $prefix ) ) !== 0 ) {
+			continue;
+		}
+
+		$relative = substr( $class, strlen( $prefix ) );
+		$file     = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
+
+		if ( file_exists( $file ) ) {
+			require $file;
+		}
 		return;
-	}
-
-	$relative = substr( $class, strlen( $prefix ) );
-	$file     = $base_dir . str_replace( '\\', '/', $relative ) . '.php';
-
-	if ( file_exists( $file ) ) {
-		require $file;
 	}
 } );

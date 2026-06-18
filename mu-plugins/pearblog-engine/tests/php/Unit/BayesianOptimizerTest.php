@@ -1,6 +1,6 @@
 <?php
 /**
- * Unit tests for BayesianOptimizer.
+ * Unit tests for BayesianOptimizer (V9.0 F3).
  *
  * @package PearBlogEngine\Tests\Unit
  */
@@ -14,198 +14,151 @@ use PearBlogEngine\Testing\BayesianOptimizer;
 
 class BayesianOptimizerTest extends TestCase {
 
-	private BayesianOptimizer $opt;
+	private BayesianOptimizer $optimizer;
 
 	protected function setUp(): void {
 		parent::setUp();
-		$GLOBALS['_post_meta'] = [];
-		$GLOBALS['_options']   = [];
-		$this->opt             = new BayesianOptimizer();
+		$GLOBALS['_options']  = [];
+		$this->optimizer      = new BayesianOptimizer();
 	}
 
 	// -----------------------------------------------------------------------
-	// record_impression / record_conversion
+	// register_test
 	// -----------------------------------------------------------------------
 
-	public function test_record_impression_increments_count(): void {
-		$this->opt->record_impression( 1, 'test_1', 'A' );
-		$this->opt->record_impression( 1, 'test_1', 'A' );
-
-		$summary = $this->opt->summary( 1, 'test_1', [ 'A' ] );
-		$this->assertSame( 2, $summary['variants']['A']['impressions'] );
+	public function test_register_test_initialises_priors(): void {
+		$this->optimizer->register_test( 't1', [ 'v_a', 'v_b' ] );
+		$state = $this->optimizer->get_arm_state( 't1' );
+		$this->assertArrayHasKey( 'v_a', $state );
+		$this->assertArrayHasKey( 'v_b', $state );
+		$this->assertSame( BayesianOptimizer::PRIOR_ALPHA, $state['v_a']['alpha'] );
+		$this->assertSame( BayesianOptimizer::PRIOR_BETA, $state['v_a']['beta'] );
 	}
 
-	public function test_record_conversion_increments_count(): void {
-		$this->opt->record_impression( 1, 'test_1', 'B' );
-		$this->opt->record_conversion( 1, 'test_1', 'B' );
+	public function test_register_test_does_not_overwrite_existing_arms(): void {
+		$this->optimizer->register_test( 't1', [ 'v_a' ] );
+		$this->optimizer->record_observation( 't1', 'v_a', true );
+		$this->optimizer->register_test( 't1', [ 'v_a', 'v_b' ] );
 
-		$summary = $this->opt->summary( 1, 'test_1', [ 'B' ] );
-		$this->assertSame( 1, $summary['variants']['B']['conversions'] );
+		$state = $this->optimizer->get_arm_state( 't1' );
+		// v_a should have alpha = prior + 1 (not reset).
+		$this->assertSame( BayesianOptimizer::PRIOR_ALPHA + 1, $state['v_a']['alpha'] );
+		// v_b was newly added.
+		$this->assertArrayHasKey( 'v_b', $state );
 	}
 
-	public function test_multiple_variants_tracked_independently(): void {
-		$this->opt->record_impression( 2, 't', 'A' );
-		$this->opt->record_impression( 2, 't', 'A' );
-		$this->opt->record_conversion( 2, 't', 'A' );
+	// -----------------------------------------------------------------------
+	// record_observation
+	// -----------------------------------------------------------------------
 
-		$this->opt->record_impression( 2, 't', 'B' );
-		$this->opt->record_conversion( 2, 't', 'B' );
-		$this->opt->record_conversion( 2, 't', 'B' );
+	public function test_success_increments_alpha(): void {
+		$this->optimizer->register_test( 't1', [ 'va' ] );
+		$before = $this->optimizer->get_arm_state( 't1' )['va']['alpha'];
+		$this->optimizer->record_observation( 't1', 'va', true );
+		$after  = $this->optimizer->get_arm_state( 't1' )['va']['alpha'];
+		$this->assertSame( $before + 1, $after );
+	}
 
-		$summary = $this->opt->summary( 2, 't', [ 'A', 'B' ] );
-		$this->assertSame( 2, $summary['variants']['A']['impressions'] );
-		$this->assertSame( 1, $summary['variants']['A']['conversions'] );
-		$this->assertSame( 1, $summary['variants']['B']['impressions'] );
+	public function test_failure_increments_beta(): void {
+		$this->optimizer->register_test( 't1', [ 'va' ] );
+		$before = $this->optimizer->get_arm_state( 't1' )['va']['beta'];
+		$this->optimizer->record_observation( 't1', 'va', false );
+		$after  = $this->optimizer->get_arm_state( 't1' )['va']['beta'];
+		$this->assertSame( $before + 1, $after );
 	}
 
 	// -----------------------------------------------------------------------
 	// select_variant
 	// -----------------------------------------------------------------------
 
-	public function test_select_variant_returns_one_of_given_variants(): void {
-		$variants = [ 'A', 'B', 'C' ];
-		$selected = $this->opt->select_variant( 1, 'test', $variants );
-
-		$this->assertContains( $selected, $variants );
+	public function test_select_variant_returns_null_for_unknown_test(): void {
+		$this->assertNull( $this->optimizer->select_variant( 'nonexistent' ) );
 	}
 
-	public function test_select_variant_empty_list_returns_empty_string(): void {
-		$this->assertSame( '', $this->opt->select_variant( 1, 'test', [] ) );
+	public function test_select_variant_returns_registered_variant(): void {
+		$this->optimizer->register_test( 't1', [ 'a', 'b' ] );
+		$selected = $this->optimizer->select_variant( 't1' );
+		$this->assertContains( $selected, [ 'a', 'b' ] );
 	}
 
-	public function test_select_variant_prefers_high_conversion_variant(): void {
-		// Give variant B a much higher conversion rate.
-		for ( $i = 0; $i < 200; $i++ ) {
-			$this->opt->record_impression( 10, 'big', 'A' );
-			$this->opt->record_impression( 10, 'big', 'B' );
-			$this->opt->record_conversion( 10, 'big', 'B' );
-		}
+	public function test_heavily_winning_variant_is_selected_most_often(): void {
+		$this->optimizer->register_test( 't1', [ 'winner', 'loser' ] );
 
-		// Over many selections, B should be picked far more often than A.
-		$counts = [ 'A' => 0, 'B' => 0 ];
-		for ( $i = 0; $i < 100; $i++ ) {
-			$v = $this->opt->select_variant( 10, 'big', [ 'A', 'B' ] );
-			$counts[ $v ]++;
-		}
-
-		$this->assertGreaterThan( $counts['A'], $counts['B'] );
-	}
-
-	// -----------------------------------------------------------------------
-	// win_probabilities
-	// -----------------------------------------------------------------------
-
-	public function test_win_probabilities_sum_to_one(): void {
-		// Seed some data.
+		// Give 'winner' a much higher success rate.
 		for ( $i = 0; $i < 50; $i++ ) {
-			$this->opt->record_impression( 5, 'wp', 'A' );
-			$this->opt->record_impression( 5, 'wp', 'B' );
+			$this->optimizer->record_observation( 't1', 'winner', true );
 		}
-		for ( $i = 0; $i < 30; $i++ ) {
-			$this->opt->record_conversion( 5, 'wp', 'B' );
+		for ( $i = 0; $i < 2; $i++ ) {
+			$this->optimizer->record_observation( 't1', 'loser', true );
 		}
-		for ( $i = 0; $i < 5; $i++ ) {
-			$this->opt->record_conversion( 5, 'wp', 'A' );
+		for ( $i = 0; $i < 50; $i++ ) {
+			$this->optimizer->record_observation( 't1', 'loser', false );
 		}
 
-		$probs = $this->opt->win_probabilities( 5, 'wp', [ 'A', 'B' ] );
-		$this->assertArrayHasKey( 'A', $probs );
-		$this->assertArrayHasKey( 'B', $probs );
-		$this->assertEqualsWithDelta( 1.0, $probs['A'] + $probs['B'], 0.05 );
-	}
+		$counts = [ 'winner' => 0, 'loser' => 0 ];
+		for ( $i = 0; $i < 100; $i++ ) {
+			$selected                  = $this->optimizer->select_variant( 't1' );
+			$counts[ $selected ?? '' ] = ( $counts[ $selected ?? '' ] ?? 0 ) + 1;
+		}
 
-	public function test_win_probabilities_empty_variants_returns_empty(): void {
-		$probs = $this->opt->win_probabilities( 1, 't', [] );
-		$this->assertSame( [], $probs );
+		$this->assertGreaterThan( $counts['loser'], $counts['winner'] );
 	}
 
 	// -----------------------------------------------------------------------
-	// summary
+	// expected_conversion_rate
 	// -----------------------------------------------------------------------
 
-	public function test_summary_not_ready_below_min_impressions(): void {
-		$this->opt->record_impression( 3, 's', 'A' );
-		$summary = $this->opt->summary( 3, 's', [ 'A', 'B' ] );
-
-		$this->assertFalse( $summary['ready'] );
-		$this->assertNull( $summary['winner'] );
+	public function test_expected_rate_is_05_for_uninformed_prior(): void {
+		$this->optimizer->register_test( 't1', [ 'v1' ] );
+		$rate = $this->optimizer->expected_conversion_rate( 't1', 'v1' );
+		$this->assertEqualsWithDelta( 0.5, $rate, 0.01 );
 	}
 
-	public function test_summary_ready_above_min_impressions(): void {
-		for ( $i = 0; $i < BayesianOptimizer::MIN_IMPRESSIONS; $i++ ) {
-			$this->opt->record_impression( 4, 's2', 'A' );
-			$this->opt->record_impression( 4, 's2', 'B' );
+	public function test_expected_rate_approaches_1_with_all_successes(): void {
+		$this->optimizer->register_test( 't1', [ 'v1' ] );
+		for ( $i = 0; $i < 100; $i++ ) {
+			$this->optimizer->record_observation( 't1', 'v1', true );
 		}
-
-		$summary = $this->opt->summary( 4, 's2', [ 'A', 'B' ] );
-		$this->assertTrue( $summary['ready'] );
+		$rate = $this->optimizer->expected_conversion_rate( 't1', 'v1' );
+		$this->assertGreaterThan( 0.98, $rate );
 	}
 
-	public function test_summary_conversion_rate_calculated(): void {
-		$this->opt->record_impression( 7, 'cr', 'A' );
-		$this->opt->record_impression( 7, 'cr', 'A' );
-		$this->opt->record_conversion( 7, 'cr', 'A' );
-
-		$summary = $this->opt->summary( 7, 'cr', [ 'A' ] );
-		$this->assertEqualsWithDelta( 0.5, $summary['variants']['A']['rate'], 0.001 );
-	}
-
-	public function test_summary_winner_identified_with_dominant_variant(): void {
-		// Give variant B a 90 % conversion rate over enough impressions.
-		$n = (int) ceil( BayesianOptimizer::MIN_IMPRESSIONS * 2 );
-		for ( $i = 0; $i < $n; $i++ ) {
-			$this->opt->record_impression( 8, 'w', 'A' );
-			$this->opt->record_impression( 8, 'w', 'B' );
-			$this->opt->record_conversion( 8, 'w', 'B' ); // 100 % for B
-			// A gets 0 conversions
-		}
-
-		$summary = $this->opt->summary( 8, 'w', [ 'A', 'B' ] );
-		// With 100 % vs 0 % and ample data, B should win.
-		$this->assertSame( 'B', $summary['winner'] );
+	public function test_expected_rate_for_unknown_returns_half(): void {
+		// No test registered – returns prior mean = 0.5.
+		$rate = $this->optimizer->expected_conversion_rate( 'unknown', 'v1' );
+		$this->assertEqualsWithDelta( 0.5, $rate, 0.01 );
 	}
 
 	// -----------------------------------------------------------------------
-	// reset
+	// get_arm_state
 	// -----------------------------------------------------------------------
 
-	public function test_reset_clears_stats(): void {
-		$this->opt->record_impression( 6, 'r', 'A' );
-		$this->opt->reset( 6, 'r' );
-
-		$summary = $this->opt->summary( 6, 'r', [ 'A' ] );
-		$this->assertSame( 0, $summary['variants']['A']['impressions'] );
+	public function test_get_arm_state_includes_probability_best(): void {
+		$this->optimizer->register_test( 't1', [ 'a', 'b' ] );
+		$state = $this->optimizer->get_arm_state( 't1' );
+		$this->assertArrayHasKey( 'probability_best', $state['a'] );
+		$prob_sum = $state['a']['probability_best'] + $state['b']['probability_best'];
+		// Two equal variants: each ≈ 0.5; sum ≈ 1.0 within Monte-Carlo variance.
+		$this->assertEqualsWithDelta( 1.0, $prob_sum, 0.1 );
 	}
 
 	// -----------------------------------------------------------------------
-	// sample_beta — basic sanity checks
+	// beta_sample
 	// -----------------------------------------------------------------------
 
-	public function test_sample_beta_returns_value_in_unit_interval(): void {
-		for ( $i = 0; $i < 20; $i++ ) {
-			$v = $this->opt->sample_beta( 2.0, 2.0 );
-			$this->assertGreaterThanOrEqual( 0.0, $v );
-			$this->assertLessThanOrEqual( 1.0, $v );
+	public function test_beta_sample_in_unit_interval(): void {
+		$opt = new BayesianOptimizer();
+		for ( $i = 0; $i < 100; $i++ ) {
+			$s = $opt->beta_sample( 2.0, 2.0 );
+			$this->assertGreaterThanOrEqual( 0.0, $s );
+			$this->assertLessThanOrEqual( 1.0, $s );
 		}
 	}
 
-	public function test_sample_beta_high_alpha_skews_toward_one(): void {
-		$sum = 0.0;
-		$n   = 50;
-		for ( $i = 0; $i < $n; $i++ ) {
-			$sum += $this->opt->sample_beta( 100.0, 1.0 );
-		}
-		// Mean of Beta(100, 1) ≈ 0.99
-		$this->assertGreaterThan( 0.9, $sum / $n );
-	}
-
-	public function test_sample_beta_high_beta_skews_toward_zero(): void {
-		$sum = 0.0;
-		$n   = 50;
-		for ( $i = 0; $i < $n; $i++ ) {
-			$sum += $this->opt->sample_beta( 1.0, 100.0 );
-		}
-		// Mean of Beta(1, 100) ≈ 0.01
-		$this->assertLessThan( 0.1, $sum / $n );
+	public function test_beta_sample_with_small_shape(): void {
+		$opt = new BayesianOptimizer();
+		$s   = $opt->beta_sample( 0.5, 0.5 );
+		$this->assertGreaterThanOrEqual( 0.0, $s );
+		$this->assertLessThanOrEqual( 1.0, $s );
 	}
 }
