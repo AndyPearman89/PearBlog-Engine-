@@ -4,7 +4,7 @@
 
 **🚀 NEW: [Poradnik.pro Decision Platform →](PORADNIK-PRO-PLATFORM.md)** — Transform your content into a full decision engine with comparisons, rankings, calculators, expert marketplace, and lead generation.
 
-📚 **[Documentation Index →](DOCUMENTATION-INDEX.md)** · 📋 **[Changelog →](CHANGELOG.md)** · ⚙️ **[Setup →](SETUP.md)** · 🗺️ **[Roadmap →](ROADMAP-VISUAL.md)** · 📊 **[Progress →](PROGRESS-VISUALIZATION.md)** · 🤖 **[Autopilot →](ENTERPRISE-AUTOPILOT-TASKLIST.md)**
+📚 **[Documentation Index →](DOCUMENTATION-INDEX.md)** · 📘 **[Pełna dokumentacja →](PELNA-DOKUMENTACJA.md)** · 📋 **[Changelog →](CHANGELOG.md)** · ⚙️ **[Setup →](SETUP.md)** · 🗺️ **[Roadmap →](ROADMAP-VISUAL.md)** · 📊 **[Progress →](PROGRESS-VISUALIZATION.md)** · 🤖 **[Autopilot →](ENTERPRISE-AUTOPILOT-TASKLIST.md)**
 
 ---
 
