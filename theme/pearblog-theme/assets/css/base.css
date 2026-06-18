@@ -22,6 +22,8 @@
   --pb-text-white: #ffffff;
 
   /* Border & Radius */
+  --pb-border-soft: rgba(17, 24, 39, 0.1);
+  --pb-border-input: rgba(17, 24, 39, 0.15);
   --pb-radius: 0.5rem;
   --pb-radius-sm: 0.25rem;
   --pb-radius-md: 0.5rem;
@@ -639,7 +641,7 @@ body {
 
 :is(.pb-entry-content, .pb-content-section, .entry-content, .article-content) th,
 :is(.pb-entry-content, .pb-content-section, .entry-content, .article-content) td {
-  border: 1px solid rgba(17, 24, 39, 0.1);
+  border: 1px solid var(--pb-border-soft);
   padding: 0.75rem;
   text-align: left;
 }
@@ -658,7 +660,7 @@ textarea,
 select {
   width: 100%;
   max-width: 100%;
-  border: 1px solid rgba(17, 24, 39, 0.15);
+  border: 1px solid var(--pb-border-input);
   border-radius: var(--pb-radius-md);
   padding: 0.625rem 0.75rem;
   background: var(--pb-bg);
