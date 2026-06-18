@@ -1,15 +1,16 @@
 # 📚 PearBlog Engine — Documentation Index
 
-> Autonomous AI content production for WordPress — **v6.0**
+> Autonomous AI content production for WordPress — **v8.0**
 
 ---
 
 ## 🚀 Quick Start
 
-1. **[README.md](README.md)** — Project overview and architecture
-2. **[SETUP.md](SETUP.md)** — Installation & configuration (5 min)
-3. **[DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md)** — Single-source-of-truth production deploy runbook
-4. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
+1. **[PELNA-DOKUMENTACJA.md](PELNA-DOKUMENTACJA.md)** — Full top-level documentation for the whole repository (PL)
+2. **[README.md](README.md)** — Project overview and architecture
+3. **[SETUP.md](SETUP.md)** — Installation & configuration (5 min)
+4. **[DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md)** — Single-source-of-truth production deploy runbook
+5. **[AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md)** — Launch autonomous production
 
 ---
 
@@ -19,6 +20,7 @@
 
 | Document | Language | Audience | Summary |
 |----------|----------|----------|---------|
+| [PELNA-DOKUMENTACJA.md](PELNA-DOKUMENTACJA.md) | **PL** | Everyone | Nadrzędna pełna dokumentacja: zakres repo, architektura, uruchamianie, testy, wdrożenia, mapa dokumentów |
 | [README.md](README.md) | EN | Everyone | Features, architecture, quick start |
 | [SETUP.md](SETUP.md) | EN | Ops / Dev | GitHub Secrets, Actions, first run |
 | [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md) | EN | Ops / Dev | Canonical deployment flow, secrets, verification, failure modes |
@@ -112,6 +114,7 @@
 
 | Goal | Start Here |
 |------|------------|
+| Understand the whole repository documentation | [PELNA-DOKUMENTACJA.md](PELNA-DOKUMENTACJA.md) |
 | Get started quickly | [SETUP.md](SETUP.md) → [AUTONOMOUS-ACTIVATION-GUIDE.md](AUTONOMOUS-ACTIVATION-GUIDE.md) |
 | Deploy to production (EN) | [DEPLOY-RUNBOOK.md](DEPLOY-RUNBOOK.md) |
 | Deploy to production (PL) | [DEPLOYMENT-PL.md](DEPLOYMENT-PL.md) |
@@ -245,4 +248,3 @@ Topic Queue
 
 *PearBlog Engine v6.0 — Enterprise-ready autonomous content system*  
 *Documentation last updated: 2026-04-12*
-
