@@ -351,11 +351,14 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 
 if ( ! function_exists( 'current_user_can' ) ) {
 	function current_user_can( string $capability ): bool {
-		// Support both _user_can (older tests) and _current_user_can (newer tests).
+		// Support both globals, prioritizing _current_user_can when set.
+		if ( isset( $GLOBALS['_current_user_can'] ) ) {
+			return (bool) $GLOBALS['_current_user_can'];
+		}
 		if ( isset( $GLOBALS['_user_can'] ) ) {
 			return (bool) $GLOBALS['_user_can'];
 		}
-		return (bool) ( $GLOBALS['_current_user_can'] ?? false );
+		return false;
 	}
 }
 
