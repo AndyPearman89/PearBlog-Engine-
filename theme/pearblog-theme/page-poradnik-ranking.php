@@ -23,6 +23,7 @@ get_header();
     <div class="container">
         <div class="ranking-list">
             <?php
+            $excerpt_word_count = 22;
             $ranking_query = new WP_Query([
                 'post_type'      => ['pearblog_ranking', 'ranking'],
                 'post_status'    => 'publish',
@@ -35,10 +36,10 @@ get_header();
                     $ranking_query->the_post();
                     ?>
                     <article class="ranking-card">
-                        <div class="ranking-position"><?php echo esc_html((string) $position); ?></div>
+                        <div class="ranking-position"><?php echo esc_html($position); ?></div>
                         <div class="ranking-content">
                             <h3><?php the_title(); ?></h3>
-                            <p><?php echo esc_html(wp_trim_words(get_the_excerpt() ?: wp_strip_all_tags(get_the_content()), 22)); ?></p>
+                            <p><?php echo esc_html(wp_trim_words(get_the_excerpt() ?: wp_strip_all_tags(get_the_content()), $excerpt_word_count)); ?></p>
                         </div>
                         <a href="<?php the_permalink(); ?>" class="ranking-cta">Sprawdź ranking</a>
                     </article>
