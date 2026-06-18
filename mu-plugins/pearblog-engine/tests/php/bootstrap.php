@@ -817,6 +817,15 @@ if ( ! class_exists( 'WP_REST_Response' ) ) {
 	}
 }
 
+if ( ! function_exists( 'rest_ensure_response' ) ) {
+	function rest_ensure_response( $response ) {
+		if ( $response instanceof \WP_REST_Response ) {
+			return $response;
+		}
+		return new \WP_REST_Response( $response, 200 );
+	}
+}
+
 // Mock wpdb class for database testing
 if ( ! isset( $GLOBALS['wpdb'] ) ) {
 	$GLOBALS['wpdb'] = new class {
@@ -972,6 +981,80 @@ if ( ! function_exists( 'dbDelta' ) ) {
 	function dbDelta( $queries ) {
 		$GLOBALS['_db_queries'][] = $queries;
 		return [ 'Created table wp_pearblog_logs' ];
+	}
+}
+
+// V9.0 stubs.
+if ( ! function_exists( 'get_post_modified_time' ) ) {
+	function get_post_modified_time( string $format = 'U', bool $gmt = false, $post = null ) {
+		$id      = is_numeric( $post ) ? (int) $post : 0;
+		$stored  = $GLOBALS['_post_meta'][ $id ]['_pearblog_modified_time'][0] ?? null;
+		$ts      = $stored ?? ( time() - 200 * DAY_IN_SECONDS );
+		if ( 'U' === $format ) {
+			return (int) $ts;
+		}
+		return gmdate( $format, (int) $ts );
+	}
+}
+
+if ( ! function_exists( 'wp_generate_uuid4' ) ) {
+	function wp_generate_uuid4(): string {
+		return sprintf(
+			'%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0x0fff ) | 0x4000,
+			mt_rand( 0, 0x3fff ) | 0x8000,
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff ),
+			mt_rand( 0, 0xffff )
+		);
+	}
+}
+
+if ( ! function_exists( 'wp_publish_post' ) ) {
+	function wp_publish_post( int $post_id ): int {
+		if ( isset( $GLOBALS['_posts'][ $post_id ] ) ) {
+			$GLOBALS['_posts'][ $post_id ]['post_status'] = 'publish';
+		}
+		return $post_id;
+	}
+}
+
+if ( ! function_exists( 'wp_trash_post' ) ) {
+	function wp_trash_post( int $post_id ): void {
+		if ( isset( $GLOBALS['_posts'][ $post_id ] ) ) {
+			$GLOBALS['_posts'][ $post_id ]['post_status'] = 'trash';
+		}
+	}
+}
+
+if ( ! function_exists( 'trailingslashit' ) ) {
+	function trailingslashit( string $value ): string {
+		return rtrim( $value, '/' ) . '/';
+	}
+}
+
+if ( ! function_exists( 'is_user_logged_in' ) ) {
+	function is_user_logged_in(): bool {
+		return $GLOBALS['_user_logged_in'] ?? true;
+	}
+}
+
+if ( ! function_exists( 'get_current_user_id' ) ) {
+	function get_current_user_id(): int {
+		return $GLOBALS['_current_user_id'] ?? 1;
+	}
+}
+
+if ( ! function_exists( 'get_userdata' ) ) {
+	function get_userdata( int $user_id ) {
+		$users = $GLOBALS['_users'] ?? [];
+		if ( ! isset( $users[ $user_id ] ) ) {
+			return false;
+		}
+		return (object) $users[ $user_id ];
 	}
 }
 

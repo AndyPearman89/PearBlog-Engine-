@@ -2,6 +2,42 @@
 
 All notable changes to PearBlog Engine are documented in this file.
 
+## [9.0.0] — 2026-06-18
+
+### Added — V9.0 Production: Scale, Intelligence & Ecosystem Expansion
+
+#### F2: Advanced Analytics — Predictive Analytics
+- **`PredictiveAnalytics`** (`src/Analytics/PredictiveAnalytics.php`) — 7-day traffic forecasting via OLS linear regression; anomaly detection with configurable deviation threshold; revenue ROI recommendations; REST `GET /pearblog/v1/analytics/forecast` and `/analytics/anomalies`; daily cron refresh.
+
+#### F3: Smart A/B Testing Engine Enhancements
+- **`AIVariantGenerator`** (`src/Testing/AIVariantGenerator.php`) — AI-powered generation of headline, CTA, and meta-description variants; pluggable AI caller; numbered/bullet prefix stripping; configurable model via `pearblog_variant_gen_model`.
+- **`BayesianOptimizer`** (`src/Testing/BayesianOptimizer.php`) — Thompson-Sampling multi-armed bandit for faster A/B convergence; Marsaglia-Tsang Gamma sampler; Monte-Carlo `probability_best` reporting; persistent arm state in `pearblog_bayes_arms`.
+
+#### F4: Mobile Monitoring REST API
+- **`MobileAPIController`** (`src/API/MobileAPIController.php`) — 9-route REST surface for the React-Native mobile app: KPI dashboard, paginated article queue, approve/reject/pause/resume queue, alerts with acknowledge; `manage_options` / `edit_posts` permission gating.
+
+#### F6: Smart Content Refresh Automation
+- **`ContentRefreshPrioritizer`** (`src/Content/ContentRefreshPrioritizer.php`) — urgency scoring (0–100) based on content age, traffic decline, and quality score; evergreen post exemption; REST `GET /pearblog/v1/refresh-queue` and `POST /refresh-queue/{id}/trigger`; weekly cron.
+
+#### F7: Multi-Provider AI Orchestration
+- **`SmartProviderRouter`** (`src/AI/SmartProviderRouter.php`) — cost/latency/quality-weighted provider selection across OpenAI, Anthropic, and Gemini; per-provider circuit breaker (opens at >30% error rate); daily budget cap enforcement; per-provider stats tracking.
+
+#### F8: Advanced SEO — Orphan Page Detection
+- **`OrphanPageDetector`** (`src/SEO/OrphanPageDetector.php`) — scans all published posts for outbound links; reports pages with no inbound internal links; REST `GET /pearblog/v1/seo/orphan-pages`; weekly cron; fires `pearblog_orphan_detected` action for new orphans.
+
+#### F9: Content Collaboration Platform
+- **`CollaborationManager`** (`src/Pipeline/CollaborationManager.php`) — multi-stage editorial workflow (draft → in_review → needs_revision → approved); reviewer assignment; inline comment threads with character offset; full transition history; reviewer workload stats; 7-route REST API under `/pearblog/v1/collab`.
+
+#### V9 CLI
+- **`V9Command`** (`src/CLI/V9Command.php`) — `wp pearblog v9` subcommands: `predictive:refresh`, `predictive:anomalies`, `router:status`, `router:reset`, `orphans:scan`, `refresh:prioritize`, `collab:workload`, `variant:generate`.
+
+### Tests
+- **126 new unit tests** across all V9 modules (1246 total, 0 failures).
+- Fixed 5 pre-existing test failures (`assertMatchesRegularExpression` → `preg_match` for PHPUnit 8.5 compatibility).
+- Added bootstrap stubs: `get_post_modified_time`, `wp_generate_uuid4`, `wp_publish_post`, `wp_trash_post`, `trailingslashit`, `is_user_logged_in`, `get_current_user_id`, `get_userdata`, `rest_ensure_response`.
+
+---
+
 ## [8.0.0] — 2026-05-04
 
 ### Added — v8.0 Enterprise Admin Complete

@@ -125,7 +125,7 @@ class MonetizationIntegrationTest extends TestCase {
 		$injected = $this->inject_ads( $content, $post_id );
 
 		// Should inject ad after title
-		$this->assertMatchesRegularExpression( '/<h1>.*<\/h1>.*google_ad_client/s', $injected );
+		$this->assertSame( 1, preg_match( '/<h1>.*<\/h1>.*google_ad_client/s', $injected ) );
 	}
 
 	public function test_in_content_ad_injection(): void {
