@@ -29,11 +29,11 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 2. SSH_USER
 - **Description:** SSH username for server access
-- **Value for poradnik.pro:** `wordpress2614653`
+- **Value for poradnik.pro:** `tutsoff`
 - **Required for:** SSH authentication
 - **Example:**
   ```
-  wordpress2614653
+  tutsoff
   ```
 
 ### 3. SSH_PRIVATE_KEY
@@ -45,7 +45,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
   ssh-keygen -t ed25519 -C "deploy-poradnik-pro" -f ~/.ssh/poradnik_deploy
 
   # Copy public key to server:
-  ssh-copy-id -p 222 -i ~/.ssh/poradnik_deploy.pub wordpress2614653@wordpress2614653.home.pl
+  ssh-copy-id -p 222 -i ~/.ssh/poradnik_deploy.pub tutsoff@wordpress2614653.home.pl
 
   # Display private key (copy this to GitHub Secret):
   cat ~/.ssh/poradnik_deploy
@@ -61,11 +61,11 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 
 ### 4. WP_PATH
 - **Description:** Absolute path to WordPress installation on server
-- **Value for poradnik.pro:** `/home/wordpress2614653/domains/poradnik.pro/public_html`
+- **Value for poradnik.pro:** `/home/tutsoff/public_html/poradnik`
 - **Required for:** Determining where to deploy files
 - **Example:**
   ```
-  /home/wordpress2614653/domains/poradnik.pro/public_html
+  /home/tutsoff/public_html/poradnik
   ```
 
 ### 5. SSH_PORT (Optional)
@@ -238,10 +238,10 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ### Minimum Required Secrets (Core Deployment)
 
 ```
-✓ SSH_HOST            = 204.48.27.118
-✓ SSH_USER            = root
+✓ SSH_HOST            = wordpress2614653.home.pl
+✓ SSH_USER            = tutsoff
 ✓ SSH_PRIVATE_KEY     = [SSH private key content]
-✓ WP_PATH             = /var/www/poradnik.pro
+✓ WP_PATH             = /home/tutsoff/public_html/poradnik
 ✓ ROOT_PASSWORD       = [MySQL root password]
 ✓ OPENAI_API_KEY      = sk-proj-...
 ```
@@ -262,7 +262,7 @@ GitHub Secrets store sensitive credentials needed for automated deployment and C
 ### Test SSH Connection
 ```bash
 # Test that SSH key works:
-ssh -i ~/.ssh/poradnik_deploy root@204.48.27.118 "echo 'SSH connection successful'"
+ssh -p 222 -i ~/.ssh/poradnik_deploy tutsoff@wordpress2614653.home.pl "echo 'SSH connection successful'"
 ```
 
 ### Test OpenAI API Key
@@ -310,7 +310,7 @@ mysql -u root -p -e "SELECT VERSION();"
 1. Verify SSH_HOST is correct
 2. Check SSH_PRIVATE_KEY is complete (including header/footer)
 3. Confirm public key is in `~/.ssh/authorized_keys` on server
-4. Test SSH manually: `ssh root@204.48.27.118`
+4. Test SSH manually: `ssh -p 222 tutsoff@wordpress2614653.home.pl`
 
 ### "MySQL access denied"
 1. Verify ROOT_PASSWORD is correct
@@ -333,13 +333,13 @@ mysql -u root -p -e "SELECT VERSION();"
 
 ## Environment-Specific Secrets
 
-### Production Site 1 (poradnik.pro)
+### Production Site 1 (poradnik — folder na wordpress2614653.home.pl)
 ```
-SSH_HOST=204.48.27.118
-SSH_USER=root
-WP_PATH=/var/www/poradnik.pro
+SSH_HOST=wordpress2614653.home.pl
+SSH_USER=tutsoff
+SSH_PORT=222
+WP_PATH=/home/tutsoff/public_html/poradnik
 SITE_URL=https://poradnik.pro
-ROOT_PASSWORD=[MySQL root password]
 OPENAI_API_KEY=sk-proj-...
 ```
 
