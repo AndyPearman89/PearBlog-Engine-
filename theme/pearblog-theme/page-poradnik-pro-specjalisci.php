@@ -167,7 +167,6 @@ $pp_avatar_colors = array(
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <?php wp_head(); ?>
     <?php pp_pro_shared_styles(); ?>
     <style>
         /* ===== PAGE HERO ===== */
@@ -382,6 +381,7 @@ $pp_avatar_colors = array(
             }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
 <body <?php body_class(); ?>>
 
@@ -439,7 +439,7 @@ $pp_avatar_colors = array(
                     </div>
                     <div class="card-details">
                         <div class="card-rating">
-                            <span class="stars"><?php echo $star_icons; ?></span>
+                            <span class="stars"><?php echo esc_html( $star_icons ); ?></span>
                             <span class="rating-num"><?php echo esc_html( $specialist['rating'] ); ?></span>
                             <span class="reviews-count">(<?php echo esc_html( $specialist['reviews'] ); ?> opinii)</span>
                         </div>

@@ -340,7 +340,7 @@ require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
                                 <li><strong>Finanse</strong> - kredyty, inwestycje, oszczedzanie, podatki</li>
                                 <li><strong>Nieruchomosci</strong> - kupno, sprzedaz, wynajem, wycena</li>
                                 <li><strong>Budownictwo</strong> - projekty, remonty, instalacje, pozwolenia</li>
-                                <li><strong>Motoryzacja</strong> - zakup, ubezpieczenia, naprawa, przegladyy</li>
+                                <li><strong>Motoryzacja</strong> - zakup, ubezpieczenia, naprawa, przeglady</li>
                             </ul>
                             <p>Lista kategorii jest stale rozszerzana na podstawie potrzeb uzytkownikow.</p>
                         </div>
