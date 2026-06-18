@@ -302,6 +302,12 @@ if ( ! function_exists( 'is_singular' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID(): int {
+		return (int) ( $GLOBALS['_current_post_id'] ?? 0 );
+	}
+}
+
 if ( ! function_exists( 'is_admin' ) ) {
 	function is_admin(): bool {
 		return (bool) ( $GLOBALS['_is_admin'] ?? false );

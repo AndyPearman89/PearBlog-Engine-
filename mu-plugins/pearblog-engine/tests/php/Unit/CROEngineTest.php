@@ -20,7 +20,7 @@ class CROEngineTest extends TestCase {
 		parent::setUp();
 		$GLOBALS['_options']    = [];
 		$GLOBALS['_transients'] = [];
-		$GLOBALS['_user_can']   = true;
+		$GLOBALS['_current_user_can'] = true;
 		$this->engine = new CROEngine();
 	}
 
@@ -75,12 +75,12 @@ class CROEngineTest extends TestCase {
 	// -----------------------------------------------------------------------
 
 	public function test_rest_permission_returns_true_for_admin(): void {
-		$GLOBALS['_user_can'] = true;
+		$GLOBALS['_current_user_can'] = true;
 		$this->assertTrue( $this->engine->rest_permission() );
 	}
 
 	public function test_rest_permission_returns_false_for_non_admin(): void {
-		$GLOBALS['_user_can'] = false;
+		$GLOBALS['_current_user_can'] = false;
 		$this->assertFalse( $this->engine->rest_permission() );
 	}
 

@@ -20,7 +20,7 @@ class CoreWebVitalsMonitorTest extends TestCase {
 		parent::setUp();
 		$GLOBALS['_options']    = [];
 		$GLOBALS['_transients'] = [];
-		$GLOBALS['_user_can']   = true;
+		$GLOBALS['_current_user_can'] = true;
 		$GLOBALS['_post_list']  = [];
 		$this->monitor = new CoreWebVitalsMonitor();
 	}
@@ -178,7 +178,7 @@ class CoreWebVitalsMonitorTest extends TestCase {
 	}
 
 	public function test_admin_permission_returns_true_for_admin(): void {
-		$GLOBALS['_user_can'] = true;
+		$GLOBALS['_current_user_can'] = true;
 		$this->assertTrue( $this->monitor->admin_permission() );
 	}
 
