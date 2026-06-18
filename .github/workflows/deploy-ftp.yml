@@ -1,4 +1,4 @@
-name: Deploy via FTP
+name: Deploy via SFTP
 
 on:
   push:
@@ -19,14 +19,14 @@ permissions:
 
 jobs:
   deploy-ftp:
-    name: Deploy plugin & theme via FTP
+    name: Deploy plugin & theme via SFTP
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Resolve FTP configuration
+      - name: Resolve SFTP configuration
         id: ftpvars
         run: |
           MISSING=()
@@ -36,22 +36,28 @@ jobs:
           if [[ ${#MISSING[@]} -gt 0 ]]; then
             echo "::error::Missing required secrets: ${MISSING[*]}"
             echo "Add them under Settings → Secrets and variables → Actions:"
-            echo "  FTP_HOST       – FTP server hostname (e.g. wordpress2614653.home.pl)"
-            echo "  FTP_USERNAME   – FTP account username"
-            echo "  FTP_PASSWORD   – FTP account password"
+            echo "  FTP_HOST       – SFTP server hostname (e.g. wordpress2614653.home.pl)"
+            echo "  FTP_USERNAME   – SFTP account username"
+            echo "  FTP_PASSWORD   – SFTP account password"
+            echo "  FTP_PORT       – (optional) SSH/SFTP port; defaults to 22"
             echo "  FTP_SERVER_DIR – (optional) override base path; defaults to /poradnik/wp-content"
             exit 1
           fi
           # Default WordPress base: /poradnik/wp-content
           SERVER_DIR="${{ secrets.FTP_SERVER_DIR }}"
           SERVER_DIR="${SERVER_DIR:-/poradnik/wp-content}"
+          SFTP_PORT="${{ secrets.FTP_PORT }}"
+          SFTP_PORT="${SFTP_PORT:-22}"
           echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
-          echo "FTP base path: $SERVER_DIR"
+          echo "sftp_port=$SFTP_PORT"   >> "$GITHUB_OUTPUT"
+          echo "SFTP base path: $SERVER_DIR  port: $SFTP_PORT"
 
-      - name: Deploy mu-plugin via FTP
+      - name: Deploy mu-plugin via SFTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
+          protocol: sftp
           server: ${{ secrets.FTP_HOST }}
+          port: ${{ steps.ftpvars.outputs.sftp_port }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./mu-plugins/pearblog-engine/
@@ -60,10 +66,12 @@ jobs:
           log-level: standard
           dangerous-clean-slate: false
 
-      - name: Deploy theme via FTP
+      - name: Deploy theme via SFTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
+          protocol: sftp
           server: ${{ secrets.FTP_HOST }}
+          port: ${{ steps.ftpvars.outputs.sftp_port }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./theme/pearblog-theme/
@@ -74,10 +82,10 @@ jobs:
 
       - name: Deployment summary
         run: |
-          echo "✅ FTP deploy complete"
+          echo "✅ SFTP deploy complete"
           echo "   Plugin : ${{ steps.ftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
           echo "   Theme  : ${{ steps.ftpvars.outputs.server_dir }}/themes/pearblog-theme/"
-          echo "   Server : ${{ secrets.FTP_HOST }}"
+          echo "   Server : ${{ secrets.FTP_HOST }}  port: ${{ steps.ftpvars.outputs.sftp_port }}"
           if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
             echo "   ⚠️  Dry-run mode – no files were uploaded"
           fi
