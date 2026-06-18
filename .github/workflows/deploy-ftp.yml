@@ -18,7 +18,7 @@ permissions:
   contents: read
 
 jobs:
-  deploy-ftp:
+  deploy-sftp:
     name: Deploy plugin & theme via SFTP
     runs-on: ubuntu-latest
 
@@ -27,7 +27,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Resolve SFTP configuration
-        id: ftpvars
+        id: sftpvars
         run: |
           MISSING=()
           [[ -z "${{ secrets.FTP_HOST }}" ]]     && MISSING+=("FTP_HOST")
@@ -57,11 +57,11 @@ jobs:
         with:
           protocol: sftp
           server: ${{ secrets.FTP_HOST }}
-          port: ${{ steps.ftpvars.outputs.sftp_port }}
+          port: ${{ steps.sftpvars.outputs.sftp_port }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./mu-plugins/pearblog-engine/
-          server-dir: ${{ steps.ftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/
+          server-dir: ${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/
           dry-run: ${{ github.event.inputs.dry_run == 'true' }}
           log-level: standard
           dangerous-clean-slate: false
@@ -71,11 +71,11 @@ jobs:
         with:
           protocol: sftp
           server: ${{ secrets.FTP_HOST }}
-          port: ${{ steps.ftpvars.outputs.sftp_port }}
+          port: ${{ steps.sftpvars.outputs.sftp_port }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./theme/pearblog-theme/
-          server-dir: ${{ steps.ftpvars.outputs.server_dir }}/themes/pearblog-theme/
+          server-dir: ${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/
           dry-run: ${{ github.event.inputs.dry_run == 'true' }}
           log-level: standard
           dangerous-clean-slate: false
@@ -83,9 +83,9 @@ jobs:
       - name: Deployment summary
         run: |
           echo "✅ SFTP deploy complete"
-          echo "   Plugin : ${{ steps.ftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
-          echo "   Theme  : ${{ steps.ftpvars.outputs.server_dir }}/themes/pearblog-theme/"
-          echo "   Server : ${{ secrets.FTP_HOST }}  port: ${{ steps.ftpvars.outputs.sftp_port }}"
+          echo "   Plugin : ${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
+          echo "   Theme  : ${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/"
+          echo "   Server : ${{ secrets.FTP_HOST }}  port: ${{ steps.sftpvars.outputs.sftp_port }}"
           if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
             echo "   ⚠️  Dry-run mode – no files were uploaded"
           fi
