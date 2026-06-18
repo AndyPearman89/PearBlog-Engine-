@@ -4,151 +4,187 @@
  * Description: Single calculator page (/kalkulator/{slug})
  *
  * @package PearBlog
- * @version 5.0.0
+ * @subpackage PoradnikPro
+ * @version 6.0.0
  */
+
+defined( 'ABSPATH' ) || exit;
+
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+require_once get_template_directory() . '/inc/poradnik-pro-seed-data.php';
+
+$pp_slug       = get_query_var( 'poradnik_slug', '' );
+$pp_calculator = pp_seed_get_calculator( $pp_slug );
+$pp_calculators = pp_seed_calculators();
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
-    <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' } }, fontFamily: { display: ['Poppins','system-ui','sans-serif'], body: ['Inter','system-ui','sans-serif'] } } } };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
-    <?php wp_head(); ?>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<?php pp_pro_shared_styles(); ?>
+	<style>
+		.calc-hero { padding: 40px 0 32px; background: linear-gradient(135deg, #dcfce7 0%, #d1fae5 100%); }
+		.calc-content { padding: 48px 0 64px; }
+		.calc-body { max-width: 700px; margin: 0 auto; }
+
+		.calc-form-card { background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-xl); padding: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.04); margin-bottom: 32px; }
+		.calc-field { margin-bottom: 20px; }
+		.calc-field label { display: block; font-size: 14px; font-weight: 600; color: var(--gray-700); margin-bottom: 6px; }
+		.calc-field input, .calc-field select { width: 100%; padding: 12px 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-md); font-size: 14px; color: var(--gray-900); background: #fff; transition: border-color 0.2s; }
+		.calc-field input:focus, .calc-field select:focus { outline: none; border-color: var(--purple-primary); box-shadow: 0 0 0 3px rgba(108,43,217,0.1); }
+		.calc-btn { width: 100%; padding: 14px; border-radius: 50px; background: var(--green-accent); color: #fff; font-size: 15px; font-weight: 700; transition: opacity 0.2s; cursor: pointer; border: none; }
+		.calc-btn:hover { opacity: 0.9; }
+
+		.calc-results { display: none; background: #fff; border: 2px solid var(--green-accent); border-radius: var(--radius-xl); padding: 32px; margin-bottom: 32px; }
+		.calc-results.visible { display: block; }
+		.results-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+		.result-item { background: var(--gray-50); border-radius: var(--radius-md); padding: 16px; text-align: center; }
+		.result-label { font-size: 12px; color: var(--gray-500); margin-bottom: 4px; }
+		.result-value { font-size: 20px; font-weight: 800; color: var(--gray-900); }
+
+		.calc-faq { margin-top: 40px; }
+		.calc-faq h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+		.calc-faq-item { border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 10px; }
+		.calc-faq-item summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray-800); }
+		.calc-faq-item p { margin-top: 10px; font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+
+		.other-calcs { margin-top: 48px; border-top: 1px solid var(--gray-200); padding-top: 40px; }
+		.other-calcs h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+		.other-calcs-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+		.other-calc-card { display: flex; align-items: center; gap: 12px; padding: 16px; border: 1px solid var(--gray-200); border-radius: var(--radius-md); transition: all 0.2s; }
+		.other-calc-card:hover { border-color: var(--green-accent); background: #f0fdf4; }
+		.other-calc-icon { font-size: 24px; }
+		.other-calc-name { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+
+		@media (max-width: 768px) {
+			.results-grid { grid-template-columns: 1fr; }
+			.other-calcs-grid { grid-template-columns: 1fr; }
+		}
+	</style>
+	<?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-white text-slate-900 antialiased font-body'); ?>>
-<?php wp_body_open(); ?>
+<body <?php body_class(); ?>>
 
-<?php
-$calc_title = get_the_title() ?: 'Kalkulator kredytu hipotecznego';
-?>
+<?php pp_pro_header( 'kalkulatory' ); ?>
 
-<div class="min-h-screen">
-    <header class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <a href="<?php echo esc_url(home_url('/')); ?>" class="font-display text-xl font-bold"><span class="text-brand">Poradnik</span>.PRO</a>
-            <a href="/kalkulatory/" class="text-sm font-medium text-slate-600 hover:text-brand">Wszystkie kalkulatory</a>
-        </div>
-    </header>
+<!-- CALCULATOR HERO -->
+<section class="calc-hero">
+	<div class="container">
+		<div class="breadcrumb">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona główna</a>
+			<span class="sep">/</span>
+			<a href="<?php echo esc_url( home_url( '/kalkulatory/' ) ); ?>">Kalkulatory</a>
+			<span class="sep">/</span>
+			<span><?php echo esc_html( $pp_calculator['title'] ); ?></span>
+		</div>
+		<h1><?php echo esc_html( $pp_calculator['title'] ); ?></h1>
+		<p style="font-size: 15px; color: var(--gray-600); margin-top: 8px;"><?php echo esc_html( $pp_calculator['description'] ); ?></p>
+	</div>
+</section>
 
-    <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <nav aria-label="Ścieżka" class="mb-4 text-sm text-slate-500">
-            <a href="/" class="hover:text-brand">Strona główna</a> /
-            <a href="/kalkulatory/" class="hover:text-brand">Kalkulatory</a> /
-            <span class="text-slate-900"><?php echo esc_html($calc_title); ?></span>
-        </nav>
+<!-- CALCULATOR CONTENT -->
+<section class="calc-content">
+	<div class="container">
+		<div class="calc-body">
+			<!-- CALCULATOR FORM -->
+			<div class="calc-form-card">
+				<form id="pp-calc-form">
+					<?php foreach ( $pp_calculator['fields'] as $field ) : ?>
+					<div class="calc-field">
+						<label for="<?php echo esc_attr( $field['id'] ); ?>"><?php echo esc_html( $field['label'] ); ?></label>
+						<?php if ( $field['type'] === 'select' ) : ?>
+						<select id="<?php echo esc_attr( $field['id'] ); ?>" name="<?php echo esc_attr( $field['id'] ); ?>">
+							<?php foreach ( $field['options'] as $val => $label ) : ?>
+							<option value="<?php echo esc_attr( $val ); ?>"<?php echo $val === $field['default'] ? ' selected' : ''; ?>><?php echo esc_html( $label ); ?></option>
+							<?php endforeach; ?>
+						</select>
+						<?php else : ?>
+						<input type="number" id="<?php echo esc_attr( $field['id'] ); ?>" name="<?php echo esc_attr( $field['id'] ); ?>"
+							value="<?php echo esc_attr( $field['default'] ); ?>"
+							<?php if ( isset( $field['min'] ) ) : ?>min="<?php echo esc_attr( $field['min'] ); ?>"<?php endif; ?>
+							<?php if ( isset( $field['max'] ) ) : ?>max="<?php echo esc_attr( $field['max'] ); ?>"<?php endif; ?>
+							<?php if ( isset( $field['step'] ) ) : ?>step="<?php echo esc_attr( $field['step'] ); ?>"<?php endif; ?>>
+						<?php endif; ?>
+					</div>
+					<?php endforeach; ?>
+					<button type="button" class="calc-btn" onclick="ppOblicz()">Oblicz</button>
+				</form>
+			</div>
 
-        <h1 class="mb-8 font-display text-3xl font-bold"><?php echo esc_html($calc_title); ?></h1>
+			<!-- RESULTS -->
+			<div id="pp-calc-results" class="calc-results">
+				<h2 style="font-size: 18px; font-weight: 700; margin-bottom: 16px; color: var(--gray-900);">&#9989; Wynik obliczeń</h2>
+				<div id="pp-results-grid" class="results-grid"></div>
+			</div>
 
-        <!-- KALKULATOR -->
-        <section class="mb-10 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <form id="calculator-form" class="space-y-5">
-                <div>
-                    <label for="kwota" class="block text-sm font-medium text-slate-700">Kwota kredytu (zł)</label>
-                    <input type="number" id="kwota" name="kwota" value="400000" min="50000" max="5000000" step="10000"
-                        class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none">
-                </div>
-                <div>
-                    <label for="okres" class="block text-sm font-medium text-slate-700">Okres (lat)</label>
-                    <input type="number" id="okres" name="okres" value="25" min="5" max="35"
-                        class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none">
-                </div>
-                <div>
-                    <label for="oprocentowanie" class="block text-sm font-medium text-slate-700">Oprocentowanie (%)</label>
-                    <input type="number" id="oprocentowanie" name="oprocentowanie" value="7.5" min="1" max="20" step="0.1"
-                        class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-3 text-sm focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none">
-                </div>
-                <button type="button" onclick="oblicz()" class="w-full rounded-lg bg-brand py-3 text-sm font-semibold text-white hover:bg-brand-dark">Oblicz</button>
-            </form>
-        </section>
+			<!-- FAQ -->
+			<div class="calc-faq">
+				<h2>Najczęściej zadawane pytania</h2>
+				<details class="calc-faq-item">
+					<summary>Jak działa ten kalkulator?</summary>
+					<p>Kalkulator wykorzystuje aktualne dane rynkowe i sprawdzone wzory obliczeniowe. Wynik jest orientacyjny i może różnić się od ostatecznych kosztów zależnie od indywidualnej sytuacji.</p>
+				</details>
+				<details class="calc-faq-item">
+					<summary>Czy wyniki są dokładne?</summary>
+					<p>Wyniki mają charakter szacunkowy. Służą do wstępnej orientacji — w przypadku ważnych decyzji finansowych skonsultuj się ze specjalistą.</p>
+				</details>
+				<details class="calc-faq-item">
+					<summary>Jak często aktualizujecie dane?</summary>
+					<p>Dane wejściowe (stawki, ceny) aktualizujemy co miesiąc na podstawie oficjalnych źródeł i analiz rynkowych.</p>
+				</details>
+			</div>
 
-        <!-- WYNIK -->
-        <section id="wynik" class="mb-10 hidden rounded-2xl border-2 border-brand/20 bg-brand-light/30 p-6 sm:p-8">
-            <h2 class="mb-4 font-display text-xl font-bold">Wynik</h2>
-            <div class="grid gap-4 sm:grid-cols-3">
-                <div class="rounded-xl bg-white p-4 text-center shadow-sm">
-                    <p class="text-xs text-slate-500">Rata miesięczna</p>
-                    <p id="rata" class="mt-1 text-2xl font-bold text-brand">—</p>
-                </div>
-                <div class="rounded-xl bg-white p-4 text-center shadow-sm">
-                    <p class="text-xs text-slate-500">Całkowity koszt</p>
-                    <p id="calkowity" class="mt-1 text-2xl font-bold text-slate-900">—</p>
-                </div>
-                <div class="rounded-xl bg-white p-4 text-center shadow-sm">
-                    <p class="text-xs text-slate-500">Odsetki łącznie</p>
-                    <p id="odsetki" class="mt-1 text-2xl font-bold text-slate-900">—</p>
-                </div>
-            </div>
+			<!-- OTHER CALCULATORS -->
+			<div class="other-calcs">
+				<h2>Inne kalkulatory</h2>
+				<div class="other-calcs-grid">
+					<?php
+					$pp_related_calc = 0;
+					foreach ( $pp_calculators as $oc ) :
+						if ( $oc['slug'] === $pp_calculator['slug'] ) {
+							continue;
+						}
+						if ( $pp_related_calc >= 4 ) {
+							break;
+						}
+						++$pp_related_calc;
+					?>
+					<a href="<?php echo esc_url( home_url( '/kalkulator/' . $oc['slug'] . '/' ) ); ?>" class="other-calc-card">
+						<span class="other-calc-icon"><?php echo $oc['icon']; ?></span>
+						<span class="other-calc-name"><?php echo esc_html( $oc['title'] ); ?></span>
+					</a>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
 
-            <!-- INTERPRETACJA -->
-            <div class="mt-6 rounded-xl border border-slate-200 bg-white p-5">
-                <h3 class="text-sm font-bold text-slate-900">💡 Interpretacja</h3>
-                <p id="interpretacja" class="mt-2 text-sm text-slate-600">Oblicz wynik, aby zobaczyć interpretację.</p>
-            </div>
-        </section>
-
-        <!-- FAQ -->
-        <section class="mb-10 rounded-xl border border-slate-200 p-6">
-            <h2 class="mb-4 font-display text-lg font-bold">FAQ</h2>
-            <div class="space-y-3">
-                <details class="rounded-lg border border-slate-100 p-3">
-                    <summary class="cursor-pointer text-sm font-semibold">Jak działa ten kalkulator?</summary>
-                    <p class="mt-2 text-sm text-slate-600">Kalkulator oblicza ratę kredytu na podstawie wzoru annuitetowego (raty równe). Uwzględnia kwotę, okres i oprocentowanie nominalne.</p>
-                </details>
-                <details class="rounded-lg border border-slate-100 p-3">
-                    <summary class="cursor-pointer text-sm font-semibold">Czy wynik jest dokładny?</summary>
-                    <p class="mt-2 text-sm text-slate-600">Wynik jest orientacyjny. Ostateczna rata zależy od indywidualnej oferty banku, marży i dodatkowych kosztów.</p>
-                </details>
-            </div>
-        </section>
-
-        <!-- EKSPERCI -->
-        <section class="mb-10">
-            <h2 class="mb-4 font-display text-lg font-bold">Eksperci kredytowi</h2>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-sm font-semibold">dr Tomasz Nowak</p>
-                    <p class="text-xs text-slate-500">Finanse · ★ 4.8 · 245 odpowiedzi</p>
-                </div>
-                <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-sm font-semibold">Marcin Wiśniewski</p>
-                    <p class="text-xs text-slate-500">Bankowość · ★ 4.7 · 178 odpowiedzi</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- LEAD CTA -->
-        <section class="rounded-2xl bg-slate-900 p-6 text-center text-white">
-            <h2 class="font-display text-lg font-bold">Potrzebujesz indywidualnej analizy?</h2>
-            <p class="mt-1 text-sm text-slate-300">Zapytaj eksperta o najlepszą ofertę dla Twojej sytuacji.</p>
-            <a href="/zadaj-pytanie/?kategoria=finanse" class="mt-4 inline-block rounded-lg bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">Zapytaj eksperta →</a>
-        </section>
-    </main>
-
-    <footer class="mt-10 border-t border-slate-100 py-8 text-center text-xs text-slate-400">
-        &copy; <?php echo esc_html(gmdate('Y')); ?> Poradnik.PRO
-    </footer>
-</div>
+<?php pp_pro_footer(); ?>
 
 <script>
-function oblicz() {
-    const kwota = parseFloat(document.getElementById('kwota').value);
-    const lata = parseInt(document.getElementById('okres').value);
-    const roczne = parseFloat(document.getElementById('oprocentowanie').value);
-    const miesieczne = roczne / 100 / 12;
-    const n = lata * 12;
-    const rata = kwota * (miesieczne * Math.pow(1 + miesieczne, n)) / (Math.pow(1 + miesieczne, n) - 1);
-    const calkowity = rata * n;
-    const odsetki = calkowity - kwota;
-
-    document.getElementById('rata').textContent = rata.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' zł';
-    document.getElementById('calkowity').textContent = calkowity.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' zł';
-    document.getElementById('odsetki').textContent = odsetki.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' zł';
-    document.getElementById('interpretacja').textContent = 'Przy kredycie ' + kwota.toLocaleString('pl-PL') + ' zł na ' + lata + ' lat z oprocentowaniem ' + roczne + '%, Twoja miesięczna rata wyniesie ok. ' + rata.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' zł. Łączny koszt odsetek to ' + odsetki.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g, ' ') + ' zł.';
-    document.getElementById('wynik').classList.remove('hidden');
+function ppOblicz() {
+	var f = document.getElementById('pp-calc-form');
+	var results;
+	try {
+		results = (function(f) {
+			<?php echo $pp_calculator['formula_js']; ?>
+		})(f);
+	} catch(e) {
+		return;
+	}
+	var grid = document.getElementById('pp-results-grid');
+	grid.innerHTML = '';
+	for (var key in results) {
+		if (results.hasOwnProperty(key)) {
+			grid.innerHTML += '<div class="result-item"><div class="result-label">' + key + '</div><div class="result-value">' + results[key] + '</div></div>';
+		}
+	}
+	document.getElementById('pp-calc-results').classList.add('visible');
 }
 </script>
 

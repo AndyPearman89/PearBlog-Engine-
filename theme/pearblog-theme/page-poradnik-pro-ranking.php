@@ -4,156 +4,160 @@
  * Description: Single ranking page (/ranking/{slug})
  *
  * @package PearBlog
- * @version 5.0.0
+ * @subpackage PoradnikPro
+ * @version 6.0.0
  */
+
+defined( 'ABSPATH' ) || exit;
+
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+require_once get_template_directory() . '/inc/poradnik-pro-seed-data.php';
+
+$pp_slug    = get_query_var( 'poradnik_slug', '' );
+$pp_ranking = pp_seed_get_ranking( $pp_slug );
+$pp_rankings = pp_seed_rankings();
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
-    <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' } }, fontFamily: { display: ['Poppins','system-ui','sans-serif'], body: ['Inter','system-ui','sans-serif'] } } } };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
-    <?php wp_head(); ?>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<?php pp_pro_shared_styles(); ?>
+	<style>
+		.ranking-hero { padding: 40px 0 32px; background: linear-gradient(135deg, #fef3c7 0%, #ffedd5 100%); }
+		.ranking-content { padding: 48px 0 64px; max-width: 900px; margin: 0 auto; }
+		.ranking-description { font-size: 15px; color: var(--gray-600); margin-top: 12px; line-height: 1.6; }
+		.ranking-updated { font-size: 13px; color: var(--gray-500); margin-top: 8px; }
+
+		.ranking-table { width: 100%; border-collapse: collapse; margin-top: 32px; background: #fff; border-radius: var(--radius-lg); overflow: hidden; border: 1px solid var(--gray-200); }
+		.ranking-table thead { background: var(--gray-50); border-bottom: 1px solid var(--gray-200); }
+		.ranking-table th { padding: 14px 20px; font-size: 13px; font-weight: 600; color: var(--gray-700); text-align: left; }
+		.ranking-table td { padding: 16px 20px; font-size: 14px; color: var(--gray-800); border-top: 1px solid var(--gray-100); }
+		.ranking-table tr:hover { background: var(--gray-50); }
+		.rank-pos { font-weight: 800; color: var(--purple-primary); font-size: 16px; }
+		.rank-pos.gold { color: #d97706; }
+		.rank-pos.silver { color: #64748b; }
+		.rank-pos.bronze { color: #ea580c; }
+		.rank-name { font-weight: 700; color: var(--gray-900); }
+		.rank-score { font-weight: 700; color: var(--green-accent); }
+		.rank-pros { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+		.rank-btn { display: inline-block; padding: 8px 18px; border-radius: 50px; font-size: 12px; font-weight: 600; background: var(--purple-primary); color: #fff; transition: opacity 0.2s; }
+		.rank-btn:hover { opacity: 0.85; }
+
+		.ranking-faq { margin-top: 48px; }
+		.faq-title { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+		.faq-item { border: 1px solid var(--gray-200); border-radius: var(--radius-md); padding: 16px 20px; margin-bottom: 10px; }
+		.faq-item summary { cursor: pointer; font-size: 14px; font-weight: 600; color: var(--gray-800); }
+		.faq-item p { margin-top: 10px; font-size: 14px; color: var(--gray-600); line-height: 1.6; }
+
+		.related-rankings { margin-top: 48px; }
+		.related-rankings h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+		.related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+		.related-card { display: block; padding: 16px 20px; border: 1px solid var(--gray-200); border-radius: var(--radius-md); font-size: 14px; font-weight: 500; color: var(--gray-800); transition: all 0.2s; }
+		.related-card:hover { border-color: var(--purple-primary); color: var(--purple-primary); }
+
+		@media (max-width: 768px) {
+			.ranking-table th:nth-child(4), .ranking-table td:nth-child(4) { display: none; }
+			.related-grid { grid-template-columns: 1fr; }
+		}
+	</style>
+	<?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-white text-slate-900 antialiased font-body'); ?>>
-<?php wp_body_open(); ?>
+<body <?php body_class(); ?>>
 
-<?php
-$ranking_title = get_the_title() ?: 'Najlepsze konta osobiste 2026';
-?>
+<?php pp_pro_header( 'rankingi' ); ?>
 
-<div class="min-h-screen">
-    <header class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <a href="<?php echo esc_url(home_url('/')); ?>" class="font-display text-xl font-bold"><span class="text-brand">Poradnik</span>.PRO</a>
-            <a href="/rankingi/" class="text-sm font-medium text-slate-600 hover:text-brand">Wszystkie rankingi</a>
-        </div>
-    </header>
+<!-- RANKING HERO -->
+<section class="ranking-hero">
+	<div class="container">
+		<div class="breadcrumb">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona główna</a>
+			<span class="sep">/</span>
+			<a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>">Rankingi</a>
+			<span class="sep">/</span>
+			<span><?php echo esc_html( $pp_ranking['title'] ); ?></span>
+		</div>
+		<h1><?php echo esc_html( $pp_ranking['title'] ); ?></h1>
+		<p class="ranking-description"><?php echo esc_html( $pp_ranking['description'] ); ?></p>
+		<p class="ranking-updated">Aktualizacja: <?php echo esc_html( $pp_ranking['updated'] ); ?> &middot; Oparte na danych i opiniach użytkowników</p>
+	</div>
+</section>
 
-    <main class="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
-        <!-- HERO -->
-        <section class="mb-10">
-            <nav aria-label="Ścieżka" class="mb-4 text-sm text-slate-500">
-                <a href="/" class="hover:text-brand">Strona główna</a> /
-                <a href="/rankingi/" class="hover:text-brand">Rankingi</a> /
-                <span class="text-slate-900"><?php echo esc_html($ranking_title); ?></span>
-            </nav>
-            <h1 class="font-display text-3xl font-bold sm:text-4xl"><?php echo esc_html($ranking_title); ?></h1>
-            <p class="mt-2 text-sm text-slate-500">Aktualizacja: <?php echo esc_html(gmdate('d.m.Y')); ?> · Porównanie oparte na danych</p>
-        </section>
+<!-- RANKING CONTENT -->
+<section class="ranking-content">
+	<div class="container">
+		<!-- RANKING TABLE -->
+		<table class="ranking-table">
+			<thead>
+				<tr>
+					<th>#</th>
+					<th>Nazwa</th>
+					<th>Ocena</th>
+					<th>Koszty</th>
+					<th>Akcja</th>
+				</tr>
+			</thead>
+			<tbody>
+				<?php foreach ( $pp_ranking['items'] as $i => $item ) :
+					$pos_class = $i === 0 ? 'gold' : ( $i === 1 ? 'silver' : ( $i === 2 ? 'bronze' : '' ) );
+				?>
+				<tr>
+					<td><span class="rank-pos <?php echo esc_attr( $pos_class ); ?>"><?php echo esc_html( $i + 1 ); ?></span></td>
+					<td>
+						<div class="rank-name"><?php echo esc_html( $item['name'] ); ?></div>
+						<div class="rank-pros"><?php echo esc_html( $item['pros'] ); ?></div>
+					</td>
+					<td><span class="rank-score"><?php echo esc_html( $item['score'] ); ?></span></td>
+					<td><?php echo esc_html( $item['cost'] ); ?></td>
+					<td><a href="<?php echo esc_url( $item['url'] ); ?>" class="rank-btn" target="_blank" rel="noopener noreferrer">Sprawdź</a></td>
+				</tr>
+				<?php endforeach; ?>
+			</tbody>
+		</table>
 
-        <!-- TABELA RANKINGOWA -->
-        <section class="mb-12 overflow-hidden rounded-xl border border-slate-200">
-            <table class="w-full text-left text-sm">
-                <thead class="border-b border-slate-200 bg-slate-50">
-                    <tr>
-                        <th class="px-4 py-3 font-semibold">#</th>
-                        <th class="px-4 py-3 font-semibold">Nazwa</th>
-                        <th class="px-4 py-3 font-semibold">Ocena</th>
-                        <th class="px-4 py-3 font-semibold hidden sm:table-cell">Koszty</th>
-                        <th class="px-4 py-3 font-semibold">Akcja</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-slate-100">
-                    <?php
-                    $items = [
-                        ['mBank eKonto', '4.8/5', '0 zł/mies.', 'https://mbank.pl'],
-                        ['ING Konto Direct', '4.7/5', '0 zł/mies.', 'https://ing.pl'],
-                        ['Millennium 360°', '4.6/5', '0 zł/mies.', 'https://millennium.pl'],
-                        ['PKO Konto za Zero', '4.5/5', '0 zł/mies.', 'https://pkobp.pl'],
-                        ['Santander Konto Jakie Chcę', '4.4/5', '0 zł/mies.', 'https://santander.pl'],
-                    ];
-                    foreach ($items as $i => $item) :
-                    ?>
-                    <tr class="hover:bg-slate-50">
-                        <td class="px-4 py-4 font-bold text-brand"><?php echo esc_html($i + 1); ?></td>
-                        <td class="px-4 py-4 font-semibold"><?php echo esc_html($item[0]); ?></td>
-                        <td class="px-4 py-4 text-amber-600 font-medium"><?php echo esc_html($item[1]); ?></td>
-                        <td class="px-4 py-4 hidden sm:table-cell text-slate-500"><?php echo esc_html($item[2]); ?></td>
-                        <td class="px-4 py-4"><a href="<?php echo esc_url($item[3]); ?>" target="_blank" rel="noopener noreferrer" class="rounded-lg bg-brand/10 px-3 py-1.5 text-xs font-semibold text-brand hover:bg-brand hover:text-white">Sprawdź</a></td>
-                    </tr>
-                    <?php endforeach; ?>
-                </tbody>
-            </table>
-        </section>
+		<!-- FAQ -->
+		<div class="ranking-faq">
+			<h2 class="faq-title">Najczęściej zadawane pytania</h2>
+			<details class="faq-item">
+				<summary>Jak tworzymy ranking?</summary>
+				<p>Ranking opiera się na analizie opłat, jakości usług, opinii użytkowników i dostępności. Nie przyjmujemy opłat za pozycję — kolejność wynika wyłącznie z naszej oceny.</p>
+			</details>
+			<details class="faq-item">
+				<summary>Jak często aktualizujemy dane?</summary>
+				<p>Ranking jest aktualizowany co miesiąc lub częściej, gdy dostawcy wprowadzają istotne zmiany w ofercie.</p>
+			</details>
+			<details class="faq-item">
+				<summary>Czy linki partnerskie wpływają na ranking?</summary>
+				<p>Nie. Niektóre linki mogą być partnerskie, ale kolejność w rankingu jest całkowicie niezależna od tego, czy mamy współpracę z danym podmiotem.</p>
+			</details>
+		</div>
 
-        <!-- ANALIZA -->
-        <section class="mb-12 prose prose-slate max-w-none">
-            <h2>Analiza</h2>
-            <p>Porównaliśmy najpopularniejsze konta osobiste dostępne na polskim rynku. Pod uwagę wzięliśmy opłaty miesięczne, dostępność bankomatów, jakość aplikacji mobilnej oraz dodatkowe korzyści.</p>
-        </section>
+		<!-- RELATED RANKINGS -->
+		<div class="related-rankings">
+			<h2>Inne rankingi</h2>
+			<div class="related-grid">
+				<?php
+				$pp_related_r = 0;
+				foreach ( $pp_rankings as $rr ) :
+					if ( $rr['slug'] === $pp_ranking['slug'] ) {
+						continue;
+					}
+					if ( $pp_related_r >= 4 ) {
+						break;
+					}
+					++$pp_related_r;
+				?>
+				<a href="<?php echo esc_url( home_url( '/ranking/' . $rr['slug'] . '/' ) ); ?>" class="related-card"><?php echo esc_html( $rr['title'] ); ?></a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</div>
+</section>
 
-        <!-- PORÓWNANIE -->
-        <section class="mb-12">
-            <h2 class="mb-4 font-display text-xl font-bold">Porównanie kluczowych cech</h2>
-            <div class="overflow-x-auto rounded-xl border border-slate-200">
-                <table class="w-full text-left text-sm">
-                    <thead class="border-b border-slate-200 bg-slate-50">
-                        <tr>
-                            <th class="px-4 py-3">Cecha</th>
-                            <th class="px-4 py-3">mBank</th>
-                            <th class="px-4 py-3">ING</th>
-                            <th class="px-4 py-3">Millennium</th>
-                        </tr>
-                    </thead>
-                    <tbody class="divide-y divide-slate-100">
-                        <tr><td class="px-4 py-3 font-medium">Karta debetowa</td><td class="px-4 py-3 text-green-600">0 zł</td><td class="px-4 py-3 text-green-600">0 zł</td><td class="px-4 py-3 text-green-600">0 zł</td></tr>
-                        <tr><td class="px-4 py-3 font-medium">Przelewy natychmiastowe</td><td class="px-4 py-3 text-green-600">Tak</td><td class="px-4 py-3 text-green-600">Tak</td><td class="px-4 py-3 text-green-600">Tak</td></tr>
-                        <tr><td class="px-4 py-3 font-medium">Cashback</td><td class="px-4 py-3 text-green-600">Tak</td><td class="px-4 py-3 text-red-500">Nie</td><td class="px-4 py-3 text-green-600">Tak</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </section>
-
-        <!-- FAQ -->
-        <section class="mb-12 rounded-xl border border-slate-200 p-6">
-            <h2 class="mb-4 font-display text-lg font-bold">FAQ</h2>
-            <div class="space-y-3">
-                <details class="rounded-lg border border-slate-100 p-3">
-                    <summary class="cursor-pointer text-sm font-semibold">Jak wybraliśmy najlepsze konta?</summary>
-                    <p class="mt-2 text-sm text-slate-600">Ranking opiera się na analizie opłat, funkcjonalności, opinii użytkowników i dostępności usług.</p>
-                </details>
-                <details class="rounded-lg border border-slate-100 p-3">
-                    <summary class="cursor-pointer text-sm font-semibold">Czy ranking jest obiektywny?</summary>
-                    <p class="mt-2 text-sm text-slate-600">Tak, nie przyjmujemy opłat za pozycję w rankingu. Linki partnerskie nie wpływają na kolejność.</p>
-                </details>
-            </div>
-        </section>
-
-        <!-- POLECANI EKSPERCI -->
-        <section class="mb-12">
-            <h2 class="mb-4 font-display text-lg font-bold">Eksperci finansowi</h2>
-            <div class="grid gap-4 sm:grid-cols-2">
-                <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-sm font-semibold">dr Tomasz Nowak</p>
-                    <p class="text-xs text-slate-500">Finanse osobiste · ★ 4.8</p>
-                </div>
-                <div class="rounded-xl border border-slate-200 p-4">
-                    <p class="text-sm font-semibold">Marcin Wiśniewski</p>
-                    <p class="text-xs text-slate-500">Bankowość · ★ 4.7</p>
-                </div>
-            </div>
-        </section>
-
-        <!-- POWIĄZANE RANKINGI -->
-        <section>
-            <h2 class="mb-4 font-display text-lg font-bold">Powiązane rankingi</h2>
-            <div class="grid gap-3 sm:grid-cols-2">
-                <a href="/ranking/kredyty-hipoteczne/" class="rounded-lg border border-slate-200 p-4 text-sm font-medium hover:shadow-sm">Kredyty hipoteczne — porównanie</a>
-                <a href="/ranking/konta-oszczednosciowe/" class="rounded-lg border border-slate-200 p-4 text-sm font-medium hover:shadow-sm">Najlepsze konta oszczędnościowe</a>
-            </div>
-        </section>
-    </main>
-
-    <footer class="mt-10 border-t border-slate-100 py-8 text-center text-xs text-slate-400">
-        &copy; <?php echo esc_html(gmdate('Y')); ?> Poradnik.PRO
-    </footer>
-</div>
-
+<?php pp_pro_footer(); ?>
 <?php wp_footer(); ?>
 </body>
 </html>

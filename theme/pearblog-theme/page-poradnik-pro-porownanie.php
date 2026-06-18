@@ -4,141 +4,158 @@
  * Description: Single comparison page (A vs B decision view with specs, pricing, verdict).
  *
  * @package PearBlog
- * @version 5.0.0
+ * @subpackage PoradnikPro
+ * @version 6.0.0
  */
+
+defined( 'ABSPATH' ) || exit;
+
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+require_once get_template_directory() . '/inc/poradnik-pro-seed-data.php';
+
+$pp_slug       = get_query_var( 'poradnik_slug', '' );
+$pp_comparison = pp_seed_get_comparison( $pp_slug );
+$pp_comparisons = pp_seed_comparisons();
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
-    <meta charset="<?php bloginfo('charset'); ?>">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' }, accent: '#F59E0B' }, fontFamily: { display: ['Poppins','system-ui','sans-serif'], body: ['Inter','system-ui','sans-serif'] } } } };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
-    <?php wp_head(); ?>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<?php pp_pro_shared_styles(); ?>
+	<style>
+		.comparison-hero { padding: 48px 0 40px; background: linear-gradient(135deg, #dbeafe 0%, #ede9fe 100%); text-align: center; }
+		.comparison-hero .vs-badge { display: inline-block; padding: 6px 16px; border-radius: 50px; font-size: 12px; font-weight: 700; background: #e0e7ff; color: var(--purple-primary); margin-bottom: 16px; text-transform: uppercase; letter-spacing: 0.05em; }
+		.comparison-hero h1 { font-size: 32px; font-weight: 800; color: var(--gray-900); margin-bottom: 12px; }
+		.comparison-hero .hero-desc { font-size: 16px; color: var(--gray-600); max-width: 600px; margin: 0 auto; }
+
+		.comparison-content { padding: 48px 0 64px; }
+		.comparison-body { max-width: 900px; margin: 0 auto; }
+
+		.specs-table { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid var(--gray-200); border-radius: var(--radius-lg); overflow: hidden; margin-bottom: 40px; }
+		.specs-table thead { background: var(--gray-50); }
+		.specs-table th { padding: 14px 20px; font-size: 13px; font-weight: 600; text-align: center; color: var(--gray-700); }
+		.specs-table th:first-child { text-align: left; }
+		.specs-table td { padding: 14px 20px; font-size: 14px; color: var(--gray-700); text-align: center; border-top: 1px solid var(--gray-100); }
+		.specs-table td:first-child { text-align: left; font-weight: 600; color: var(--gray-800); }
+		.specs-table tr:hover { background: var(--gray-50); }
+		.col-a { color: var(--purple-primary); font-weight: 600; }
+		.col-b { color: #d97706; font-weight: 600; }
+
+		.verdict-box { background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%); border: 2px solid #86efac; border-radius: var(--radius-xl); padding: 40px; text-align: center; margin-bottom: 48px; }
+		.verdict-icon { font-size: 48px; margin-bottom: 16px; }
+		.verdict-title { font-size: 20px; font-weight: 800; color: var(--gray-900); margin-bottom: 12px; }
+		.verdict-text { font-size: 16px; color: var(--gray-700); max-width: 600px; margin: 0 auto; line-height: 1.6; }
+
+		.cta-box { display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; margin-bottom: 48px; }
+		.cta-box a { display: inline-flex; align-items: center; gap: 8px; padding: 14px 28px; border-radius: 50px; font-size: 14px; font-weight: 700; transition: all 0.2s; }
+		.cta-primary { background: var(--purple-primary); color: #fff; }
+		.cta-primary:hover { background: var(--purple-dark); }
+		.cta-secondary { border: 2px solid var(--purple-primary); color: var(--purple-primary); }
+		.cta-secondary:hover { background: #f3e8ff; }
+
+		.related-comparisons { border-top: 1px solid var(--gray-200); padding-top: 40px; }
+		.related-comparisons h2 { font-size: 18px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
+		.related-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px; }
+		.related-comp-card { display: block; padding: 16px 20px; background: var(--gray-50); border-radius: var(--radius-md); transition: all 0.2s; }
+		.related-comp-card:hover { background: #ede9fe; }
+		.related-comp-title { font-size: 14px; font-weight: 600; color: var(--gray-800); }
+		.related-comp-cat { font-size: 12px; color: var(--gray-500); margin-top: 4px; }
+
+		@media (max-width: 768px) {
+			.related-grid { grid-template-columns: 1fr; }
+			.cta-box { flex-direction: column; align-items: center; }
+		}
+	</style>
+	<?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-white text-slate-900 antialiased font-body'); ?>>
-<?php wp_body_open(); ?>
+<body <?php body_class(); ?>>
 
-<?php
-$option_a = get_field('option_a') ?: 'Pompa ciepła';
-$option_b = get_field('option_b') ?: 'Gaz ziemny';
-$title = esc_html($option_a) . ' vs ' . esc_html($option_b);
-$verdict = get_field('verdict') ?: 'Pompa ciepła wygrywa w długoterminowej perspektywie kosztowej.';
-?>
+<?php pp_pro_header( 'porownania' ); ?>
 
-<!-- Breadcrumb -->
-<nav class="max-w-5xl mx-auto px-4 py-4 text-sm text-slate-500">
-    <a href="/" class="hover:text-brand">Strona główna</a>
-    <span class="mx-1">/</span>
-    <a href="/porownania/" class="hover:text-brand">Porównania</a>
-    <span class="mx-1">/</span>
-    <span class="text-slate-800"><?php echo $title; ?></span>
-</nav>
-
-<!-- Hero -->
-<header class="max-w-5xl mx-auto px-4 py-8 text-center">
-    <span class="inline-block bg-blue-100 text-brand font-semibold text-xs uppercase tracking-wider px-3 py-1 rounded-full mb-4">🆚 Porównanie</span>
-    <h1 class="font-display text-3xl md:text-4xl font-extrabold text-slate-900 mb-4"><?php echo $title; ?></h1>
-    <p class="text-lg text-slate-600 max-w-2xl mx-auto">Jasne różnice, realne koszty, konkretny werdykt — podejmij najlepszą decyzję.</p>
-</header>
-
-<!-- Comparison Table -->
-<section class="max-w-5xl mx-auto px-4 py-8">
-    <div class="grid md:grid-cols-2 gap-6">
-        <!-- Option A -->
-        <div class="border-2 border-brand/20 rounded-2xl p-6 bg-blue-50/30">
-            <div class="text-center mb-6">
-                <span class="text-4xl">🅰️</span>
-                <h2 class="font-display text-2xl font-bold mt-2"><?php echo esc_html($option_a); ?></h2>
-            </div>
-            <ul class="space-y-3">
-                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span><span>Niższe koszty eksploatacji w długiej perspektywie</span></li>
-                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span><span>Ekologiczne rozwiązanie</span></li>
-                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span><span>Możliwość dofinansowania</span></li>
-                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">✗</span><span>Wyższy koszt początkowy</span></li>
-                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">✗</span><span>Wymaga odpowiedniego terenu</span></li>
-            </ul>
-        </div>
-        <!-- Option B -->
-        <div class="border-2 border-amber-200 rounded-2xl p-6 bg-amber-50/30">
-            <div class="text-center mb-6">
-                <span class="text-4xl">🅱️</span>
-                <h2 class="font-display text-2xl font-bold mt-2"><?php echo esc_html($option_b); ?></h2>
-            </div>
-            <ul class="space-y-3">
-                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span><span>Niższy koszt instalacji</span></li>
-                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span><span>Sprawdzona technologia</span></li>
-                <li class="flex items-start gap-2"><span class="text-green-500 mt-0.5">✓</span><span>Szybki montaż</span></li>
-                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">✗</span><span>Rosnące ceny paliwa</span></li>
-                <li class="flex items-start gap-2"><span class="text-red-500 mt-0.5">✗</span><span>Emisja CO₂</span></li>
-            </ul>
-        </div>
-    </div>
+<!-- COMPARISON HERO -->
+<section class="comparison-hero">
+	<div class="container">
+		<div class="breadcrumb" style="justify-content: center;">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona główna</a>
+			<span class="sep">/</span>
+			<a href="<?php echo esc_url( home_url( '/porownania/' ) ); ?>">Porównania</a>
+			<span class="sep">/</span>
+			<span><?php echo esc_html( $pp_comparison['category'] ); ?></span>
+		</div>
+		<span class="vs-badge">&#x1F19A; Porównanie</span>
+		<h1><?php echo esc_html( $pp_comparison['option_a'] ); ?> vs <?php echo esc_html( $pp_comparison['option_b'] ); ?></h1>
+		<p class="hero-desc">Jasne różnice, realne koszty, konkretny werdykt — podejmij najlepszą decyzję.</p>
+	</div>
 </section>
 
-<!-- Cost Comparison -->
-<section class="max-w-5xl mx-auto px-4 py-8">
-    <h2 class="font-display text-2xl font-bold text-center mb-6">💰 Porównanie kosztów</h2>
-    <div class="overflow-x-auto">
-        <table class="w-full border-collapse rounded-xl overflow-hidden shadow-sm">
-            <thead>
-                <tr class="bg-slate-100">
-                    <th class="text-left p-4 font-semibold">Kryterium</th>
-                    <th class="text-center p-4 font-semibold text-brand"><?php echo esc_html($option_a); ?></th>
-                    <th class="text-center p-4 font-semibold text-amber-600"><?php echo esc_html($option_b); ?></th>
-                </tr>
-            </thead>
-            <tbody class="divide-y divide-slate-100">
-                <tr><td class="p-4">Koszt instalacji</td><td class="p-4 text-center">35 000 – 55 000 zł</td><td class="p-4 text-center">8 000 – 15 000 zł</td></tr>
-                <tr class="bg-slate-50"><td class="p-4">Koszt roczny (ogrzewanie 150m²)</td><td class="p-4 text-center">3 000 – 4 500 zł</td><td class="p-4 text-center">6 000 – 9 000 zł</td></tr>
-                <tr><td class="p-4">Żywotność</td><td class="p-4 text-center">15–25 lat</td><td class="p-4 text-center">15–20 lat</td></tr>
-                <tr class="bg-slate-50"><td class="p-4">Dofinansowanie</td><td class="p-4 text-center">do 45 000 zł</td><td class="p-4 text-center">—</td></tr>
-            </tbody>
-        </table>
-    </div>
+<!-- COMPARISON CONTENT -->
+<section class="comparison-content">
+	<div class="container">
+		<div class="comparison-body">
+			<!-- SPECS TABLE -->
+			<table class="specs-table">
+				<thead>
+					<tr>
+						<th>Kryterium</th>
+						<th class="col-a"><?php echo esc_html( $pp_comparison['option_a'] ); ?></th>
+						<th class="col-b"><?php echo esc_html( $pp_comparison['option_b'] ); ?></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $pp_comparison['specs'] as $spec ) : ?>
+					<tr>
+						<td><?php echo esc_html( $spec['label'] ); ?></td>
+						<td><?php echo esc_html( $spec['a'] ); ?></td>
+						<td><?php echo esc_html( $spec['b'] ); ?></td>
+					</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+
+			<!-- VERDICT -->
+			<div class="verdict-box">
+				<div class="verdict-icon">&#127942;</div>
+				<h2 class="verdict-title">Werdykt</h2>
+				<p class="verdict-text"><?php echo esc_html( $pp_comparison['verdict'] ); ?></p>
+			</div>
+
+			<!-- CTA -->
+			<div class="cta-box">
+				<a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>" class="cta-primary">&#128104;&#8205;&#128188; Znajdź specjalistę</a>
+				<a href="<?php echo esc_url( home_url( '/kalkulatory/' ) ); ?>" class="cta-secondary">&#129518; Sprawdź koszty</a>
+			</div>
+
+			<!-- RELATED COMPARISONS -->
+			<div class="related-comparisons">
+				<h2>Inne porównania</h2>
+				<div class="related-grid">
+					<?php
+					$pp_related_c = 0;
+					foreach ( $pp_comparisons as $rc ) :
+						if ( $rc['slug'] === $pp_comparison['slug'] ) {
+							continue;
+						}
+						if ( $pp_related_c >= 4 ) {
+							break;
+						}
+						++$pp_related_c;
+					?>
+					<a href="<?php echo esc_url( home_url( '/porownanie/' . $rc['slug'] . '/' ) ); ?>" class="related-comp-card">
+						<div class="related-comp-title"><?php echo esc_html( $rc['option_a'] ); ?> vs <?php echo esc_html( $rc['option_b'] ); ?></div>
+						<div class="related-comp-cat"><?php echo esc_html( $rc['category'] ); ?></div>
+					</a>
+					<?php endforeach; ?>
+				</div>
+			</div>
+		</div>
+	</div>
 </section>
 
-<!-- Verdict -->
-<section class="max-w-5xl mx-auto px-4 py-8">
-    <div class="bg-gradient-to-br from-brand/5 to-blue-50 border border-brand/20 rounded-2xl p-8 text-center">
-        <span class="text-3xl mb-4 block">🏆</span>
-        <h2 class="font-display text-2xl font-bold mb-3">Werdykt</h2>
-        <p class="text-lg text-slate-700 max-w-2xl mx-auto"><?php echo esc_html($verdict); ?></p>
-    </div>
-</section>
-
-<!-- CTA -->
-<section class="max-w-5xl mx-auto px-4 py-12 text-center">
-    <h2 class="font-display text-2xl font-bold mb-4">Potrzebujesz pomocy w wyborze?</h2>
-    <p class="text-slate-600 mb-6">Skontaktuj się z naszymi ekspertami, którzy doradzą najlepsze rozwiązanie.</p>
-    <div class="flex flex-col sm:flex-row gap-4 justify-center">
-        <a href="/specjalisci/" class="inline-flex items-center justify-center px-6 py-3 bg-brand text-white font-semibold rounded-xl hover:bg-brand-dark transition">🧑‍💼 Znajdź specjalistę</a>
-        <a href="/kalkulator/" class="inline-flex items-center justify-center px-6 py-3 border-2 border-brand text-brand font-semibold rounded-xl hover:bg-blue-50 transition">🧮 Sprawdź koszty</a>
-    </div>
-</section>
-
-<!-- Related Comparisons -->
-<section class="max-w-5xl mx-auto px-4 py-12 border-t border-slate-100">
-    <h2 class="font-display text-xl font-bold mb-6">Podobne porównania</h2>
-    <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <a href="/porownanie/fotowoltaika-vs-prad-z-sieci/" class="block p-4 bg-slate-50 rounded-xl hover:bg-blue-50 transition">
-            <span class="font-semibold text-slate-800">Fotowoltaika vs prąd z sieci</span>
-            <span class="block text-sm text-slate-500 mt-1">Sprawdź, co się bardziej opłaca</span>
-        </a>
-        <a href="/porownanie/remont-vs-pod-klucz/" class="block p-4 bg-slate-50 rounded-xl hover:bg-blue-50 transition">
-            <span class="font-semibold text-slate-800">Remont vs wykończenie pod klucz</span>
-            <span class="block text-sm text-slate-500 mt-1">Czas, koszty, wygoda</span>
-        </a>
-        <a href="/porownanie/okna-pvc-vs-drewniane/" class="block p-4 bg-slate-50 rounded-xl hover:bg-blue-50 transition">
-            <span class="font-semibold text-slate-800">Okna PCV vs drewniane</span>
-            <span class="block text-sm text-slate-500 mt-1">Izolacja, cena, estetyka</span>
-        </a>
-    </div>
-</section>
-
+<?php pp_pro_footer(); ?>
 <?php wp_footer(); ?>
 </body>
 </html>
