@@ -191,7 +191,7 @@ class PearBlogCommand {
 	 * @subcommand seed
 	 */
 	public function seed( array $args, array $assoc_args ): void {
-		$profile = strtolower( (string) ( $args[0] ?? 'poradnik' ) );
+		$profile = strtolower( $args[0] ?? 'poradnik' );
 		if ( 'poradnik' !== $profile ) {
 			\WP_CLI::error( "Unknown seed profile: {$profile}. Available: poradnik." );
 			return;
@@ -229,7 +229,7 @@ class PearBlogCommand {
 			$queue->push( $topic );
 		}
 
-		// Mirrors the queued subset into an option so deployment automation/admin fallback can reuse exactly what was queued.
+		// Mirrors queued topics into an option used by deployment fallback logic (.github/workflows/seed-poradnik-content.yml).
 		update_option( 'pearblog_seed_topics', implode( "\n", $queued ) );
 
 		\WP_CLI::success( sprintf( 'Seeded %d topic(s) to queue (%s profile).', count( $queued ), $profile ) );
