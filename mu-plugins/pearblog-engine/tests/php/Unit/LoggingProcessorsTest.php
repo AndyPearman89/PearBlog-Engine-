@@ -17,7 +17,7 @@ use PearBlogEngine\Logging\MemoryUsageProcessor;
 /**
  * Test MemoryUsageProcessor
  */
-class MemoryUsageProcessorTest extends TestCase {
+class LoggingProcessorsTest extends TestCase {
 
 	/**
 	 * Test processor adds memory usage to record
@@ -86,7 +86,7 @@ class MemoryUsageProcessorTest extends TestCase {
 		$processed = $processor->process( $record );
 
 		$this->assertIsString( $processed['extra']['memory_usage'] );
-		$this->assertRegExp( '/\d+(\.\d+)?\s+(B|KB|MB|GB)/', $processed['extra']['memory_usage'] );
+		$this->assertSame( 1, preg_match( '/\d+(\.\d+)?\s+(B|KB|MB|GB)/', $processed['extra']['memory_usage'] ) );
 	}
 
 	/**
