@@ -8,6 +8,56 @@ $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
 
+$fallbackCategories = [
+    'prawo' => 'Prawo',
+    'finanse' => 'Finanse',
+    'nieruchomosci' => 'Nieruchomości',
+    'budownictwo' => 'Budownictwo',
+    'energia' => 'Energia',
+    'zdrowie' => 'Zdrowie',
+    'edukacja' => 'Edukacja',
+    'motoryzacja' => 'Motoryzacja',
+    'technologia' => 'Technologia',
+    'dom-i-ogrod' => 'Dom i ogród',
+];
+$categories = $fallbackCategories;
+
+$citySlug = 'warszawa';
+$cityName = 'Warszawa';
+$categorySlug = '';
+$categoryName = '';
+
+if (class_exists('PearBlog_Poradnik_Pro_Routing')) {
+    $detectedCitySlug = PearBlog_Poradnik_Pro_Routing::get_current_city();
+    if (!empty($detectedCitySlug)) {
+        $citySlug = $detectedCitySlug;
+    }
+
+    $cityName = PearBlog_Poradnik_Pro_Routing::get_city_name($citySlug);
+    if ($cityName === '') {
+        $cityName = ucfirst(str_replace('-', ' ', $citySlug));
+    }
+
+    $detectedCategorySlug = PearBlog_Poradnik_Pro_Routing::get_current_category();
+    if (!empty($detectedCategorySlug)) {
+        $categorySlug = $detectedCategorySlug;
+        $categoryName = PearBlog_Poradnik_Pro_Routing::get_category_name($categorySlug);
+        if ($categoryName === '') {
+            $categoryName = ucfirst(str_replace('-', ' ', $categorySlug));
+        }
+    }
+
+    $categories = PearBlog_Poradnik_Pro_Routing::get_categories();
+}
+
+$cityCategoryLinks = [];
+foreach ($categories as $slug => $name) {
+    $cityCategoryLinks[] = [
+        'name' => $name,
+        'url' => '/' . rawurlencode($citySlug) . '/' . rawurlencode($slug) . '/',
+    ];
+}
+
 $navItems = [
     ['label' => 'Poradniki', 'url' => '/poradniki/'],
     ['label' => 'Pytania', 'url' => '/pytania/'],
@@ -60,7 +110,7 @@ $tabs = [
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Warszawa – Poradnik.pro</title>
+    <title><?php echo $escape($cityName); ?> – Poradnik.pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -553,11 +603,11 @@ $tabs = [
         <div class="container">
             <div class="hero-content">
                 <div class="hero-copy">
-                    <span class="eyebrow">Miasto / Warszawa</span>
-                    <h1>Warszawa</h1>
-                    <p>Polecani eksperci i odpowiedzi dla Ciebie</p>
+                    <span class="eyebrow">Miasto / <?php echo $escape($cityName); ?><?php if (!empty($categoryName)) : ?> / <?php echo $escape($categoryName); ?><?php endif; ?></span>
+                    <h1><?php echo $escape($cityName); ?></h1>
+                    <p>Polecani eksperci i odpowiedzi dla Ciebie<?php if (!empty($categoryName)) : ?> w kategorii <?php echo $escape($categoryName); ?><?php endif; ?></p>
                 </div>
-                <div class="stats-grid" aria-label="Statystyki Warszawy">
+                <div class="stats-grid" aria-label="Statystyki <?php echo $escape($cityName); ?>">
                     <?php foreach ($stats as $stat) : ?>
                         <div class="stat-card">
                             <span class="stat-value"><?php echo $escape($stat['value']); ?></span>
@@ -573,7 +623,7 @@ $tabs = [
         <div class="container">
             <div class="section-heading">
                 <div>
-                    <h2>Polecani eksperci w Warszawie</h2>
+                    <h2>Polecani eksperci w <?php echo $escape($cityName); ?></h2>
                 </div>
                 <p>Skontaktuj się ze sprawdzonymi specjalistami i zadaj pytanie bezpośrednio do osoby, która zna lokalny rynek.</p>
             </div>
@@ -606,7 +656,7 @@ $tabs = [
         <div class="container">
             <div class="section-heading">
                 <div>
-                    <h2>Popularne w Warszawie</h2>
+                    <h2>Popularne w <?php echo $escape($cityName); ?></h2>
                 </div>
                 <p>Najczęściej wyszukiwane poradniki, pytania i rankingi związane z życiem, finansami i nieruchomościami w stolicy.</p>
             </div>
@@ -649,6 +699,24 @@ $tabs = [
                     <?php $isFirstPanel = false; ?>
                 <?php endforeach; ?>
             </div>
+        </div>
+    </section>
+
+    <section class="section section-light">
+        <div class="container">
+            <div class="section-heading">
+                <div>
+                    <h2>Kategorie w <?php echo $escape($cityName); ?></h2>
+                </div>
+                <p>Szybkie przejścia do landingów kategorii dla tego miasta.</p>
+            </div>
+            <ul class="popular-list">
+                <?php foreach ($cityCategoryLinks as $categoryLink) : ?>
+                    <li class="popular-item">
+                        <a href="<?php echo $escape($categoryLink['url']); ?>"><?php echo $escape($categoryLink['name']); ?></a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
         </div>
     </section>
 </main>

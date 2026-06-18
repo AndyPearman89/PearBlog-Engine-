@@ -21,7 +21,7 @@ class RevenueTrackerTest extends TestCase {
 		$GLOBALS['_options']    = [];
 		$GLOBALS['_post_meta']  = [];
 		$GLOBALS['_post_list']  = [];
-		$GLOBALS['_user_can']   = true;
+		$GLOBALS['_current_user_can'] = true;
 		$this->tracker = new RevenueTracker();
 	}
 
@@ -199,7 +199,7 @@ class RevenueTrackerTest extends TestCase {
 	}
 
 	public function test_admin_permission_returns_true(): void {
-		$GLOBALS['_user_can'] = true;
+		$GLOBALS['_current_user_can'] = true;
 		$this->assertTrue( $this->tracker->admin_permission() );
 	}
 
