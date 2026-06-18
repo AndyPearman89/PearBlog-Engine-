@@ -302,12 +302,6 @@ if ( ! function_exists( 'is_singular' ) ) {
 	}
 }
 
-if ( ! function_exists( 'get_the_ID' ) ) {
-	function get_the_ID(): int {
-		return (int) ( $GLOBALS['_current_post_id'] ?? 0 );
-	}
-}
-
 if ( ! function_exists( 'is_admin' ) ) {
 	function is_admin(): bool {
 		return (bool) ( $GLOBALS['_is_admin'] ?? false );
@@ -357,9 +351,17 @@ if ( ! function_exists( 'register_rest_route' ) ) {
 
 if ( ! function_exists( 'current_user_can' ) ) {
 	function current_user_can( string $capability ): bool {
-		// Default to false so existing permission-denial tests keep passing.
-		// Tests that need a privileged user can set $GLOBALS['_current_user_can'] = true.
+		// Support both _user_can (older tests) and _current_user_can (newer tests).
+		if ( isset( $GLOBALS['_user_can'] ) ) {
+			return (bool) $GLOBALS['_user_can'];
+		}
 		return (bool) ( $GLOBALS['_current_user_can'] ?? false );
+	}
+}
+
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID() {
+		return $GLOBALS['_current_post_id'] ?? 0;
 	}
 }
 
@@ -440,12 +442,6 @@ if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
 	function get_the_post_thumbnail_url( $post_id = null, $size = 'post-thumbnail' ): string {
 		$id = is_object( $post_id ) ? ( $post_id->ID ?? 0 ) : (int) $post_id;
 		return $GLOBALS['_thumbnail_urls'][ $id ] ?? '';
-	}
-}
-
-if ( ! function_exists( 'get_the_ID' ) ) {
-	function get_the_ID(): int {
-		return (int) ( $GLOBALS['_current_post_id'] ?? 0 );
 	}
 }
 

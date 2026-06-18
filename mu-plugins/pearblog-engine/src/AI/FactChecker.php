@@ -151,7 +151,7 @@ class FactChecker {
 
 		// Contains number + unit pattern, percentage, year range, etc.
 		return (bool) preg_match(
-			'/(?:\d[\d,. ]*(?:%|zł|PLN|EUR|USD|mln|mld|tys|kg|km|m²|GHz|MB|GB|TB)(?=\s|$|[[:punct:]])|\d{4}[-–]\d{4}|\b(?:ponad|prawie|przy)\s+\d+%?|\d+[.,]\d+)/iu',
+			'/(\d[\d,.]*\s*(%|zł|PLN|EUR|USD|mln|mld|tys\.?|kg|km|m²|GHz|MB|GB|TB)|\d{4}[-–]\d{4}|\bponad\s+\d|\bprawie\s+\d|\bprzy\s+\d|\bponad\s+\d+%|[0-9]+[.,][0-9]+)/iu',
 			$sentence
 		);
 	}

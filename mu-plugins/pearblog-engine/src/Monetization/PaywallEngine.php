@@ -149,7 +149,7 @@ class PaywallEngine {
 		}
 
 		// Check if this specific post is marked as premium.
-		$post_id  = get_the_ID();
+		$post_id  = \get_the_ID();
 		$premium  = (bool) get_post_meta( $post_id, self::META_PREMIUM, true );
 
 		if ( $this->has_access() ) {
