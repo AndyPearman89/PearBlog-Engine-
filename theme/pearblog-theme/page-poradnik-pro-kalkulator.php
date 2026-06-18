@@ -172,7 +172,11 @@ function ppOblicz() {
 	var results;
 	try {
 		results = (function(f) {
-			<?php echo $pp_calculator['formula_js']; ?>
+			<?php
+			// formula_js is a trusted server-side constant from poradnik-pro-seed-data.php.
+			// It is never sourced from user input, database, or external APIs.
+			echo $pp_calculator['formula_js']; // phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped
+			?>
 		})(f);
 	} catch(e) {
 		return;
