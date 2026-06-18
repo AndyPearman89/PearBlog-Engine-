@@ -1,503 +1,463 @@
+<?php
+/**
+ * Template Name: Poradnik.pro - Specjalisci
+ *
+ * Specialists directory page for Poradnik.pro. Uses the shared purple Inter-based
+ * design system. Fully integrated with WordPress via wp_head()/wp_footer().
+ *
+ * @package PearBlog
+ * @subpackage PoradnikPro
+ */
+
+defined( 'ABSPATH' ) || exit;
+
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+
+$pp_specialists = array(
+	array(
+		'initials'  => 'MK',
+		'name'      => 'Mateusz Kowalczyk',
+		'specialty' => 'Adwokat - prawo cywilne',
+		'category'  => 'Prawo',
+		'rating'    => '4.9',
+		'reviews'   => 347,
+		'location'  => 'Warszawa',
+		'answers'   => 512,
+		'slug'      => 'mateusz-kowalczyk',
+	),
+	array(
+		'initials'  => 'AW',
+		'name'      => 'Anna Wojciechowska',
+		'specialty' => 'Doradca finansowy',
+		'category'  => 'Finanse',
+		'rating'    => '4.8',
+		'reviews'   => 289,
+		'location'  => 'Krakow',
+		'answers'   => 431,
+		'slug'      => 'anna-wojciechowska',
+	),
+	array(
+		'initials'  => 'TZ',
+		'name'      => 'Tomasz Zawadzki',
+		'specialty' => 'Architekt budowlany',
+		'category'  => 'Budownictwo',
+		'rating'    => '4.9',
+		'reviews'   => 198,
+		'location'  => 'Wroclaw',
+		'answers'   => 276,
+		'slug'      => 'tomasz-zawadzki',
+	),
+	array(
+		'initials'  => 'KN',
+		'name'      => 'Katarzyna Nowicka',
+		'specialty' => 'Posrednik nieruchomosci',
+		'category'  => 'Nieruchomosci',
+		'rating'    => '4.7',
+		'reviews'   => 421,
+		'location'  => 'Poznan',
+		'answers'   => 389,
+		'slug'      => 'katarzyna-nowicka',
+	),
+	array(
+		'initials'  => 'PL',
+		'name'      => 'Piotr Lewandowski',
+		'specialty' => 'Lekarz internista',
+		'category'  => 'Zdrowie',
+		'rating'    => '4.9',
+		'reviews'   => 562,
+		'location'  => 'Gdansk',
+		'answers'   => 648,
+		'slug'      => 'piotr-lewandowski',
+	),
+	array(
+		'initials'  => 'JM',
+		'name'      => 'Jakub Mazurek',
+		'specialty' => 'Programista Full Stack',
+		'category'  => 'IT',
+		'rating'    => '4.8',
+		'reviews'   => 156,
+		'location'  => 'Warszawa',
+		'answers'   => 734,
+		'slug'      => 'jakub-mazurek',
+	),
+	array(
+		'initials'  => 'EK',
+		'name'      => 'Elzbieta Kaminska',
+		'specialty' => 'Radca prawny - prawo pracy',
+		'category'  => 'Prawo',
+		'rating'    => '4.8',
+		'reviews'   => 312,
+		'location'  => 'Lodz',
+		'answers'   => 467,
+		'slug'      => 'elzbieta-kaminska',
+	),
+	array(
+		'initials'  => 'RD',
+		'name'      => 'Robert Dabrowski',
+		'specialty' => 'Doradca kredytowy',
+		'category'  => 'Finanse',
+		'rating'    => '4.7',
+		'reviews'   => 245,
+		'location'  => 'Katowice',
+		'answers'   => 321,
+		'slug'      => 'robert-dabrowski',
+	),
+	array(
+		'initials'  => 'MS',
+		'name'      => 'Magdalena Szymanska',
+		'specialty' => 'Kierownik budowy',
+		'category'  => 'Budownictwo',
+		'rating'    => '4.6',
+		'reviews'   => 178,
+		'location'  => 'Szczecin',
+		'answers'   => 203,
+		'slug'      => 'magdalena-szymanska',
+	),
+	array(
+		'initials'  => 'WP',
+		'name'      => 'Wojciech Pawlak',
+		'specialty' => 'Specjalista cyberbezpieczenstwa',
+		'category'  => 'IT',
+		'rating'    => '4.9',
+		'reviews'   => 134,
+		'location'  => 'Wroclaw',
+		'answers'   => 289,
+		'slug'      => 'wojciech-pawlak',
+	),
+	array(
+		'initials'  => 'AG',
+		'name'      => 'Agnieszka Grabowska',
+		'specialty' => 'Dietetyk kliniczny',
+		'category'  => 'Zdrowie',
+		'rating'    => '4.8',
+		'reviews'   => 387,
+		'location'  => 'Krakow',
+		'answers'   => 512,
+		'slug'      => 'agnieszka-grabowska',
+	),
+	array(
+		'initials'  => 'DW',
+		'name'      => 'Dariusz Wisniewski',
+		'specialty' => 'Rzeczoznawca majatkowy',
+		'category'  => 'Nieruchomosci',
+		'rating'    => '4.7',
+		'reviews'   => 256,
+		'location'  => 'Lublin',
+		'answers'   => 198,
+		'slug'      => 'dariusz-wisniewski',
+	),
+);
+
+$pp_categories = array( 'Prawo', 'Finanse', 'Budownictwo', 'Nieruchomosci', 'Zdrowie', 'IT' );
+
+$pp_avatar_colors = array(
+	'Prawo'         => '#6c2bd9',
+	'Finanse'       => '#3b82f6',
+	'Budownictwo'   => '#f97316',
+	'Nieruchomosci' => '#10b981',
+	'Zdrowie'       => '#ef4444',
+	'IT'            => '#8b5cf6',
+);
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Specjaliści | Poradnik.pro</title>
-    <meta name="description" content="Znajdź najlepszego eksperta dla siebie na Poradnik.pro.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php wp_head(); ?>
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --purple: #6c2bd9;
-            --purple-dark: #571fc0;
-            --purple-soft: #f4edff;
-            --text: #18181b;
-            --muted: #6b7280;
-            --border: #e5e7eb;
-            --bg: #f6f7fb;
-            --white: #ffffff;
-            --shadow: 0 16px 32px rgba(24, 24, 27, 0.08);
-            --radius: 12px;
-            --container: 1200px;
+        /* ===== PAGE HERO ===== */
+        .page-hero {
+            background: linear-gradient(135deg, #ede9fe 0%, #e0e7ff 100%);
+            padding: 48px 0 56px;
         }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--bg);
-            color: var(--text);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { color: inherit; text-decoration: none; }
-        button, input, select { font: inherit; }
-        button { cursor: pointer; }
-
-        .container {
-            width: min(var(--container), calc(100% - 32px));
-            margin: 0 auto;
-        }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid rgba(229, 231, 235, 0.9);
-        }
-
-        .header-inner {
-            min-height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.25rem;
+        .page-hero h1 {
+            font-size: 36px;
             font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 8px;
         }
-
-        .logo-mark {
-            width: 38px;
-            height: 38px;
-            border-radius: 10px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--purple), #8d58ec);
-            color: var(--white);
-            font-weight: 800;
-        }
-
-        .main-nav {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            flex-wrap: wrap;
-        }
-
-        .main-nav a {
-            color: var(--muted);
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: color 0.2s ease;
-        }
-
-        .main-nav a:hover,
-        .main-nav a.active { color: var(--purple); }
-
-        .header-cta,
-        .profile-link,
-        .page-arrow,
-        .page-number {
-            transition: all 0.2s ease;
-        }
-
-        .header-cta {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 46px;
-            padding: 0 22px;
-            border-radius: 999px;
-            background: var(--purple);
-            color: var(--white);
-            font-size: 0.95rem;
-            font-weight: 700;
-            border: 0;
-        }
-
-        .header-cta:hover { background: var(--purple-dark); }
-
-        .hero {
-            padding: 56px 0 28px;
-        }
-
-        .hero h1 {
-            font-size: clamp(2rem, 4vw, 3rem);
-            line-height: 1.1;
-            margin-bottom: 12px;
-        }
-
-        .hero p {
+        .page-hero .subtitle {
+            font-size: 16px;
+            color: var(--gray-600);
             max-width: 560px;
-            color: var(--muted);
-            font-size: 1.05rem;
+            line-height: 1.6;
         }
 
-        .search-panel {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 24px;
-            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
-            margin: 18px 0 18px;
+        /* ===== SEARCH & FILTER SECTION ===== */
+        .search-filter-section {
+            padding: 32px 0 0;
         }
-
-        .search-row {
-            display: grid;
-            grid-template-columns: minmax(0, 1fr) 240px;
-            gap: 16px;
-        }
-
-        .search-input,
-        .search-select {
-            width: 100%;
-            min-height: 56px;
-            border-radius: 14px;
-            border: 1px solid var(--border);
-            background: var(--white);
-            padding: 0 18px;
-            color: var(--text);
-            outline: none;
-        }
-
-        .search-input:focus,
-        .search-select:focus {
-            border-color: var(--purple);
-            box-shadow: 0 0 0 4px rgba(108, 43, 217, 0.12);
-        }
-
-        .search-input::placeholder { color: #9ca3af; }
-
-        .filters {
+        .search-bar {
             display: flex;
             gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 28px;
+            margin-bottom: 24px;
         }
-
-        .filter-tab {
-            min-height: 42px;
-            padding: 0 18px;
-            border-radius: 999px;
-            border: 1px solid var(--border);
-            background: var(--white);
-            color: var(--muted);
+        .search-input {
+            flex: 1;
+            height: 52px;
+            padding: 0 20px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            font-size: 15px;
+            color: var(--gray-900);
+            background: #fff;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .search-input:focus {
+            border-color: var(--purple-primary);
+            box-shadow: 0 0 0 3px rgba(108, 43, 217, 0.1);
+        }
+        .search-input::placeholder {
+            color: var(--gray-400);
+        }
+        .search-btn {
+            height: 52px;
+            padding: 0 28px;
+            background: var(--purple-primary);
+            color: #fff;
+            border-radius: var(--radius-md);
+            font-size: 14px;
             font-weight: 600;
+            transition: background 0.2s;
+        }
+        .search-btn:hover {
+            background: var(--purple-dark);
         }
 
-        .filter-tab.active,
-        .filter-tab:hover {
-            border-color: rgba(108, 43, 217, 0.2);
-            background: var(--purple-soft);
-            color: var(--purple);
+        .filter-chips {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 32px;
+        }
+        .filter-chip {
+            display: inline-flex;
+            align-items: center;
+            height: 38px;
+            padding: 0 18px;
+            border-radius: 50px;
+            font-size: 13px;
+            font-weight: 600;
+            border: 1px solid var(--gray-200);
+            background: #fff;
+            color: var(--gray-600);
+            transition: all 0.2s;
+        }
+        .filter-chip:hover,
+        .filter-chip.active {
+            border-color: var(--purple-primary);
+            background: #f3e8ff;
+            color: var(--purple-primary);
         }
 
+        /* ===== SPECIALISTS GRID ===== */
+        .specialists-section {
+            padding: 0 0 64px;
+        }
         .specialists-grid {
             display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
+            grid-template-columns: repeat(3, 1fr);
             gap: 24px;
         }
-
         .specialist-card {
-            background: var(--white);
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-lg);
             padding: 28px;
-            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.04);
             display: flex;
             flex-direction: column;
             gap: 16px;
-            min-height: 100%;
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
-
         .specialist-card:hover {
             transform: translateY(-4px);
-            box-shadow: var(--shadow);
+            box-shadow: var(--shadow-lg);
         }
-
-        .card-top {
+        .card-header {
             display: flex;
             align-items: center;
             gap: 16px;
         }
-
-        .avatar {
-            width: 64px;
-            height: 64px;
+        .avatar-circle {
+            width: 56px;
+            height: 56px;
             border-radius: 50%;
-            background: #e5e7eb;
-            color: #6b7280;
-            display: inline-flex;
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 1.1rem;
-            font-weight: 800;
+            font-weight: 700;
+            font-size: 16px;
+            color: #fff;
             flex-shrink: 0;
         }
-
-        .card-meta h2 {
-            font-size: 1.15rem;
-            margin-bottom: 4px;
+        .card-info h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin-bottom: 2px;
         }
-
-        .specialty {
-            color: var(--purple);
+        .card-specialty {
+            font-size: 13px;
             font-weight: 600;
-            font-size: 0.96rem;
+            color: var(--purple-primary);
         }
-
-        .rating-row {
+        .card-details {
             display: flex;
-            align-items: center;
+            flex-direction: column;
             gap: 8px;
-            color: var(--muted);
-            font-size: 0.95rem;
         }
-
-        .stars {
-            color: #f4b400;
-            letter-spacing: 0.03em;
+        .card-rating {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 14px;
+        }
+        .card-rating .stars {
+            color: #f59e0b;
             font-weight: 700;
         }
-
-        .profile-link {
-            margin-top: auto;
+        .card-rating .rating-num {
+            color: var(--gray-900);
+            font-weight: 600;
+        }
+        .card-rating .reviews-count {
+            color: var(--gray-400);
+            font-size: 13px;
+        }
+        .card-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 13px;
+            color: var(--gray-500);
+        }
+        .card-meta span {
             display: inline-flex;
             align-items: center;
-            justify-content: center;
-            min-height: 48px;
-            border-radius: 999px;
-            border: 2px solid var(--purple);
-            color: var(--purple);
-            background: transparent;
-            font-weight: 700;
+            gap: 4px;
         }
-
-        .profile-link:hover {
-            background: var(--purple);
-            color: var(--white);
-        }
-
-        .pagination {
+        .card-btn {
             display: flex;
             align-items: center;
             justify-content: center;
-            gap: 10px;
-            flex-wrap: wrap;
-            padding: 36px 0 56px;
-        }
-
-        .page-arrow,
-        .page-number,
-        .page-ellipsis {
-            min-width: 42px;
-            min-height: 42px;
-            border-radius: 999px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
+            height: 44px;
+            border-radius: 50px;
+            border: 2px solid var(--purple-primary);
+            color: var(--purple-primary);
+            font-size: 14px;
             font-weight: 600;
+            background: transparent;
+            margin-top: auto;
+            transition: all 0.2s;
+        }
+        .card-btn:hover {
+            background: var(--purple-primary);
+            color: #fff;
         }
 
-        .page-arrow,
-        .page-number {
-            border: 1px solid var(--border);
-            background: var(--white);
-            color: var(--muted);
-        }
-
-        .page-number.active,
-        .page-number:hover,
-        .page-arrow:hover {
-            border-color: var(--purple);
-            color: var(--purple);
-            background: var(--purple-soft);
-        }
-
-        .page-number.active {
-            background: var(--purple);
-            color: var(--white);
-        }
-
-        @media (max-width: 1100px) {
-            .specialists-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-        }
-
-        @media (max-width: 840px) {
-            .header-inner {
-                flex-wrap: wrap;
-                justify-content: center;
-                padding: 16px 0;
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 1024px) {
+            .specialists-grid {
+                grid-template-columns: repeat(2, 1fr);
             }
-
-            .main-nav {
-                justify-content: center;
-                gap: 18px;
-            }
-
-            .search-row { grid-template-columns: 1fr; }
         }
-
         @media (max-width: 640px) {
-            .hero { padding-top: 40px; }
-            .specialists-grid { grid-template-columns: 1fr; }
-            .search-panel { padding: 18px; border-radius: 16px; }
-            .specialist-card { padding: 22px; }
-            .card-top { align-items: flex-start; }
+            .specialists-grid {
+                grid-template-columns: 1fr;
+            }
+            .search-bar {
+                flex-direction: column;
+            }
+            .page-hero {
+                padding: 32px 0 40px;
+            }
+            .page-hero h1 {
+                font-size: 28px;
+            }
         }
     </style>
 </head>
-<body>
-    <header class="site-header">
+<body <?php body_class(); ?>>
+
+<?php pp_pro_header( 'specjalisci' ); ?>
+
+<main>
+    <!-- Page Hero -->
+    <section class="page-hero">
         <div class="container">
-            <div class="header-inner">
-                <a class="logo" href="/">
-                    <span class="logo-mark">P</span>
-                    <span>Poradnik.pro</span>
-                </a>
+            <nav class="breadcrumb" aria-label="Breadcrumb">
+                <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona glowna</a>
+                <span class="sep">/</span>
+                <span>Specjalisci</span>
+            </nav>
+            <h1>Specjalisci</h1>
+            <p class="subtitle">Znajdz zweryfikowanych ekspertow z roznych dziedzin. Porownaj oceny, przeczytaj opinie i wybierz najlepszego specjaliste dla siebie.</p>
+        </div>
+    </section>
 
-                <nav class="main-nav" aria-label="Główna nawigacja">
-                    <a href="/poradniki">Poradniki</a>
-                    <a href="/rankingi">Rankingi</a>
-                    <a href="/kalkulatory">Kalkulatory</a>
-                    <a href="/specjalisci" class="active">Specjaliści</a>
-                </nav>
-
-                <a class="header-cta" href="/specjalisci">Znajdź eksperta</a>
+    <!-- Search & Filter -->
+    <section class="search-filter-section">
+        <div class="container">
+            <div class="search-bar">
+                <input class="search-input" type="text" placeholder="Szukaj specjalisty po imieniu, specjalizacji lub lokalizacji..." aria-label="Szukaj specjalisty">
+                <button class="search-btn" type="button">Szukaj</button>
+            </div>
+            <div class="filter-chips" role="group" aria-label="Filtruj wedlug kategorii">
+                <button class="filter-chip active" type="button">Wszystkie</button>
+                <?php foreach ( $pp_categories as $cat ) : ?>
+                    <button class="filter-chip" type="button"><?php echo esc_html( $cat ); ?></button>
+                <?php endforeach; ?>
             </div>
         </div>
-    </header>
+    </section>
 
-    <main>
-        <section class="hero">
-            <div class="container">
-                <h1>Specjaliści</h1>
-                <p>Znajdź najlepszego eksperta dla siebie</p>
-            </div>
-        </section>
-
-        <section class="container">
-            <div class="search-panel">
-                <div class="search-row">
-                    <input class="search-input" type="text" placeholder="Czego szukasz?" aria-label="Czego szukasz?">
-                    <select class="search-select" aria-label="Wszystkie kategorie">
-                        <option>Wszystkie kategorie</option>
-                        <option>Nieruchomości</option>
-                        <option>Prawo</option>
-                        <option>Finanse</option>
-                        <option>Księgowość</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="filters" aria-label="Filtry specjalistów">
-                <button class="filter-tab active" type="button">Branża</button>
-                <button class="filter-tab" type="button">Lokalizacja</button>
-                <button class="filter-tab" type="button">Ocena</button>
-                <button class="filter-tab" type="button">Online</button>
-                <button class="filter-tab" type="button">Zweryfikowani</button>
-                <button class="filter-tab" type="button">Więcej</button>
-            </div>
-
+    <!-- Specialists Grid -->
+    <section class="specialists-section">
+        <div class="container">
             <div class="specialists-grid">
+                <?php foreach ( $pp_specialists as $specialist ) :
+                    $avatar_bg = isset( $pp_avatar_colors[ $specialist['category'] ] ) ? $pp_avatar_colors[ $specialist['category'] ] : '#6c2bd9';
+                    $profile_url = esc_url( home_url( '/specjalista/' . $specialist['slug'] . '/' ) );
+                    $stars_full = floor( (float) $specialist['rating'] );
+                    $star_icons = str_repeat( "\xe2\x98\x85", $stars_full );
+                ?>
                 <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">JK</div>
-                        <div class="card-meta">
-                            <h2>Jan Kowalski</h2>
-                            <p class="specialty">Doradca nieruchomości</p>
+                    <div class="card-header">
+                        <div class="avatar-circle" style="background: <?php echo esc_attr( $avatar_bg ); ?>;">
+                            <?php echo esc_html( $specialist['initials'] ); ?>
+                        </div>
+                        <div class="card-info">
+                            <h3><?php echo esc_html( $specialist['name'] ); ?></h3>
+                            <span class="card-specialty"><?php echo esc_html( $specialist['specialty'] ); ?></span>
                         </div>
                     </div>
-                    <div class="rating-row"><span class="stars">★ 4.9</span><span>322 opinie</span></div>
-                    <a class="profile-link" href="/specjalisci/jan-kowalski">Zobacz profil</a>
-                </article>
-
-                <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">AN</div>
+                    <div class="card-details">
+                        <div class="card-rating">
+                            <span class="stars"><?php echo $star_icons; ?></span>
+                            <span class="rating-num"><?php echo esc_html( $specialist['rating'] ); ?></span>
+                            <span class="reviews-count">(<?php echo esc_html( $specialist['reviews'] ); ?> opinii)</span>
+                        </div>
                         <div class="card-meta">
-                            <h2>Anna Nowak</h2>
-                            <p class="specialty">Prawnik</p>
+                            <span><?php echo esc_html( $specialist['location'] ); ?></span>
+                            <span><?php echo esc_html( $specialist['answers'] ); ?> odpowiedzi</span>
                         </div>
                     </div>
-                    <div class="rating-row"><span class="stars">★ 4.8</span><span>425 opinie</span></div>
-                    <a class="profile-link" href="/specjalisci/anna-nowak">Zobacz profil</a>
+                    <a class="card-btn" href="<?php echo $profile_url; ?>">Zobacz profil</a>
                 </article>
-
-                <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">PZ</div>
-                        <div class="card-meta">
-                            <h2>Piotr Zieliński</h2>
-                            <p class="specialty">Doradca kredytowy</p>
-                        </div>
-                    </div>
-                    <div class="rating-row"><span class="stars">★ 4.7</span><span>278 opinie</span></div>
-                    <a class="profile-link" href="/specjalisci/piotr-zielinski">Zobacz profil</a>
-                </article>
-
-                <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">KW</div>
-                        <div class="card-meta">
-                            <h2>Karolina Wiśniewska</h2>
-                            <p class="specialty">Księgowa</p>
-                        </div>
-                    </div>
-                    <div class="rating-row"><span class="stars">★ 4.8</span><span>196 opinie</span></div>
-                    <a class="profile-link" href="/specjalisci/karolina-wisniewska">Zobacz profil</a>
-                </article>
-
-                <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">KW</div>
-                        <div class="card-meta">
-                            <h2>Karolina Wiśniewska</h2>
-                            <p class="specialty">Specjalistka ds. podatków</p>
-                        </div>
-                    </div>
-                    <div class="rating-row"><span class="stars">★ 4.9</span><span>241 opinii</span></div>
-                    <a class="profile-link" href="/specjalisci/karolina-wisniewska-podatki">Zobacz profil</a>
-                </article>
-
-                <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">TN</div>
-                        <div class="card-meta">
-                            <h2>Tomasz Nowak</h2>
-                            <p class="specialty">Doradca biznesowy</p>
-                        </div>
-                    </div>
-                    <div class="rating-row"><span class="stars">★ 4.8</span><span>214 opinii</span></div>
-                    <a class="profile-link" href="/specjalisci/tomasz-nowak">Zobacz profil</a>
-                </article>
-
-                <article class="specialist-card">
-                    <div class="card-top">
-                        <div class="avatar">ML</div>
-                        <div class="card-meta">
-                            <h2>Michał Lewandowski</h2>
-                            <p class="specialty">Konsultant finansowy</p>
-                        </div>
-                    </div>
-                    <div class="rating-row"><span class="stars">★ 4.7</span><span>189 opinii</span></div>
-                    <a class="profile-link" href="/specjalisci/michal-lewandowski">Zobacz profil</a>
-                </article>
+                <?php endforeach; ?>
             </div>
+        </div>
+    </section>
+</main>
 
-            <nav class="pagination" aria-label="Paginacja">
-                <a class="page-arrow" href="#" aria-label="Poprzednia strona">&larr;</a>
-                <a class="page-number active" href="#">1</a>
-                <a class="page-number" href="#">2</a>
-                <a class="page-number" href="#">3</a>
-                <a class="page-number" href="#">4</a>
-                <span class="page-ellipsis">...</span>
-                <a class="page-arrow" href="#" aria-label="Następna strona">&rarr;</a>
-            </nav>
-        </section>
-    </main>
+<?php pp_pro_footer(); ?>
+
+<?php wp_footer(); ?>
 </body>
 </html>
