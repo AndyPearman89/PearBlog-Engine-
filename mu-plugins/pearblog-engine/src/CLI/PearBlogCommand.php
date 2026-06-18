@@ -229,6 +229,7 @@ class PearBlogCommand {
 			$queue->push( $topic );
 		}
 
+		// Mirror seed pack into an option so deployment automation/admin fallback can reuse the same list.
 		update_option( 'pearblog_seed_topics', implode( "\n", $queued ) );
 
 		\WP_CLI::success( sprintf( 'Seeded %d topic(s) to queue (%s profile).', count( $queued ), $profile ) );
