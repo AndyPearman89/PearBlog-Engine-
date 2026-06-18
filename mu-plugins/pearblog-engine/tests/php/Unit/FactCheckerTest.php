@@ -126,6 +126,7 @@ class FactCheckerTest extends TestCase {
 	public function test_extract_claims_returns_only_factual_claims(): void {
 		$content = 'This is a plain sentence. Inflation is at 5% this year. Another plain statement.';
 		$claims  = $this->checker->extract_claims( $content );
+		$this->assertNotEmpty( $claims );
 		foreach ( $claims as $claim ) {
 			$this->assertTrue( $this->checker->is_factual_claim( $claim ) );
 		}
@@ -143,6 +144,7 @@ class FactCheckerTest extends TestCase {
 	public function test_extract_claims_strips_html_tags(): void {
 		$content = '<p>Produkt <strong>kosztuje 1000 zł</strong> za sztukę w Polsce.</p>';
 		$claims  = $this->checker->extract_claims( $content );
+		$this->assertNotEmpty( $claims );
 		// The extracted claim should not contain HTML tags.
 		foreach ( $claims as $claim ) {
 			$this->assertStringNotContainsString( '<', $claim );

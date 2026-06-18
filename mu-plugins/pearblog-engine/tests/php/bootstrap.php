@@ -443,6 +443,12 @@ if ( ! function_exists( 'get_the_post_thumbnail_url' ) ) {
 	}
 }
 
+if ( ! function_exists( 'get_the_ID' ) ) {
+	function get_the_ID(): int {
+		return (int) ( $GLOBALS['_current_post_id'] ?? 0 );
+	}
+}
+
 if ( ! function_exists( 'wp_kses_post' ) ) {
 	function wp_kses_post( string $data ): string {
 		return $data;
