@@ -149,8 +149,9 @@ class SmartProviderRouterTest extends TestCase {
 	}
 
 	public function test_gemini_cheaper_than_openai_default(): void {
-		$openai_cost  = $this->router->cost_per_1k( 'openai', 'default' );
-		$gemini_cost  = $this->router->cost_per_1k( 'gemini', 'default' );
-		$this->assertLessThan( $openai_cost, $gemini_cost );
+		$openai_cost = $this->router->cost_per_1k( 'openai', 'default' );
+		$gemini_cost = $this->router->cost_per_1k( 'gemini', 'default' );
+		// openai_cost (0.002) should be greater than gemini_cost (0.0005).
+		$this->assertGreaterThan( $gemini_cost, $openai_cost );
 	}
 }
