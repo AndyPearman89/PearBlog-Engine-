@@ -514,6 +514,7 @@ class AdminPageV8Enterprise {
 	 * Render Real-Time Analytics Tab
 	 */
 	private function render_realtime_tab(): void {
+		$stats = $this->get_realtime_stats();
 		?>
 		<div class="pb-v8-realtime">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Real-Time Analytics', 'pearblog-engine' ); ?></h2>
@@ -530,7 +531,7 @@ class AdminPageV8Enterprise {
 						<span class="pb-v8-metric-label"><?php esc_html_e( 'Live Visitors', 'pearblog-engine' ); ?></span>
 						<span class="pb-v8-metric-icon">👁️</span>
 					</div>
-					<div class="pb-v8-metric-value" id="liveVisitors">-</div>
+					<div class="pb-v8-metric-value" id="liveVisitors"><?php echo esc_html( (string) $stats['visitors'] ); ?></div>
 					<div class="pb-v8-metric-chart">
 						<canvas id="liveVisitorsChart" height="60"></canvas>
 					</div>
@@ -541,7 +542,7 @@ class AdminPageV8Enterprise {
 						<span class="pb-v8-metric-label"><?php esc_html_e( 'Revenue/Hour', 'pearblog-engine' ); ?></span>
 						<span class="pb-v8-metric-icon">💵</span>
 					</div>
-					<div class="pb-v8-metric-value" id="liveRevenue">-</div>
+					<div class="pb-v8-metric-value" id="liveRevenue"><?php echo esc_html( '$' . number_format( (float) $stats['revenue'], 2 ) ); ?></div>
 					<div class="pb-v8-metric-chart">
 						<canvas id="liveRevenueChart" height="60"></canvas>
 					</div>
@@ -552,7 +553,7 @@ class AdminPageV8Enterprise {
 						<span class="pb-v8-metric-label"><?php esc_html_e( 'Conversions', 'pearblog-engine' ); ?></span>
 						<span class="pb-v8-metric-icon">🎯</span>
 					</div>
-					<div class="pb-v8-metric-value" id="liveConversions">-</div>
+					<div class="pb-v8-metric-value" id="liveConversions"><?php echo esc_html( (string) $stats['conversions'] ); ?></div>
 					<div class="pb-v8-metric-chart">
 						<canvas id="liveConversionsChart" height="60"></canvas>
 					</div>
@@ -563,7 +564,7 @@ class AdminPageV8Enterprise {
 						<span class="pb-v8-metric-label"><?php esc_html_e( 'Error Rate', 'pearblog-engine' ); ?></span>
 						<span class="pb-v8-metric-icon">⚠️</span>
 					</div>
-					<div class="pb-v8-metric-value" id="liveErrors">-</div>
+					<div class="pb-v8-metric-value" id="liveErrors"><?php echo esc_html( number_format( (float) $stats['errors'], 1 ) . '%' ); ?></div>
 					<div class="pb-v8-metric-chart">
 						<canvas id="liveErrorsChart" height="60"></canvas>
 					</div>
@@ -1003,15 +1004,88 @@ class AdminPageV8Enterprise {
 	public function ajax_get_realtime_stats(): void {
 		check_ajax_referer( 'pb_v8_nonce', 'nonce' );
 
-		$stats = [
-			'visitors'    => rand( 10, 50 ),
-			'revenue'     => rand( 50, 200 ) / 10,
-			'conversions' => rand( 1, 10 ),
-			'errors'      => rand( 0, 5 ),
-			'timestamp'   => time(),
-		];
+		$stats              = $this->get_realtime_stats();
+		$stats['timestamp'] = time();
 
 		wp_send_json_success( $stats );
+	}
+
+	/**
+	 * Get live real-time metrics for the Enterprise tab.
+	 *
+	 * @return array{visitors:int,revenue:float,conversions:int,errors:float}
+	 */
+	private function get_realtime_stats(): array {
+		global $wpdb;
+
+		$stats = [
+			'visitors'    => 0,
+			'revenue'     => 0.0,
+			'conversions' => 0,
+			'errors'      => 0.0,
+		];
+
+		$event_table = $wpdb->prefix . 'pearblog_events';
+		$table_check = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $event_table ) );
+
+		if ( $event_table === $table_check ) {
+			$now_timestamp   = (int) current_time( 'timestamp' );
+			$five_minutes_ago = wp_date( 'Y-m-d H:i:s', $now_timestamp - 300 );
+			$one_hour_ago     = wp_date( 'Y-m-d H:i:s', $now_timestamp - HOUR_IN_SECONDS );
+
+			$stats['visitors'] = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(DISTINCT session_id)
+					FROM {$event_table}
+					WHERE event_type = %s
+					AND created_at >= %s
+					AND session_id IS NOT NULL
+					AND session_id <> ''",
+					'view',
+					$five_minutes_ago
+				)
+			);
+
+			$stats['conversions'] = (int) $wpdb->get_var(
+				$wpdb->prepare(
+					"SELECT COUNT(*)
+					FROM {$event_table}
+					WHERE event_type = %s
+					AND created_at >= %s",
+					'lead',
+					$one_hour_ago
+				)
+			);
+
+			$revenue_rows = $wpdb->get_col(
+				$wpdb->prepare(
+					"SELECT event_data
+					FROM {$event_table}
+					WHERE event_type = %s
+					AND created_at >= %s",
+					'revenue',
+					$one_hour_ago
+				)
+			);
+
+			if ( is_array( $revenue_rows ) ) {
+				$revenue_total = 0.0;
+				foreach ( $revenue_rows as $event_data ) {
+					$decoded = json_decode( (string) $event_data, true );
+					if ( is_array( $decoded ) && isset( $decoded['amount'] ) ) {
+						$revenue_total += (float) $decoded['amount'];
+					}
+				}
+				$stats['revenue'] = round( $revenue_total, 2 );
+			}
+		}
+
+		$summary = ( new PerformanceDashboard() )->get_summary();
+		if ( is_array( $summary ) && isset( $summary['error_rate_pct'] ) ) {
+			$stats['errors'] = (float) $summary['error_rate_pct'];
+		}
+
+		return $stats;
 	}
 
 	/**
