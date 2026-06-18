@@ -26,22 +26,27 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Validate required secrets
+      - name: Resolve FTP configuration
+        id: ftpvars
         run: |
           MISSING=()
           [[ -z "${{ secrets.FTP_HOST }}" ]]     && MISSING+=("FTP_HOST")
           [[ -z "${{ secrets.FTP_USERNAME }}" ]] && MISSING+=("FTP_USERNAME")
           [[ -z "${{ secrets.FTP_PASSWORD }}" ]] && MISSING+=("FTP_PASSWORD")
-          [[ -z "${{ secrets.FTP_SERVER_DIR }}" ]] && MISSING+=("FTP_SERVER_DIR")
           if [[ ${#MISSING[@]} -gt 0 ]]; then
             echo "::error::Missing required secrets: ${MISSING[*]}"
             echo "Add them under Settings → Secrets and variables → Actions:"
-            echo "  FTP_HOST        – FTP server hostname (e.g. wordpress2614653.home.pl)"
-            echo "  FTP_USERNAME    – FTP account username"
-            echo "  FTP_PASSWORD    – FTP account password"
-            echo "  FTP_SERVER_DIR  – Remote base path (e.g. /public_html/wp-content)"
+            echo "  FTP_HOST       – FTP server hostname (e.g. wordpress2614653.home.pl)"
+            echo "  FTP_USERNAME   – FTP account username"
+            echo "  FTP_PASSWORD   – FTP account password"
+            echo "  FTP_SERVER_DIR – (optional) override base path; defaults to /poradnik/wp-content"
             exit 1
           fi
+          # Default WordPress base: /poradnik/wp-content
+          SERVER_DIR="${{ secrets.FTP_SERVER_DIR }}"
+          SERVER_DIR="${SERVER_DIR:-/poradnik/wp-content}"
+          echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
+          echo "FTP base path: $SERVER_DIR"
 
       - name: Deploy mu-plugin via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -50,7 +55,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./mu-plugins/pearblog-engine/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}/mu-plugins/pearblog-engine/
+          server-dir: ${{ steps.ftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/
           dry-run: ${{ github.event.inputs.dry_run == 'true' }}
           log-level: standard
           dangerous-clean-slate: false
@@ -62,7 +67,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           local-dir: ./theme/pearblog-theme/
-          server-dir: ${{ secrets.FTP_SERVER_DIR }}/themes/pearblog-theme/
+          server-dir: ${{ steps.ftpvars.outputs.server_dir }}/themes/pearblog-theme/
           dry-run: ${{ github.event.inputs.dry_run == 'true' }}
           log-level: standard
           dangerous-clean-slate: false
@@ -70,8 +75,8 @@ jobs:
       - name: Deployment summary
         run: |
           echo "✅ FTP deploy complete"
-          echo "   Plugin : ${{ secrets.FTP_SERVER_DIR }}/mu-plugins/pearblog-engine/"
-          echo "   Theme  : ${{ secrets.FTP_SERVER_DIR }}/themes/pearblog-theme/"
+          echo "   Plugin : ${{ steps.ftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
+          echo "   Theme  : ${{ steps.ftpvars.outputs.server_dir }}/themes/pearblog-theme/"
           echo "   Server : ${{ secrets.FTP_HOST }}"
           if [[ "${{ github.event.inputs.dry_run }}" == "true" ]]; then
             echo "   ⚠️  Dry-run mode – no files were uploaded"
