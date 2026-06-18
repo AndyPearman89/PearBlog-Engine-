@@ -174,8 +174,8 @@ class PearBlogCommand {
 	 *
 	 * ## OPTIONS
 	 *
-	 * <profile>
-	 * : Seed profile name. Currently supported: poradnik.
+	 * [<profile>]
+	 * : Seed profile name (default: poradnik). Currently supported: poradnik.
 	 *
 	 * [--limit=<n>]
 	 * : Limit number of queued topics (default: all).
@@ -229,7 +229,7 @@ class PearBlogCommand {
 			$queue->push( $topic );
 		}
 
-		// Mirror seed pack into an option so deployment automation/admin fallback can reuse the same list.
+		// Mirrors the queued subset into an option so deployment automation/admin fallback can reuse exactly what was queued.
 		update_option( 'pearblog_seed_topics', implode( "\n", $queued ) );
 
 		\WP_CLI::success( sprintf( 'Seeded %d topic(s) to queue (%s profile).', count( $queued ), $profile ) );
