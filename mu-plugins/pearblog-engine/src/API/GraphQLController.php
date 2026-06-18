@@ -37,6 +37,8 @@ class GraphQLController {
 	/** REST namespace + route for standalone endpoint. */
 	public const REST_NAMESPACE = 'pearblog/v1';
 	public const REST_ROUTE     = '/graphql';
+	public const DEFAULT_MAX_QUERY_DEPTH      = 8;
+	public const DEFAULT_MAX_QUERY_COMPLEXITY = 40;
 
 	// -----------------------------------------------------------------------
 	// Registration
@@ -152,6 +154,13 @@ class GraphQLController {
 		if ( '' === $query ) {
 			return new \WP_REST_Response( [
 				'errors' => [ [ 'message' => 'Missing required parameter: query' ] ],
+			], 400 );
+		}
+
+		$limit_error = $this->validate_query_limits( $query );
+		if ( null !== $limit_error ) {
+			return new \WP_REST_Response( [
+				'errors' => [ [ 'message' => $limit_error ] ],
 			], 400 );
 		}
 
@@ -287,6 +296,75 @@ class GraphQLController {
 			'circuitOpen'     => (bool) ( $circuit['open'] ?? false ),
 			'queueSize'       => count( $queue->all() ),
 			'lastPipelineRun' => (string) get_option( 'pearblog_last_pipeline_run', 'never' ),
+		];
+	}
+
+	/**
+	 * Validate query depth/complexity limits.
+	 *
+	 * @param string $query
+	 * @return string|null Error message when limit is exceeded.
+	 */
+	private function validate_query_limits( string $query ): ?string {
+		$shape          = $this->estimate_query_shape( $query );
+		$depth          = $shape['depth'];
+		$complexity     = $shape['complexity'];
+		$max_depth      = max( 1, (int) get_option( 'pearblog_graphql_max_depth', self::DEFAULT_MAX_QUERY_DEPTH ) );
+		$max_complexity = max( 1, (int) get_option( 'pearblog_graphql_max_complexity', self::DEFAULT_MAX_QUERY_COMPLEXITY ) );
+
+		if ( $depth > $max_depth ) {
+			return sprintf( 'GraphQL query exceeds maximum depth (%d > %d).', $depth, $max_depth );
+		}
+
+		if ( $complexity > $max_complexity ) {
+			return sprintf( 'GraphQL query exceeds maximum complexity (%d > %d).', $complexity, $max_complexity );
+		}
+
+		return null;
+	}
+
+	/**
+	 * Estimate query depth and complexity from raw query input.
+	 *
+	 * @param string $query
+	 * @return array{depth:int,complexity:int}
+	 */
+	private function estimate_query_shape( string $query ): array {
+		if ( false === strpos( $query, '{' ) ) {
+			return [
+				'depth'      => 1,
+				'complexity' => 1,
+			];
+		}
+
+		$depth     = 0;
+		$max_depth = 0;
+		$length    = strlen( $query );
+		for ( $i = 0; $i < $length; $i++ ) {
+			$char = $query[ $i ];
+			if ( '{' === $char ) {
+				$depth++;
+				$max_depth = max( $max_depth, $depth );
+				continue;
+			}
+			if ( '}' === $char ) {
+				$depth = max( 0, $depth - 1 );
+			}
+		}
+
+		preg_match_all( '/\b([A-Za-z_][A-Za-z0-9_]*)\b/', $query, $matches );
+		$keywords   = [ 'query', 'mutation', 'subscription', 'fragment', 'on', 'true', 'false', 'null' ];
+		$complexity = 0;
+		foreach ( $matches[1] as $token ) {
+			if ( in_array( strtolower( $token ), $keywords, true ) ) {
+				continue;
+			}
+			$complexity++;
+		}
+
+		return [
+			'depth'      => max( 1, $max_depth ),
+			'complexity' => max( 1, $complexity ),
 		];
 	}
 }

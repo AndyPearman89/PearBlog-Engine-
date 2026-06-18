@@ -163,6 +163,30 @@ class GraphQLControllerTest extends TestCase {
 		$this->assertSame( 200, $response->status );
 	}
 
+	public function test_handle_request_rejects_query_exceeding_depth_limit(): void {
+		update_option( 'pearblog_graphql_max_depth', 2 );
+
+		$request = new \WP_REST_Request();
+		$request->set_param( 'query', 'query { stats { nested { value } } }' );
+		$response = $this->ctrl->handle_request( $request );
+
+		$this->assertSame( 400, $response->status );
+		$this->assertArrayHasKey( 'errors', $response->data );
+		$this->assertStringContainsString( 'maximum depth', $response->data['errors'][0]['message'] );
+	}
+
+	public function test_handle_request_rejects_query_exceeding_complexity_limit(): void {
+		update_option( 'pearblog_graphql_max_complexity', 2 );
+
+		$request = new \WP_REST_Request();
+		$request->set_param( 'query', 'query { stats health queue }' );
+		$response = $this->ctrl->handle_request( $request );
+
+		$this->assertSame( 400, $response->status );
+		$this->assertArrayHasKey( 'errors', $response->data );
+		$this->assertStringContainsString( 'maximum complexity', $response->data['errors'][0]['message'] );
+	}
+
 	// -----------------------------------------------------------------------
 	// check_permission
 	// -----------------------------------------------------------------------
