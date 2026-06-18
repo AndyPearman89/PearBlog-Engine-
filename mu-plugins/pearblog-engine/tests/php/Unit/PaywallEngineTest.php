@@ -20,7 +20,7 @@ class PaywallEngineTest extends TestCase {
 		parent::setUp();
 		$GLOBALS['_options']     = [];
 		$GLOBALS['_post_meta']   = [];
-		$GLOBALS['_user_can']    = false;
+		$GLOBALS['_current_user_can'] = false;
 		$GLOBALS['_user_logged_in'] = false;
 		$GLOBALS['_is_singular'] = false;
 		unset( $_COOKIE );
@@ -61,12 +61,12 @@ class PaywallEngineTest extends TestCase {
 	// -----------------------------------------------------------------------
 
 	public function test_has_access_returns_true_for_admin(): void {
-		$GLOBALS['_user_can'] = true;
+		$GLOBALS['_current_user_can'] = true;
 		$this->assertTrue( $this->engine->has_access() );
 	}
 
 	public function test_has_access_returns_false_for_guest(): void {
-		$GLOBALS['_user_can']    = false;
+		$GLOBALS['_current_user_can'] = false;
 		$GLOBALS['_user_logged_in'] = false;
 		$this->assertFalse( $this->engine->has_access() );
 	}
@@ -125,7 +125,7 @@ class PaywallEngineTest extends TestCase {
 	public function test_maybe_gate_content_passes_through_when_has_access(): void {
 		$GLOBALS['_options'][ PaywallEngine::OPTION_ENABLED ] = true;
 		$GLOBALS['_is_singular'] = true;
-		$GLOBALS['_user_can']    = true;
+		$GLOBALS['_current_user_can'] = true;
 		$content = '<p>Full article content.</p>';
 		$result  = $this->engine->maybe_gate_content( $content );
 		$this->assertSame( $content, $result );
