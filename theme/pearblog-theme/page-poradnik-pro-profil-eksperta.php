@@ -1,139 +1,40 @@
+<?php
+/**
+ * Template Name: Poradnik.PRO - Profil Eksperta
+ * Description: Expert profile page with reviews and specialties
+ * @package PearBlog
+ */
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jan Kowalski – Profil eksperta | Poradnik.pro</title>
-    <meta name="description" content="Profil eksperta Poradnik.pro – Jan Kowalski, doradca nieruchomości z Warszawy.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --yellow-accent: #f59e0b;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-            --shadow-md: 0 10px 30px rgba(15, 23, 42, 0.08);
-            --max-width: 1200px;
-        }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-900);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { color: inherit; text-decoration: none; }
-        button { border: none; background: none; font: inherit; cursor: pointer; }
-        ul { padding-left: 20px; }
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: #fff;
-            border-bottom: 1px solid var(--gray-200);
-        }
-        .header-inner {
-            min-height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 20px;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 20px;
-            font-weight: 800;
-        }
-        .logo-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #fff;
-            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
-            font-size: 16px;
-        }
-        .main-nav {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            color: var(--gray-600);
-            font-size: 14px;
-            font-weight: 500;
-        }
-        .main-nav a:hover,
-        .main-nav a.active { color: var(--purple-primary); }
-        .btn-primary,
-        .btn-secondary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 46px;
-            padding: 0 22px;
-            border-radius: 999px;
-            font-size: 14px;
-            font-weight: 700;
-            transition: all 0.2s ease;
-        }
-        .btn-primary {
-            background: var(--purple-primary);
-            color: #fff;
-            box-shadow: var(--shadow-sm);
-        }
-        .btn-primary:hover { background: var(--purple-dark); }
-        .btn-secondary {
-            color: var(--purple-primary);
-            border: 1px solid var(--purple-primary);
-            background: #fff;
-        }
-        .btn-secondary:hover {
-            background: #f7f1ff;
-        }
-
         .profile-hero {
             background: #f3f4f6;
             padding: 40px 0 28px;
             border-bottom: 1px solid var(--gray-200);
         }
-        .breadcrumb {
-            display: flex;
-            align-items: center;
-            gap: 8px;
+
+        .profile-hero .breadcrumb {
             margin-bottom: 24px;
             color: var(--gray-500);
-            font-size: 13px;
         }
-        .breadcrumb .sep { color: var(--gray-300); }
+
         .profile-card {
             display: grid;
             grid-template-columns: 140px 1fr;
             gap: 28px;
             align-items: center;
         }
+
         .avatar-lg {
             width: 140px;
             height: 140px;
@@ -146,11 +47,13 @@
             font-size: 56px;
             font-weight: 700;
         }
+
         .profile-meta h1 {
             font-size: 40px;
             line-height: 1.1;
             margin-bottom: 10px;
         }
+
         .role-row,
         .meta-row,
         .cta-row {
@@ -159,12 +62,14 @@
             flex-wrap: wrap;
             gap: 12px;
         }
+
         .role-row {
             margin-bottom: 14px;
             color: var(--gray-700);
             font-size: 18px;
             font-weight: 600;
         }
+
         .badge {
             display: inline-flex;
             align-items: center;
@@ -176,30 +81,71 @@
             font-size: 12px;
             font-weight: 700;
         }
+
         .meta-row {
             margin-bottom: 22px;
             color: var(--gray-600);
             font-size: 15px;
         }
+
         .rating-stars {
             color: var(--yellow-accent);
             letter-spacing: 1px;
         }
+
         .meta-divider {
             color: var(--gray-300);
         }
-        .cta-row { gap: 14px; }
+
+        .cta-row {
+            gap: 14px;
+        }
+
+        .btn-primary,
+        .btn-secondary {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 46px;
+            padding: 0 22px;
+            border-radius: 999px;
+            font-size: 14px;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: var(--purple-primary);
+            color: #fff;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background: var(--purple-dark);
+        }
+
+        .btn-secondary {
+            color: var(--purple-primary);
+            border: 1px solid var(--purple-primary);
+            background: #fff;
+        }
+
+        .btn-secondary:hover {
+            background: #f7f1ff;
+        }
 
         .tabs-bar {
             background: #fff;
             border-bottom: 1px solid var(--gray-200);
         }
+
         .tabs-nav {
             display: flex;
             gap: 8px;
             overflow-x: auto;
             padding: 0;
         }
+
         .tab-link {
             position: relative;
             display: inline-flex;
@@ -211,9 +157,11 @@
             font-weight: 600;
             white-space: nowrap;
         }
+
         .tab-link.active {
             color: var(--purple-primary);
         }
+
         .tab-link.active::after {
             content: '';
             position: absolute;
@@ -225,13 +173,17 @@
             background: var(--purple-primary);
         }
 
-        .page-section { padding: 40px 0; }
+        .page-section {
+            padding: 40px 0;
+        }
+
         .about-grid {
             display: grid;
             grid-template-columns: minmax(0, 1.65fr) minmax(300px, 0.95fr);
             gap: 28px;
             align-items: start;
         }
+
         .card {
             background: #fff;
             border: 1px solid var(--gray-200);
@@ -239,40 +191,53 @@
             padding: 32px;
             box-shadow: var(--shadow-sm);
         }
+
         .card h2,
         .card h3 {
             margin-bottom: 18px;
             font-size: 24px;
             line-height: 1.2;
         }
+
         .about-copy {
             color: var(--gray-700);
             font-size: 16px;
             margin-bottom: 24px;
         }
+
         .specialties-title {
             margin-bottom: 14px;
             font-size: 17px;
             font-weight: 700;
             color: var(--gray-900);
         }
+
+        .specialties-list {
+            padding-left: 20px;
+            list-style: disc;
+        }
+
         .specialties-list li {
             margin-bottom: 12px;
             color: var(--gray-700);
         }
+
         .specialties-list li::marker {
             color: var(--purple-primary);
         }
+
         .stats-list {
             display: grid;
             gap: 14px;
         }
+
         .stat-box {
             padding: 18px 20px;
             border-radius: var(--radius-lg);
             background: var(--gray-50);
             border: 1px solid var(--gray-200);
         }
+
         .stat-label {
             display: block;
             margin-bottom: 4px;
@@ -280,6 +245,7 @@
             font-size: 13px;
             font-weight: 600;
         }
+
         .stat-value {
             color: var(--gray-900);
             font-size: 24px;
@@ -292,6 +258,7 @@
             font-size: 30px;
             font-weight: 800;
         }
+
         .reviews-summary {
             display: grid;
             grid-template-columns: 220px 1fr;
@@ -299,6 +266,7 @@
             margin-bottom: 28px;
             align-items: stretch;
         }
+
         .rating-overview {
             display: flex;
             flex-direction: column;
@@ -306,6 +274,7 @@
             align-items: center;
             text-align: center;
         }
+
         .rating-overview .score {
             font-size: 64px;
             font-weight: 800;
@@ -313,22 +282,26 @@
             color: var(--gray-900);
             margin-bottom: 8px;
         }
+
         .rating-overview .stars {
             color: var(--yellow-accent);
             font-size: 22px;
             letter-spacing: 2px;
             margin-bottom: 10px;
         }
+
         .rating-overview .caption {
             color: var(--gray-500);
             font-size: 14px;
             font-weight: 500;
         }
+
         .review-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
             gap: 20px;
         }
+
         .review-card {
             background: #fff;
             border: 1px solid var(--gray-200);
@@ -336,6 +309,7 @@
             padding: 24px;
             box-shadow: var(--shadow-sm);
         }
+
         .review-head {
             display: flex;
             align-items: center;
@@ -343,11 +317,13 @@
             gap: 16px;
             margin-bottom: 16px;
         }
+
         .reviewer {
             display: flex;
             align-items: center;
             gap: 12px;
         }
+
         .avatar-sm {
             width: 46px;
             height: 46px;
@@ -360,83 +336,101 @@
             font-size: 18px;
             font-weight: 700;
         }
+
         .reviewer strong {
             display: block;
             font-size: 15px;
         }
+
         .review-date {
             color: var(--gray-500);
             font-size: 12px;
         }
+
         .review-rating {
             color: var(--yellow-accent);
             font-size: 14px;
             white-space: nowrap;
         }
+
         .review-card p {
             color: var(--gray-700);
             font-size: 15px;
         }
 
-        .site-footer {
-            padding: 32px 0 48px;
-            color: var(--gray-500);
-            font-size: 13px;
-        }
-
         @media (max-width: 960px) {
-            .main-nav { display: none; }
             .profile-card,
             .about-grid,
             .reviews-summary,
-            .review-grid { grid-template-columns: 1fr; }
-            .profile-card { text-align: center; }
-            .avatar-lg { margin: 0 auto; }
+            .review-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-card {
+                text-align: center;
+            }
+
+            .avatar-lg {
+                margin: 0 auto;
+            }
+
             .role-row,
             .meta-row,
-            .cta-row { justify-content: center; }
-            .profile-meta h1 { font-size: 34px; }
+            .cta-row {
+                justify-content: center;
+            }
+
+            .profile-meta h1 {
+                font-size: 34px;
+            }
         }
 
         @media (max-width: 640px) {
-            .container { padding: 0 16px; }
-            .header-inner { min-height: 64px; }
-            .profile-hero { padding-top: 28px; }
-            .profile-meta h1 { font-size: 30px; }
-            .role-row { font-size: 16px; }
+            .profile-hero {
+                padding-top: 28px;
+            }
+
+            .profile-meta h1 {
+                font-size: 30px;
+            }
+
+            .role-row {
+                font-size: 16px;
+            }
+
             .btn-primary,
-            .btn-secondary { width: 100%; }
-            .cta-row { flex-direction: column; }
-            .card { padding: 24px; }
-            .reviews-section-title { font-size: 26px; }
-            .rating-overview .score { font-size: 52px; }
+            .btn-secondary {
+                width: 100%;
+            }
+
+            .cta-row {
+                flex-direction: column;
+            }
+
+            .card {
+                padding: 24px;
+            }
+
+            .reviews-section-title {
+                font-size: 26px;
+            }
+
+            .rating-overview .score {
+                font-size: 52px;
+            }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
-
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a href="/" class="logo"><span class="logo-icon">P</span> Poradnik.pro</a>
-            <nav class="main-nav">
-                <a href="/poradniki">Poradniki</a>
-                <a href="/porownania">Porównania</a>
-                <a href="/rankingi">Rankingi</a>
-                <a href="/kalkulatory">Kalkulatory</a>
-                <a href="/eksperci" class="active">Eksperci</a>
-            </nav>
-            <a href="/eksperci" class="btn-primary">Znajdź eksperta</a>
-        </div>
-    </div>
-</header>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); pp_pro_header( 'specjalisci' ); ?>
 
 <section class="profile-hero">
     <div class="container">
         <div class="breadcrumb">
-            <a href="/">Strona główna</a>
+            <a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona główna</a>
             <span class="sep">/</span>
-            <a href="/specjalista">Specjaliści</a>
+            <a href="<?php echo esc_url( home_url( '/specjalisci/' ) ); ?>">Specjaliści</a>
             <span class="sep">/</span>
             <span>Jan Kowalski</span>
         </div>
@@ -458,8 +452,8 @@
                     <span>Warszawa</span>
                 </div>
                 <div class="cta-row">
-                    <a href="/kontakt" class="btn-secondary">Zapytaj</a>
-                    <a href="/kontakt" class="btn-primary">Wyślij wiadomość</a>
+                    <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>" class="btn-secondary">Zapytaj</a>
+                    <a href="<?php echo esc_url( home_url( '/kontakt/' ) ); ?>" class="btn-primary">Wyślij wiadomość</a>
                 </div>
             </div>
         </div>
@@ -574,9 +568,6 @@
     </section>
 </main>
 
-<footer class="site-footer">
-    <div class="container">© 2026 Poradnik.pro — profil eksperta</div>
-</footer>
-
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>

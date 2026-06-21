@@ -1,411 +1,374 @@
+<?php
+/**
+ * Template Name: Poradnik.PRO - Eksperci
+ * Description: Lista zweryfikowanych ekspertów Poradnik.PRO.
+ *
+ * @package PearBlog
+ */
+
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+
+$pp_expert_categories = array(
+	'Wszystkie specjalizacje',
+	'Prawo',
+	'Budownictwo',
+	'Finanse',
+	'Architektura',
+	'Nieruchomości',
+	'Instalacje',
+);
+
+$pp_experts = array(
+	array(
+		'initial'        => 'A',
+		'name'           => 'Mec. Anna Kowalska',
+		'specialization' => 'Prawo cywilne, spadkowe',
+		'city'           => 'Warszawa',
+		'rating'         => '4.9',
+		'reviews'        => 128,
+		'category'       => 'Prawo',
+		'profile_url'    => home_url( '/specjalista/anna-kowalska/' ),
+	),
+	array(
+		'initial'        => 'P',
+		'name'           => 'Inż. Piotr Nowak',
+		'specialization' => 'Budownictwo, remonty',
+		'city'           => 'Kraków',
+		'rating'         => '4.8',
+		'reviews'        => 96,
+		'category'       => 'Budownictwo',
+		'profile_url'    => home_url( '/specjalista/piotr-nowak/' ),
+	),
+	array(
+		'initial'        => 'M',
+		'name'           => 'Dr Magdalena Wiśniewska',
+		'specialization' => 'Finanse, kredyty',
+		'city'           => 'Poznań',
+		'rating'         => '4.7',
+		'reviews'        => 84,
+		'category'       => 'Finanse',
+		'profile_url'    => home_url( '/specjalista/magdalena-wisniewska/' ),
+	),
+	array(
+		'initial'        => 'T',
+		'name'           => 'Arch. Tomasz Zieliński',
+		'specialization' => 'Architektura, projekty',
+		'city'           => 'Wrocław',
+		'rating'         => '4.9',
+		'reviews'        => 112,
+		'category'       => 'Architektura',
+		'profile_url'    => home_url( '/specjalista/tomasz-zielinski/' ),
+	),
+	array(
+		'initial'        => 'K',
+		'name'           => 'Mgr Karolina Dąbrowska',
+		'specialization' => 'Nieruchomości, wyceny',
+		'city'           => 'Gdańsk',
+		'rating'         => '4.6',
+		'reviews'        => 73,
+		'category'       => 'Nieruchomości',
+		'profile_url'    => home_url( '/specjalista/karolina-dabrowska/' ),
+	),
+	array(
+		'initial'        => 'M',
+		'name'           => 'Inż. Marek Kowalczyk',
+		'specialization' => 'Instalacje, ogrzewanie',
+		'city'           => 'Katowice',
+		'rating'         => '4.8',
+		'reviews'        => 101,
+		'category'       => 'Instalacje',
+		'profile_url'    => home_url( '/specjalista/marek-kowalczyk/' ),
+	),
+);
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Eksperci – Poradnik.pro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1a1a2e;
-            background: #f8f9fc;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { text-decoration: none; color: inherit; }
-        button { cursor: pointer; border: none; font-family: inherit; }
-        ul { list-style: none; }
-
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --orange-hover: #ea580c;
-            --blue-accent: #3b82f6;
-            --green-accent: #10b981;
-            --yellow-accent: #f59e0b;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --max-width: 1200px;
-        }
-
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
-
-        /* ===== HEADER ===== */
-        .site-header { background: #fff; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-        .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--gray-900); }
-        .logo-icon { width: 32px; height: 32px; background: linear-gradient(135deg, var(--purple-primary), var(--purple-light)); border-radius: 8px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 16px; }
-        .main-nav { display: flex; align-items: center; gap: 28px; }
-        .main-nav a { font-size: 14px; font-weight: 500; color: var(--gray-600); transition: color 0.2s; }
-        .main-nav a:hover { color: var(--purple-primary); }
-        .main-nav a.active { color: var(--purple-primary); font-weight: 600; }
-        .header-actions { display: flex; align-items: center; gap: 16px; }
-        .btn-find-specialist { background: var(--purple-primary); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .btn-find-specialist:hover { background: var(--purple-dark); }
-
-        /* ===== PAGE HERO ===== */
-        .page-hero { background: linear-gradient(135deg, #ede9fe 0%, #f3e8ff 100%); padding: 48px 0; }
-        .page-hero h1 { font-size: 32px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; }
-        .page-hero p { font-size: 16px; color: var(--gray-600); max-width: 560px; }
-        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-400); margin-bottom: 16px; }
-        .breadcrumb a { color: var(--gray-500); }
-        .breadcrumb a:hover { color: var(--purple-primary); }
-        .breadcrumb .sep { color: var(--gray-300); }
-
-        /* ===== SEARCH ===== */
-        .experts-search {
-            background: #fff;
-            border-bottom: 1px solid var(--gray-200);
-            padding: 20px 0;
-        }
-        .search-inner {
-            display: flex;
-            gap: 12px;
-        }
-        .search-input {
-            flex: 1;
-            padding: 12px 20px;
-            border: 1px solid var(--gray-200);
-            border-radius: 50px;
-            font-size: 14px;
-            color: var(--gray-700);
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        .search-input:focus { border-color: var(--purple-primary); }
-        .search-input::placeholder { color: var(--gray-400); }
-        .search-select {
-            padding: 12px 20px;
-            border: 1px solid var(--gray-200);
-            border-radius: 50px;
-            font-size: 14px;
-            color: var(--gray-600);
-            background: #fff;
-            min-width: 180px;
-            outline: none;
-        }
-        .btn-search-experts {
-            background: var(--orange-cta);
-            color: #fff;
-            padding: 12px 28px;
-            border-radius: 50px;
-            font-size: 14px;
-            font-weight: 600;
-            transition: background 0.2s;
-        }
-        .btn-search-experts:hover { background: var(--orange-hover); }
-
-        /* ===== EXPERTS GRID ===== */
-        .experts-section { padding: 48px 0; }
-        .experts-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 24px;
-        }
-        .expert-card {
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            padding: 28px;
-            text-align: center;
-            transition: box-shadow 0.2s, transform 0.2s;
-        }
-        .expert-card:hover {
-            box-shadow: var(--shadow-md);
-            transform: translateY(-2px);
-        }
-        .expert-avatar {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            background: var(--gray-200);
-            margin: 0 auto 14px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            color: var(--gray-500);
-        }
-        .expert-verified {
-            display: inline-flex;
-            align-items: center;
-            gap: 4px;
-            padding: 3px 10px;
-            border-radius: 50px;
-            font-size: 10px;
-            font-weight: 600;
-            background: #d1fae5;
-            color: #059669;
-            margin-bottom: 10px;
-        }
-        .expert-name { font-size: 16px; font-weight: 700; color: var(--gray-900); margin-bottom: 4px; }
-        .expert-specialty { font-size: 13px; color: var(--purple-primary); font-weight: 500; margin-bottom: 8px; }
-        .expert-rating {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 13px;
-            color: var(--gray-600);
-            margin-bottom: 6px;
-        }
-        .expert-stars { color: var(--yellow-accent); }
-        .expert-location { font-size: 12px; color: var(--gray-400); margin-bottom: 16px; }
-        .expert-tags { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; margin-bottom: 16px; }
-        .expert-tag { padding: 4px 10px; border-radius: 50px; font-size: 11px; background: var(--gray-100); color: var(--gray-600); }
-        .btn-contact {
-            display: inline-block;
-            background: var(--purple-primary);
-            color: #fff;
-            padding: 10px 24px;
-            border-radius: 50px;
-            font-size: 13px;
-            font-weight: 600;
-            transition: background 0.2s;
-            width: 100%;
-        }
-        .btn-contact:hover { background: var(--purple-dark); }
-
-        /* ===== CTA SECTION ===== */
-        .cta-section {
-            background: linear-gradient(135deg, #1a0a3e, #6c2bd9);
-            border-radius: var(--radius-lg);
-            padding: 48px;
-            text-align: center;
-            margin: 40px 0;
-        }
-        .cta-section h2 { color: #fff; font-size: 24px; font-weight: 800; margin-bottom: 12px; }
-        .cta-section p { color: rgba(255,255,255,0.7); font-size: 15px; margin-bottom: 24px; }
-        .btn-cta {
-            display: inline-block;
-            background: var(--orange-cta);
-            color: #fff;
-            padding: 14px 36px;
-            border-radius: 50px;
-            font-size: 15px;
-            font-weight: 700;
-            transition: background 0.2s;
-        }
-        .btn-cta:hover { background: var(--orange-hover); }
-
-        /* ===== FOOTER ===== */
-        .site-footer { background: var(--gray-900); color: rgba(255,255,255,0.6); padding: 48px 0 24px; }
-        .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.5); transition: color 0.2s; }
-        .footer-links a:hover { color: #fff; }
-
-        @media (max-width: 768px) {
-            .experts-grid { grid-template-columns: 1fr; }
-            .search-inner { flex-direction: column; }
-            .main-nav { display: none; }
-        }
-    </style>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<?php pp_pro_shared_styles(); ?>
+	<style>
+		.experts-search {
+			background: #fff;
+			border-bottom: 1px solid var(--gray-200);
+			padding: 20px 0;
+		}
+		.search-inner {
+			display: grid;
+			grid-template-columns: minmax(0, 1.6fr) repeat(2, minmax(180px, 1fr)) auto;
+			gap: 12px;
+		}
+		.search-input,
+		.search-select {
+			width: 100%;
+			padding: 13px 18px;
+			border: 1px solid var(--gray-200);
+			border-radius: 999px;
+			font: inherit;
+			color: var(--gray-700);
+			background: #fff;
+		}
+		.search-input:focus,
+		.search-select:focus {
+			outline: none;
+			border-color: var(--purple-primary);
+			box-shadow: 0 0 0 3px rgba(108, 43, 217, 0.12);
+		}
+		.search-input::placeholder {
+			color: var(--gray-400);
+		}
+		.btn-search-experts {
+			padding: 13px 28px;
+			border-radius: 999px;
+			background: var(--orange-cta);
+			color: #fff;
+			font-size: 14px;
+			font-weight: 700;
+			transition: background 0.2s ease;
+		}
+		.btn-search-experts:hover {
+			background: var(--orange-hover);
+		}
+		.category-filter {
+			padding: 18px 0 0;
+		}
+		.category-filter-label {
+			display: block;
+			font-size: 13px;
+			font-weight: 700;
+			color: var(--gray-600);
+			margin-bottom: 12px;
+		}
+		.category-filter-list {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 10px;
+		}
+		.category-chip {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			padding: 9px 16px;
+			border-radius: 999px;
+			border: 1px solid var(--gray-200);
+			background: #fff;
+			font-size: 13px;
+			font-weight: 600;
+			color: var(--gray-600);
+			transition: all 0.2s ease;
+		}
+		.category-chip:hover {
+			border-color: var(--purple-primary);
+			color: var(--purple-primary);
+		}
+		.category-chip.active {
+			background: var(--purple-primary);
+			border-color: var(--purple-primary);
+			color: #fff;
+		}
+		.experts-section {
+			padding: 48px 0 64px;
+		}
+		.experts-grid {
+			display: grid;
+			grid-template-columns: repeat(3, minmax(0, 1fr));
+			gap: 24px;
+		}
+		.expert-card {
+			background: #fff;
+			border: 1px solid var(--gray-200);
+			border-radius: var(--radius-lg);
+			padding: 28px;
+			box-shadow: var(--shadow-sm);
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+		.expert-card:hover {
+			transform: translateY(-3px);
+			box-shadow: var(--shadow-md);
+		}
+		.expert-top {
+			display: flex;
+			align-items: center;
+			gap: 16px;
+			margin-bottom: 18px;
+		}
+		.expert-avatar {
+			width: 68px;
+			height: 68px;
+			border-radius: 50%;
+			background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
+			color: #fff;
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			font-size: 28px;
+			font-weight: 800;
+			flex-shrink: 0;
+		}
+		.expert-category {
+			display: inline-flex;
+			padding: 5px 10px;
+			border-radius: 999px;
+			background: rgba(59, 130, 246, 0.1);
+			color: var(--blue-accent);
+			font-size: 11px;
+			font-weight: 700;
+			margin-bottom: 10px;
+		}
+		.expert-name {
+			font-size: 19px;
+			font-weight: 700;
+			color: var(--gray-900);
+			margin-bottom: 6px;
+		}
+		.expert-specialization {
+			font-size: 14px;
+			color: var(--purple-primary);
+			font-weight: 600;
+			margin-bottom: 14px;
+		}
+		.expert-meta {
+			display: grid;
+			gap: 10px;
+			margin-bottom: 22px;
+		}
+		.expert-meta-item {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+			font-size: 14px;
+			color: var(--gray-600);
+		}
+		.expert-meta-item strong {
+			color: var(--gray-900);
+		}
+		.expert-rating {
+			color: var(--yellow-accent);
+			font-weight: 700;
+		}
+		.btn-profile {
+			display: inline-flex;
+			align-items: center;
+			justify-content: center;
+			width: 100%;
+			padding: 12px 20px;
+			border-radius: 999px;
+			background: var(--purple-primary);
+			color: #fff;
+			font-size: 14px;
+			font-weight: 700;
+			transition: background 0.2s ease;
+		}
+		.btn-profile:hover {
+			background: var(--purple-dark);
+		}
+		@media (max-width: 1024px) {
+			.search-inner {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+			.experts-grid {
+				grid-template-columns: repeat(2, minmax(0, 1fr));
+			}
+		}
+		@media (max-width: 768px) {
+			.search-inner,
+			.experts-grid {
+				grid-template-columns: 1fr;
+			}
+			.expert-top {
+				align-items: flex-start;
+			}
+		}
+	</style>
+	<?php wp_head(); ?>
 </head>
-<body>
-
-<!-- HEADER -->
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a href="/" class="logo"><div class="logo-icon">P</div> Poradnik.pro</a>
-            <nav class="main-nav">
-                <a href="/poradniki">Poradniki</a>
-                <a href="/porownania">Porównania</a>
-                <a href="/rankingi">Rankingi</a>
-                <a href="/kalkulatory">Kalkulatory</a>
-                <a href="/eksperci" class="active">Eksperci</a>
-            </nav>
-            <div class="header-actions">
-                <a href="/dla-specjalistow" class="btn-find-specialist">Dla specjalistów</a>
-            </div>
-        </div>
-    </div>
-</header>
-
-<!-- PAGE HERO -->
+<body <?php body_class( 'poradnik-pro-eksperci-page' ); ?>>
+<?php wp_body_open(); pp_pro_header( 'specjalisci' ); ?>
 <section class="page-hero">
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="/">Strona główna</a>
-            <span class="sep">/</span>
-            <span>Eksperci</span>
-        </div>
-        <h1>🧑‍💼 Eksperci</h1>
-        <p>Decyzja to dopiero początek — teraz wykonanie. Profile specjalistów, opinie użytkowników, szybkie zapytania.</p>
-    </div>
+	<div class="container">
+		<div class="breadcrumb">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona główna</a>
+			<span class="sep">/</span>
+			<span>Eksperci</span>
+		</div>
+		<h1>Znajdź sprawdzonego eksperta</h1>
+		<p>Ponad 500 zweryfikowanych specjalistów z całej Polski. Wybierz dziedzinę i znajdź pomoc.</p>
+	</div>
 </section>
-
-<!-- SEARCH -->
-<div class="experts-search">
-    <div class="container">
-        <div class="search-inner">
-            <input type="text" class="search-input" placeholder="Szukaj specjalisty, np. prawnik Katowice..." aria-label="Szukaj specjalisty">
-            <select class="search-select" aria-label="Kategoria">
-                <option>Wszystkie kategorie</option>
-                <option>Prawo</option>
-                <option>Budownictwo</option>
-                <option>Finanse</option>
-                <option>Nieruchomości</option>
-                <option>Zdrowie</option>
-            </select>
-            <button class="btn-search-experts">🔍 Szukaj</button>
-        </div>
-    </div>
-</div>
-
-<!-- EXPERTS GRID -->
+<section class="experts-search">
+	<div class="container">
+		<div class="search-inner">
+			<input class="search-input" type="text" placeholder="Wpisz specjalizację, nazwisko lub miasto">
+			<select class="search-select" aria-label="Dziedzina">
+				<option>Wybierz dziedzinę</option>
+				<option>Prawo</option>
+				<option>Budownictwo</option>
+				<option>Finanse</option>
+				<option>Architektura</option>
+				<option>Nieruchomości</option>
+				<option>Instalacje</option>
+			</select>
+			<select class="search-select" aria-label="Miasto">
+				<option>Cała Polska</option>
+				<option>Warszawa</option>
+				<option>Kraków</option>
+				<option>Poznań</option>
+				<option>Wrocław</option>
+				<option>Gdańsk</option>
+				<option>Katowice</option>
+			</select>
+			<button class="btn-search-experts" type="button">Szukaj eksperta</button>
+		</div>
+		<div class="category-filter">
+			<span class="category-filter-label">Popularne kategorie</span>
+			<div class="category-filter-list">
+				<?php foreach ( $pp_expert_categories as $index => $category ) : ?>
+					<a class="category-chip<?php echo 0 === $index ? ' active' : ''; ?>" href="#">
+						<?php echo esc_html( $category ); ?>
+					</a>
+				<?php endforeach; ?>
+			</div>
+		</div>
+	</div>
+</section>
 <section class="experts-section">
-    <div class="container">
-        <div class="experts-grid">
-            <div class="expert-card">
-                <div class="expert-avatar">👨‍⚖️</div>
-                <span class="expert-verified">✓ Zweryfikowany</span>
-                <h3 class="expert-name">mec. Jan Nowak</h3>
-                <p class="expert-specialty">Prawnik — Prawo rodzinne</p>
-                <div class="expert-rating">
-                    <span class="expert-stars">★★★★★</span>
-                    <span>4.9 (87 opinii)</span>
-                </div>
-                <p class="expert-location">📍 Katowice</p>
-                <div class="expert-tags">
-                    <span class="expert-tag">Rozwód</span>
-                    <span class="expert-tag">Alimenty</span>
-                    <span class="expert-tag">Opieka</span>
-                </div>
-                <a href="#" class="btn-contact">Wyślij zapytanie</a>
-            </div>
-
-            <div class="expert-card">
-                <div class="expert-avatar">👷</div>
-                <span class="expert-verified">✓ Zweryfikowany</span>
-                <h3 class="expert-name">Marek Kowalski</h3>
-                <p class="expert-specialty">Firma remontowa</p>
-                <div class="expert-rating">
-                    <span class="expert-stars">★★★★★</span>
-                    <span>4.8 (142 opinie)</span>
-                </div>
-                <p class="expert-location">📍 Katowice</p>
-                <div class="expert-tags">
-                    <span class="expert-tag">Remont</span>
-                    <span class="expert-tag">Łazienka</span>
-                    <span class="expert-tag">Kuchnia</span>
-                </div>
-                <a href="#" class="btn-contact">Wyślij zapytanie</a>
-            </div>
-
-            <div class="expert-card">
-                <div class="expert-avatar">👨‍💼</div>
-                <span class="expert-verified">✓ Zweryfikowany</span>
-                <h3 class="expert-name">Piotr Wiśniewski</h3>
-                <p class="expert-specialty">Doradca finansowy</p>
-                <div class="expert-rating">
-                    <span class="expert-stars">★★★★★</span>
-                    <span>4.9 (63 opinie)</span>
-                </div>
-                <p class="expert-location">📍 Warszawa</p>
-                <div class="expert-tags">
-                    <span class="expert-tag">Kredyt</span>
-                    <span class="expert-tag">Inwestycje</span>
-                    <span class="expert-tag">Podatki</span>
-                </div>
-                <a href="#" class="btn-contact">Wyślij zapytanie</a>
-            </div>
-
-            <div class="expert-card">
-                <div class="expert-avatar">👩‍🔧</div>
-                <span class="expert-verified">✓ Zweryfikowany</span>
-                <h3 class="expert-name">Anna Zielińska</h3>
-                <p class="expert-specialty">Instalator pomp ciepła</p>
-                <div class="expert-rating">
-                    <span class="expert-stars">★★★★☆</span>
-                    <span>4.7 (45 opinii)</span>
-                </div>
-                <p class="expert-location">📍 Kraków</p>
-                <div class="expert-tags">
-                    <span class="expert-tag">Pompa ciepła</span>
-                    <span class="expert-tag">OZE</span>
-                </div>
-                <a href="#" class="btn-contact">Wyślij zapytanie</a>
-            </div>
-
-            <div class="expert-card">
-                <div class="expert-avatar">👨‍⚕️</div>
-                <span class="expert-verified">✓ Zweryfikowany</span>
-                <h3 class="expert-name">dr Tomasz Baran</h3>
-                <p class="expert-specialty">Stomatolog</p>
-                <div class="expert-rating">
-                    <span class="expert-stars">★★★★★</span>
-                    <span>5.0 (112 opinii)</span>
-                </div>
-                <p class="expert-location">📍 Wrocław</p>
-                <div class="expert-tags">
-                    <span class="expert-tag">Implanty</span>
-                    <span class="expert-tag">Ortodoncja</span>
-                </div>
-                <a href="#" class="btn-contact">Wyślij zapytanie</a>
-            </div>
-
-            <div class="expert-card">
-                <div class="expert-avatar">👩‍💻</div>
-                <span class="expert-verified">✓ Zweryfikowany</span>
-                <h3 class="expert-name">Katarzyna Maj</h3>
-                <p class="expert-specialty">Architekt wnętrz</p>
-                <div class="expert-rating">
-                    <span class="expert-stars">★★★★★</span>
-                    <span>4.8 (78 opinii)</span>
-                </div>
-                <p class="expert-location">📍 Gdańsk</p>
-                <div class="expert-tags">
-                    <span class="expert-tag">Projekt</span>
-                    <span class="expert-tag">Wnętrza</span>
-                    <span class="expert-tag">3D</span>
-                </div>
-                <a href="#" class="btn-contact">Wyślij zapytanie</a>
-            </div>
-        </div>
-
-        <!-- CTA -->
-        <div class="cta-section">
-            <h2>Jeden formularz → kilka ofert → wybór</h2>
-            <p>Opisz swoje potrzeby, a odpowiedni specjaliści skontaktują się z Tobą</p>
-            <a href="#" class="btn-cta">Wyślij zapytanie do ekspertów</a>
-        </div>
-    </div>
+	<div class="container">
+		<div class="experts-grid">
+			<?php foreach ( $pp_experts as $expert ) : ?>
+				<article class="expert-card">
+					<div class="expert-top">
+						<div class="expert-avatar"><?php echo esc_html( $expert['initial'] ); ?></div>
+						<div>
+							<span class="expert-category"><?php echo esc_html( $expert['category'] ); ?></span>
+							<h2 class="expert-name"><?php echo esc_html( $expert['name'] ); ?></h2>
+							<p class="expert-specialization"><?php echo esc_html( $expert['specialization'] ); ?></p>
+						</div>
+					</div>
+					<div class="expert-meta">
+						<div class="expert-meta-item">
+							<span>Miasto</span>
+							<strong><?php echo esc_html( $expert['city'] ); ?></strong>
+						</div>
+						<div class="expert-meta-item">
+							<span>Ocena</span>
+							<strong class="expert-rating">★<?php echo esc_html( $expert['rating'] ); ?></strong>
+						</div>
+						<div class="expert-meta-item">
+							<span>Opinie</span>
+							<strong><?php echo esc_html( number_format_i18n( $expert['reviews'] ) ); ?></strong>
+						</div>
+					</div>
+					<a class="btn-profile" href="<?php echo esc_url( $expert['profile_url'] ); ?>">Zobacz profil</a>
+				</article>
+			<?php endforeach; ?>
+		</div>
+	</div>
 </section>
-
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-bottom">
-            <span>© 2026 Poradnik.pro. Wszelkie prawa zastrzeżone.</span>
-            <div class="footer-links">
-                <a href="#">Regulamin</a>
-                <a href="#">Polityka prywatności</a>
-                <a href="#">Kontakt</a>
-            </div>
-        </div>
-    </div>
-</footer>
-
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>
