@@ -16,6 +16,9 @@ jobs:
   deploy-ftp:
     name: Deploy plugin & theme via FTP
     runs-on: ubuntu-latest
+    env:
+      CONNECT_TIMEOUT_SECONDS: "20"
+      DEPLOY_TIMEOUT_MINUTES: "8"
 
     steps:
       - name: Checkout repository
@@ -46,7 +49,7 @@ jobs:
               ;;
           esac
           # Empty/unset FTP_PROTOCOL falls back to ftp; non-empty invalid values fail above.
-          if [[ ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
+          if [[ -n "${{ secrets.FTP_PORT }}" && ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
             echo "::error::FTP_PORT must be numeric."
             exit 1
           fi
@@ -67,7 +70,7 @@ jobs:
           PORT="${{ secrets.FTP_PORT }}"
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
-          CONNECT_TIMEOUT=20
+          CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
           NETRC_PATH="$RUNNER_TEMP/lftp-netrc"
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
@@ -113,7 +116,7 @@ jobs:
 
       - name: Deploy mu-plugin
         # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
-        timeout-minutes: 8
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
@@ -128,7 +131,7 @@ jobs:
 
       - name: Deploy theme
         # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
-        timeout-minutes: 8
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
