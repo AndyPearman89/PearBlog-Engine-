@@ -28,7 +28,7 @@ define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
 
 // OpenAI API key for AI content generation, auto-replies and strategy.
 // Obtain from https://platform.openai.com/account/api-keys
-define( 'PEARBLOG_OPENAI_API_KEY', 'sk-CHANGE-ME' );
+define( 'PEARBLOG_OPENAI_API_KEY', 'YOUR_OPENAI_API_KEY_HERE' );
 
 /* =====================================================
  * MULTISITE / SaaS – Tenant Isolation
@@ -36,7 +36,7 @@ define( 'PEARBLOG_OPENAI_API_KEY', 'sk-CHANGE-ME' );
 
 // Master secret used for HKDF key derivation in tenant isolation.
 // Generate: openssl rand -hex 32
-define( 'PEARBLOG_MASTER_SECRET', 'CHANGE-ME-64-HEX-CHARS' );
+define( 'PEARBLOG_MASTER_SECRET', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' );
 
 /* =====================================================
  * LOGGING & DIAGNOSTICS
