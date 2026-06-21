@@ -2,169 +2,498 @@
 /**
  * Template Name: Poradnik.PRO - Profil Specjalisty
  * Description: Expert profile page (/specjalista/{slug})
- *
  * @package PearBlog
- * @version 5.0.0
  */
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+
+$expert_name = get_the_title() ?: 'Mec. Anna Kowalska';
+$reviews     = array(
+	array( 'Profesjonalna i rzetelna pomoc. Polecam każdemu kto potrzebuje porady prawnej.', 'Marcin W.', '5/5', '3 dni temu' ),
+	array( 'Szybka i konkretna odpowiedź. Sprawa spadkowa rozwiązana bez problemów.', 'Katarzyna M.', '5/5', '1 tydzień temu' ),
+	array( 'Bardzo pomocna, wyjaśniła wszystkie zawiłości prawne prostym językiem.', 'Tomasz K.', '5/5', '2 tygodnie temu' ),
+);
+$specs       = array( 'Prawo cywilne', 'Prawo spadkowe', 'Prawo rodzinne', 'Umowy', 'Nieruchomości', 'Odszkodowania' );
+$articles    = array(
+	array(
+		'title' => 'Jak napisać testament — krok po kroku',
+		'meta'  => '12 min czytania · 2 450 wyświetleń',
+		'url'   => home_url( '/poradnik/jak-napisac-testament/' ),
+	),
+	array(
+		'title' => 'Spadek — co musisz wiedzieć',
+		'meta'  => '10 min czytania · 1 890 wyświetleń',
+		'url'   => home_url( '/poradnik/spadek-poradnik/' ),
+	),
+);
+$answers     = array(
+	array( 'Czy mogę odziedziczyć długi po rodzicach?', '#' ),
+	array( 'Jak wypisać się z testamentu?', '#' ),
+);
 ?>
 <!DOCTYPE html>
 <html <?php language_attributes(); ?>>
 <head>
-    <meta charset="<?php bloginfo('charset'); ?>">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script>
-        tailwind.config = { theme: { extend: { colors: { brand: { DEFAULT: '#2563EB', dark: '#1D4ED8', light: '#DBEAFE' } }, fontFamily: { display: ['Poppins','system-ui','sans-serif'], body: ['Inter','system-ui','sans-serif'] } } } };
-    </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
+    <style>
+        body {
+            background: linear-gradient(180deg, #ffffff 0%, var(--gray-50) 100%);
+            color: var(--gray-900);
+        }
+
+        .profile-page {
+            min-height: 100vh;
+        }
+
+        .profile-main {
+            padding: 40px 0 72px;
+        }
+
+        .profile-layout {
+            max-width: 880px;
+            margin: 0 auto;
+        }
+
+        .profile-card,
+        .content-card,
+        .contact-card,
+        .lead-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .profile-card {
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+
+        .profile-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 24px;
+        }
+
+        .profile-avatar {
+            width: 96px;
+            height: 96px;
+            border-radius: 28px;
+            background: rgba(108, 43, 217, 0.1);
+            color: var(--purple-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            font-weight: 800;
+            flex-shrink: 0;
+        }
+
+        .profile-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 6px;
+        }
+
+        .profile-title-row h1 {
+            font-size: 34px;
+            line-height: 1.15;
+            font-weight: 800;
+            color: var(--gray-900);
+        }
+
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(16, 185, 129, 0.12);
+            color: #047857;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .profile-subtitle {
+            font-size: 15px;
+            color: var(--gray-500);
+        }
+
+        .stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .stat-item {
+            font-size: 14px;
+            color: var(--gray-500);
+        }
+
+        .stat-item strong {
+            color: var(--gray-900);
+            font-size: 16px;
+            font-weight: 700;
+        }
+
+        .stat-item .rating-value {
+            color: var(--yellow-accent);
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .section-block {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 16px;
+        }
+
+        .review-list,
+        .link-list {
+            display: grid;
+            gap: 16px;
+        }
+
+        .review-card,
+        .link-card {
+            padding: 22px 24px;
+            transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+        }
+
+        .review-card:hover,
+        .link-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: rgba(108, 43, 217, 0.2);
+        }
+
+        .review-meta {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--gray-500);
+            margin-bottom: 10px;
+        }
+
+        .review-score {
+            color: var(--yellow-accent);
+            font-weight: 700;
+        }
+
+        .review-card p {
+            font-size: 15px;
+            line-height: 1.7;
+            color: var(--gray-700);
+        }
+
+        .review-author {
+            margin-top: 12px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--gray-500);
+        }
+
+        .chips {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            min-height: 38px;
+            padding: 0 16px;
+            border-radius: 999px;
+            border: 1px solid var(--gray-200);
+            background: var(--gray-50);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .about-card,
+        .contact-card,
+        .lead-card {
+            padding: 28px;
+        }
+
+        .about-card p {
+            font-size: 15px;
+            line-height: 1.8;
+            color: var(--gray-600);
+        }
+
+        .about-card p + p {
+            margin-top: 12px;
+        }
+
+        .link-card {
+            display: block;
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .link-card:hover .link-title {
+            color: var(--purple-primary);
+        }
+
+        .link-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--gray-900);
+            transition: color 0.2s;
+        }
+
+        .link-card p,
+        .link-meta {
+            margin-top: 6px;
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.6;
+        }
+
+        .contact-card {
+            background: linear-gradient(180deg, #faf7ff 0%, #ffffff 100%);
+        }
+
+        .contact-form {
+            display: grid;
+            gap: 18px;
+        }
+
+        .form-field label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .form-field input,
+        .form-field textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            background: #fff;
+            color: var(--gray-900);
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s, box-shadow 0.2s;
+            resize: vertical;
+        }
+
+        .form-field input:focus,
+        .form-field textarea:focus {
+            outline: none;
+            border-color: var(--purple-primary);
+            box-shadow: 0 0 0 3px rgba(108, 43, 217, 0.12);
+        }
+
+        .form-field input::placeholder,
+        .form-field textarea::placeholder {
+            color: var(--gray-400);
+        }
+
+        .primary-button,
+        .lead-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 13px 24px;
+            border-radius: 999px;
+            background: var(--purple-primary);
+            color: #fff;
+            font-size: 14px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: background 0.2s, transform 0.2s;
+        }
+
+        .primary-button:hover,
+        .lead-button:hover {
+            background: var(--purple-dark);
+            transform: translateY(-1px);
+        }
+
+        .lead-card {
+            text-align: center;
+            background: linear-gradient(135deg, rgba(108, 43, 217, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%);
+        }
+
+        .lead-card h2 {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--gray-900);
+            margin-bottom: 8px;
+        }
+
+        .lead-card p {
+            font-size: 15px;
+            color: var(--gray-600);
+            margin-bottom: 18px;
+        }
+
+        @media (max-width: 768px) {
+            .profile-main {
+                padding: 32px 0 56px;
+            }
+
+            .profile-card,
+            .about-card,
+            .contact-card,
+            .lead-card,
+            .review-card,
+            .link-card {
+                padding: 22px;
+            }
+
+            .profile-head {
+                flex-direction: column;
+            }
+
+            .profile-title-row h1 {
+                font-size: 28px;
+            }
+
+            .section-title,
+            .lead-card h2 {
+                font-size: 22px;
+            }
+
+            .stats-row {
+                gap: 16px;
+            }
+        }
+    </style>
     <?php wp_head(); ?>
 </head>
-<body <?php body_class('bg-white text-slate-900 antialiased font-body'); ?>>
-<?php wp_body_open(); ?>
+<body <?php body_class(); ?>>
+<?php wp_body_open(); pp_pro_header( 'specjalisci' ); ?>
+<div class="profile-page">
+    <main class="profile-main">
+        <div class="container">
+            <div class="profile-layout">
+                <section class="profile-card section-block">
+                    <div class="profile-head">
+                        <div class="profile-avatar"><?php echo esc_html( mb_substr( $expert_name, 0, 1 ) ); ?></div>
+                        <div class="profile-content">
+                            <div class="profile-title-row">
+                                <h1><?php echo esc_html( $expert_name ); ?></h1>
+                                <span class="verified-badge">Zweryfikowany</span>
+                            </div>
+                            <p class="profile-subtitle">Prawo cywilne · Prawo spadkowe · Warszawa</p>
+                            <div class="stats-row" aria-label="Statystyki specjalisty">
+                                <div class="stat-item"><strong class="rating-value">★ 4.9</strong> / 5</div>
+                                <div class="stat-item"><strong>312</strong> odpowiedzi</div>
+                                <div class="stat-item"><strong>98%</strong> poleca</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
-<?php
-$expert_name = get_the_title() ?: 'Mec. Anna Kowalska';
-?>
+                <section class="section-block">
+                    <h2 class="section-title">Opinie (48)</h2>
+                    <div class="review-list">
+                        <?php foreach ( $reviews as $review ) : ?>
+                            <article class="content-card review-card">
+                                <div class="review-meta">
+                                    <span class="review-score"><?php echo esc_html( $review[2] ); ?></span>
+                                    <span>·</span>
+                                    <span><?php echo esc_html( $review[3] ); ?></span>
+                                </div>
+                                <p>„<?php echo esc_html( $review[0] ); ?>”</p>
+                                <div class="review-author">— <?php echo esc_html( $review[1] ); ?></div>
+                            </article>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
 
-<div class="min-h-screen">
-    <header class="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-md">
-        <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-            <a href="<?php echo esc_url(home_url('/')); ?>" class="font-display text-xl font-bold"><span class="text-brand">Poradnik</span>.PRO</a>
-            <a href="/specjalisci/" class="text-sm font-medium text-slate-600 hover:text-brand">Wszyscy specjaliści</a>
+                <section class="section-block">
+                    <h2 class="section-title">Specjalizacje</h2>
+                    <div class="chips">
+                        <?php foreach ( $specs as $spec ) : ?>
+                            <span class="chip"><?php echo esc_html( $spec ); ?></span>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+
+                <section class="section-block">
+                    <h2 class="section-title">O ekspercie</h2>
+                    <div class="content-card about-card">
+                        <p>Adwokat z 15-letnim doświadczeniem. Specjalizuję się w prawie cywilnym, spadkowym i rodzinnym. Ukończyłam Wydział Prawa i Administracji Uniwersytetu Warszawskiego. Członek Okręgowej Rady Adwokackiej w Warszawie.</p>
+                        <p>Na Poradnik.PRO udzielam porad prawnych od 2024 roku. Odpowiedziałam na ponad 300 pytań użytkowników z oceną 4.9/5.</p>
+                    </div>
+                </section>
+
+                <section class="section-block">
+                    <h2 class="section-title">Artykuły</h2>
+                    <div class="link-list">
+                        <?php foreach ( $articles as $article ) : ?>
+                            <a href="<?php echo esc_url( $article['url'] ); ?>" class="content-card link-card">
+                                <h3 class="link-title"><?php echo esc_html( $article['title'] ); ?></h3>
+                                <div class="link-meta"><?php echo esc_html( $article['meta'] ); ?></div>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+
+                <section class="section-block">
+                    <h2 class="section-title">Ostatnie odpowiedzi</h2>
+                    <div class="link-list">
+                        <?php foreach ( $answers as $answer ) : ?>
+                            <a href="<?php echo esc_url( $answer[1] ); ?>" class="content-card link-card">
+                                <p>Odpowiedź na:</p>
+                                <h3 class="link-title"><?php echo esc_html( $answer[0] ); ?></h3>
+                            </a>
+                        <?php endforeach; ?>
+                    </div>
+                </section>
+
+                <section class="section-block">
+                    <div class="contact-card">
+                        <h2 class="section-title">Wyślij wiadomość</h2>
+                        <form class="contact-form">
+                            <div class="form-field">
+                                <label for="temat">Temat</label>
+                                <input type="text" id="temat" name="temat" required placeholder="Czego dotyczy Twoje pytanie?">
+                            </div>
+                            <div class="form-field">
+                                <label for="wiadomosc">Wiadomość</label>
+                                <textarea id="wiadomosc" name="wiadomosc" required rows="4" placeholder="Opisz swoją sytuację…"></textarea>
+                            </div>
+                            <div>
+                                <button type="submit" class="primary-button">Wyślij wiadomość</button>
+                            </div>
+                        </form>
+                    </div>
+                </section>
+
+                <section class="section-block">
+                    <div class="lead-card">
+                        <h2>Potrzebujesz pilnej porady?</h2>
+                        <p>Zadaj pytanie publicznie — eksperci odpowiedzą w ciągu 24h.</p>
+                        <a href="<?php echo esc_url( home_url( '/zadaj-pytanie/' ) ); ?>" class="lead-button">Zadaj pytanie →</a>
+                    </div>
+                </section>
+            </div>
         </div>
-    </header>
-
-    <main class="mx-auto max-w-4xl px-4 py-10 sm:px-6 lg:px-8">
-        <!-- HERO -->
-        <section class="mb-10 rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
-            <div class="flex flex-col items-start gap-6 sm:flex-row">
-                <!-- ZDJĘCIE -->
-                <div class="flex h-24 w-24 shrink-0 items-center justify-center rounded-2xl bg-brand/10 text-3xl font-bold text-brand">
-                    <?php echo esc_html(mb_substr($expert_name, 0, 1)); ?>
-                </div>
-                <div class="flex-1">
-                    <div class="flex items-center gap-3">
-                        <h1 class="font-display text-2xl font-bold"><?php echo esc_html($expert_name); ?></h1>
-                        <span class="rounded-full bg-green-100 px-2.5 py-1 text-xs font-semibold text-green-700">Zweryfikowany</span>
-                    </div>
-                    <p class="mt-1 text-sm text-slate-500">Prawo cywilne · Prawo spadkowe · Warszawa</p>
-
-                    <!-- OCENY -->
-                    <div class="mt-4 flex items-center gap-6 text-sm">
-                        <div><span class="text-lg font-bold text-amber-500">★ 4.9</span><span class="text-slate-500"> / 5</span></div>
-                        <div><span class="font-bold">312</span> <span class="text-slate-500">odpowiedzi</span></div>
-                        <div><span class="font-bold">98%</span> <span class="text-slate-500">poleca</span></div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- OPINIE -->
-        <section class="mb-10">
-            <h2 class="mb-4 font-display text-xl font-bold">Opinie (48)</h2>
-            <div class="space-y-4">
-                <?php
-                $reviews = [
-                    ['Profesjonalna i rzetelna pomoc. Polecam każdemu kto potrzebuje porady prawnej.', 'Marcin W.', '5/5', '3 dni temu'],
-                    ['Szybka i konkretna odpowiedź. Sprawa spadkowa rozwiązana bez problemów.', 'Katarzyna M.', '5/5', '1 tydzień temu'],
-                    ['Bardzo pomocna, wyjaśniła wszystkie zawiłości prawne prostym językiem.', 'Tomasz K.', '5/5', '2 tygodnie temu'],
-                ];
-                foreach ($reviews as $r) :
-                ?>
-                <article class="rounded-xl border border-slate-200 p-5">
-                    <div class="flex items-center gap-2 text-xs text-slate-500">
-                        <span class="font-semibold text-amber-500"><?php echo esc_html($r[2]); ?></span>
-                        <span>·</span>
-                        <span><?php echo esc_html($r[3]); ?></span>
-                    </div>
-                    <p class="mt-2 text-sm text-slate-700">„<?php echo esc_html($r[0]); ?>"</p>
-                    <p class="mt-2 text-xs font-medium text-slate-500">— <?php echo esc_html($r[1]); ?></p>
-                </article>
-                <?php endforeach; ?>
-            </div>
-        </section>
-
-        <!-- SPECJALIZACJE -->
-        <section class="mb-10">
-            <h2 class="mb-4 font-display text-xl font-bold">Specjalizacje</h2>
-            <div class="flex flex-wrap gap-2">
-                <?php
-                $specs = ['Prawo cywilne', 'Prawo spadkowe', 'Prawo rodzinne', 'Umowy', 'Nieruchomości', 'Odszkodowania'];
-                foreach ($specs as $sp) :
-                ?>
-                <span class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-medium text-slate-700"><?php echo esc_html($sp); ?></span>
-                <?php endforeach; ?>
-            </div>
-        </section>
-
-        <!-- O EKSPERCIE -->
-        <section class="mb-10">
-            <h2 class="mb-4 font-display text-xl font-bold">O ekspercie</h2>
-            <div class="text-sm leading-relaxed text-slate-600">
-                <p>Adwokat z 15-letnim doświadczeniem. Specjalizuję się w prawie cywilnym, spadkowym i rodzinnym. Ukończyłam Wydział Prawa i Administracji Uniwersytetu Warszawskiego. Członek Okręgowej Rady Adwokackiej w Warszawie.</p>
-                <p class="mt-2">Na Poradnik.PRO udzielam porad prawnych od 2024 roku. Odpowiedziałam na ponad 300 pytań użytkowników z oceną 4.9/5.</p>
-            </div>
-        </section>
-
-        <!-- ARTYKUŁY EKSPERTA -->
-        <section class="mb-10">
-            <h2 class="mb-4 font-display text-xl font-bold">Artykuły</h2>
-            <div class="space-y-3">
-                <a href="/poradnik/jak-napisac-testament/" class="block rounded-lg border border-slate-200 p-4 hover:shadow-sm">
-                    <h3 class="text-sm font-semibold">Jak napisać testament — krok po kroku</h3>
-                    <p class="mt-1 text-xs text-slate-400">12 min czytania · 2 450 wyświetleń</p>
-                </a>
-                <a href="/poradnik/spadek-poradnik/" class="block rounded-lg border border-slate-200 p-4 hover:shadow-sm">
-                    <h3 class="text-sm font-semibold">Spadek — co musisz wiedzieć</h3>
-                    <p class="mt-1 text-xs text-slate-400">10 min czytania · 1 890 wyświetleń</p>
-                </a>
-            </div>
-        </section>
-
-        <!-- ODPOWIEDZI EKSPERTA -->
-        <section class="mb-10">
-            <h2 class="mb-4 font-display text-xl font-bold">Ostatnie odpowiedzi</h2>
-            <div class="space-y-3">
-                <a href="#" class="block rounded-lg border border-slate-200 p-4 hover:shadow-sm">
-                    <p class="text-xs text-slate-500">Odpowiedź na:</p>
-                    <h3 class="mt-0.5 text-sm font-semibold">Czy mogę odziedziczyć długi po rodzicach?</h3>
-                </a>
-                <a href="#" class="block rounded-lg border border-slate-200 p-4 hover:shadow-sm">
-                    <p class="text-xs text-slate-500">Odpowiedź na:</p>
-                    <h3 class="mt-0.5 text-sm font-semibold">Jak wypisać się z testamentu?</h3>
-                </a>
-            </div>
-        </section>
-
-        <!-- FORMULARZ KONTAKTOWY -->
-        <section class="mb-10 rounded-2xl border border-slate-200 bg-slate-50 p-6">
-            <h2 class="mb-4 font-display text-xl font-bold">Wyślij wiadomość</h2>
-            <form class="space-y-4">
-                <div>
-                    <label for="temat" class="block text-sm font-medium text-slate-700">Temat</label>
-                    <input type="text" id="temat" name="temat" required placeholder="Czego dotyczy Twoje pytanie?" class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none">
-                </div>
-                <div>
-                    <label for="wiadomosc" class="block text-sm font-medium text-slate-700">Wiadomość</label>
-                    <textarea id="wiadomosc" name="wiadomosc" required rows="4" placeholder="Opisz swoją sytuację…" class="mt-1 w-full rounded-lg border border-slate-200 px-4 py-2.5 text-sm focus:border-brand focus:ring-2 focus:ring-brand/20 focus:outline-none resize-y"></textarea>
-                </div>
-                <button type="submit" class="rounded-lg bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">Wyślij wiadomość</button>
-            </form>
-        </section>
-
-        <!-- LEAD ENGINE -->
-        <section class="rounded-2xl bg-brand-light/50 p-6 text-center">
-            <h2 class="font-display text-lg font-bold">Potrzebujesz pilnej porady?</h2>
-            <p class="mt-1 text-sm text-slate-600">Zadaj pytanie publicznie — eksperci odpowiedzą w ciągu 24h.</p>
-            <a href="/zadaj-pytanie/" class="mt-4 inline-block rounded-lg bg-brand px-6 py-2.5 text-sm font-semibold text-white hover:bg-brand-dark">Zadaj pytanie →</a>
-        </section>
     </main>
-
-    <footer class="mt-10 border-t border-slate-100 py-8 text-center text-xs text-slate-400">
-        &copy; <?php echo esc_html(gmdate('Y')); ?> Poradnik.PRO
-    </footer>
 </div>
-
-<?php wp_footer(); ?>
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>

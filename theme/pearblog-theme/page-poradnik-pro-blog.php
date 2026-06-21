@@ -1,443 +1,399 @@
+<?php
+/**
+ * Template Name: Poradnik.PRO - Blog
+ * Description: Blog i aktualności Poradnik.PRO.
+ *
+ * @package PearBlog
+ */
+
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+
+$pp_blog_featured = array(
+	'category' => 'Energia',
+	'title'    => 'Jak wybrać pompę ciepła w 2026 roku — kompletny poradnik',
+	'excerpt'  => 'Sprawdź, jakie parametry mają dziś największy wpływ na koszt ogrzewania, poziom dotacji i komfort użytkowania. Omawiamy dobór mocy, typy urządzeń i najczęstsze błędy inwestorów.',
+	'date'     => '18 czerwca 2026',
+	'read'     => '8 min',
+	'icon'     => '♨️',
+);
+
+$pp_blog_articles = array(
+	array(
+		'category' => 'Prawo',
+		'title'    => 'Nowe przepisy budowlane 2026 — co się zmienia?',
+		'excerpt'  => 'Najważniejsze zmiany dla inwestorów, właścicieli domów i ekip wykonawczych: formalności, dokumentacja i terminy.',
+		'date'     => '15 czerwca 2026',
+		'read'     => '5 min',
+		'icon'     => '⚖️',
+	),
+	array(
+		'category' => 'Finanse',
+		'title'    => 'Kredyt hipoteczny czy gotówkowy — porównanie',
+		'excerpt'  => 'Które rozwiązanie lepiej sprawdza się przy remoncie, zakupie działki lub sfinansowaniu wkładu własnego?',
+		'date'     => '12 czerwca 2026',
+		'read'     => '6 min',
+		'icon'     => '💳',
+	),
+	array(
+		'category' => 'Energia',
+		'title'    => 'Fotowoltaika — czy wciąż się opłaca?',
+		'excerpt'  => 'Aktualne koszty instalacji, ceny energii i okres zwrotu dla domu jednorodzinnego w realiach 2026 roku.',
+		'date'     => '9 czerwca 2026',
+		'read'     => '7 min',
+		'icon'     => '☀️',
+	),
+	array(
+		'category' => 'Budownictwo',
+		'title'    => 'Remont łazienki — koszty i planowanie',
+		'excerpt'  => 'Od harmonogramu prac po wybór materiałów: ile dziś kosztuje remont łazienki i jak ograniczyć ryzyko opóźnień.',
+		'date'     => '5 czerwca 2026',
+		'read'     => '4 min',
+		'icon'     => '🛁',
+	),
+);
+
+$pp_blog_categories = array(
+	array( 'name' => 'Energia', 'count' => 24 ),
+	array( 'name' => 'Budownictwo', 'count' => 19 ),
+	array( 'name' => 'Finanse', 'count' => 17 ),
+	array( 'name' => 'Prawo', 'count' => 15 ),
+	array( 'name' => 'Nieruchomości', 'count' => 12 ),
+);
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blog i Aktualności – Poradnik.pro</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        /* ===== RESET & BASE ===== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1a1a2e;
-            background: #f8f9fc;
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { text-decoration: none; color: inherit; }
-        img { max-width: 100%; height: auto; display: block; }
-        button { cursor: pointer; border: none; font-family: inherit; }
-        ul { list-style: none; }
-
-        /* ===== VARIABLES ===== */
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --orange-hover: #ea580c;
-            --blue-accent: #3b82f6;
-            --green-accent: #10b981;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
-            --max-width: 1200px;
-        }
-
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
-
-        /* ===== HEADER ===== */
-        .site-header { background: #fff; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-        .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--gray-900); }
-        .logo-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--purple-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; }
-        .main-nav { display: flex; gap: 28px; }
-        .main-nav a { font-size: 14px; font-weight: 500; color: var(--gray-600); transition: color 0.2s; }
-        .main-nav a:hover, .main-nav a.active { color: var(--purple-primary); }
-        .header-actions { display: flex; align-items: center; gap: 12px; }
-        .btn-find-specialist { background: var(--purple-primary); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .btn-find-specialist:hover { background: var(--purple-dark); }
-
-        /* ===== PAGE HERO ===== */
-        .page-hero { background: linear-gradient(135deg, #ede9fe 0%, #dbeafe 100%); padding: 48px 0; }
-        .page-hero h1 { font-size: 32px; font-weight: 800; color: var(--gray-900); margin-bottom: 8px; }
-        .page-hero p { font-size: 16px; color: var(--gray-600); max-width: 560px; }
-        .breadcrumb { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--gray-400); margin-bottom: 16px; }
-        .breadcrumb a { color: var(--gray-500); transition: color 0.2s; }
-        .breadcrumb a:hover { color: var(--purple-primary); }
-        .breadcrumb .sep { color: var(--gray-300); }
-
-        /* ===== BLOG LAYOUT ===== */
-        .blog-layout { display: grid; grid-template-columns: 1fr 320px; gap: 40px; padding: 48px 0; align-items: start; }
-
-        /* ===== FEATURED POST ===== */
-        .featured-post {
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-lg);
-            overflow: hidden;
-            margin-bottom: 32px;
-            transition: box-shadow 0.2s;
-        }
-        .featured-post:hover { box-shadow: var(--shadow-md); }
-        .featured-post-image {
-            height: 240px;
-            background: linear-gradient(135deg, #6c2bd9, #3b82f6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 64px;
-            position: relative;
-        }
-        .featured-label {
-            position: absolute;
-            top: 16px;
-            left: 16px;
-            background: var(--orange-cta);
-            color: #fff;
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 11px;
-            font-weight: 700;
-        }
-        .featured-post-body { padding: 28px; }
-        .featured-post-body .post-category { display: inline-block; padding: 4px 10px; border-radius: 50px; font-size: 11px; font-weight: 600; background: #f3e8ff; color: var(--purple-primary); margin-bottom: 12px; }
-        .featured-post-body h2 { font-size: 22px; font-weight: 700; color: var(--gray-900); margin-bottom: 10px; }
-        .featured-post-body p { font-size: 14px; color: var(--gray-600); line-height: 1.6; margin-bottom: 16px; }
-        .post-meta { display: flex; align-items: center; gap: 16px; font-size: 12px; color: var(--gray-400); }
-
-        /* ===== POST CARDS ===== */
-        .posts-grid { display: flex; flex-direction: column; gap: 20px; }
-        .post-card {
-            display: grid;
-            grid-template-columns: 180px 1fr;
-            gap: 20px;
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-md);
-            overflow: hidden;
-            transition: box-shadow 0.2s, transform 0.2s;
-        }
-        .post-card:hover { box-shadow: var(--shadow-md); transform: translateY(-1px); }
-        .post-card-image {
-            height: 100%;
-            min-height: 140px;
-            background: linear-gradient(135deg, #ede9fe, #dbeafe);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-        }
-        .post-card-body { padding: 20px 20px 20px 0; display: flex; flex-direction: column; justify-content: center; }
-        .post-card-body .post-category { display: inline-block; padding: 3px 8px; border-radius: 50px; font-size: 10px; font-weight: 600; background: #dbeafe; color: var(--blue-accent); margin-bottom: 8px; width: fit-content; }
-        .post-card-body h3 { font-size: 16px; font-weight: 600; color: var(--gray-900); margin-bottom: 6px; line-height: 1.3; }
-        .post-card-body p { font-size: 13px; color: var(--gray-500); margin-bottom: 10px; }
-
-        /* ===== SIDEBAR ===== */
-        .blog-sidebar { position: sticky; top: 88px; }
-        .sidebar-widget {
-            background: #fff;
-            border: 1px solid var(--gray-200);
-            border-radius: var(--radius-md);
-            padding: 24px;
-            margin-bottom: 20px;
-        }
-        .sidebar-widget h4 { font-size: 14px; font-weight: 700; color: var(--gray-900); margin-bottom: 16px; }
-
-        .category-list { display: flex; flex-direction: column; gap: 10px; }
-        .category-link { display: flex; align-items: center; justify-content: space-between; font-size: 13px; color: var(--gray-600); padding: 8px 12px; border-radius: var(--radius-sm); transition: background 0.2s; }
-        .category-link:hover { background: var(--gray-50); color: var(--purple-primary); }
-        .category-count { background: var(--gray-100); padding: 2px 8px; border-radius: 50px; font-size: 11px; font-weight: 600; color: var(--gray-500); }
-
-        .popular-posts { display: flex; flex-direction: column; gap: 14px; }
-        .popular-post { display: flex; gap: 12px; align-items: center; }
-        .popular-post-num { width: 28px; height: 28px; border-radius: 50%; background: var(--purple-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-        .popular-post-title { font-size: 13px; color: var(--gray-700); font-weight: 500; line-height: 1.3; }
-
-        .newsletter-widget { background: linear-gradient(135deg, #1a0a3e, #6c2bd9); border: none; }
-        .newsletter-widget h4 { color: #fff; }
-        .newsletter-widget p { font-size: 13px; color: rgba(255,255,255,0.7); margin-bottom: 14px; }
-        .newsletter-input { width: 100%; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.2); border-radius: var(--radius-sm); background: rgba(255,255,255,0.1); color: #fff; font-size: 13px; margin-bottom: 10px; }
-        .newsletter-input::placeholder { color: rgba(255,255,255,0.5); }
-        .newsletter-btn { width: 100%; padding: 10px; border-radius: var(--radius-sm); background: var(--orange-cta); color: #fff; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .newsletter-btn:hover { background: var(--orange-hover); }
-
-        /* ===== PAGINATION ===== */
-        .pagination { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 40px 0 0; }
-        .page-btn { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; font-weight: 500; color: var(--gray-600); border: 1px solid var(--gray-200); background: #fff; transition: all 0.2s; }
-        .page-btn:hover { border-color: var(--purple-primary); color: var(--purple-primary); }
-        .page-btn.active { background: var(--purple-primary); color: #fff; border-color: var(--purple-primary); }
-
-        /* ===== FOOTER ===== */
-        .site-footer { background: var(--gray-900); color: rgba(255,255,255,0.6); padding: 48px 0 24px; }
-        .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.5); transition: color 0.2s; }
-        .footer-links a:hover { color: #fff; }
-
-        @media (max-width: 900px) {
-            .blog-layout { grid-template-columns: 1fr; }
-            .blog-sidebar { position: static; }
-            .post-card { grid-template-columns: 1fr; }
-            .post-card-image { min-height: 160px; }
-            .post-card-body { padding: 16px; }
-            .main-nav { display: none; }
-        }
-    </style>
+	<meta charset="<?php bloginfo( 'charset' ); ?>">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+	<?php pp_pro_shared_styles(); ?>
+	<style>
+		.blog-nav-strip {
+			background: #fff;
+			border-bottom: 1px solid var(--gray-200);
+		}
+		.blog-nav-inline {
+			display: flex;
+			align-items: center;
+			gap: 20px;
+			height: 52px;
+		}
+		.blog-nav-link {
+			position: relative;
+			display: inline-flex;
+			align-items: center;
+			height: 100%;
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--purple-primary);
+		}
+		.blog-nav-link::after {
+			content: '';
+			position: absolute;
+			left: 0;
+			right: 0;
+			bottom: 0;
+			height: 3px;
+			border-radius: 999px 999px 0 0;
+			background: var(--purple-primary);
+		}
+		.blog-layout {
+			display: grid;
+			grid-template-columns: minmax(0, 1.85fr) minmax(280px, 0.85fr);
+			gap: 36px;
+			padding: 48px 0 64px;
+			align-items: start;
+		}
+		.featured-post,
+		.post-card,
+		.sidebar-widget {
+			background: #fff;
+			border: 1px solid var(--gray-200);
+			border-radius: var(--radius-lg);
+			box-shadow: var(--shadow-sm);
+		}
+		.featured-post {
+			overflow: hidden;
+			margin-bottom: 28px;
+		}
+		.featured-media {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			height: 260px;
+			background: linear-gradient(135deg, var(--purple-primary), var(--blue-accent));
+			color: #fff;
+			font-size: 72px;
+			position: relative;
+		}
+		.featured-label {
+			position: absolute;
+			top: 18px;
+			left: 18px;
+			padding: 6px 12px;
+			border-radius: 999px;
+			background: var(--orange-cta);
+			color: #fff;
+			font-size: 11px;
+			font-weight: 800;
+			letter-spacing: 0.02em;
+		}
+		.featured-body {
+			padding: 28px;
+		}
+		.post-category {
+			display: inline-flex;
+			padding: 5px 10px;
+			border-radius: 999px;
+			background: rgba(108, 43, 217, 0.1);
+			color: var(--purple-primary);
+			font-size: 11px;
+			font-weight: 700;
+			margin-bottom: 14px;
+		}
+		.featured-body h2 {
+			font-size: 28px;
+			line-height: 1.2;
+			font-weight: 800;
+			color: var(--gray-900);
+			margin-bottom: 12px;
+		}
+		.featured-body p,
+		.post-card-body p,
+		.sidebar-widget p {
+			color: var(--gray-600);
+			line-height: 1.65;
+		}
+		.post-meta {
+			display: flex;
+			flex-wrap: wrap;
+			gap: 16px;
+			margin-top: 16px;
+			font-size: 13px;
+			color: var(--gray-500);
+		}
+		.posts-list {
+			display: grid;
+			gap: 18px;
+		}
+		.post-card {
+			display: grid;
+			grid-template-columns: 180px minmax(0, 1fr);
+			overflow: hidden;
+			transition: transform 0.2s ease, box-shadow 0.2s ease;
+		}
+		.post-card:hover,
+		.featured-post:hover {
+			transform: translateY(-2px);
+			box-shadow: var(--shadow-md);
+		}
+		.post-card-media {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			min-height: 160px;
+			background: linear-gradient(135deg, #ede9fe, #dbeafe);
+			font-size: 42px;
+		}
+		.post-card-body {
+			padding: 22px;
+		}
+		.post-card-body h3 {
+			font-size: 20px;
+			line-height: 1.3;
+			font-weight: 700;
+			color: var(--gray-900);
+			margin-bottom: 10px;
+		}
+		.blog-sidebar {
+			position: sticky;
+			top: 88px;
+			display: grid;
+			gap: 20px;
+		}
+		.sidebar-widget {
+			padding: 24px;
+		}
+		.sidebar-widget h3 {
+			font-size: 18px;
+			font-weight: 700;
+			color: var(--gray-900);
+			margin-bottom: 16px;
+		}
+		.category-list {
+			display: grid;
+			gap: 10px;
+		}
+		.category-link {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			padding: 11px 14px;
+			border-radius: var(--radius-md);
+			background: var(--gray-50);
+			font-size: 14px;
+			font-weight: 600;
+			color: var(--gray-700);
+			transition: background 0.2s ease, color 0.2s ease;
+		}
+		.category-link:hover {
+			background: rgba(108, 43, 217, 0.1);
+			color: var(--purple-primary);
+		}
+		.category-count {
+			padding: 3px 8px;
+			border-radius: 999px;
+			background: #fff;
+			font-size: 12px;
+			color: var(--gray-500);
+		}
+		.newsletter-widget {
+			background: linear-gradient(135deg, var(--purple-dark), var(--purple-primary));
+			border: none;
+			color: #fff;
+		}
+		.newsletter-widget h3,
+		.newsletter-widget p {
+			color: #fff;
+		}
+		.newsletter-form {
+			display: grid;
+			gap: 10px;
+			margin-top: 18px;
+		}
+		.newsletter-input {
+			width: 100%;
+			padding: 13px 14px;
+			border: 1px solid rgba(255, 255, 255, 0.18);
+			border-radius: var(--radius-md);
+			background: rgba(255, 255, 255, 0.12);
+			color: #fff;
+			font: inherit;
+		}
+		.newsletter-input::placeholder {
+			color: rgba(255, 255, 255, 0.72);
+		}
+		.newsletter-input:focus {
+			outline: none;
+			border-color: rgba(255, 255, 255, 0.45);
+		}
+		.newsletter-btn {
+			padding: 13px 16px;
+			border-radius: var(--radius-md);
+			background: var(--orange-cta);
+			color: #fff;
+			font-size: 14px;
+			font-weight: 700;
+			transition: background 0.2s ease;
+		}
+		.newsletter-btn:hover {
+			background: var(--orange-hover);
+		}
+		@media (max-width: 960px) {
+			.blog-layout {
+				grid-template-columns: 1fr;
+			}
+			.blog-sidebar {
+				position: static;
+			}
+		}
+		@media (max-width: 768px) {
+			.post-card {
+				grid-template-columns: 1fr;
+			}
+			.featured-media {
+				height: 220px;
+				font-size: 60px;
+			}
+			.featured-body h2 {
+				font-size: 24px;
+			}
+		}
+	</style>
+	<?php wp_head(); ?>
 </head>
-<body>
-
-<!-- HEADER -->
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a href="/" class="logo"><div class="logo-icon">P</div> Poradnik.pro</a>
-            <nav class="main-nav">
-                <a href="/poradniki">Poradniki</a>
-                <a href="/porownania">Porównania</a>
-                <a href="/rankingi">Rankingi</a>
-                <a href="/kalkulatory">Kalkulatory</a>
-                <a href="/eksperci">Eksperci</a>
-            </nav>
-            <div class="header-actions">
-                <a href="/dla-specjalistow" class="btn-find-specialist">Dla specjalistów</a>
-            </div>
-        </div>
-    </div>
-</header>
-
-<!-- PAGE HERO -->
-<section class="page-hero">
-    <div class="container">
-        <div class="breadcrumb">
-            <a href="/">Strona główna</a>
-            <span class="sep">/</span>
-            <span>Blog</span>
-        </div>
-        <h1>📰 Blog i Aktualności</h1>
-        <p>Bądź na bieżąco z rynkiem usług, zmianami w prawie i nowymi trendami. Eksperci piszą, Ty zyskujesz wiedzę.</p>
-    </div>
-</section>
-
-<!-- BLOG LAYOUT -->
-<div class="container">
-    <div class="blog-layout">
-        <!-- MAIN CONTENT -->
-        <main>
-            <!-- FEATURED POST -->
-            <a href="#" class="featured-post">
-                <div class="featured-post-image">
-                    <span class="featured-label">🔥 Wyróżniony</span>
-                    📊
-                </div>
-                <div class="featured-post-body">
-                    <span class="post-category">Rynek usług</span>
-                    <h2>Ceny remontów w 2026 — raport kwartalny Q2</h2>
-                    <p>Analiza aktualnych cen usług remontowych w 16 największych miastach Polski. Sprawdź, jak zmieniły się stawki glazurników, hydraulików i elektryków w porównaniu z Q1.</p>
-                    <div class="post-meta">
-                        <span>📅 10 czerwca 2026</span>
-                        <span>📖 8 min czytania</span>
-                        <span>💬 24 komentarze</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- POSTS GRID -->
-            <div class="posts-grid">
-                <a href="#" class="post-card">
-                    <div class="post-card-image">⚖️</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Prawo</span>
-                        <h3>Nowe przepisy o rękojmi 2026 — co się zmienia dla konsumentów?</h3>
-                        <p>Od lipca 2026 obowiązują nowe zasady reklamacji usług. Sprawdź swoje prawa.</p>
-                        <div class="post-meta">
-                            <span>📅 8 czerwca 2026</span>
-                            <span>📖 5 min</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="post-card">
-                    <div class="post-card-image">🌡️</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Energia</span>
-                        <h3>Dotacja na pompę ciepła 2026 — nowe zasady programu Czyste Powietrze</h3>
-                        <p>Rząd podniósł limity dofinansowania. Ile możesz zyskać i jak złożyć wniosek?</p>
-                        <div class="post-meta">
-                            <span>📅 5 czerwca 2026</span>
-                            <span>📖 6 min</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="post-card">
-                    <div class="post-card-image">💳</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Finanse</span>
-                        <h3>Stopy procentowe w dół — co to oznacza dla Twojego kredytu?</h3>
-                        <p>RPP obniżyła stopy o 0,25 pp. Ile zaoszczędzisz na racie i czy warto refinansować?</p>
-                        <div class="post-meta">
-                            <span>📅 3 czerwca 2026</span>
-                            <span>📖 4 min</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="post-card">
-                    <div class="post-card-image">🏠</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Nieruchomości</span>
-                        <h3>Rynek nieruchomości Q2 2026 — ceny mieszkań stabilizacja czy wzrost?</h3>
-                        <p>Analiza cen transakcyjnych w 10 miastach. Czy to dobry moment na zakup?</p>
-                        <div class="post-meta">
-                            <span>📅 1 czerwca 2026</span>
-                            <span>📖 7 min</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="post-card">
-                    <div class="post-card-image">🚗</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Motoryzacja</span>
-                        <h3>Ubezpieczenie OC 2026 — ranking najtańszych ofert + porady</h3>
-                        <p>Porównaliśmy 12 ubezpieczycieli. Kto oferuje najlepszą cenę za OC w Twojej grupie wiekowej?</p>
-                        <div class="post-meta">
-                            <span>📅 28 maja 2026</span>
-                            <span>📖 5 min</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="post-card">
-                    <div class="post-card-image">☀️</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Energia</span>
-                        <h3>Net-billing 2026 — czy fotowoltaika nadal się opłaca? Nowa kalkulacja</h3>
-                        <p>Zaktualizowane wyliczenia zwrotu inwestycji w panele po zmianach taryfowych.</p>
-                        <div class="post-meta">
-                            <span>📅 25 maja 2026</span>
-                            <span>📖 6 min</span>
-                        </div>
-                    </div>
-                </a>
-
-                <a href="#" class="post-card">
-                    <div class="post-card-image">👷</div>
-                    <div class="post-card-body">
-                        <span class="post-category">Poradnik.pro</span>
-                        <h3>Jak wybrać ekipę remontową — 10 red flags, na które musisz uważać</h3>
-                        <p>Doświadczenie 50 000 użytkowników w jednym artykule. Te sygnały oznaczają kłopoty.</p>
-                        <div class="post-meta">
-                            <span>📅 22 maja 2026</span>
-                            <span>📖 9 min</span>
-                        </div>
-                    </div>
-                </a>
-            </div>
-
-            <!-- PAGINATION -->
-            <div class="pagination">
-                <button class="page-btn active">1</button>
-                <button class="page-btn">2</button>
-                <button class="page-btn">3</button>
-                <button class="page-btn">4</button>
-                <button class="page-btn">→</button>
-            </div>
-        </main>
-
-        <!-- SIDEBAR -->
-        <aside class="blog-sidebar">
-            <div class="sidebar-widget">
-                <h4>📂 Kategorie</h4>
-                <div class="category-list">
-                    <a href="#" class="category-link">
-                        <span>Budownictwo i remont</span>
-                        <span class="category-count">34</span>
-                    </a>
-                    <a href="#" class="category-link">
-                        <span>Energia i OZE</span>
-                        <span class="category-count">21</span>
-                    </a>
-                    <a href="#" class="category-link">
-                        <span>Prawo i przepisy</span>
-                        <span class="category-count">18</span>
-                    </a>
-                    <a href="#" class="category-link">
-                        <span>Finanse osobiste</span>
-                        <span class="category-count">15</span>
-                    </a>
-                    <a href="#" class="category-link">
-                        <span>Nieruchomości</span>
-                        <span class="category-count">12</span>
-                    </a>
-                    <a href="#" class="category-link">
-                        <span>Motoryzacja</span>
-                        <span class="category-count">9</span>
-                    </a>
-                    <a href="#" class="category-link">
-                        <span>Zdrowie</span>
-                        <span class="category-count">7</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="sidebar-widget">
-                <h4>🔥 Popularne</h4>
-                <div class="popular-posts">
-                    <a href="#" class="popular-post">
-                        <span class="popular-post-num">1</span>
-                        <span class="popular-post-title">Koszt remontu łazienki 2026</span>
-                    </a>
-                    <a href="#" class="popular-post">
-                        <span class="popular-post-num">2</span>
-                        <span class="popular-post-title">Pompa ciepła vs gaz — co się opłaca?</span>
-                    </a>
-                    <a href="#" class="popular-post">
-                        <span class="popular-post-num">3</span>
-                        <span class="popular-post-title">Kredyt hipoteczny — poradnik 2026</span>
-                    </a>
-                    <a href="#" class="popular-post">
-                        <span class="popular-post-num">4</span>
-                        <span class="popular-post-title">Jak sprzedać działkę krok po kroku</span>
-                    </a>
-                    <a href="#" class="popular-post">
-                        <span class="popular-post-num">5</span>
-                        <span class="popular-post-title">Fotowoltaika — czy nadal się opłaca?</span>
-                    </a>
-                </div>
-            </div>
-
-            <div class="sidebar-widget newsletter-widget">
-                <h4>📬 Newsletter</h4>
-                <p>Otrzymuj najważniejsze porady i aktualności prosto na email — raz w tygodniu.</p>
-                <input type="email" class="newsletter-input" placeholder="Twój adres email" aria-label="Adres email">
-                <button class="newsletter-btn">Zapisz się za darmo</button>
-            </div>
-        </aside>
-    </div>
+<body <?php body_class( 'poradnik-pro-blog-page' ); ?>>
+<?php wp_body_open(); pp_pro_header( '' ); ?>
+<div class="blog-nav-strip">
+	<div class="container">
+		<div class="blog-nav-inline">
+			<a class="blog-nav-link" href="<?php echo esc_url( home_url( '/blog/' ) ); ?>">Blog</a>
+		</div>
+	</div>
 </div>
-
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-bottom">
-            <span>&copy; 2026 Poradnik.pro. Wszelkie prawa zastrzeżone.</span>
-            <div class="footer-links">
-                <a href="#">Regulamin</a>
-                <a href="#">Polityka prywatności</a>
-                <a href="#">Kontakt</a>
-            </div>
-        </div>
-    </div>
-</footer>
-
+<section class="page-hero">
+	<div class="container">
+		<div class="breadcrumb">
+			<a href="<?php echo esc_url( home_url( '/' ) ); ?>">Strona główna</a>
+			<span class="sep">/</span>
+			<span>Blog</span>
+		</div>
+		<h1>Blog i aktualności Poradnik.PRO</h1>
+		<p>Praktyczne analizy ekspertów, aktualne przepisy i wskazówki, które pomagają lepiej planować inwestycje, finanse i decyzje prawne.</p>
+	</div>
+</section>
+<div class="container">
+	<div class="blog-layout">
+		<main>
+			<article class="featured-post">
+				<div class="featured-media">
+					<span class="featured-label">Wyróżniony</span>
+					<?php echo esc_html( $pp_blog_featured['icon'] ); ?>
+				</div>
+				<div class="featured-body">
+					<span class="post-category"><?php echo esc_html( $pp_blog_featured['category'] ); ?></span>
+					<h2><?php echo esc_html( $pp_blog_featured['title'] ); ?></h2>
+					<p><?php echo esc_html( $pp_blog_featured['excerpt'] ); ?></p>
+					<div class="post-meta">
+						<span><?php echo esc_html( $pp_blog_featured['date'] ); ?></span>
+						<span><?php echo esc_html( $pp_blog_featured['read'] ); ?> czytania</span>
+						<span><?php echo esc_html( $pp_blog_featured['category'] ); ?></span>
+					</div>
+				</div>
+			</article>
+			<div class="posts-list">
+				<?php foreach ( $pp_blog_articles as $article ) : ?>
+					<article class="post-card">
+						<div class="post-card-media"><?php echo esc_html( $article['icon'] ); ?></div>
+						<div class="post-card-body">
+							<span class="post-category"><?php echo esc_html( $article['category'] ); ?></span>
+							<h3><?php echo esc_html( $article['title'] ); ?></h3>
+							<p><?php echo esc_html( $article['excerpt'] ); ?></p>
+							<div class="post-meta">
+								<span><?php echo esc_html( $article['date'] ); ?></span>
+								<span><?php echo esc_html( $article['read'] ); ?> czytania</span>
+							</div>
+						</div>
+					</article>
+				<?php endforeach; ?>
+			</div>
+		</main>
+		<aside class="blog-sidebar">
+			<section class="sidebar-widget">
+				<h3>Popularne kategorie</h3>
+				<div class="category-list">
+					<?php foreach ( $pp_blog_categories as $category ) : ?>
+						<a class="category-link" href="#">
+							<span><?php echo esc_html( $category['name'] ); ?></span>
+							<span class="category-count"><?php echo esc_html( number_format_i18n( $category['count'] ) ); ?></span>
+						</a>
+					<?php endforeach; ?>
+				</div>
+			</section>
+			<section class="sidebar-widget newsletter-widget">
+				<h3>Newsletter</h3>
+				<p>Raz w tygodniu wysyłamy wybór najważniejszych poradników, zmian w przepisach i analiz rynkowych.</p>
+				<form class="newsletter-form">
+					<input class="newsletter-input" type="email" placeholder="Twój adres e-mail" aria-label="Twój adres e-mail">
+					<button class="newsletter-btn" type="submit">Zapisz mnie</button>
+				</form>
+			</section>
+		</aside>
+	</div>
+</div>
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>
