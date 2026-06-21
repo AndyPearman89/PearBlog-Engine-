@@ -131,7 +131,21 @@ jobs:
           server-dir: /pt24/wp-content/mu-plugins/pearblog-engine/
           dangerous-clean-slate: false
 
-      - name: Deploy theme to PT24
+      - name: Deploy PT24 theme
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
+          local-dir: ./theme/pt24/
+          server-dir: /pt24/wp-content/themes/pt24/
+          dangerous-clean-slate: false
+
+      - name: Deploy PearBlog theme to PT24
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
