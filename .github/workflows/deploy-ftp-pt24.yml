@@ -1,0 +1,160 @@
+name: Deploy PT24 via FTP
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'mu-plugins/**'
+      - 'theme/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deploy-ftp-pt24:
+    name: Deploy plugin & theme via FTP to PT24
+    runs-on: ubuntu-latest
+    env:
+      CONNECT_TIMEOUT_SECONDS: "20"
+      DEPLOY_TIMEOUT_MINUTES: "8"
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate FTP secrets
+        id: preflight
+        env:
+          FTP_PROTOCOL_SECRET: ${{ secrets.FTP_PROTOCOL }}
+        run: |
+          set -euo pipefail
+          MISSING=()
+          [[ -z "${{ secrets.FTP_HOST }}" ]] && MISSING+=("FTP_HOST")
+          [[ -z "${{ secrets.FTP_USERNAME }}" ]] && MISSING+=("FTP_USERNAME")
+          [[ -z "${{ secrets.FTP_PASSWORD }}" ]] && MISSING+=("FTP_PASSWORD")
+          [[ -z "${{ secrets.FTP_PORT }}" ]] && MISSING+=("FTP_PORT")
+          if [[ ${#MISSING[@]} -gt 0 ]]; then
+            echo "::error::Missing required secrets: ${MISSING[*]}"
+            echo "Add them under Settings → Secrets and variables → Actions"
+            exit 1
+          fi
+          PROTOCOL="${FTP_PROTOCOL_SECRET:-ftp}"
+          case "$PROTOCOL" in
+            ftp|ftps|sftp) ;;
+            *)
+              echo "::error::Invalid FTP_PROTOCOL value '$PROTOCOL'. Use one of: ftp, ftps, sftp."
+              exit 1
+              ;;
+          esac
+          if [[ -n "${{ secrets.FTP_PORT }}" && ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
+            echo "::error::FTP_PORT must be numeric."
+            exit 1
+          fi
+          if [[ -n "${{ secrets.FTP_PORT }}" ]] && (( ${{ secrets.FTP_PORT }} < 1 || ${{ secrets.FTP_PORT }} > 65535 )); then
+            echo "::error::FTP_PORT must be in range 1-65535."
+            exit 1
+          fi
+          echo "Using deployment protocol: $PROTOCOL (default: ftp; set FTP_PROTOCOL secret to override)."
+          echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
+
+      - name: Install FTP diagnostics tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp netcat-openbsd
+
+      - name: Validate deployment connectivity
+        env:
+          FTP_PROTOCOL: ${{ steps.preflight.outputs.protocol }}
+        run: |
+          set -euo pipefail
+          HOST="${{ secrets.FTP_HOST }}"
+          PORT="${{ secrets.FTP_PORT }}"
+          USER="${{ secrets.FTP_USERNAME }}"
+          PASS="${{ secrets.FTP_PASSWORD }}"
+          CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
+          NETRC_PATH="$RUNNER_TEMP/lftp-netrc"
+
+          echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
+
+          if ! nc -z -w "$CONNECT_TIMEOUT" "$HOST" "$PORT"; then
+            if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
+              echo "::error::SSH/SFTP endpoint unreachable at $HOST:$PORT. Verify host/port, SSH availability, and any IP allowlists/firewalls."
+            else
+              echo "::error::FTP endpoint unreachable at $HOST:$PORT. Verify host/port, protocol, and any IP allowlists/firewalls."
+            fi
+            exit 1
+          fi
+
+          umask 077
+          trap 'rm -f "$NETRC_PATH"' EXIT
+          cat > "$NETRC_PATH" <<EOF
+          machine $HOST
+          login $USER
+          password $PASS
+          EOF
+
+          LFTP_SCRIPT=$(cat <<EOF
+          set cmd:fail-exit true
+          set net:timeout ${CONNECT_TIMEOUT}
+          set net:max-retries 1
+          set net:reconnect-interval-base 5
+          set net:netrc-file "${NETRC_PATH}"
+          open -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
+          ls
+          bye
+          EOF
+          )
+
+          if ! LFTP_OUTPUT=$(lftp -e "$LFTP_SCRIPT" 2>&1); then
+            echo "$LFTP_OUTPUT" | tail -n 50
+            if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
+              echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
+            else
+              echo "::error::FTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol and credentials."
+            fi
+            exit 1
+          fi
+
+      - name: Deploy mu-plugin to PT24
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
+          local-dir: ./mu-plugins/pearblog-engine/
+          server-dir: /pt24/wp-content/mu-plugins/pearblog-engine/
+          dangerous-clean-slate: false
+
+      - name: Deploy PT24 theme
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
+          local-dir: ./theme/pt24/
+          server-dir: /pt24/wp-content/themes/pt24/
+          dangerous-clean-slate: false
+
+      - name: Deploy PearBlog theme to PT24
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
+          local-dir: ./theme/pearblog-theme/
+          server-dir: /pt24/wp-content/themes/pearblog-theme/
+          dangerous-clean-slate: false
