@@ -22,7 +22,9 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate FTP secrets
+        id: preflight
         run: |
+          set -euo pipefail
           MISSING=()
           [[ -z "${{ secrets.FTP_HOST }}" ]] && MISSING+=("FTP_HOST")
           [[ -z "${{ secrets.FTP_USERNAME }}" ]] && MISSING+=("FTP_USERNAME")
@@ -33,27 +35,85 @@ jobs:
             echo "Add them under Settings → Secrets and variables → Actions"
             exit 1
           fi
+          PROTOCOL="${{ secrets.FTP_PROTOCOL || 'ftp' }}"
+          case "$PROTOCOL" in
+            ftp|ftps|sftp) ;;
+            *)
+              echo "::error::Invalid FTP_PROTOCOL value '$PROTOCOL'. Use one of: ftp, ftps, sftp."
+              exit 1
+              ;;
+          esac
+          echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
+
+      - name: Install FTP diagnostics tools
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq lftp
+
+      - name: Validate deployment connectivity
+        env:
+          FTP_PROTOCOL: ${{ steps.preflight.outputs.protocol }}
+        run: |
+          set -euo pipefail
+          HOST="${{ secrets.FTP_HOST }}"
+          PORT="${{ secrets.FTP_PORT }}"
+          USER="${{ secrets.FTP_USERNAME }}"
+          PASS="${{ secrets.FTP_PASSWORD }}"
+
+          echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
+
+          if ! timeout 20 bash -c "cat < /dev/null > /dev/tcp/$HOST/$PORT"; then
+            if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
+              echo "::error::SSH/SFTP endpoint unreachable at $HOST:$PORT. Verify host/port, SSH availability, and any IP allowlists/firewalls."
+            else
+              echo "::error::FTP endpoint unreachable at $HOST:$PORT. Verify host/port, protocol, and any IP allowlists/firewalls."
+            fi
+            exit 1
+          fi
+
+          LFTP_SCRIPT=$(cat <<'EOF'
+          set cmd:fail-exit true
+          set net:timeout 20
+          set net:max-retries 1
+          set net:reconnect-interval-base 5
+          ls
+          bye
+          EOF
+          )
+
+          if ! lftp -u "$USER","$PASS" "$FTP_PROTOCOL://$HOST:$PORT" -e "$LFTP_SCRIPT"; then
+            if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
+              echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
+            else
+              echo "::error::FTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol and credentials."
+            fi
+            exit 1
+          fi
 
       - name: Deploy mu-plugin
+        timeout-minutes: 8
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: ftp
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
           local-dir: ./mu-plugins/pearblog-engine/
           server-dir: /poradnik/wp-content/mu-plugins/pearblog-engine/
           dangerous-clean-slate: false
 
       - name: Deploy theme
+        timeout-minutes: 8
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: ftp
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
           local-dir: ./theme/pearblog-theme/
           server-dir: /poradnik/wp-content/themes/pearblog-theme/
           dangerous-clean-slate: false
