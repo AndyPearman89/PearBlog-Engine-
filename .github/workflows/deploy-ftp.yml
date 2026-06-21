@@ -49,10 +49,6 @@ jobs:
             echo "::error::FTP_PORT must be numeric."
             exit 1
           fi
-          if [[ ! "${{ secrets.FTP_HOST }}" =~ ^[A-Za-z0-9._-]+$ ]]; then
-            echo "::error::FTP_HOST contains unsupported characters."
-            exit 1
-          fi
           echo "Using deployment protocol: $PROTOCOL (set FTP_PROTOCOL secret to override; default is ftp)."
           echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
 
@@ -94,17 +90,16 @@ jobs:
 
           LFTP_SCRIPT=$(cat <<'EOF'
           set cmd:fail-exit true
-          set net:timeout __CONNECT_TIMEOUT__
+          set net:timeout __NET_TIMEOUT__
           set net:max-retries 1
           set net:reconnect-interval-base 5
-          set net:netrc true
           set net:netrc-file __NETRC_PATH__
           open -p __PORT__ __PROTO__://__HOST__
           ls
           bye
           EOF
           )
-          LFTP_SCRIPT="${LFTP_SCRIPT//__CONNECT_TIMEOUT__/$CONNECT_TIMEOUT}"
+          LFTP_SCRIPT="${LFTP_SCRIPT//__NET_TIMEOUT__/$CONNECT_TIMEOUT}"
           LFTP_SCRIPT="${LFTP_SCRIPT//__NETRC_PATH__/$NETRC_PATH}"
           LFTP_SCRIPT="${LFTP_SCRIPT//__PORT__/$PORT}"
           LFTP_SCRIPT="${LFTP_SCRIPT//__PROTO__/$FTP_PROTOCOL}"
@@ -120,6 +115,7 @@ jobs:
           fi
 
       - name: Deploy mu-plugin
+        # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
         timeout-minutes: 8
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -134,6 +130,7 @@ jobs:
           dangerous-clean-slate: false
 
       - name: Deploy theme
+        # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
         timeout-minutes: 8
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
