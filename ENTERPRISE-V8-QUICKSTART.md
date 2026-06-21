@@ -28,6 +28,17 @@ git clone https://github.com/AndyPearman89/PearBlog-Engine- pearblog-engine
 ```
 
 ### Step 2: Enable Enterprise Mode (1 minute)
+
+**Option A – Include the ready-made config snippet** (recommended):
+```php
+// Add this line to wp-config.php (before "That's all, stop editing!"):
+require_once __DIR__ . '/wp-content/mu-plugins/pearblog-engine/config/wp-config-pearblog-v8.php';
+```
+
+> See `mu-plugins/pearblog-engine/config/wp-config-pearblog-v8-sample.php`
+> for a fully-commented example of all available constants.
+
+**Option B – Manual define**:
 ```bash
 # Edit the main plugin file
 nano pearblog-engine/pearblog-engine.php
