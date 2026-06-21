@@ -43,6 +43,7 @@ jobs:
               exit 1
               ;;
           esac
+          echo "Using deployment protocol: $PROTOCOL (set FTP_PROTOCOL secret to override; default is ftp)."
           echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
 
       - name: Install FTP diagnostics tools
@@ -59,10 +60,11 @@ jobs:
           PORT="${{ secrets.FTP_PORT }}"
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
+          CONNECT_TIMEOUT=20
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
 
-          if ! timeout 20 bash -c "cat < /dev/null > /dev/tcp/$HOST/$PORT"; then
+          if ! timeout "$CONNECT_TIMEOUT" bash -c "cat < /dev/null > /dev/tcp/$HOST/$PORT"; then
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
               echo "::error::SSH/SFTP endpoint unreachable at $HOST:$PORT. Verify host/port, SSH availability, and any IP allowlists/firewalls."
             else
@@ -71,9 +73,9 @@ jobs:
             exit 1
           fi
 
-          LFTP_SCRIPT=$(cat <<'EOF'
+          LFTP_SCRIPT=$(cat <<EOF
           set cmd:fail-exit true
-          set net:timeout 20
+          set net:timeout ${CONNECT_TIMEOUT}
           set net:max-retries 1
           set net:reconnect-interval-base 5
           ls
@@ -81,7 +83,7 @@ jobs:
           EOF
           )
 
-          if ! lftp -u "$USER","$PASS" "$FTP_PROTOCOL://$HOST:$PORT" -e "$LFTP_SCRIPT"; then
+          if ! LFTP_PASSWORD="$PASS" lftp -u "$USER" "$FTP_PROTOCOL://$HOST:$PORT" -e "$LFTP_SCRIPT"; then
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
               echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
             else
