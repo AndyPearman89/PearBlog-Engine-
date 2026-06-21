@@ -35,7 +35,7 @@ jobs:
             echo "Add them under Settings → Secrets and variables → Actions"
             exit 1
           fi
-          PROTOCOL="${{ secrets.FTP_PROTOCOL || 'ftp' }}"
+          PROTOCOL="${{ secrets.FTP_PROTOCOL != '' && secrets.FTP_PROTOCOL || 'ftp' }}"
           case "$PROTOCOL" in
             ftp|ftps|sftp) ;;
             *)
@@ -61,6 +61,7 @@ jobs:
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
           CONNECT_TIMEOUT=20
+          NETRC_PATH="$RUNNER_TEMP/lftp-netrc"
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
 
@@ -73,17 +74,28 @@ jobs:
             exit 1
           fi
 
+          cat > "$NETRC_PATH" <<EOF
+          machine $HOST
+          login $USER
+          password $PASS
+          EOF
+          chmod 600 "$NETRC_PATH"
+          trap 'rm -f "$NETRC_PATH"' EXIT
+
           LFTP_SCRIPT=$(cat <<EOF
           set cmd:fail-exit true
           set net:timeout ${CONNECT_TIMEOUT}
           set net:max-retries 1
           set net:reconnect-interval-base 5
+          set net:netrc true
+          set net:netrc-file ${NETRC_PATH}
+          open -p ${PORT} ${FTP_PROTOCOL}://${HOST}
           ls
           bye
           EOF
           )
 
-          if ! LFTP_PASSWORD="$PASS" lftp -u "$USER" "$FTP_PROTOCOL://$HOST:$PORT" -e "$LFTP_SCRIPT"; then
+          if ! lftp -e "$LFTP_SCRIPT"; then
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
               echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
             else
