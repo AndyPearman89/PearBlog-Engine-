@@ -23,6 +23,8 @@ jobs:
 
       - name: Validate FTP secrets
         id: preflight
+        env:
+          FTP_PROTOCOL_SECRET: ${{ secrets.FTP_PROTOCOL }}
         run: |
           set -euo pipefail
           MISSING=()
@@ -35,7 +37,7 @@ jobs:
             echo "Add them under Settings → Secrets and variables → Actions"
             exit 1
           fi
-          PROTOCOL="${{ secrets.FTP_PROTOCOL != '' && secrets.FTP_PROTOCOL || 'ftp' }}"
+          PROTOCOL="${FTP_PROTOCOL_SECRET:-ftp}"
           case "$PROTOCOL" in
             ftp|ftps|sftp) ;;
             *)
@@ -43,13 +45,21 @@ jobs:
               exit 1
               ;;
           esac
+          if [[ ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
+            echo "::error::FTP_PORT must be numeric."
+            exit 1
+          fi
+          if [[ ! "${{ secrets.FTP_HOST }}" =~ ^[A-Za-z0-9._-]+$ ]]; then
+            echo "::error::FTP_HOST contains unsupported characters."
+            exit 1
+          fi
           echo "Using deployment protocol: $PROTOCOL (set FTP_PROTOCOL secret to override; default is ftp)."
           echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
 
       - name: Install FTP diagnostics tools
         run: |
           sudo apt-get update -qq
-          sudo apt-get install -y -qq lftp
+          sudo apt-get install -y -qq lftp netcat-openbsd
 
       - name: Validate deployment connectivity
         env:
@@ -65,7 +75,7 @@ jobs:
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
 
-          if ! timeout "$CONNECT_TIMEOUT" bash -c "cat < /dev/null > /dev/tcp/$HOST/$PORT"; then
+          if ! nc -z -w "$CONNECT_TIMEOUT" "$HOST" "$PORT"; then
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
               echo "::error::SSH/SFTP endpoint unreachable at $HOST:$PORT. Verify host/port, SSH availability, and any IP allowlists/firewalls."
             else
@@ -74,26 +84,31 @@ jobs:
             exit 1
           fi
 
+          umask 077
           cat > "$NETRC_PATH" <<EOF
           machine $HOST
           login $USER
           password $PASS
           EOF
-          chmod 600 "$NETRC_PATH"
           trap 'rm -f "$NETRC_PATH"' EXIT
 
-          LFTP_SCRIPT=$(cat <<EOF
+          LFTP_SCRIPT=$(cat <<'EOF'
           set cmd:fail-exit true
-          set net:timeout ${CONNECT_TIMEOUT}
+          set net:timeout __CONNECT_TIMEOUT__
           set net:max-retries 1
           set net:reconnect-interval-base 5
           set net:netrc true
-          set net:netrc-file ${NETRC_PATH}
-          open -p ${PORT} ${FTP_PROTOCOL}://${HOST}
+          set net:netrc-file __NETRC_PATH__
+          open -p __PORT__ __PROTO__://__HOST__
           ls
           bye
           EOF
           )
+          LFTP_SCRIPT="${LFTP_SCRIPT//__CONNECT_TIMEOUT__/$CONNECT_TIMEOUT}"
+          LFTP_SCRIPT="${LFTP_SCRIPT//__NETRC_PATH__/$NETRC_PATH}"
+          LFTP_SCRIPT="${LFTP_SCRIPT//__PORT__/$PORT}"
+          LFTP_SCRIPT="${LFTP_SCRIPT//__PROTO__/$FTP_PROTOCOL}"
+          LFTP_SCRIPT="${LFTP_SCRIPT//__HOST__/$HOST}"
 
           if ! lftp -e "$LFTP_SCRIPT"; then
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
