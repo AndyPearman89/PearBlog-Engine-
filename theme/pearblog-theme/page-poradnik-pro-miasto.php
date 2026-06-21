@@ -1,8 +1,11 @@
 <?php
 /**
  * Template Name: Poradnik.pro - Miasto
- * Description: Standalone city landing page for Poradnik.pro.
+ * @package PearBlog
  */
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+
 
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
@@ -58,12 +61,6 @@ foreach ($categories as $slug => $name) {
     ];
 }
 
-$navItems = [
-    ['label' => 'Poradniki', 'url' => '/poradniki/'],
-    ['label' => 'Pytania', 'url' => '/pytania/'],
-    ['label' => 'Rankingi', 'url' => '/rankingi/'],
-    ['label' => 'Eksperci', 'url' => '/eksperci/'],
-];
 
 $stats = [
     ['value' => '1 240', 'label' => 'poradników'],
@@ -106,14 +103,15 @@ $tabs = [
 ];
 ?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $escape($cityName); ?> – Poradnik.pro</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
         :root {
             --purple: #6c2bd9;
@@ -143,94 +141,7 @@ $tabs = [
             background: #f7f5fc;
             line-height: 1.5;
             -webkit-font-smoothing: antialiased;
-        }
-
-        a { color: inherit; text-decoration: none; }
-        button { font: inherit; cursor: pointer; }
-
-        .container {
-            width: min(var(--max-width), calc(100% - 32px));
-            margin: 0 auto;
-        }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 50;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(14px);
-            border-bottom: 1px solid rgba(20, 15, 35, 0.08);
-        }
-
-        .header-inner {
-            min-height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--text);
-            white-space: nowrap;
-        }
-
-        .logo-mark {
-            width: 40px;
-            height: 40px;
-            border-radius: 14px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--white);
-            background: linear-gradient(135deg, var(--purple), #8b5cf6);
-            box-shadow: 0 10px 24px rgba(108, 43, 217, 0.25);
-        }
-
-        .main-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 28px;
-            flex: 1;
-        }
-
-        .main-nav a {
-            font-size: 0.95rem;
-            font-weight: 600;
-            color: var(--muted);
-            transition: color 0.2s ease;
-        }
-
-        .main-nav a:hover,
-        .main-nav a:focus-visible { color: var(--purple); }
-
-        .header-cta {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 48px;
-            padding: 0 22px;
-            border-radius: 999px;
-            background: var(--purple);
-            color: var(--white);
-            font-weight: 700;
-            box-shadow: 0 12px 24px rgba(108, 43, 217, 0.24);
-            transition: transform 0.2s ease, background 0.2s ease;
-        }
-
-        .header-cta:hover,
-        .header-cta:focus-visible {
-            background: #5a21b6;
-            transform: translateY(-1px);
-        }
-
-        .hero {
+        }        button { font: inherit; cursor: pointer; }        .hero {
             position: relative;
             overflow: hidden;
             background: linear-gradient(135deg, #0f0626, #1a0a3e, #2d1b69);
@@ -521,20 +432,6 @@ $tabs = [
         }
 
         @media (max-width: 980px) {
-            .header-inner {
-                min-height: 72px;
-                flex-wrap: wrap;
-                padding: 14px 0;
-            }
-
-            .main-nav {
-                order: 3;
-                width: 100%;
-                justify-content: flex-start;
-                overflow-x: auto;
-                padding-bottom: 4px;
-            }
-
             .stats-grid,
             .experts-row {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -565,8 +462,7 @@ $tabs = [
                 align-items: stretch;
             }
 
-            .tab-button,
-            .header-cta {
+            .tab-button {
                 width: 100%;
                 justify-content: center;
             }
@@ -577,27 +473,10 @@ $tabs = [
             }
         }
     </style>
-    <?php if (function_exists('wp_head')) { wp_head(); } ?>
+    <?php wp_head(); ?>
 </head>
-<body>
-<?php if (function_exists('wp_body_open')) { wp_body_open(); } ?>
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a class="logo" href="/">
-                <span class="logo-mark">P</span>
-                <span>Poradnik.pro</span>
-            </a>
-            <nav class="main-nav" aria-label="Główna nawigacja">
-                <?php foreach ($navItems as $navItem) : ?>
-                    <a href="<?php echo $escape($navItem['url']); ?>"><?php echo $escape($navItem['label']); ?></a>
-                <?php endforeach; ?>
-            </nav>
-            <a class="header-cta" href="/eksperci/">Znajdź eksperta</a>
-        </div>
-    </div>
-</header>
-
+<body <?php body_class(); ?>>
+<?php wp_body_open(); pp_pro_header( 'poradniki' ); ?>
 <main>
     <section class="hero">
         <div class="container">
@@ -750,6 +629,6 @@ $tabs = [
         });
     }());
 </script>
-<?php if (function_exists('wp_footer')) { wp_footer(); } ?>
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>
