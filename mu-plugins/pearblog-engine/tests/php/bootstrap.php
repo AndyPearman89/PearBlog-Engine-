@@ -976,11 +976,27 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 				$args = $args[0];
 			}
 
-			// Simple prepare that handles %s and %d placeholders
-			$query = str_replace( '%s', "'%s'", $query );
-			$query = str_replace( '%d', '%d', $query );
+			// Handle %i identifier placeholder (WP 6.2+) by replacing with the value directly
+			$i = 0;
+			$query = preg_replace_callback( '/%[sidfs]/', function( $match ) use ( &$args, &$i ) {
+				$val = $args[ $i ] ?? '';
+				$i++;
+				if ( $match[0] === '%i' ) {
+					return '`' . $val . '`';
+				}
+				if ( $match[0] === '%s' ) {
+					return "'" . $val . "'";
+				}
+				if ( $match[0] === '%d' ) {
+					return (string) (int) $val;
+				}
+				if ( $match[0] === '%f' ) {
+					return (string) (float) $val;
+				}
+				return (string) $val;
+			}, $query );
 
-			return vsprintf( $query, $args );
+			return $query;
 		}
 
 		public function query( string $query ) {
@@ -1017,6 +1033,10 @@ if ( ! isset( $GLOBALS['wpdb'] ) ) {
 				return $GLOBALS['_db_channel_counts'];
 			}
 			return null;
+		}
+
+		public function get_col( string $query, int $x = 0 ): array {
+			return $GLOBALS['_db_col_results'] ?? [];
 		}
 
 		public function esc_like( string $text ): string {
@@ -1241,6 +1261,66 @@ if ( ! function_exists( 'wp_redirect' ) ) {
 		$GLOBALS['_redirect_status']   = $status;
 		return true;
 	}
+}
+
+// AJAX stubs.
+if ( ! function_exists( 'check_ajax_referer' ) ) {
+	function check_ajax_referer( string $action = '-1', $query_arg = false, bool $die = true ): bool {
+		return true;
+	}
+}
+
+if ( ! function_exists( 'wp_send_json_success' ) ) {
+	function wp_send_json_success( $data = null, int $status_code = 200 ): void {
+		$GLOBALS['_json_response'] = [ 'success' => true, 'data' => $data ];
+	}
+}
+
+if ( ! function_exists( 'wp_send_json_error' ) ) {
+	function wp_send_json_error( $data = null, int $status_code = 200 ): void {
+		$GLOBALS['_json_response'] = [ 'success' => false, 'data' => $data ];
+	}
+}
+
+if ( ! function_exists( 'admin_url' ) ) {
+	function admin_url( string $path = '' ): string {
+		return 'https://example.com/wp-admin/' . ltrim( $path, '/' );
+	}
+}
+
+if ( ! function_exists( 'get_avatar' ) ) {
+	function get_avatar( $id_or_email, int $size = 96, string $default = '', string $alt = '', array $args = [] ): string {
+		return '<img src="https://example.com/avatar.jpg" width="' . $size . '" />';
+	}
+}
+
+if ( ! function_exists( 'wp_localize_script' ) ) {
+	function wp_localize_script( string $handle, string $object_name, array $l10n ): bool {
+		$GLOBALS['_localized_scripts'][ $handle ] = [ 'name' => $object_name, 'data' => $l10n ];
+		return true;
+	}
+}
+
+if ( ! function_exists( 'esc_html_e' ) ) {
+	function esc_html_e( string $text, string $domain = 'default' ): void {
+		echo htmlspecialchars( $text, ENT_QUOTES );
+	}
+}
+
+if ( ! function_exists( 'esc_attr_e' ) ) {
+	function esc_attr_e( string $text, string $domain = 'default' ): void {
+		echo htmlspecialchars( $text, ENT_QUOTES );
+	}
+}
+
+if ( ! function_exists( 'esc_js' ) ) {
+	function esc_js( string $text ): string {
+		return addslashes( $text );
+	}
+}
+
+if ( ! defined( 'PEARBLOG_ENGINE_URL' ) ) {
+	define( 'PEARBLOG_ENGINE_URL', 'https://example.com/wp-content/plugins/pearblog-engine/' );
 }
 
 // PSR-4 autoloader for src/ classes.
