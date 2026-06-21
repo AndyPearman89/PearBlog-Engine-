@@ -39,7 +39,7 @@ jobs:
             echo "  FTP_HOST       – SFTP server hostname (e.g. wordpress2614653.home.pl)"
             echo "  FTP_USERNAME   – SFTP account username"
             echo "  FTP_PASSWORD   – SFTP account password"
-            echo "  FTP_PORT       – (optional) SSH/SFTP port; defaults to 22"
+            echo "  FTP_PORT       – (optional) SSH/SFTP port; defaults to 222"
             echo "  FTP_SERVER_DIR – (optional) override base path; defaults to /poradnik/wp-content"
             exit 1
           fi
@@ -47,7 +47,7 @@ jobs:
           SERVER_DIR="${{ secrets.FTP_SERVER_DIR }}"
           SERVER_DIR="${SERVER_DIR:-/poradnik/wp-content}"
           SFTP_PORT="${{ secrets.FTP_PORT }}"
-          SFTP_PORT="${SFTP_PORT:-22}"
+          SFTP_PORT="${SFTP_PORT:-222}"
           echo "server_dir=$SERVER_DIR" >> "$GITHUB_OUTPUT"
           echo "sftp_port=$SFTP_PORT"   >> "$GITHUB_OUTPUT"
           echo "SFTP base path: $SERVER_DIR  port: $SFTP_PORT"
@@ -76,7 +76,7 @@ jobs:
           FLAGS="-avz --delete"
           [[ "${{ github.event.inputs.dry_run }}" == "true" ]] && FLAGS="$FLAGS --dry-run"
           sshpass -e rsync $FLAGS \
-            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o BatchMode=no" \
+            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o PreferredAuthentications=password -o PubkeyAuthentication=no -o BatchMode=no" \
             ./mu-plugins/pearblog-engine/ \
             "${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:${{ steps.sftpvars.outputs.server_dir }}/mu-plugins/pearblog-engine/"
 
@@ -87,7 +87,7 @@ jobs:
           FLAGS="-avz --delete"
           [[ "${{ github.event.inputs.dry_run }}" == "true" ]] && FLAGS="$FLAGS --dry-run"
           sshpass -e rsync $FLAGS \
-            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o BatchMode=no" \
+            -e "ssh -p ${{ steps.sftpvars.outputs.sftp_port }} -o PreferredAuthentications=password -o PubkeyAuthentication=no -o BatchMode=no" \
             ./theme/pearblog-theme/ \
             "${{ secrets.FTP_USERNAME }}@${{ secrets.FTP_HOST }}:${{ steps.sftpvars.outputs.server_dir }}/themes/pearblog-theme/"
 
