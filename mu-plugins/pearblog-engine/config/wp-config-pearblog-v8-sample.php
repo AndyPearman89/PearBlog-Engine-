@@ -39,6 +39,19 @@ define( 'PEARBLOG_OPENAI_API_KEY', 'YOUR_OPENAI_API_KEY_HERE' );
 define( 'PEARBLOG_MASTER_SECRET', 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx' );
 
 /* =====================================================
+ * MULTISITE – WordPress Network (poradnik.pro)
+ * ===================================================== */
+
+// Enable WordPress Multisite
+define( 'WP_ALLOW_MULTISITE', true );
+define( 'MULTISITE', true );
+define( 'SUBDOMAIN_INSTALL', false );
+define( 'DOMAIN_CURRENT_SITE', 'poradnik.pro' );
+define( 'PATH_CURRENT_SITE', '/' );
+define( 'SITE_ID_CURRENT_SITE', 1 );
+define( 'BLOG_ID_CURRENT_SITE', 1 );
+
+/* =====================================================
  * LOGGING & DIAGNOSTICS
  * ===================================================== */
 

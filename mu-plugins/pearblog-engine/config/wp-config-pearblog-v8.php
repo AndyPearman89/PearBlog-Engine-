@@ -59,7 +59,32 @@ if ( ! defined( 'PEARBLOG_ADMIN_FORCE_ACCESS' ) ) {
 }
 
 /* ───────────────────────────────────────────────────────
- * 6. WordPress Debug (recommended for staging)
+ * 6. WordPress Multisite (poradnik.pro)
+ * ─────────────────────────────────────────────────────── */
+if ( ! defined( 'WP_ALLOW_MULTISITE' ) ) {
+	define( 'WP_ALLOW_MULTISITE', true );
+}
+if ( ! defined( 'MULTISITE' ) ) {
+	define( 'MULTISITE', true );
+}
+if ( ! defined( 'SUBDOMAIN_INSTALL' ) ) {
+	define( 'SUBDOMAIN_INSTALL', false ); // Subdirectory install for poradnik.pro
+}
+if ( ! defined( 'DOMAIN_CURRENT_SITE' ) ) {
+	define( 'DOMAIN_CURRENT_SITE', 'poradnik.pro' );
+}
+if ( ! defined( 'PATH_CURRENT_SITE' ) ) {
+	define( 'PATH_CURRENT_SITE', '/' );
+}
+if ( ! defined( 'SITE_ID_CURRENT_SITE' ) ) {
+	define( 'SITE_ID_CURRENT_SITE', 1 );
+}
+if ( ! defined( 'BLOG_ID_CURRENT_SITE' ) ) {
+	define( 'BLOG_ID_CURRENT_SITE', 1 );
+}
+
+/* ───────────────────────────────────────────────────────
+ * 7. WordPress Debug (recommended for staging)
  * ─────────────────────────────────────────────────────── */
 // Uncomment the lines below on staging/development environments:
 // define( 'WP_DEBUG',         true );
