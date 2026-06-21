@@ -1,70 +1,23 @@
+<?php
+/**
+ * Template Name: Poradnik.pro - Artykuł
+ * @package PearBlog
+ */
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Koszt remontu łazienki 2026 — aktualne ceny i porady – Poradnik.pro</title>
     <meta name="description" content="Pełna analiza kosztów remontu łazienki w 2026: materiały, robocizna, ukryte wydatki. Dowiedz się, ile naprawdę zapłacisz.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        /* ===== RESET & BASE ===== */
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: #1a1a2e;
-            background: #f8f9fc;
-            line-height: 1.7;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { text-decoration: none; color: inherit; }
-        img { max-width: 100%; height: auto; display: block; }
-        button { cursor: pointer; border: none; font-family: inherit; }
-        ul, ol { list-style: none; }
-
-        /* ===== VARIABLES ===== */
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --orange-hover: #ea580c;
-            --blue-accent: #3b82f6;
-            --green-accent: #10b981;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --radius-xl: 24px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --shadow-lg: 0 8px 30px rgba(0,0,0,0.12);
-            --max-width: 1200px;
-        }
-
-        .container { max-width: var(--max-width); margin: 0 auto; padding: 0 24px; }
-
-        /* ===== HEADER ===== */
-        .site-header { background: #fff; border-bottom: 1px solid var(--gray-200); position: sticky; top: 0; z-index: 100; }
-        .header-inner { display: flex; align-items: center; justify-content: space-between; height: 64px; }
-        .logo { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 20px; color: var(--gray-900); }
-        .logo-icon { width: 32px; height: 32px; border-radius: 8px; background: var(--purple-primary); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 16px; font-weight: 800; }
-        .main-nav { display: flex; gap: 28px; }
-        .main-nav a { font-size: 14px; font-weight: 500; color: var(--gray-600); transition: color 0.2s; }
-        .main-nav a:hover, .main-nav a.active { color: var(--purple-primary); }
-        .header-actions { display: flex; align-items: center; gap: 12px; }
-        .btn-find-specialist { background: var(--purple-primary); color: #fff; padding: 10px 20px; border-radius: 50px; font-size: 13px; font-weight: 600; transition: background 0.2s; }
-        .btn-find-specialist:hover { background: var(--purple-dark); }
 
         /* ===== READING PROGRESS ===== */
         .reading-progress {
@@ -233,45 +186,18 @@
         .related-thumb { height: 140px; background: linear-gradient(135deg, #ede9fe, #dbeafe); display: flex; align-items: center; justify-content: center; font-size: 40px; }
         .related-body { padding: 16px; }
         .related-body h3 { font-size: 15px; font-weight: 600; color: var(--gray-900); margin-bottom: 6px; }
-        .related-body p { font-size: 13px; color: var(--gray-500); }
-
-        /* ===== FOOTER ===== */
-        .site-footer { background: var(--gray-900); color: rgba(255,255,255,0.6); padding: 48px 0 24px; }
-        .footer-bottom { display: flex; align-items: center; justify-content: space-between; padding-top: 24px; border-top: 1px solid rgba(255,255,255,0.1); font-size: 12px; }
-        .footer-links { display: flex; gap: 20px; }
-        .footer-links a { color: rgba(255,255,255,0.5); transition: color 0.2s; }
-        .footer-links a:hover { color: #fff; }
-
-        @media (max-width: 900px) {
+        .related-body p { font-size: 13px; color: var(--gray-500); }@media (max-width: 900px) {
             .article-layout { grid-template-columns: 1fr; }
             .article-sidebar { position: static; }
             .related-grid { grid-template-columns: 1fr; }
-            .main-nav { display: none; }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
-
+<body <?php body_class(); ?>>
+<?php wp_body_open(); pp_pro_header( 'poradniki' ); ?>
 <div class="reading-progress" id="readingProgress"></div>
 
-<!-- HEADER -->
-<header class="site-header">
-    <div class="container">
-        <div class="header-inner">
-            <a href="/" class="logo"><div class="logo-icon">P</div> Poradnik.pro</a>
-            <nav class="main-nav">
-                <a href="/poradniki" class="active">Poradniki</a>
-                <a href="/porownania">Porównania</a>
-                <a href="/rankingi">Rankingi</a>
-                <a href="/kalkulatory">Kalkulatory</a>
-                <a href="/eksperci">Eksperci</a>
-            </nav>
-            <div class="header-actions">
-                <a href="/dla-specjalistow" class="btn-find-specialist">Dla specjalistów</a>
-            </div>
-        </div>
-    </div>
-</header>
 
 <!-- ARTICLE HERO -->
 <section class="article-hero">
@@ -529,19 +455,7 @@
     </div>
 </section>
 
-<!-- FOOTER -->
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-bottom">
-            <span>&copy; 2026 Poradnik.pro. Wszelkie prawa zastrzeżone.</span>
-            <div class="footer-links">
-                <a href="#">Regulamin</a>
-                <a href="#">Polityka prywatności</a>
-                <a href="#">Kontakt</a>
-            </div>
-        </div>
-    </div>
-</footer>
+<?php pp_pro_footer(); ?>
 
 <script>
 // Reading progress bar
@@ -557,5 +471,6 @@ window.addEventListener('scroll', function() {
 }, { passive: true });
 </script>
 
+<?php wp_footer(); ?>
 </body>
 </html>
