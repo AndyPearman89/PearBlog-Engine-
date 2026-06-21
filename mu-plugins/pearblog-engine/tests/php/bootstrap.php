@@ -522,6 +522,12 @@ if ( ! class_exists( 'WP_Role' ) ) {
 			$this->name         = $role;
 			$this->capabilities = $capabilities;
 		}
+		public function add_cap( string $cap, bool $grant = true ): void {
+			$this->capabilities[ $cap ] = $grant;
+		}
+		public function has_cap( string $cap ): bool {
+			return ! empty( $this->capabilities[ $cap ] );
+		}
 	}
 }
 
@@ -1213,6 +1219,27 @@ if ( ! function_exists( 'checked' ) ) {
 			echo $result;
 		}
 		return $result;
+	}
+}
+
+if ( ! function_exists( 'is_network_admin' ) ) {
+	function is_network_admin(): bool {
+		return $GLOBALS['_is_network_admin'] ?? false;
+	}
+}
+
+if ( ! function_exists( 'wp_die' ) ) {
+	function wp_die( $message = '', $title = '', $args = [] ): void {
+		$code = is_array( $args ) ? ( $args['response'] ?? 200 ) : (int) $args;
+		throw new \RuntimeException( is_string( $message ) ? $message : 'wp_die', $code );
+	}
+}
+
+if ( ! function_exists( 'wp_redirect' ) ) {
+	function wp_redirect( string $location, int $status = 302 ): bool {
+		$GLOBALS['_redirect_location'] = $location;
+		$GLOBALS['_redirect_status']   = $status;
+		return true;
 	}
 }
 

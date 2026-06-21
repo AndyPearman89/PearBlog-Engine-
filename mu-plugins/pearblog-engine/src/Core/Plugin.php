@@ -45,6 +45,7 @@ use PearBlogEngine\DecisionPlatform\DecisionPlatformManager;
 use PearBlogEngine\Analytics\ConversionFlowTracker;
 use PearBlogEngine\Database\PoradnikV3Schema;
 use PearBlogEngine\Integration\PT24Bridge;
+use PearBlogEngine\Security\RBACManager;
 
 // V9.0 modules.
 use PearBlogEngine\Analytics\PredictiveAnalytics;
@@ -166,6 +167,9 @@ class Plugin {
 
 		// PT24 Integration – Content-to-Lead bridge.
 		( new PT24Bridge() )->init();
+
+		// Role-Based Access Control – assign custom capabilities to roles.
+		( new RBACManager() )->register();
 
 		// V9.0 modules.
 		( new PredictiveAnalytics() )->register();
