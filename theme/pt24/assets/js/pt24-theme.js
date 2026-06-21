@@ -57,18 +57,12 @@
      */
     var header = document.querySelector('header');
     if (header) {
-        var lastScroll = 0;
-
         window.addEventListener('scroll', function () {
-            var currentScroll = window.pageYOffset;
-
-            if (currentScroll > 100) {
+            if (window.pageYOffset > 100) {
                 header.classList.add('shadow-sm');
             } else {
                 header.classList.remove('shadow-sm');
             }
-
-            lastScroll = currentScroll;
         }, { passive: true });
     }
 })();
