@@ -160,14 +160,27 @@ $data = $pt24_service_data[ $service_slug ] ?? array(
 /**
  * Deterministic sample firms for the city (real-looking local directory entries).
  */
-$pt24_suffixes = array( 'Serwis', 'Profi', 'Express', 'Fachowcy', 'Mistrz', 'Partner' );
-$firms         = array();
-for ( $i = 0; $i < 3; $i++ ) {
-    $firms[] = array(
-        'name'   => sprintf( '%s %s %s', $service_name, $city_name, $pt24_suffixes[ ( crc32( $city_slug . $service_slug . $i ) % count( $pt24_suffixes ) ) ] ),
-        'rating' => number_format( 4.5 + ( ( crc32( $city_slug . $i ) % 5 ) / 10 ), 1, ',', '' ),
-        'jobs'   => 60 + ( crc32( $service_slug . $city_slug . $i ) % 240 ),
-    );
+$firms = array();
+$pt24_city_firms = get_posts( array( 'post_type' => 'pt24_firm', 'post_status' => 'publish', 'numberposts' => 3, 'meta_key' => 'pt24_firm_city', 'meta_value' => $city_slug, 'orderby' => 'title', 'order' => 'ASC', 'suppress_filters' => true ) );
+if ( ! empty( $pt24_city_firms ) ) {
+    foreach ( $pt24_city_firms as $pt24_cf ) {
+        $firms[] = array(
+            'name'   => get_the_title( $pt24_cf ),
+            'rating' => (string) get_post_meta( $pt24_cf->ID, 'pt24_firm_rating', true ),
+            'jobs'   => (int) get_post_meta( $pt24_cf->ID, 'pt24_firm_jobs', true ),
+            'url'    => get_permalink( $pt24_cf ),
+        );
+    }
+} else {
+    $pt24_suffixes = array( 'Serwis', 'Profi', 'Express', 'Fachowcy', 'Mistrz', 'Partner' );
+    for ( $i = 0; $i < 3; $i++ ) {
+        $firms[] = array(
+            'name'   => sprintf( '%s %s %s', $service_name, $city_name, $pt24_suffixes[ ( crc32( $city_slug . $service_slug . $i ) % count( $pt24_suffixes ) ) ] ),
+            'rating' => number_format( 4.5 + ( ( crc32( $city_slug . $i ) % 5 ) / 10 ), 1, ',', '' ),
+            'jobs'   => 60 + ( crc32( $service_slug . $city_slug . $i ) % 240 ),
+            'url'    => '',
+        );
+    }
 }
 
 // Service icon (shared with the homepage icon set) for the firm cards.
@@ -295,10 +308,14 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                         <div class="pt24-firm">
                             <div class="pt24-firm__head">
                                 <span class="pt24-firm__ico"><span class="pt24-ico pt24-ico--<?php echo esc_attr( $pt24_service_icon ); ?>" aria-hidden="true"></span></span>
-                                <h3 class="pt24-firm__name"><?php echo esc_html( $firm['name'] ); ?></h3>
+                                <h3 class="pt24-firm__name"><?php if ( ! empty( $firm['url'] ) ) : ?><a href="<?php echo esc_url( $firm['url'] ); ?>"><?php echo esc_html( $firm['name'] ); ?></a><?php else : ?><?php echo esc_html( $firm['name'] ); ?><?php endif; ?></h3>
                             </div>
                             <p class="pt24-firm__meta">★ <?php echo esc_html( $firm['rating'] ); ?> · <?php echo (int) $firm['jobs']; ?> zrealizowanych zleceń</p>
-                            <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost">Zapytaj o wycenę</a>
+                            <?php if ( ! empty( $firm['url'] ) ) : ?>
+                                <a href="<?php echo esc_url( $firm['url'] ); ?>" class="pt24-btn pt24-btn--ghost">Zobacz profil</a>
+                            <?php else : ?>
+                                <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost">Zapytaj o wycenę</a>
+                            <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>

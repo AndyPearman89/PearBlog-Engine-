@@ -82,6 +82,7 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     require_once PEARBLOG_DIR . '/inc/pt24-sitemap.php';       // XML sitemap + robots.txt.
     require_once PEARBLOG_DIR . '/inc/pt24-adsense.php';       // Configurable AdSense + ads.txt.
     require_once PEARBLOG_DIR . '/inc/pt24-blog.php';          // Blog archive routing.
+    require_once PEARBLOG_DIR . '/inc/pt24-firm-cpt.php';      // Company profile CPT (/firma/{slug}/).
 
     // Bootstrap the landing CPT explicitly. Its own bootstrap hooks init() onto
     // the `init` action, and init() then registers register_post_type() /
@@ -91,6 +92,10 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     // rules are actually created.
     if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
         PearBlog_PT24_Landing_CPT::init();
+    }
+
+    if ( class_exists( 'PearBlog_PT24_Firm_CPT' ) ) {
+        PearBlog_PT24_Firm_CPT::init();
     }
 }
 unset( $pearblog_active_url );

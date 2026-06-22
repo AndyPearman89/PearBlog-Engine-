@@ -85,6 +85,17 @@ function pt24_sitemap_entries() {
         }
     }
 
+    // Company profiles.
+    $firms = get_posts( array(
+        'post_type'        => 'pt24_firm',
+        'post_status'      => 'publish',
+        'numberposts'      => 200,
+        'suppress_filters' => true,
+    ) );
+    foreach ( $firms as $firm ) {
+        $entries[] = array( 'loc' => pt24_sitemap_url( '/firma/' . $firm->post_name . '/' ), 'priority' => '0.5' );
+    }
+
     return $entries;
 }
 

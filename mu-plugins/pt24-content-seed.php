@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '1.5.0';
+const PT24_SEED_VERSION = '1.6.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -613,6 +613,57 @@ function pt24_seed_blog(): void {
 }
 
 /**
+ * Seed company (firm) profiles — a few multi-trade firms per city.
+ */
+function pt24_seed_firms(): void {
+    $cities = array(
+        'warszawa' => 'Warszawa',
+        'krakow'   => 'Kraków',
+        'wroclaw'  => 'Wrocław',
+        'poznan'   => 'Poznań',
+        'gdansk'   => 'Gdańsk',
+        'katowice' => 'Katowice',
+    );
+    $all_services = 'hydraulik,elektryk,mechanik,pompa-ciepla,remont-lazienki,fotowoltaika';
+    $brands = array(
+        array( 'pre' => 'FachowcyPro', 'desc' => 'Wielobranżowa ekipa z wieloletnim doświadczeniem.' ),
+        array( 'pre' => 'Serwis24',    'desc' => 'Lokalny serwis dostępny od ręki, także w nagłych awariach.' ),
+        array( 'pre' => 'MasterFix',   'desc' => 'Specjaliści od remontów, instalacji i nowoczesnych systemów grzewczych.' ),
+    );
+
+    foreach ( $cities as $cslug => $cname ) {
+        foreach ( $brands as $brand ) {
+            $name    = $brand['pre'] . ' ' . $cname;
+            $slug    = sanitize_title( $brand['pre'] . '-' . $cslug );
+            $seed    = crc32( $cslug . $brand['pre'] );
+            $rating  = number_format( 4.6 + ( $seed % 4 ) / 10, 1, ',', '' );
+            $jobs    = 80 + ( $seed % 320 );
+            $year    = 2008 + ( $seed % 14 );
+            $content = '<p>' . $brand['desc'] . ' Działamy na terenie miasta ' . $cname . ' i okolic, oferując kompleksowe usługi: hydraulika, elektryka, mechanika, montaż pomp ciepła, remonty łazienek oraz fotowoltaikę.</p>'
+                . '<p>Stawiamy na terminowość, przejrzyste wyceny i jakość wykonania. Każde zlecenie traktujemy indywidualnie, a po realizacji zbieramy opinie klientów.</p>';
+
+            $existing = get_posts( array( 'name' => $slug, 'post_type' => 'pt24_firm', 'post_status' => 'any', 'numberposts' => 1, 'suppress_filters' => true ) );
+            if ( ! empty( $existing ) ) {
+                $fid = (int) $existing[0]->ID;
+                wp_update_post( array( 'ID' => $fid, 'post_title' => $name, 'post_content' => $content, 'post_status' => 'publish' ) );
+            } else {
+                $fid = (int) wp_insert_post( array( 'post_title' => $name, 'post_name' => $slug, 'post_content' => $content, 'post_status' => 'publish', 'post_type' => 'pt24_firm' ) );
+            }
+
+            if ( $fid > 0 ) {
+                update_post_meta( $fid, '_pt24_seeded', PT24_SEED_VERSION );
+                update_post_meta( $fid, 'pt24_firm_city', $cslug );
+                update_post_meta( $fid, 'pt24_firm_city_name', $cname );
+                update_post_meta( $fid, 'pt24_firm_services', $all_services );
+                update_post_meta( $fid, 'pt24_firm_rating', $rating );
+                update_post_meta( $fid, 'pt24_firm_jobs', (string) $jobs );
+                update_post_meta( $fid, 'pt24_firm_established', (string) $year );
+            }
+        }
+    }
+}
+
+/**
  * Main seed runner — guarded so it runs once per version on the pt24 host.
  */
 function pt24_run_content_seed(): void {
@@ -634,6 +685,7 @@ function pt24_run_content_seed(): void {
     pt24_seed_landings();
     pt24_seed_menus( $ids );
     pt24_seed_blog();
+    pt24_seed_firms();
 
     flush_rewrite_rules();
 
