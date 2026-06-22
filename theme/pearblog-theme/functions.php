@@ -177,6 +177,13 @@ function pearblog_enqueue_assets() {
     wp_enqueue_style('pt24-cta', PEARBLOG_URI . '/assets/css/pt24-cta.css', array(), PEARBLOG_VERSION);
     wp_enqueue_script('pt24-tracking', PEARBLOG_URI . '/assets/js/pt24-cta-tracking.js', array(), PEARBLOG_VERSION, true);
 
+    // PT24.PRO unified site styles — landings + static pages + homepage.
+    // Host-guarded: load only on the PT24 install (home_url path contains 'pt24'),
+    // so the shared theme on poradnik.pro / mucharski.pl is unaffected.
+    if ( false !== stripos( (string) home_url( '/' ), 'pt24' ) ) {
+        wp_enqueue_style('pt24-site', PEARBLOG_URI . '/assets/css/pt24-site.css', array('pearblog-components'), PEARBLOG_VERSION);
+    }
+
     // Poradnik V4 HI-PRO Content Hub
     if (is_page_template('page-poradnik-v4-hipro.php')) {
         wp_enqueue_style('poradnik-v4-hipro', PEARBLOG_URI . '/assets/css/poradnik-v4-hipro.css', array('pearblog-style'), PEARBLOG_VERSION);

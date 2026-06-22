@@ -404,5 +404,14 @@ class PearBlog_Poradnik_Pro_Routing {
     }
 }
 
-// Initialize routing
-PearBlog_Poradnik_Pro_Routing::init();
+// Initialize routing.
+// The theme is SHARED with the PT24.PRO install (home_url contains 'pt24'), where
+// these poradnik.pro rewrite rules — especially ^kontakt/?$ → poradnik_type=contact
+// and the matching template_include override — would hijack PT24's own pages.
+// Skip initialization on PT24 only; poradnik.pro and other installs are untouched.
+$pearblog_ppr_url = function_exists( 'home_url' ) ? (string) home_url( '/' ) : (string) ( $_SERVER['HTTP_HOST'] ?? '' );
+if ( false === stripos( $pearblog_ppr_url, 'pt24' ) ) {
+    PearBlog_Poradnik_Pro_Routing::init();
+}
+unset( $pearblog_ppr_url );
+

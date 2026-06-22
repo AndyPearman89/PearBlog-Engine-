@@ -1,0 +1,232 @@
+/**
+ * PT24.PRO — unified site stylesheet
+ *
+ * Single source of truth for the PT24 visual language, shared by:
+ *   - service/city landing pages (single-pt24_landing.php)
+ *   - the static homepage and content pages (seeded by pt24-content-seed.php)
+ *
+ * Enqueued host-guarded (PT24 install only) from functions.php, so these rules
+ * never affect poradnik.pro / mucharski.pl which share the same theme.
+ */
+
+:root {
+    --pt24-blue: #2563eb;
+    --pt24-blue-dark: #1e3a8a;
+    --pt24-dark: #0f172a;
+    --pt24-muted: #64748b;
+    --pt24-bg: #f8fafc;
+    --pt24-border: #e2e8f0;
+    --pt24-amber: #f59e0b;
+    --pt24-amber-dark: #d97706;
+    --pt24-green: #16a34a;
+}
+
+/* ===================================================================
+   Shared building blocks
+   =================================================================== */
+.pt24-btn {
+    display: inline-block;
+    padding: .8rem 1.4rem;
+    border-radius: 8px;
+    font-weight: 600;
+    text-decoration: none;
+    cursor: pointer;
+    border: 0;
+    font-size: 1rem;
+    transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+.pt24-btn--primary { background: var(--pt24-amber); color: #1f2937; }
+.pt24-btn--primary:hover { background: var(--pt24-amber-dark); color: #fff; transform: translateY(-1px); }
+.pt24-btn--ghost { background: transparent; border: 1px solid var(--pt24-blue); color: var(--pt24-blue); }
+.pt24-btn--ghost:hover { background: var(--pt24-blue); color: #fff; }
+.pt24-btn--block { display: block; width: 100%; text-align: center; }
+
+/* ===================================================================
+   Landing pages ( /{city}/{service}/ )
+   =================================================================== */
+.pt24-landing { color: var(--pt24-dark); }
+.pt24-hero { background: linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue)); color: #fff; padding: 48px 0; }
+.pt24-hero__title { font-size: 2rem; line-height: 1.2; margin: .4rem 0; color: #fff; }
+.pt24-hero__lead { font-size: 1.15rem; max-width: 46rem; opacity: .95; }
+.pt24-hero__cta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 1.2rem 0 .6rem; }
+.pt24-hero__note { font-size: .9rem; opacity: .85; }
+.pt24-trust { list-style: none; display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0; margin: 1rem 0 0; font-size: .95rem; }
+.pt24-trust li { opacity: .95; }
+.pt24-grid { display: grid; grid-template-columns: 1fr 360px; gap: 2.5rem; padding-top: 2.5rem; padding-bottom: 2.5rem; }
+.pt24-intro { font-size: 1.1rem; color: #334155; }
+.pt24-section { margin: 2rem 0; }
+.pt24-section h2 { font-size: 1.5rem; margin-bottom: .8rem; }
+.pt24-tasks { columns: 2; gap: 1.2rem; padding-left: 1.2rem; }
+.pt24-prices { width: 100%; border-collapse: collapse; }
+.pt24-prices th, .pt24-prices td { text-align: left; padding: .7rem .6rem; border-bottom: 1px solid var(--pt24-border); }
+.pt24-prices th { background: var(--pt24-bg); }
+.pt24-steps { padding-left: 1.2rem; }
+.pt24-steps li { margin: .5rem 0; }
+.pt24-firms { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; }
+.pt24-firm { border: 1px solid var(--pt24-border); border-radius: 10px; padding: 1rem; background: #fff; }
+.pt24-firm__name { font-size: 1.05rem; margin: 0 0 .3rem; }
+.pt24-firm__meta { color: var(--pt24-muted); font-size: .9rem; margin: 0 0 .8rem; }
+.pt24-faq__item { border: 1px solid var(--pt24-border); border-radius: 8px; padding: .8rem 1rem; margin: .6rem 0; background: #fff; }
+.pt24-faq__item summary { font-weight: 600; cursor: pointer; }
+.pt24-leadbox { position: sticky; top: 90px; border: 1px solid var(--pt24-border); border-radius: 12px; padding: 1.4rem; background: #fff; box-shadow: 0 10px 30px rgba(15, 23, 42, .06); }
+.pt24-leadbox__title { font-size: 1.25rem; margin: 0 0 .2rem; }
+.pt24-leadbox__sub { color: var(--pt24-muted); margin: 0 0 1rem; }
+.pt24-leadform label { display: block; font-size: .9rem; font-weight: 600; margin: .6rem 0 .2rem; }
+.pt24-leadform input, .pt24-leadform textarea { width: 100%; padding: .6rem .7rem; border: 1px solid #cbd5e1; border-radius: 8px; font: inherit; }
+.pt24-leadform__note { font-size: .8rem; color: var(--pt24-muted); margin-top: .6rem; }
+.pt24-leadform__result { font-weight: 600; margin-top: .8rem; }
+.pt24-internal { background: var(--pt24-bg); padding: 2rem 0; }
+.pt24-links { list-style: none; display: flex; flex-wrap: wrap; gap: .5rem 1.2rem; padding: 0; margin: .5rem 0 1.5rem; }
+.pt24-links a { color: var(--pt24-blue); text-decoration: none; }
+.pt24-links a:hover { text-decoration: underline; }
+
+/* ===================================================================
+   Static content pages ( wrapped in .pt24-page )
+   =================================================================== */
+.pt24-page { color: var(--pt24-dark); font-size: 1.02rem; line-height: 1.7; }
+.pt24-page > * + * { margin-top: 1.1rem; }
+.pt24-page h2 { font-size: 1.6rem; line-height: 1.25; margin: 2.2rem 0 .8rem; padding-left: .8rem; border-left: 4px solid var(--pt24-blue); }
+.pt24-page h3 { font-size: 1.2rem; margin: 1.6rem 0 .5rem; }
+.pt24-page p { color: #334155; }
+.pt24-page ul, .pt24-page ol { padding-left: 1.3rem; }
+.pt24-page li { margin: .35rem 0; }
+.pt24-page a { color: var(--pt24-blue); }
+
+/* Intro / lead paragraph */
+.pt24-lead { font-size: 1.18rem; color: #1f2937; font-weight: 500; }
+
+/* Banner band reused at the top of content pages */
+.pt24-band {
+    background: linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue));
+    color: #fff;
+    border-radius: 14px;
+    padding: 2rem 1.8rem;
+    margin-bottom: 1.6rem;
+}
+.pt24-band h2 { color: #fff; border: 0; padding: 0; margin: 0 0 .5rem; }
+.pt24-band p { color: rgba(255, 255, 255, .92); margin: 0; max-width: 44rem; }
+
+/* Feature / value grid */
+.pt24-features {
+    list-style: none;
+    padding: 0;
+    margin: 1.2rem 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    gap: 1rem;
+}
+.pt24-features li {
+    margin: 0;
+    background: #fff;
+    border: 1px solid var(--pt24-border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+    box-shadow: 0 6px 18px rgba(15, 23, 42, .04);
+}
+.pt24-features li strong { display: block; font-size: 1.05rem; margin-bottom: .3rem; color: var(--pt24-dark); }
+
+/* Numbered "how it works" cards */
+.pt24-flow {
+    list-style: none;
+    counter-reset: pt24flow;
+    padding: 0;
+    margin: 1.2rem 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.pt24-flow li {
+    counter-increment: pt24flow;
+    position: relative;
+    background: #fff;
+    border: 1px solid var(--pt24-border);
+    border-radius: 12px;
+    padding: 1.4rem 1.2rem 1.1rem;
+    margin: 0;
+}
+.pt24-flow li::before {
+    content: counter(pt24flow);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: var(--pt24-blue);
+    color: #fff;
+    font-weight: 700;
+    margin-bottom: .6rem;
+}
+.pt24-flow li strong { display: block; margin-bottom: .25rem; }
+
+/* Pricing / generic tables inside pages */
+.pt24-page table { width: 100%; border-collapse: collapse; margin: 1.2rem 0; background: #fff; border: 1px solid var(--pt24-border); border-radius: 10px; overflow: hidden; }
+.pt24-page th, .pt24-page td { text-align: left; padding: .8rem .9rem; border-bottom: 1px solid var(--pt24-border); }
+.pt24-page thead th { background: var(--pt24-bg); font-size: .95rem; }
+.pt24-page tbody tr:last-child td { border-bottom: 0; }
+
+/* Info / note box */
+.pt24-note {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-left: 4px solid var(--pt24-blue);
+    border-radius: 8px;
+    padding: 1rem 1.2rem;
+    color: #1e3a8a;
+}
+
+/* Contact cards */
+.pt24-contact {
+    list-style: none;
+    padding: 0;
+    margin: 1.2rem 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+}
+.pt24-contact li {
+    margin: 0;
+    background: #fff;
+    border: 1px solid var(--pt24-border);
+    border-radius: 12px;
+    padding: 1.1rem 1.2rem;
+}
+.pt24-contact li strong { display: block; color: var(--pt24-muted); font-size: .85rem; text-transform: uppercase; letter-spacing: .03em; margin-bottom: .3rem; }
+.pt24-contact li a { font-size: 1.1rem; font-weight: 600; }
+
+/* Call-to-action band at the foot of pages */
+.pt24-cta-band {
+    text-align: center;
+    background: var(--pt24-dark);
+    color: #fff;
+    border-radius: 14px;
+    padding: 2.2rem 1.6rem;
+    margin: 2rem 0 0;
+}
+.pt24-cta-band h2 { color: #fff; border: 0; padding: 0; margin: 0 0 .5rem; }
+.pt24-cta-band p { color: rgba(255, 255, 255, .85); margin: 0 0 1.2rem; }
+
+/* ===================================================================
+   Homepage
+   =================================================================== */
+.pt24-home__hero { text-align: center; padding: 1rem 0 .5rem; }
+.pt24-home__hero h2 { font-size: 2.1rem; border: 0; padding: 0; }
+.pt24-home__hero p { font-size: 1.15rem; color: var(--pt24-muted); max-width: 42rem; margin-inline: auto; }
+.pt24-home__values ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
+.pt24-home__values li { background: #fff; border: 1px solid var(--pt24-border); border-radius: 12px; padding: 1.1rem 1.2rem; box-shadow: 0 6px 18px rgba(15, 23, 42, .04); }
+.pt24-home__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
+.pt24-home__card { border: 1px solid var(--pt24-border); border-radius: 12px; padding: 1.2rem; background: #fff; }
+.pt24-home__card h3 { margin: .2rem 0 .6rem; }
+.pt24-home__card a { color: var(--pt24-blue); text-decoration: none; }
+.pt24-home__card a:hover { text-decoration: underline; }
+.pt24-home__how ol { padding-left: 1.3rem; }
+.pt24-home__cta { text-align: center; margin-top: 1.5rem; }
+
+/* ===================================================================
+   Responsive
+   =================================================================== */
+@media (max-width: 900px) {
+    .pt24-grid { grid-template-columns: 1fr; }
+    .pt24-tasks { columns: 1; }
+    .pt24-leadbox { position: static; }
+}

@@ -172,48 +172,6 @@ for ( $i = 0; $i < 3; $i++ ) {
 
 $ajax_url = admin_url( 'admin-ajax.php' );
 ?>
-<style>
-.pt24-landing{--pt24-blue:#2563eb;--pt24-dark:#0f172a;--pt24-muted:#64748b;--pt24-bg:#f8fafc;color:var(--pt24-dark);}
-.pt24-hero{background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;padding:48px 0;}
-.pt24-hero__title{font-size:2rem;line-height:1.2;margin:.4rem 0;color:#fff;}
-.pt24-hero__lead{font-size:1.15rem;max-width:46rem;opacity:.95;}
-.pt24-hero__cta{display:flex;align-items:center;gap:1rem;flex-wrap:wrap;margin:1.2rem 0 .6rem;}
-.pt24-hero__note{font-size:.9rem;opacity:.85;}
-.pt24-trust{list-style:none;display:flex;gap:1.5rem;flex-wrap:wrap;padding:0;margin:1rem 0 0;font-size:.95rem;}
-.pt24-trust li{opacity:.95;}
-.pt24-btn{display:inline-block;padding:.8rem 1.4rem;border-radius:8px;font-weight:600;text-decoration:none;cursor:pointer;border:0;font-size:1rem;}
-.pt24-btn--primary{background:#f59e0b;color:#1f2937;}
-.pt24-btn--primary:hover{background:#d97706;color:#fff;}
-.pt24-btn--ghost{background:transparent;border:1px solid var(--pt24-blue);color:var(--pt24-blue);}
-.pt24-btn--block{display:block;width:100%;text-align:center;}
-.pt24-grid{display:grid;grid-template-columns:1fr 360px;gap:2.5rem;padding-top:2.5rem;padding-bottom:2.5rem;}
-.pt24-intro{font-size:1.1rem;color:#334155;}
-.pt24-section{margin:2rem 0;}
-.pt24-section h2{font-size:1.5rem;margin-bottom:.8rem;}
-.pt24-tasks{columns:2;gap:1.2rem;padding-left:1.2rem;}
-.pt24-prices{width:100%;border-collapse:collapse;}
-.pt24-prices th,.pt24-prices td{text-align:left;padding:.7rem .6rem;border-bottom:1px solid #e2e8f0;}
-.pt24-prices th{background:var(--pt24-bg);}
-.pt24-steps{padding-left:1.2rem;}
-.pt24-steps li{margin:.5rem 0;}
-.pt24-firms{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;}
-.pt24-firm{border:1px solid #e2e8f0;border-radius:10px;padding:1rem;background:#fff;}
-.pt24-firm__name{font-size:1.05rem;margin:0 0 .3rem;}
-.pt24-firm__meta{color:var(--pt24-muted);font-size:.9rem;margin:0 0 .8rem;}
-.pt24-faq__item{border:1px solid #e2e8f0;border-radius:8px;padding:.8rem 1rem;margin:.6rem 0;background:#fff;}
-.pt24-faq__item summary{font-weight:600;cursor:pointer;}
-.pt24-leadbox{position:sticky;top:90px;border:1px solid #e2e8f0;border-radius:12px;padding:1.4rem;background:#fff;box-shadow:0 10px 30px rgba(15,23,42,.06);}
-.pt24-leadbox__title{font-size:1.25rem;margin:0 0 .2rem;}
-.pt24-leadbox__sub{color:var(--pt24-muted);margin:0 0 1rem;}
-.pt24-leadform label{display:block;font-size:.9rem;font-weight:600;margin:.6rem 0 .2rem;}
-.pt24-leadform input,.pt24-leadform textarea{width:100%;padding:.6rem .7rem;border:1px solid #cbd5e1;border-radius:8px;font:inherit;}
-.pt24-leadform__note{font-size:.8rem;color:var(--pt24-muted);margin-top:.6rem;}
-.pt24-internal{background:var(--pt24-bg);padding:2rem 0;}
-.pt24-links{list-style:none;display:flex;flex-wrap:wrap;gap:.5rem 1.2rem;padding:0;margin:.5rem 0 1.5rem;}
-.pt24-links a{color:var(--pt24-blue);text-decoration:none;}
-.pt24-links a:hover{text-decoration:underline;}
-@media(max-width:900px){.pt24-grid{grid-template-columns:1fr;}.pt24-tasks{columns:1;}.pt24-leadbox{position:static;}}
-</style>
 <main id="main" class="pb-main pt24-landing" role="main">
 
     <section class="pt24-hero">
