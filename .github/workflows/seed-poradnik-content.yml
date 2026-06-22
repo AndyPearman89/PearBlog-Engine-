@@ -127,6 +127,13 @@ jobs:
           echo "==> WordPress path: $WP_PATH"
           echo "==> WordPress version: $($WP core version)"
 
+          # ---- 0. Fix site identity (branding) ----
+          echo "==> Setting site title and tagline (branding)"
+          $WP option update blogname 'Poradnik.pro'
+          $WP option update blogdescription 'Praktyczne poradniki: remont, budowa, auto, finanse i dom'
+          echo "  blogname:        $($WP option get blogname)"
+          echo "  blogdescription: $($WP option get blogdescription)"
+
           # ---- helper: normalise a display name to a URL slug ----
           make_slug() {
             local raw="$1"
