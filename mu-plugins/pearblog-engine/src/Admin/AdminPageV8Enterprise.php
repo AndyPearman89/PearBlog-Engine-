@@ -213,7 +213,7 @@ class AdminPageV8Enterprise {
 		wp_localize_script( 'pearblog-admin-v8-js', 'pbV8Data', [
 			'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
 			'nonce'             => wp_create_nonce( 'pb_v8_nonce' ),
-			'currentTab'        => $_GET['tab'] ?? 'dashboard',
+			'currentTab'        => isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'dashboard',
 			'theme'             => get_option( 'pearblog_v8_theme', 'light' ),
 			'language'          => get_option( 'pearblog_v8_language', 'en' ),
 			'realtimeEnabled'   => (bool) get_option( 'pearblog_v8_realtime_enabled', true ),
@@ -262,7 +262,7 @@ class AdminPageV8Enterprise {
 	 * Render main admin page
 	 */
 	public function render_page(): void {
-		$current_tab = $_GET['tab'] ?? 'dashboard';
+		$current_tab = isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'dashboard';
 		$current_theme = get_option( 'pearblog_v8_theme', 'light' );
 		$current_lang = get_option( 'pearblog_v8_language', 'en' );
 
@@ -1953,6 +1953,7 @@ class AdminPageV8Enterprise {
 	 * ⚙️ Automation Pro — n8n integration guide + token management
 	 */
 	private function render_automation_tab(): void {
+		$factory_ok = class_exists( 'PT24_AI_Factory' );
 		$token     = (string) get_option( 'pt24_webhook_token', '' );
 		$rest_base = rest_url( 'pt24/v2' );
 		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
@@ -1970,7 +1971,7 @@ class AdminPageV8Enterprise {
 				$this->render_metric_card( [ 'label' => 'REST endpoint',   'value' => 'Aktywny', 'icon' => '🔗', 'color' => 'success' ] );
 				$this->render_metric_card( [ 'label' => 'Token webhook',   'value' => '' !== $token ? 'Ustawiony' : 'Brak', 'icon' => '🔑', 'color' => '' !== $token ? 'success' : 'warning' ] );
 				$this->render_metric_card( [ 'label' => 'OpenAI API',      'value' => '' !== get_option('pt24_openai_api_key','') ? 'Skonfigurowane' : 'Brak klucza', 'icon' => '🤖', 'color' => '' !== get_option('pt24_openai_api_key','') ? 'success' : 'warning' ] );
-				$this->render_metric_card( [ 'label' => 'Cron (batch)',    'value' => wp_next_scheduled( PT24_AI_Factory::CRON_HOOK ) ? 'Aktywny' : 'Nieaktywny', 'icon' => '⏱', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Cron (batch)', 'value' => ( $factory_ok && wp_next_scheduled( PT24_AI_Factory::CRON_HOOK ) ) ? 'Aktywny' : 'Nieaktywny', 'icon' => '⏱', 'color' => 'primary' ] );
 				?>
 			</div>
 
