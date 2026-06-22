@@ -34,7 +34,6 @@ jobs:
           [[ -z "${{ secrets.FTP_HOST }}" ]] && MISSING+=("FTP_HOST")
           [[ -z "${{ secrets.FTP_USERNAME }}" ]] && MISSING+=("FTP_USERNAME")
           [[ -z "${{ secrets.FTP_PASSWORD }}" ]] && MISSING+=("FTP_PASSWORD")
-          [[ -z "${{ secrets.FTP_PORT }}" ]] && MISSING+=("FTP_PORT")
           if [[ ${#MISSING[@]} -gt 0 ]]; then
             echo "::error::Missing required secrets: ${MISSING[*]}"
             echo "Add them under Settings → Secrets and variables → Actions"
@@ -49,16 +48,19 @@ jobs:
               ;;
           esac
           # Empty/unset FTP_PROTOCOL falls back to ftp; non-empty invalid values fail above.
-          if [[ -n "${{ secrets.FTP_PORT }}" && ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
+          PORT="${{ secrets.FTP_PORT }}"
+          PORT="${PORT:-21}"
+          if [[ ! "$PORT" =~ ^[0-9]+$ ]]; then
             echo "::error::FTP_PORT must be numeric."
             exit 1
           fi
-          if [[ -n "${{ secrets.FTP_PORT }}" ]] && (( ${{ secrets.FTP_PORT }} < 1 || ${{ secrets.FTP_PORT }} > 65535 )); then
+          if (( PORT < 1 || PORT > 65535 )); then
             echo "::error::FTP_PORT must be in range 1-65535."
             exit 1
           fi
           echo "Using deployment protocol: $PROTOCOL (default: ftp; set FTP_PROTOCOL secret to override)."
           echo "protocol=$PROTOCOL" >> "$GITHUB_OUTPUT"
+          echo "port=$PORT" >> "$GITHUB_OUTPUT"
 
       - name: Install FTP diagnostics tools
         run: |
@@ -69,13 +71,13 @@ jobs:
         env:
           FTP_PROTOCOL: ${{ steps.preflight.outputs.protocol }}
           FTP_HOST: ${{ secrets.FTP_HOST }}
-          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_PORT: ${{ steps.preflight.outputs.port }}
           FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
           FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
           set -euo pipefail
           HOST="${{ secrets.FTP_HOST }}"
-          PORT="${{ secrets.FTP_PORT }}"
+          PORT="${{ steps.preflight.outputs.port }}"
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
           CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
@@ -120,7 +122,7 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
+          port: ${{ steps.preflight.outputs.port }}
           protocol: ${{ steps.preflight.outputs.protocol }}
           log-level: verbose
           local-dir: ./mu-plugins/pearblog-engine/
@@ -135,7 +137,7 @@ jobs:
           server: ${{ secrets.FTP_HOST }}
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
+          port: ${{ steps.preflight.outputs.port }}
           protocol: ${{ steps.preflight.outputs.protocol }}
           log-level: verbose
           local-dir: ./theme/pearblog-theme/
