@@ -62,6 +62,9 @@ require_once PEARBLOG_DIR . '/inc/poradnik-rpm-lead-fusion.php';
 // Poradnik.PRO URL Routing — Clean URL structure for all page types
 require_once PEARBLOG_DIR . '/inc/poradnik-pro-routing.php';
 
+// Navigation & Footer
+require_once PEARBLOG_DIR . '/inc/poradnik-pro-navigation.php';
+
 // PT24 integration removed — poradnik.pro multisite only
 
 /**
@@ -131,6 +134,9 @@ function pearblog_enqueue_assets() {
 
     // Utilities
     wp_enqueue_style('pearblog-utilities', PEARBLOG_URI . '/assets/css/utilities.css', array('pearblog-components'), PEARBLOG_VERSION);
+
+    // Poradnik.PRO navigation & footer
+    wp_enqueue_style('pp-navigation', PEARBLOG_URI . '/assets/css/poradnik-pro-navigation.css', array('pearblog-utilities'), PEARBLOG_VERSION);
 
     // Lazy load script
     wp_enqueue_script('pearblog-lazyload', PEARBLOG_URI . '/assets/js/lazyload.js', array(), PEARBLOG_VERSION, true);

@@ -519,9 +519,18 @@ create_page "Fotowoltaika vs pompa ciepła — co kupić pierwsze" "porownanie-f
 echo ""
 
 # =============================================================================
-# 9. FINALIZE — Set homepage + flush
+# 9. SEED NAVIGATION MENUS
 # =============================================================================
-echo "==> [9/9] Finalizing — setting homepage and flushing cache"
+echo "==> [9/10] Seeding navigation menus"
+
+$WP eval 'if (function_exists("pp_seed_navigation_menus")) { pp_seed_navigation_menus(); echo "  Menus seeded successfully\n"; } else { echo "  [skip] pp_seed_navigation_menus() not available\n"; }' 2>/dev/null || echo "  [skip] Could not seed menus via WP eval"
+
+echo ""
+
+# =============================================================================
+# 10. FINALIZE — Set homepage + flush
+# =============================================================================
+echo "==> [10/10] Finalizing — setting homepage and flushing cache"
 
 # Set homepage
 HOME_ID=$($WP post list --post_type=page --post_name='home' --field=ID --format=ids 2>/dev/null || true)
