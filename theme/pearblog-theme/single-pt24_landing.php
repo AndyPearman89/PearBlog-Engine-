@@ -319,6 +319,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                         </div>
                     <?php endforeach; ?>
                 </div>
+                <p class="pt24-ranking-link"><a href="<?php echo esc_url( home_url( '/ranking/' . $city_slug . '/' . $service_slug . '/' ) ); ?>">Zobacz pełny ranking: <?php echo esc_html( $service_name . ' ' . $city_name ); ?> →</a></p>
             </section>
 
             <section class="pt24-section">

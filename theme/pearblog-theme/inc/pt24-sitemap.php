@@ -82,6 +82,10 @@ function pt24_sitemap_entries() {
                 'loc'      => pt24_sitemap_url( '/' . $city . '/' . $service . '/' ),
                 'priority' => '0.8',
             );
+            $entries[] = array(
+                'loc'      => pt24_sitemap_url( '/ranking/' . $city . '/' . $service . '/' ),
+                'priority' => '0.6',
+            );
         }
     }
 
