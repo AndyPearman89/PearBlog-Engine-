@@ -424,6 +424,9 @@ class AdminPageV8Enterprise {
 			case 'integrations':
 				$this->render_integrations_tab();
 				break;
+			case 'leads':
+				$this->render_leads_tab();
+				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
 				break;
@@ -814,6 +817,134 @@ class AdminPageV8Enterprise {
 			</p>
 		</div>
 		<?php
+	}
+
+	/**
+	 * Render the Leads & CRM tab — live PT24 lead inbox.
+	 *
+	 * Reads from the PT24 leads table ({prefix}pt24_leads). The engine is shared
+	 * across installs, so a missing table degrades to an empty state instead of an
+	 * error (the table only exists on the PT24 site).
+	 */
+	private function render_leads_tab(): void {
+		$data  = $this->get_pt24_leads_data();
+		$leads = $data['rows'];
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Leads & CRM', 'pearblog-engine' ); ?></h2>
+
+			<?php if ( ! $data['table_exists'] ) : ?>
+				<div class="pb-v8-coming-soon" style="text-align:center; padding:60px 20px;">
+					<div style="font-size:56px; margin-bottom:16px;">📭</div>
+					<h2><?php esc_html_e( 'No lead inbox on this site', 'pearblog-engine' ); ?></h2>
+					<p style="color: var(--pb-v8-text-secondary);">
+						<?php esc_html_e( 'The PT24 leads table was not found on this installation.', 'pearblog-engine' ); ?>
+					</p>
+				</div>
+			<?php else : ?>
+
+				<div class="pb-v8-metrics-grid">
+					<?php
+					$this->render_metric_card( [ 'label' => __( 'Total Leads', 'pearblog-engine' ), 'value' => number_format_i18n( $data['total'] ), 'icon' => '👥', 'color' => 'primary' ] );
+					$this->render_metric_card( [ 'label' => __( 'New / Unhandled', 'pearblog-engine' ), 'value' => number_format_i18n( $data['new'] ), 'icon' => '🆕', 'color' => 'warning' ] );
+					$this->render_metric_card( [ 'label' => __( 'Today', 'pearblog-engine' ), 'value' => number_format_i18n( $data['today'] ), 'icon' => '📅', 'color' => 'success' ] );
+					$this->render_metric_card( [ 'label' => __( 'Last 7 days', 'pearblog-engine' ), 'value' => number_format_i18n( $data['week'] ), 'icon' => '📈', 'color' => 'primary' ] );
+					?>
+				</div>
+
+				<h3 class="pb-v8-section-title" style="margin-top:32px;"><?php esc_html_e( 'Recent leads', 'pearblog-engine' ); ?></h3>
+
+				<?php if ( empty( $leads ) ) : ?>
+					<p style="color: var(--pb-v8-text-secondary);"><?php esc_html_e( 'No leads yet. New enquiries from the site will appear here.', 'pearblog-engine' ); ?></p>
+				<?php else : ?>
+					<div class="pb-v8-table-wrapper">
+						<table class="pb-v8-table">
+							<thead>
+								<tr>
+									<th><?php esc_html_e( 'Date', 'pearblog-engine' ); ?></th>
+									<th><?php esc_html_e( 'Name', 'pearblog-engine' ); ?></th>
+									<th><?php esc_html_e( 'Contact', 'pearblog-engine' ); ?></th>
+									<th><?php esc_html_e( 'Service', 'pearblog-engine' ); ?></th>
+									<th><?php esc_html_e( 'City', 'pearblog-engine' ); ?></th>
+									<th><?php esc_html_e( 'Status', 'pearblog-engine' ); ?></th>
+								</tr>
+							</thead>
+							<tbody>
+								<?php
+								foreach ( $leads as $lead ) :
+									$status = (string) ( $lead->status ?? 'new' );
+									$badge  = $this->lead_status_badge( $status );
+									$phone  = (string) ( $lead->phone ?? '' );
+									$email  = (string) ( $lead->email ?? '' );
+									?>
+									<tr>
+										<td><?php echo esc_html( mysql2date( 'Y-m-d H:i', (string) $lead->created_at ) ); ?></td>
+										<td><strong><?php echo esc_html( (string) $lead->name ); ?></strong></td>
+										<td>
+											<?php if ( '' !== $phone ) : ?>
+												<a href="<?php echo esc_url( 'tel:' . preg_replace( '/[^0-9+]/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a>
+											<?php endif; ?>
+											<?php if ( '' !== $email ) : ?>
+												<br><a href="<?php echo esc_url( 'mailto:' . $email ); ?>"><?php echo esc_html( $email ); ?></a>
+											<?php endif; ?>
+										</td>
+										<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', (string) $lead->service ) ) ); ?></td>
+										<td><?php echo esc_html( ucfirst( (string) $lead->city ) ); ?></td>
+										<td><span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $badge ); ?>"><?php echo esc_html( $status ); ?></span></td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				<?php endif; ?>
+
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Map a lead status to a badge variant available in the V8 stylesheet.
+	 */
+	private function lead_status_badge( string $status ): string {
+		$map = [
+			'new'         => 'primary',
+			'contacted'   => 'warning',
+			'in_progress' => 'warning',
+			'won'         => 'success',
+			'converted'   => 'success',
+			'closed'      => 'success',
+			'lost'        => 'danger',
+			'rejected'    => 'danger',
+			'spam'        => 'danger',
+		];
+		return $map[ strtolower( $status ) ] ?? 'primary';
+	}
+
+	/**
+	 * Fetch PT24 lead KPIs and the most recent rows.
+	 *
+	 * @return array{table_exists:bool,total:int,new:int,today:int,week:int,rows:array}
+	 */
+	private function get_pt24_leads_data(): array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pt24_leads';
+		$out   = [ 'table_exists' => false, 'total' => 0, 'new' => 0, 'today' => 0, 'week' => 0, 'rows' => [] ];
+
+		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
+		if ( $found !== $table ) {
+			return $out;
+		}
+		$out['table_exists'] = true;
+
+		// Table name is built from the trusted DB prefix (no user input).
+		$out['total'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+		$out['new']   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s", 'new' ) );
+		$out['today'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m-d' ) . ' 00:00:00' ) );
+		$out['week']  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) - 7 * DAY_IN_SECONDS ) ) );
+		$out['rows']  = (array) $wpdb->get_results( "SELECT id, name, email, phone, city, service, source, status, created_at FROM `{$table}` ORDER BY created_at DESC LIMIT 50" );
+
+		return $out;
 	}
 
 	/**
