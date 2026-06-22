@@ -796,8 +796,9 @@ class AdminPageV8Enterprise {
 				<div class="pb-v8-card">
 					<div class="pb-v8-card-body">
 						<h3>💰 Google AdSense</h3>
-						<p>Connected</p>
-						<span class="pb-v8-badge pb-v8-badge-success">Active</span>
+						<?php $pt24_ads_on = '' !== (string) get_option( 'pt24_adsense_pub_id', '' ) && '1' === (string) get_option( 'pt24_adsense_enabled', '0' ); ?>
+						<p><?php echo $pt24_ads_on ? esc_html__( 'Configured', 'pearblog-engine' ) : esc_html__( 'Not configured', 'pearblog-engine' ); ?></p>
+						<span class="pb-v8-badge pb-v8-badge-<?php echo $pt24_ads_on ? 'success' : 'warning'; ?>"><?php echo $pt24_ads_on ? esc_html__( 'Active', 'pearblog-engine' ) : esc_html__( 'Inactive', 'pearblog-engine' ); ?></span>
 					</div>
 				</div>
 
@@ -1258,6 +1259,9 @@ class AdminPageV8Enterprise {
 		$email     = (string) get_option( 'pt24_notify_email', (string) get_option( 'admin_email' ) );
 		$enabled   = '0' !== (string) get_option( 'pt24_notify_enabled', '1' );
 		$threshold = (int) get_option( 'pt24_daily_alert_threshold', 0 );
+		$ads_pub     = (string) get_option( 'pt24_adsense_pub_id', '' );
+		$ads_enabled = '1' === (string) get_option( 'pt24_adsense_enabled', '0' );
+		$ads_auto    = '1' === (string) get_option( 'pt24_adsense_auto_ads', '1' );
 		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
 		?>
 		<div class="pb-v8-dashboard">
@@ -1289,6 +1293,22 @@ class AdminPageV8Enterprise {
 							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( '0 = disabled. Highlights the dashboard when daily leads exceed this number.', 'pearblog-engine' ); ?></span>
 						</p>
 
+						<hr style="margin:24px 0;border:0;border-top:1px solid rgba(125,125,125,.2);">
+						<h3 style="margin:0 0 12px;font-size:16px;"><?php esc_html_e( 'Monetization — Google AdSense', 'pearblog-engine' ); ?></h3>
+
+						<p>
+							<label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e( 'AdSense Publisher ID', 'pearblog-engine' ); ?></label>
+							<input type="text" name="pt24_adsense_pub_id" value="<?php echo esc_attr( $ads_pub ); ?>" placeholder="ca-pub-XXXXXXXXXXXXXXXX" style="width:100%;max-width:420px;padding:8px;">
+							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( 'From your AdSense account. Powers the head loader and /ads.txt.', 'pearblog-engine' ); ?></span>
+						</p>
+
+						<p style="margin-top:18px;">
+							<label><input type="checkbox" name="pt24_adsense_enabled" value="1" <?php checked( $ads_enabled ); ?>> <?php esc_html_e( 'Enable AdSense on the site', 'pearblog-engine' ); ?></label>
+						</p>
+						<p style="margin-top:10px;">
+							<label><input type="checkbox" name="pt24_adsense_auto_ads" value="1" <?php checked( $ads_auto ); ?>> <?php esc_html_e( 'Enable Auto Ads (page-level)', 'pearblog-engine' ); ?></label>
+						</p>
+
 						<p style="margin-top:24px;">
 							<button type="submit" class="button button-primary"><?php esc_html_e( 'Save settings', 'pearblog-engine' ); ?></button>
 						</p>
@@ -1312,6 +1332,12 @@ class AdminPageV8Enterprise {
 		update_option( 'pt24_notify_email', $email );
 		update_option( 'pt24_notify_enabled', isset( $_POST['pt24_notify_enabled'] ) ? '1' : '0' );
 		update_option( 'pt24_daily_alert_threshold', isset( $_POST['pt24_daily_alert_threshold'] ) ? absint( $_POST['pt24_daily_alert_threshold'] ) : 0 );
+
+		$ads_pub = isset( $_POST['pt24_adsense_pub_id'] ) ? sanitize_text_field( wp_unslash( $_POST['pt24_adsense_pub_id'] ) ) : '';
+		$ads_pub = (string) preg_replace( '/[^a-zA-Z0-9\-]/', '', $ads_pub );
+		update_option( 'pt24_adsense_pub_id', $ads_pub );
+		update_option( 'pt24_adsense_enabled', isset( $_POST['pt24_adsense_enabled'] ) ? '1' : '0' );
+		update_option( 'pt24_adsense_auto_ads', isset( $_POST['pt24_adsense_auto_ads'] ) ? '1' : '0' );
 
 		wp_safe_redirect( add_query_arg(
 			[ 'page' => self::MENU_SLUG, 'tab' => 'settings', 'pt24_notice' => 'saved' ],
