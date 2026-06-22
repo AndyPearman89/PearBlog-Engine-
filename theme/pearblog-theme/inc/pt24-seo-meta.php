@@ -178,9 +178,9 @@ function pt24_output_seo_meta() {
     // Resolve display names (with Polish diacritics) for service / city.
     list( $service_name, $city_name ) = pt24_display_names( $service, $city );
 
-    // Shared share image (reused for og:image / twitter:image) if the theme
-    // provides one, so the PT24 meta keeps a social preview image.
-    $pt24_og_image = function_exists( 'pearblog_get_social_image' ) ? (string) pearblog_get_social_image( 'og' ) : '';
+    // Branded PT24 social share image (1200x630 PNG) served from the public
+    // domain so social platforms (which ignore SVG) render a proper card.
+    $pt24_og_image = pt24_public_home_url( '/wp-content/themes/pearblog-theme/assets/brand/pt24-og.png' );
 
     // Service page
     if (!empty($service) && empty($city)) {
@@ -213,17 +213,17 @@ function pt24_output_seo_meta() {
     <meta property="og:type" content="<?php echo esc_attr($meta['og_type']); ?>">
     <meta property="og:locale" content="<?php echo esc_attr($meta['og_locale']); ?>">
     <meta property="og:site_name" content="PT24.PRO">
-    <?php if ( '' !== $pt24_og_image ) : ?>
     <meta property="og:image" content="<?php echo esc_url( $pt24_og_image ); ?>">
-    <?php endif; ?>
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:type" content="image/png">
+    <meta property="og:image:alt" content="<?php echo esc_attr( $meta['title'] ); ?>">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo esc_attr($meta['title']); ?>">
     <meta name="twitter:description" content="<?php echo esc_attr($meta['description']); ?>">
-    <?php if ( '' !== $pt24_og_image ) : ?>
     <meta name="twitter:image" content="<?php echo esc_url( $pt24_og_image ); ?>">
-    <?php endif; ?>
 
     <!-- Schema.org -->
     <script type="application/ld+json">
