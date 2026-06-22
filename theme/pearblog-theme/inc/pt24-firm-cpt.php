@@ -45,6 +45,7 @@ class PearBlog_PT24_Firm_CPT {
 
 		add_filter( 'query_vars', function ( $vars ) {
 			$vars[] = 'pt24_firm';
+			$vars[] = 'pt24_firms_index';
 			return $vars;
 		} );
 	}
@@ -65,6 +66,15 @@ class PearBlog_PT24_Firm_CPT {
 		}
 
 		$segments = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
+
+		// /firmy/ — company catalogue index.
+		if ( 1 === count( $segments ) && 'firmy' === strtolower( $segments[0] ) ) {
+			return array(
+				'post_type'        => 'pt24_firm',
+				'pt24_firms_index' => '1',
+			);
+		}
+
 		if ( 2 === count( $segments ) && 'firma' === strtolower( $segments[0] ) ) {
 			$slug = sanitize_title( $segments[1] );
 			return array(
@@ -78,6 +88,13 @@ class PearBlog_PT24_Firm_CPT {
 	}
 
 	public static function load_template( $template ) {
+		if ( '' !== (string) get_query_var( 'pt24_firms_index' ) ) {
+			$custom = locate_template( 'pt24-firms-archive.php' );
+			if ( $custom ) {
+				return $custom;
+			}
+		}
+
 		$slug = (string) get_query_var( 'pt24_firm' );
 		if ( '' !== $slug ) {
 			$query = new WP_Query( array(

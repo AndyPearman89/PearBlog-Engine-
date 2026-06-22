@@ -85,7 +85,8 @@ function pt24_sitemap_entries() {
         }
     }
 
-    // Company profiles.
+    // Company catalogue + profiles.
+    $entries[] = array( 'loc' => pt24_sitemap_url( '/firmy/' ), 'priority' => '0.6' );
     $firms = get_posts( array(
         'post_type'        => 'pt24_firm',
         'post_status'      => 'publish',
