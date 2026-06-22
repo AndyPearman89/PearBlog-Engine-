@@ -1,0 +1,114 @@
+name: Setup WordPress Multisite + Domain Mapping
+
+on:
+  workflow_dispatch:
+    inputs:
+      wp_path:
+        description: "WordPress root path on the server"
+        required: false
+        default: "/var/www/peartree.pro"
+      network_domain:
+        description: "Network main domain (super-admin host)"
+        required: false
+        default: "peartree.pro"
+      admin_email:
+        description: "Network admin email"
+        required: false
+        default: "admin@peartree.pro"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: setup-multisite
+  cancel-in-progress: false
+
+jobs:
+  setup:
+    name: Convert to Multisite and map domains
+    runs-on: ubuntu-latest
+
+    env:
+      SSH_HOST: ${{ secrets.PEARTREE_SSH_HOST || secrets.SSH_HOST || 'peartree.pro' }}
+      SSH_USER: ${{ secrets.PEARTREE_SSH_USER || secrets.SSH_USER || 'root' }}
+      SSH_PORT: ${{ secrets.PEARTREE_SSH_PORT || secrets.SSH_PORT || '22' }}
+      WP_PATH: ${{ github.event.inputs.wp_path }}
+      NETWORK_DOMAIN: ${{ github.event.inputs.network_domain }}
+      ADMIN_EMAIL: ${{ github.event.inputs.admin_email }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Resolve auth mode
+        id: auth
+        run: |
+          HAS_KEY=false
+          HAS_PASS=false
+          [[ -n "${{ secrets.PEARTREE_SSH_KEY || secrets.SSH_PRIVATE_KEY }}" ]] && HAS_KEY=true
+          [[ -n "${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PEARTREE_SSH_PASSWORD }}" ]] && HAS_PASS=true
+          if [[ "$HAS_PASS" == true ]]; then
+            echo "mode=password" >> "$GITHUB_OUTPUT"
+          elif [[ "$HAS_KEY" == true ]]; then
+            echo "mode=key" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::Missing auth secret. Set ROOT_PASSWORD / SSH_PASSWORD or PEARTREE_SSH_KEY."
+            exit 1
+          fi
+
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh && chmod 700 ~/.ssh
+          ssh-keyscan -T 10 -p "$SSH_PORT" -H "$SSH_HOST" >> ~/.ssh/known_hosts 2>/dev/null || true
+          if [[ ! -s ~/.ssh/known_hosts ]]; then
+            echo -e "Host *\n  StrictHostKeyChecking accept-new" >> ~/.ssh/config
+            chmod 600 ~/.ssh/config
+          fi
+          chmod 644 ~/.ssh/known_hosts
+
+      - name: Set up SSH agent (key mode)
+        if: steps.auth.outputs.mode == 'key'
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.PEARTREE_SSH_KEY || secrets.SSH_PRIVATE_KEY }}
+
+      - name: Install sshpass (password mode)
+        if: steps.auth.outputs.mode == 'password'
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq sshpass
+
+      - name: Build ssh wrapper
+        env:
+          AUTH_MODE: ${{ steps.auth.outputs.mode }}
+          SSH_PASSWORD: ${{ secrets.ROOT_PASSWORD || secrets.SSH_PASSWORD || secrets.PEARTREE_SSH_PASSWORD }}
+        run: |
+          mkdir -p "$HOME/bin"
+          if [[ "$AUTH_MODE" == "password" ]]; then
+            umask 077
+            printf '%s' "$SSH_PASSWORD" > "$HOME/.ssh/.pt_pass"
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec sshpass -f "$HOME/.ssh/.pt_pass" ssh -o PreferredAuthentications=password -o PubkeyAuthentication=no "$@"' \
+              > "$HOME/bin/rssh"
+          else
+            printf '%s\n' \
+              '#!/usr/bin/env bash' \
+              'exec ssh -o BatchMode=yes "$@"' \
+              > "$HOME/bin/rssh"
+          fi
+          chmod +x "$HOME/bin/rssh"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Sanity check SSH + WP-CLI
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            "echo CONNECTED && wp --info --path='$WP_PATH' --allow-root 2>&1 | head -5"
+
+      - name: Run multisite setup script remotely
+        run: |
+          rssh -p "$SSH_PORT" "$SSH_USER@$SSH_HOST" \
+            WP_PATH="$WP_PATH" \
+            NETWORK_DOMAIN="$NETWORK_DOMAIN" \
+            ADMIN_EMAIL="$ADMIN_EMAIL" \
+            bash -s < scripts/setup-multisite.sh
