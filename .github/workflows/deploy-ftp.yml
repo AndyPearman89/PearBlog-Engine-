@@ -100,7 +100,7 @@ jobs:
 
           if ! LFTP_OUTPUT=$(lftp -u "$USER","$PASS" -p "$PORT" "${FTP_PROTOCOL}://${HOST}" -e "$LFTP_CMDS" 2>&1); then
             echo "$LFTP_OUTPUT" | tail -n 50
-            if echo "$LFTP_OUTPUT" | grep -Eqi "(max[- ]retries|retries exceeded)"; then
+            if echo "$LFTP_OUTPUT" | grep -Eqi "(max-retries|max retries|retries exceeded)"; then
               if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
                 echo "::error::SFTP endpoint reached but directory listing timed out. Verify port, credentials, and SSH/SFTP access policy."
               else
