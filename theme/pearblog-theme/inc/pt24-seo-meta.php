@@ -14,9 +14,26 @@ if (!defined('ABSPATH')) {
 }
 
 /**
+ * Whether the current install is the PT24.PRO site.
+ *
+ * The pearblog-theme is shared across several installs (pt24.pro, poradnik.pro,
+ * mucharski.pl, …). The hardcoded PT24 branding below must only apply to the
+ * PT24 site; otherwise other sites inherit the wrong title / og:site_name.
+ */
+function pt24_is_pt24_site() {
+    $host = (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST );
+    return ( false !== stripos( $host, 'pt24' ) );
+}
+
+/**
  * Generate SEO meta tags for PT24 pages
  */
 function pt24_output_seo_meta() {
+    // Only emit PT24 branding on the PT24 site.
+    if ( ! pt24_is_pt24_site() ) {
+        return;
+    }
+
     // Get current page info
     $service = get_query_var('pt24_service', '');
     $city = get_query_var('pt24_city', '');
@@ -196,6 +213,10 @@ function pt24_document_title($title) {
     return $title;
 }
 add_filter('document_title_parts', function($parts) {
+    // Leave the document title untouched on non-PT24 installs.
+    if ( ! pt24_is_pt24_site() ) {
+        return $parts;
+    }
     $new_title = pt24_document_title(implode(' ', $parts));
     return array('title' => $new_title);
 });
