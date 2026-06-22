@@ -47,11 +47,13 @@ class PT24_AI_Factory {
 		add_action( 'rest_api_init', [ __CLASS__, 'register_rest' ] );
 
 		// WP-Cron batch processor
+		// NOTE: add_filter('cron_schedules') MUST run before wp_schedule_event so
+		// that 'every_minute' is available when wp_get_schedules() is called internally.
+		add_filter( 'cron_schedules', [ __CLASS__, 'add_cron_schedule' ] );
 		add_action( self::CRON_HOOK, [ __CLASS__, 'process_queue_batch' ] );
 		if ( ! wp_next_scheduled( self::CRON_HOOK ) ) {
 			wp_schedule_event( time(), 'every_minute', self::CRON_HOOK );
 		}
-		add_filter( 'cron_schedules', [ __CLASS__, 'add_cron_schedule' ] );
 	}
 
 	public static function add_cron_schedule( array $schedules ): array {

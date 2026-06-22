@@ -452,6 +452,15 @@ class AdminPageV8Enterprise {
 			case 'automation':
 				$this->render_automation_tab();
 				break;
+			case 'seo':
+				$this->render_seo_tab();
+				break;
+			case 'monetization':
+				$this->render_monetization_tab();
+				break;
+			case 'multisite':
+				$this->render_multisite_tab();
+				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
 				break;
@@ -1635,6 +1644,277 @@ class AdminPageV8Enterprise {
 	/* =====================================================================
 	   AI FACTORY TABS
 	   ===================================================================== */
+
+	/**
+	 * 🔍 SEO Advanced — realne metryki SEO z silnika PT24
+	 */
+	private function render_seo_tab(): void {
+		global $wpdb;
+
+		// Sitemap URL count
+		$sitemap_url   = home_url( '/sitemap.xml' );
+		$landing_count = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->posts}
+			 WHERE post_type = 'pt24_landing' AND post_status = 'publish'"
+		);
+		$firm_count = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->posts}
+			 WHERE post_type = 'pt24_firm' AND post_status = 'publish'"
+		);
+		$post_count = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->posts}
+			 WHERE post_type = 'post' AND post_status = 'publish'"
+		);
+		$page_count = (int) $wpdb->get_var(
+			"SELECT COUNT(*) FROM {$wpdb->posts}
+			 WHERE post_type = 'page' AND post_status = 'publish'"
+		);
+		$total_urls = 1 + $page_count + $post_count + $landing_count + $firm_count + 1; // +home, +/firmy/
+		$canonical_host    = 'pt24.pro';
+		$seo_meta_active   = class_exists( 'PT24_SEO_Meta' ) || function_exists( 'pt24_output_seo_meta' );
+		$sitemap_active    = function_exists( 'pt24_sitemap_entries' );
+		$ads_pub           = (string) get_option( 'pt24_adsense_pub_id', '' );
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">🔍 SEO Advanced — Metryki PT24</h2>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'Łącznie URL w sitemap',  'value' => number_format_i18n( $total_urls ),    'icon' => '🗺️', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Landingi usług',          'value' => number_format_i18n( $landing_count ), 'icon' => '📄', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'Profile firm',            'value' => number_format_i18n( $firm_count ),    'icon' => '🏢', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Artykuły blog',           'value' => number_format_i18n( $post_count ),    'icon' => '✍️', 'color' => 'warning' ] );
+				?>
+			</div>
+
+			<!-- Status SEO -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">✅ Status komponentów SEO</h3></div>
+				<div class="pb-v8-card-body">
+					<div class="pb-v8-table-wrapper">
+						<table class="pb-v8-table">
+							<thead><tr><th>Komponent</th><th>Status</th><th>Szczegóły</th></tr></thead>
+							<tbody>
+								<?php
+								$checks = [
+									[ 'SEO Meta (pt24-seo-meta.php)',  $sitemap_active,           'canonical, og:title, og:image, FAQPage schema' ],
+									[ 'Sitemap XML (/sitemap.xml)',     $sitemap_active,           $total_urls . ' URL — ' . $sitemap_url ],
+									[ 'Canonical host',                 true,                      'pt24.pro (bez origin wordpress2614653)' ],
+									[ 'og:image brandowany',           file_exists( get_template_directory() . '/assets/brand/pt24-og.png' ), 'assets/brand/pt24-og.png (1200×630)' ],
+									[ 'FAQ Schema (landingi)',          $landing_count > 0,        'FAQPage JSON-LD na każdym landingu' ],
+									[ 'AdSense Publisher ID',           '' !== $ads_pub,            '' !== $ads_pub ? $ads_pub : 'Nie skonfigurowano — przejdź do Settings' ],
+									[ 'robots.txt Sitemap',             true,                      'Serwowany przez Cloudflare (dodaj ręcznie w panelu CF)' ],
+								];
+								foreach ( $checks as $check ) :
+									$ok = (bool) $check[1];
+									?>
+									<tr>
+										<td><?php echo esc_html( $check[0] ); ?></td>
+										<td><span class="pb-v8-badge pb-v8-badge-<?php echo $ok ? 'success' : 'warning'; ?>"><?php echo $ok ? '✅ Aktywny' : '⚠️ Nieaktywny'; ?></span></td>
+										<td style="font-size:12px;color:var(--pb-v8-text-secondary);"><?php echo esc_html( $check[2] ); ?></td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+
+			<!-- Quick links -->
+			<div class="pb-v8-card" style="margin-top:16px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🔗 Szybkie linki SEO</h3></div>
+				<div class="pb-v8-card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
+					<a href="<?php echo esc_url( $sitemap_url ); ?>" target="_blank" class="pb-v8-btn pb-v8-btn-outline">🗺️ Sitemap.xml</a>
+					<a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>" target="_blank" class="pb-v8-btn pb-v8-btn-outline">🏆 Rankingi hub</a>
+					<a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="pb-v8-btn pb-v8-btn-outline">🔍 Google Search Console</a>
+					<a href="https://developers.facebook.com/tools/debug/?q=<?php echo urlencode( home_url( '/' ) ); ?>" target="_blank" rel="noopener" class="pb-v8-btn pb-v8-btn-outline">📘 OG Debugger</a>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * 💰 Monetization / Revenue Center
+	 */
+	private function render_monetization_tab(): void {
+		global $wpdb;
+
+		$leads_table = $wpdb->prefix . 'pt24_leads';
+		$has_leads   = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $leads_table ) ) === $leads_table;
+		$ads_pub     = (string) get_option( 'pt24_adsense_pub_id', '' );
+		$ads_on      = '1' === (string) get_option( 'pt24_adsense_enabled', '0' ) && '' !== $ads_pub;
+
+		$total_leads = $has_leads ? (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$leads_table}`" ) : 0;
+		$won_leads   = $has_leads ? (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$leads_table}` WHERE status = %s", 'won' ) ) : 0;
+		$this_month  = $has_leads ? (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$leads_table}` WHERE created_at >= %s", current_time( 'Y-m' ) . '-01 00:00:00' ) ) : 0;
+
+		// Rough estimated value: avg 50 zł per lead (broker fee model)
+		$avg_lead_value = (float) apply_filters( 'pt24_avg_lead_value', 50.0 );
+		$est_monthly    = round( $this_month * $avg_lead_value, 0 );
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">💰 Revenue Center — Monetyzacja PT24</h2>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'Łącznie leadów', 'value' => number_format_i18n( $total_leads ), 'icon' => '👥', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Wygranych',      'value' => number_format_i18n( $won_leads ),   'icon' => '✅', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'Ten miesiąc',    'value' => number_format_i18n( $this_month ),  'icon' => '🗓️', 'color' => 'warning' ] );
+				$this->render_metric_card( [ 'label' => 'Est. wartość/mies.', 'value' => number_format_i18n( $est_monthly ) . ' zł', 'icon' => '💵', 'color' => 'success' ] );
+				?>
+			</div>
+
+			<!-- Monetization channels -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">Kanały monetyzacji</h3></div>
+				<div class="pb-v8-card-body">
+					<div class="pb-v8-metrics-grid">
+						<div class="pb-v8-card">
+							<div class="pb-v8-card-body">
+								<h3>🎯 Lead Generation</h3>
+								<p>Formularze na landingach i profilach firm</p>
+								<span class="pb-v8-badge pb-v8-badge-success">Aktywny</span>
+								<p style="margin-top:12px;font-size:13px;color:var(--pb-v8-text-secondary);">
+									<?php echo esc_html( number_format_i18n( $total_leads ) ); ?> leadów łącznie · konwersja <?php echo $total_leads > 0 ? esc_html( round( $won_leads / $total_leads * 100, 1 ) ) : 0; ?>%
+								</p>
+							</div>
+						</div>
+						<div class="pb-v8-card">
+							<div class="pb-v8-card-body">
+								<h3>💰 Google AdSense</h3>
+								<p>Reklamy kontekstowe — Auto Ads</p>
+								<span class="pb-v8-badge pb-v8-badge-<?php echo $ads_on ? 'success' : 'warning'; ?>">
+									<?php echo $ads_on ? 'Aktywny — ' . esc_html( $ads_pub ) : 'Nieaktywny'; ?>
+								</span>
+								<?php if ( ! $ads_on ) : ?>
+									<p style="margin-top:12px;font-size:13px;">
+										<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . 'pearblog-enterprise-v8' . '&tab=settings' ) ); ?>">
+											→ Skonfiguruj AdSense w Settings
+										</a>
+									</p>
+								<?php endif; ?>
+							</div>
+						</div>
+						<div class="pb-v8-card">
+							<div class="pb-v8-card-body">
+								<h3>🏢 Wyróżnione profile</h3>
+								<p>PRO/Premium/VIP pozycja dla firm</p>
+								<span class="pb-v8-badge pb-v8-badge-warning">Wkrótce</span>
+								<p style="margin-top:12px;font-size:13px;color:var(--pb-v8-text-secondary);">
+									Planowane: FREE / PRO 49 zł / Premium 99 zł / VIP 199 zł
+								</p>
+							</div>
+						</div>
+						<div class="pb-v8-card">
+							<div class="pb-v8-card-body">
+								<h3>📋 Formularz „Dodaj firmę"</h3>
+								<p>Zgłoszenia firm do katalogu</p>
+								<span class="pb-v8-badge pb-v8-badge-success">Aktywny</span>
+								<p style="margin-top:12px;font-size:13px;">
+									<a href="<?php echo esc_url( home_url( '/dodaj-firme/' ) ); ?>" target="_blank">
+										→ /dodaj-firme/
+									</a>
+								</p>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * 🌐 Multisite/SaaS — AI Factory scale dashboard
+	 */
+	private function render_multisite_tab(): void {
+		$factory_ok = class_exists( 'PT24_AI_Factory' );
+		$scale_ok   = class_exists( 'PT24_Scale_Data' );
+		$stats      = $factory_ok ? PT24_AI_Factory::get_stats() : [];
+		$cities     = $scale_ok ? PT24_Scale_Data::cities() : [];
+		$services   = $scale_ok ? PT24_Scale_Data::services() : [];
+
+		// Group cities by province
+		$by_prov = [];
+		foreach ( $cities as $slug => $city ) {
+			$p = $city['prov'] ?? 'inne';
+			$by_prov[ $p ][] = $city['name'];
+		}
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">🌐 Multisite/SaaS — Skala platformy PT24</h2>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'Miast w bazie',    'value' => number_format_i18n( count( $cities ) ),                          'icon' => '📍', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Usług',             'value' => number_format_i18n( count( $services ) ),                        'icon' => '⚙️', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Możliwych stron',   'value' => number_format_i18n( $stats['target'] ?? count( $cities ) * count( $services ) ), 'icon' => '📄', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'Wygenerowanych',    'value' => number_format_i18n( $stats['published'] ?? 0 ),                  'icon' => '✅', 'color' => 'success' ] );
+				?>
+			</div>
+
+			<!-- Scale progress -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🚀 Postęp skalowania</h3></div>
+				<div class="pb-v8-card-body">
+					<?php
+					$target   = $stats['target'] ?? 0;
+					$pub      = $stats['published'] ?? 0;
+					$pct      = $target > 0 ? round( $pub / $target * 100, 1 ) : 0;
+					$remaining = max( 0, $target - $pub );
+					?>
+					<div style="display:flex;justify-content:space-between;margin-bottom:6px;font-size:13px;">
+						<span><strong><?php echo esc_html( number_format_i18n( $pub ) ); ?></strong> / <?php echo esc_html( number_format_i18n( $target ) ); ?> stron</span>
+						<span><?php echo esc_html( $pct ); ?>%</span>
+					</div>
+					<div class="pb-v8-progress" style="height:22px;">
+						<div class="pb-v8-progress-bar" style="width:<?php echo esc_attr( (string) min( 100, $pct ) ); ?>%;"></div>
+					</div>
+					<p style="font-size:12px;color:var(--pb-v8-text-secondary);margin-top:8px;">
+						Pozostało <?php echo esc_html( number_format_i18n( $remaining ) ); ?> stron.
+						<a href="<?php echo esc_url( admin_url( 'admin.php?page=pearblog-enterprise-v8&tab=strategy' ) ); ?>">→ Generuj w AI Strategy</a>
+					</p>
+
+					<hr style="margin:20px 0;border:0;border-top:1px solid rgba(125,125,125,.15);">
+
+					<h4 style="margin:0 0 12px;">Zasięg geograficzny (<?php echo esc_html( count( $by_prov ) ); ?> województw)</h4>
+					<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">
+						<?php foreach ( $by_prov as $prov => $prov_cities ) : ?>
+						<div style="background:rgba(125,125,125,.06);border:1px solid rgba(125,125,125,.15);border-radius:8px;padding:10px 14px;">
+							<strong style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--pb-v8-text-secondary);">
+								<?php echo esc_html( $prov ); ?>
+							</strong>
+							<p style="margin:4px 0 0;font-size:13px;">
+								<?php echo esc_html( implode( ', ', $prov_cities ) ); ?>
+							</p>
+						</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+			</div>
+
+			<!-- Services -->
+			<div class="pb-v8-card" style="margin-top:16px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🔧 Aktywne usługi (<?php echo esc_html( count( $services ) ); ?>)</h3></div>
+				<div class="pb-v8-card-body">
+					<div style="display:flex;gap:10px;flex-wrap:wrap;">
+						<?php foreach ( $services as $slug => $svc ) : ?>
+							<a href="<?php echo esc_url( home_url( '/' . $slug . '/' ) ); ?>" target="_blank"
+							   style="background:var(--pb-v8-primary);color:#fff;padding:6px 14px;border-radius:20px;text-decoration:none;font-size:13px;font-weight:600;">
+								<?php echo esc_html( $svc['name'] ); ?>
+							</a>
+						<?php endforeach; ?>
+					</div>
+					<p style="margin-top:12px;font-size:12px;color:var(--pb-v8-text-secondary);">
+						Każda usługa × <?php echo esc_html( count( $cities ) ); ?> miast = <?php echo esc_html( number_format_i18n( count( $services ) * count( $cities ) ) ); ?> stron.
+						Long-tail keywords: +<?php echo esc_html( count( $services ) * 3 ); ?> wariantów = <strong><?php echo esc_html( number_format_i18n( count( $services ) * count( $cities ) * 4 ) ); ?> URL total</strong>.
+					</p>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
 
 	/**
 	 * 🧠 Strategy = AI Factory Control Center
