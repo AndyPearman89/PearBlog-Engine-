@@ -83,7 +83,7 @@ function pp_render_full_footer() {
 	$home      = home_url( '/' );
 	$site_name = get_bloginfo( 'name' );
 	$site_desc = get_bloginfo( 'description' );
-	$year      = date( 'Y' );
+	$year      = gmdate( 'Y' );
 	?>
 	<footer class="pp-footer" role="contentinfo">
 		<div class="pb-container">
