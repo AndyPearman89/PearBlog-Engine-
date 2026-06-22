@@ -346,19 +346,20 @@ class AdminPageV8Enterprise {
 	 * Render tab navigation
 	 */
 	private function render_tabs( string $current_tab ): void {
+		$base_url = admin_url( 'admin.php?page=' . self::MENU_SLUG );
 		?>
 		<div class="pb-v8-tabs-wrapper">
 			<div class="pb-v8-tabs" role="tablist">
 				<?php foreach ( self::TABS as $tab_id => $tab_label ) : ?>
-					<button
+					<a
+						href="<?php echo esc_url( add_query_arg( 'tab', $tab_id, $base_url ) ); ?>"
 						class="pb-v8-tab <?php echo $current_tab === $tab_id ? 'is-active' : ''; ?>"
 						data-tab="<?php echo esc_attr( $tab_id ); ?>"
 						role="tab"
-						aria-selected="<?php echo $current_tab === $tab_id ? 'true' : 'false'; ?>"
-						onclick="pbV8SwitchTab('<?php echo esc_js( $tab_id ); ?>')">
+						aria-selected="<?php echo $current_tab === $tab_id ? 'true' : 'false'; ?>">
 						<span class="pb-v8-tab-icon"><?php echo $this->get_tab_icon( $tab_id ); ?></span>
 						<span class="pb-v8-tab-label"><?php echo esc_html( $tab_label ); ?></span>
-					</button>
+					</a>
 				<?php endforeach; ?>
 			</div>
 		</div>
@@ -391,22 +392,14 @@ class AdminPageV8Enterprise {
 	}
 
 	/**
-	 * Render tab content
+	 * Render tab content — only the ACTIVE tab is rendered (reduces queries from 50+ to ~5).
 	 */
 	private function render_tab_content( string $current_tab ): void {
 		?>
 		<div class="pb-v8-tab-content">
-			<?php
-			foreach ( self::TABS as $tab_id => $tab_label ) {
-				$is_active = $current_tab === $tab_id;
-				$class = $is_active ? 'is-active' : '';
-				?>
-				<div class="pb-v8-tab-panel <?php echo esc_attr( $class ); ?>" data-tab="<?php echo esc_attr( $tab_id ); ?>" role="tabpanel">
-					<?php $this->render_tab_panel( $tab_id ); ?>
-				</div>
-				<?php
-			}
-			?>
+			<div class="pb-v8-tab-panel is-active" data-tab="<?php echo esc_attr( $current_tab ); ?>" role="tabpanel">
+				<?php $this->render_tab_panel( $current_tab ); ?>
+			</div>
 		</div>
 		<?php
 	}
