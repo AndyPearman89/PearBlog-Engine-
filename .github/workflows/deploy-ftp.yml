@@ -95,7 +95,8 @@ jobs:
             exit 1
           fi
 
-          LFTP_CMDS="set cmd:fail-exit true; set net:timeout ${LIST_TIMEOUT}; set net:max-retries 2; set net:reconnect-interval-base 5; ls; bye"
+          # Keep preflight bounded to avoid consuming most of DEPLOY_TIMEOUT_MINUTES before transfers start.
+          LFTP_CMDS="set cmd:fail-exit true; set net:timeout ${LIST_TIMEOUT}; set net:max-retries 1; set net:reconnect-interval-base 5; ls; bye"
 
           if ! LFTP_OUTPUT=$(lftp -u "$USER","$PASS" -p "$PORT" "${FTP_PROTOCOL}://${HOST}" -e "$LFTP_CMDS" 2>&1); then
             echo "$LFTP_OUTPUT" | tail -n 50
