@@ -95,12 +95,12 @@ jobs:
             exit 1
           fi
 
-          # Keep preflight bounded to avoid consuming most of DEPLOY_TIMEOUT_MINUTES before transfers start.
+          # Keep preflight bounded (LIST_TIMEOUT 60s + 1 retry ≈ 120s) so it stays well below DEPLOY_TIMEOUT_MINUTES (8m).
           LFTP_CMDS="set cmd:fail-exit true; set net:timeout ${LIST_TIMEOUT}; set net:max-retries 1; set net:reconnect-interval-base 5; ls; bye"
 
           if ! LFTP_OUTPUT=$(lftp -u "$USER","$PASS" -p "$PORT" "${FTP_PROTOCOL}://${HOST}" -e "$LFTP_CMDS" 2>&1); then
             echo "$LFTP_OUTPUT" | tail -n 50
-            if echo "$LFTP_OUTPUT" | grep -Eqi "(max-retries|max retries|retries exceeded)"; then
+            if echo "$LFTP_OUTPUT" | grep -Eqi "(max-retries|max retries|retries exceeded|timed? out|timeout)"; then
               if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
                 echo "::error::SFTP endpoint reached but directory listing timed out. Verify port, credentials, and SSH/SFTP access policy."
               else
