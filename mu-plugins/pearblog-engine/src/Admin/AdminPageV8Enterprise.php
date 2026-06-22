@@ -439,6 +439,9 @@ class AdminPageV8Enterprise {
 			case 'settings':
 				$this->render_settings_tab();
 				break;
+			case 'performance':
+				$this->render_performance_tab();
+				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
 				break;
@@ -449,6 +452,12 @@ class AdminPageV8Enterprise {
 	 * Render Enterprise Dashboard
 	 */
 	private function render_dashboard_tab(): void {
+		$pt24_leads = $this->get_pt24_leads_data();
+		if ( $pt24_leads['table_exists'] ) {
+			$this->render_pt24_dashboard( $pt24_leads );
+			return;
+		}
+
 		$stats = $this->get_dashboard_stats();
 		?>
 		<div class="pb-v8-dashboard">
@@ -1387,6 +1396,170 @@ class AdminPageV8Enterprise {
 					<div class="pt24-card">
 						<h3><?php esc_html_e( 'Top cities', 'pearblog-engine' ); ?></h3>
 						<?php $this->render_bar_list( $r['by_city'] ); ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the PT24-specific dashboard (real lead KPIs, trend, latest leads).
+	 *
+	 * @param array $leads Pre-fetched output of get_pt24_leads_data().
+	 */
+	private function render_pt24_dashboard( array $leads ): void {
+		$analytics  = $this->get_pt24_analytics_data();
+		$conversion = $analytics['total'] > 0 ? round( $analytics['won'] / $analytics['total'] * 100, 1 ) : 0.0;
+		$threshold  = (int) get_option( 'pt24_daily_alert_threshold', 0 );
+		$trend_max  = 1;
+		foreach ( $analytics['trend'] as $point ) {
+			$trend_max = max( $trend_max, (int) $point['count'] );
+		}
+		$leads_url = admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=leads' );
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Dashboard — PT24', 'pearblog-engine' ); ?></h2>
+
+			<?php if ( $threshold > 0 && (int) $leads['today'] >= $threshold ) : ?>
+				<div class="pb-v8-alert pb-v8-alert-success" style="margin-bottom:var(--pb-v8-space-lg);">
+					<strong>🔥
+						<?php
+						/* translators: 1: leads today, 2: configured threshold */
+						printf( esc_html__( 'Strong day — %1$d leads today (threshold %2$d).', 'pearblog-engine' ), (int) $leads['today'], $threshold );
+						?>
+					</strong>
+				</div>
+			<?php endif; ?>
+
+			<?php $this->render_pt24_chart_styles(); ?>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => __( 'Total Leads', 'pearblog-engine' ), 'value' => number_format_i18n( $leads['total'] ), 'icon' => '👥' ] );
+				$this->render_metric_card( [ 'label' => __( 'New / Unhandled', 'pearblog-engine' ), 'value' => number_format_i18n( $leads['new'] ), 'icon' => '🆕' ] );
+				$this->render_metric_card( [ 'label' => __( 'Today', 'pearblog-engine' ), 'value' => number_format_i18n( $leads['today'] ), 'icon' => '📅' ] );
+				$this->render_metric_card( [ 'label' => __( 'Conversion', 'pearblog-engine' ), 'value' => $conversion . '%', 'icon' => '🎯' ] );
+				?>
+			</div>
+
+			<div class="pt24-card" style="margin-top:24px;">
+				<h3><?php esc_html_e( 'Leads — last 14 days', 'pearblog-engine' ); ?></h3>
+				<div class="pt24-trend">
+					<?php foreach ( $analytics['trend'] as $point ) :
+						$height = (int) round( (int) $point['count'] / $trend_max * 100 );
+						?>
+						<div class="pt24-trend-col" title="<?php echo esc_attr( $point['date'] . ': ' . $point['count'] ); ?>">
+							<div class="pt24-trend-bar" style="height:<?php echo (int) max( 2, $height ); ?>%"></div>
+							<span class="pt24-trend-day"><?php echo esc_html( substr( (string) $point['date'], 8, 2 ) ); ?></span>
+						</div>
+					<?php endforeach; ?>
+				</div>
+			</div>
+
+			<div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:32px;flex-wrap:wrap;">
+				<h3 class="pb-v8-section-title" style="margin:0;"><?php esc_html_e( 'Latest leads', 'pearblog-engine' ); ?></h3>
+				<a class="button button-primary" href="<?php echo esc_url( $leads_url ); ?>"><?php esc_html_e( 'Open Leads & CRM', 'pearblog-engine' ); ?></a>
+			</div>
+
+			<?php if ( empty( $leads['rows'] ) ) : ?>
+				<p style="color:var(--pb-v8-text-secondary);"><?php esc_html_e( 'No leads yet. New enquiries from the site will appear here.', 'pearblog-engine' ); ?></p>
+			<?php else : ?>
+				<div class="pb-v8-table-wrapper">
+					<table class="pb-v8-table">
+						<thead>
+							<tr>
+								<th><?php esc_html_e( 'Date', 'pearblog-engine' ); ?></th>
+								<th><?php esc_html_e( 'Name', 'pearblog-engine' ); ?></th>
+								<th><?php esc_html_e( 'Service', 'pearblog-engine' ); ?></th>
+								<th><?php esc_html_e( 'City', 'pearblog-engine' ); ?></th>
+								<th><?php esc_html_e( 'Status', 'pearblog-engine' ); ?></th>
+							</tr>
+						</thead>
+						<tbody>
+							<?php foreach ( array_slice( $leads['rows'], 0, 8 ) as $lead ) :
+								$status = (string) ( $lead->status ?? 'new' );
+								?>
+								<tr>
+									<td><?php echo esc_html( mysql2date( 'Y-m-d H:i', (string) $lead->created_at ) ); ?></td>
+									<td><strong><?php echo esc_html( (string) $lead->name ); ?></strong></td>
+									<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', (string) $lead->service ) ) ); ?></td>
+									<td><?php echo esc_html( ucfirst( (string) $lead->city ) ); ?></td>
+									<td><span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $this->lead_status_badge( $status ) ); ?>"><?php echo esc_html( $status ); ?></span></td>
+								</tr>
+							<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render the Performance tab — real environment / server metrics.
+	 */
+	private function render_performance_tab(): void {
+		global $wpdb;
+
+		$leads_table = $wpdb->prefix . 'pt24_leads';
+		$leads_count = 0;
+		$leads_size  = 0;
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $leads_table ) ) === $leads_table ) {
+			$leads_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$leads_table}`" );
+			$leads_size  = (int) $wpdb->get_var( $wpdb->prepare(
+				"SELECT (data_length + index_length) FROM information_schema.TABLES WHERE table_schema = %s AND table_name = %s",
+				DB_NAME,
+				$leads_table
+			) );
+		}
+
+		$opcache    = function_exists( 'opcache_get_status' ) ? @opcache_get_status( false ) : false;
+		$opcache_on = is_array( $opcache ) && ! empty( $opcache['opcache_enabled'] );
+		$ext_cache  = function_exists( 'wp_using_ext_object_cache' ) && wp_using_ext_object_cache();
+		$mem_peak   = function_exists( 'memory_get_peak_usage' ) ? memory_get_peak_usage( true ) : 0;
+
+		$rows = [
+			[ __( 'PHP version', 'pearblog-engine' ), PHP_VERSION ],
+			[ __( 'WordPress version', 'pearblog-engine' ), get_bloginfo( 'version' ) ],
+			[ __( 'Database (MySQL)', 'pearblog-engine' ), (string) $wpdb->db_version() ],
+			[ __( 'Memory limit', 'pearblog-engine' ), (string) ini_get( 'memory_limit' ) ],
+			[ __( 'Peak memory', 'pearblog-engine' ), size_format( $mem_peak ) ],
+			[ __( 'Max execution time', 'pearblog-engine' ), (string) ini_get( 'max_execution_time' ) . 's' ],
+			[ __( 'Upload max filesize', 'pearblog-engine' ), (string) ini_get( 'upload_max_filesize' ) ],
+			[ __( 'Leads table', 'pearblog-engine' ), $leads_table ],
+			[ __( 'Leads table size', 'pearblog-engine' ), $leads_size > 0 ? size_format( $leads_size ) : '—' ],
+			[ __( 'OPcache', 'pearblog-engine' ), $opcache_on ? __( 'Enabled', 'pearblog-engine' ) : __( 'Disabled', 'pearblog-engine' ) ],
+			[ __( 'Persistent object cache', 'pearblog-engine' ), $ext_cache ? __( 'Yes', 'pearblog-engine' ) : __( 'No', 'pearblog-engine' ) ],
+			[ __( 'Server', 'pearblog-engine' ), sanitize_text_field( (string) ( $_SERVER['SERVER_SOFTWARE'] ?? '—' ) ) ],
+		];
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Performance & Environment', 'pearblog-engine' ); ?></h2>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => __( 'PHP', 'pearblog-engine' ), 'value' => PHP_VERSION, 'icon' => '🐘' ] );
+				$this->render_metric_card( [ 'label' => __( 'WordPress', 'pearblog-engine' ), 'value' => get_bloginfo( 'version' ), 'icon' => '🟦' ] );
+				$this->render_metric_card( [ 'label' => __( 'Peak memory', 'pearblog-engine' ), 'value' => size_format( $mem_peak ), 'icon' => '⚡' ] );
+				$this->render_metric_card( [ 'label' => __( 'Leads stored', 'pearblog-engine' ), 'value' => number_format_i18n( $leads_count ), 'icon' => '👥' ] );
+				?>
+			</div>
+
+			<div class="pb-v8-card" style="margin-top:24px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title"><?php esc_html_e( 'Environment details', 'pearblog-engine' ); ?></h3></div>
+				<div class="pb-v8-card-body">
+					<div class="pb-v8-table-wrapper">
+						<table class="pb-v8-table">
+							<tbody>
+								<?php foreach ( $rows as $row ) : ?>
+									<tr>
+										<td style="font-weight:600;width:240px;"><?php echo esc_html( $row[0] ); ?></td>
+										<td><code><?php echo esc_html( $row[1] ); ?></code></td>
+									</tr>
+								<?php endforeach; ?>
+							</tbody>
+						</table>
 					</div>
 				</div>
 			</div>
