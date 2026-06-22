@@ -28,6 +28,22 @@ function pt24_is_pt24_site() {
 }
 
 /**
+ * Build an absolute URL on the PUBLIC PT24 domain (pt24.pro).
+ *
+ * WordPress home_url() returns the origin host (wordpress2614653.home.pl/pt24)
+ * because the site is served through Cloudflare. Canonical, og:url and schema
+ * URLs must use the public domain so search engines index pt24.pro, not the
+ * origin. Always emits a clean, query-string-free URL.
+ *
+ * @param string $path Request path (with or without leading slash).
+ * @return string Absolute URL like https://pt24.pro/warszawa/hydraulik/.
+ */
+function pt24_public_home_url( $path = '/' ) {
+    $path = '/' . ltrim( (string) $path, '/' );
+    return 'https://pt24.pro' . ( '/' === $path ? '/' : $path );
+}
+
+/**
  * Resolve the current service / city slugs.
  *
  * On landing pages the query vars (pt24_service / pt24_city) are present in the
@@ -115,6 +131,11 @@ function pt24_output_seo_meta() {
         return;
     }
 
+    // This function is the single canonical/OG source on PT24, so drop WordPress
+    // core's rel_canonical (which would emit the origin-host URL) to prevent
+    // duplicate, conflicting canonical tags.
+    remove_action( 'wp_head', 'rel_canonical' );
+
     // Get current page info
     list( $service, $city ) = pt24_current_service_city();
 
@@ -134,10 +155,10 @@ function pt24_output_seo_meta() {
         $request_path = '/';
     }
 
-    $canonical_url = home_url($request_path);
-    if ('' !== $request_query) {
-        $canonical_url .= '?' . $request_query;
-    }
+    // Canonical must target the PUBLIC domain (pt24.pro) and omit volatile query
+    // strings (utm_*, cb, fbclid, …) so every variant canonicalizes to one URL.
+    $canonical_url = pt24_public_home_url($request_path);
+    unset( $request_query );
 
     // Default meta
     $meta = array(
@@ -156,6 +177,10 @@ function pt24_output_seo_meta() {
 
     // Resolve display names (with Polish diacritics) for service / city.
     list( $service_name, $city_name ) = pt24_display_names( $service, $city );
+
+    // Shared share image (reused for og:image / twitter:image) if the theme
+    // provides one, so the PT24 meta keeps a social preview image.
+    $pt24_og_image = function_exists( 'pearblog_get_social_image' ) ? (string) pearblog_get_social_image( 'og' ) : '';
 
     // Service page
     if (!empty($service) && empty($city)) {
@@ -188,11 +213,17 @@ function pt24_output_seo_meta() {
     <meta property="og:type" content="<?php echo esc_attr($meta['og_type']); ?>">
     <meta property="og:locale" content="<?php echo esc_attr($meta['og_locale']); ?>">
     <meta property="og:site_name" content="PT24.PRO">
+    <?php if ( '' !== $pt24_og_image ) : ?>
+    <meta property="og:image" content="<?php echo esc_url( $pt24_og_image ); ?>">
+    <?php endif; ?>
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:title" content="<?php echo esc_attr($meta['title']); ?>">
     <meta name="twitter:description" content="<?php echo esc_attr($meta['description']); ?>">
+    <?php if ( '' !== $pt24_og_image ) : ?>
+    <meta name="twitter:image" content="<?php echo esc_url( $pt24_og_image ); ?>">
+    <?php endif; ?>
 
     <!-- Schema.org -->
     <script type="application/ld+json">
@@ -201,10 +232,10 @@ function pt24_output_seo_meta() {
         "@type": "WebSite",
         "name": "PT24.PRO",
         "description": "<?php echo esc_js($meta['description']); ?>",
-        "url": "<?php echo esc_url(home_url('/')); ?>",
+        "url": "<?php echo esc_url(pt24_public_home_url('/')); ?>",
         "potentialAction": {
             "@type": "SearchAction",
-            "target": "<?php echo esc_url(home_url('/')); ?>?s={search_term_string}",
+            "target": "<?php echo esc_url(pt24_public_home_url('/')); ?>?s={search_term_string}",
             "query-input": "required name=search_term_string"
         }
     }
@@ -234,14 +265,14 @@ function pt24_output_seo_meta() {
                 "@type": "ListItem",
                 "position": 1,
                 "name": "Home",
-                "item": "<?php echo esc_url(home_url('/')); ?>"
+                "item": "<?php echo esc_url(pt24_public_home_url('/')); ?>"
             }
             <?php if (!empty($city)): ?>,
             {
                 "@type": "ListItem",
                 "position": 2,
                 "name": "<?php echo esc_js(ucfirst($city)); ?>",
-                "item": "<?php echo esc_url(home_url('/' . $city . '/')); ?>"
+                "item": "<?php echo esc_url(pt24_public_home_url('/' . $city . '/')); ?>"
             }
             <?php endif; ?>
             <?php if (!empty($service)): ?>,

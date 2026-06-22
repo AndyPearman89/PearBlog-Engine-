@@ -253,6 +253,25 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     </details>
                 <?php endforeach; ?>
             </section>
+            <?php
+            // FAQPage schema for rich results, built from the same Q&A pairs.
+            $pt24_faq_schema = array(
+                '@context'   => 'https://schema.org',
+                '@type'      => 'FAQPage',
+                'mainEntity' => array(),
+            );
+            foreach ( $data['faq'] as $qa ) {
+                $pt24_faq_schema['mainEntity'][] = array(
+                    '@type'          => 'Question',
+                    'name'           => $qa[0],
+                    'acceptedAnswer' => array(
+                        '@type' => 'Answer',
+                        'text'  => $qa[1],
+                    ),
+                );
+            }
+            ?>
+            <script type="application/ld+json"><?php echo wp_json_encode( $pt24_faq_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
             <?php endif; ?>
 
         </article>

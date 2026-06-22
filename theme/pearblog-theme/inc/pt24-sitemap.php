@@ -1,0 +1,120 @@
+<?php
+/**
+ * PT24.PRO — XML sitemap + robots.txt Sitemap directive.
+ *
+ * WordPress core wp-sitemap.xml is unavailable on this install and would emit
+ * origin-host URLs anyway. This provides a clean /sitemap.xml listing the
+ * homepage, the seeded static pages and all service x city landings, using the
+ * PUBLIC pt24.pro domain so search engines crawl the right URLs.
+ *
+ * Required ONLY on the PT24 install (host-guarded in functions.php).
+ *
+ * @package PearBlog
+ * @subpackage PT24
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit;
+}
+
+/**
+ * Absolute public URL helper (falls back if the SEO helper isn't loaded yet).
+ *
+ * @param string $path Request path.
+ * @return string
+ */
+function pt24_sitemap_url( $path = '/' ) {
+    if ( function_exists( 'pt24_public_home_url' ) ) {
+        return pt24_public_home_url( $path );
+    }
+    $path = '/' . ltrim( (string) $path, '/' );
+    return 'https://pt24.pro' . ( '/' === $path ? '/' : $path );
+}
+
+/**
+ * Build the list of sitemap entries.
+ *
+ * @return array<int,array{loc:string,priority:string}>
+ */
+function pt24_sitemap_entries() {
+    $entries = array();
+
+    // Homepage.
+    $entries[] = array( 'loc' => pt24_sitemap_url( '/' ), 'priority' => '1.0' );
+
+    // Seeded static pages.
+    $pages = array( 'jak-to-dziala', 'dla-firm', 'o-nas', 'kontakt', 'polityka-prywatnosci', 'regulamin' );
+    foreach ( $pages as $slug ) {
+        $entries[] = array( 'loc' => pt24_sitemap_url( '/' . $slug . '/' ), 'priority' => '0.6' );
+    }
+
+    // Service x city landings.
+    if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+        $services = array_keys( PearBlog_PT24_Landing_CPT::get_services() );
+        $cities   = array_keys( PearBlog_PT24_Landing_CPT::get_cities() );
+    } else {
+        $services = array( 'hydraulik', 'elektryk', 'mechanik', 'pompa-ciepla', 'remont-lazienki', 'fotowoltaika' );
+        $cities   = array( 'warszawa', 'krakow', 'wroclaw', 'poznan', 'gdansk', 'katowice' );
+    }
+    foreach ( $cities as $city ) {
+        foreach ( $services as $service ) {
+            $entries[] = array(
+                'loc'      => pt24_sitemap_url( '/' . $city . '/' . $service . '/' ),
+                'priority' => '0.8',
+            );
+        }
+    }
+
+    return $entries;
+}
+
+/**
+ * Emit the XML sitemap when /sitemap.xml is requested, then exit.
+ *
+ * Hooked early on init because rewrite rules are unreliable on this host; the
+ * request path is matched directly against the home path + 'sitemap.xml'.
+ */
+function pt24_maybe_output_sitemap() {
+    $request_uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+
+    $home_path = (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+    $home_path = ( '' === $home_path || '/' === $home_path ) ? '' : untrailingslashit( $home_path );
+
+    $rel = $request_path;
+    if ( '' !== $home_path && 0 === strpos( $rel, $home_path ) ) {
+        $rel = substr( $rel, strlen( $home_path ) );
+    }
+    if ( 'sitemap.xml' !== trim( $rel, '/' ) ) {
+        return;
+    }
+
+    if ( ! headers_sent() ) {
+        status_header( 200 );
+        header( 'Content-Type: application/xml; charset=UTF-8' );
+    }
+
+    echo '<?xml version="1.0" encoding="UTF-8"?>' . "\n";
+    echo '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+    foreach ( pt24_sitemap_entries() as $entry ) {
+        echo '  <url><loc>' . esc_url( $entry['loc'] ) . '</loc>'
+            . '<changefreq>weekly</changefreq>'
+            . '<priority>' . esc_html( $entry['priority'] ) . '</priority>'
+            . '</url>' . "\n";
+    }
+    echo '</urlset>';
+    exit;
+}
+add_action( 'init', 'pt24_maybe_output_sitemap', 1 );
+
+/**
+ * Advertise the sitemap in robots.txt.
+ *
+ * @param string $output Existing robots.txt body.
+ * @return string
+ */
+function pt24_robots_sitemap( $output ) {
+    $output .= "\nSitemap: " . pt24_sitemap_url( '/sitemap.xml' ) . "\n";
+    return $output;
+}
+add_filter( 'robots_txt', 'pt24_robots_sitemap', 10, 1 );

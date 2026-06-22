@@ -79,6 +79,7 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     require_once PEARBLOG_DIR . '/inc/pt24-form-handler.php';  // Lead-form AJAX handlers.
     require_once PEARBLOG_DIR . '/inc/pt24-api.php';           // REST endpoints.
     require_once PEARBLOG_DIR . '/inc/pt24-footer.php';        // PT24-branded site footer.
+    require_once PEARBLOG_DIR . '/inc/pt24-sitemap.php';       // XML sitemap + robots.txt.
 
     // Bootstrap the landing CPT explicitly. Its own bootstrap hooks init() onto
     // the `init` action, and init() then registers register_post_type() /
@@ -549,6 +550,16 @@ add_action('wp_head', 'pearblog_add_favicons', 1);
 function pearblog_add_social_meta_tags() {
     $pt24_service = function_exists('get_query_var') ? get_query_var('pt24_service', '') : '';
     $pt24_city = function_exists('get_query_var') ? get_query_var('pt24_city', '') : '';
+
+    // On the PT24 install, pt24_output_seo_meta() is the single source of
+    // canonical / Open Graph / Twitter tags for EVERY page (home, landings AND
+    // static pages). Always defer to it here to avoid duplicate, origin-host
+    // canonical/OG tags. The old guard only covered home/landings and missed
+    // static pages (and landings drop the pt24_* query vars after the CPT swaps
+    // the main query), which produced conflicting canonicals.
+    if ( function_exists('pt24_is_pt24_site') && pt24_is_pt24_site() ) {
+        return;
+    }
 
     if (function_exists('pt24_output_seo_meta') && (is_front_page() || !empty($pt24_service) || !empty($pt24_city))) {
         return;
