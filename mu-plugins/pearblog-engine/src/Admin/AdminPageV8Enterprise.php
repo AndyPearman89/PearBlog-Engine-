@@ -28,6 +28,9 @@ use PearBlogEngine\AI\AIProviderFactory;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
 use PearBlogEngine\Tenant\TenantContext;
+// Global (non-namespaced) PT24 factory classes.
+use PT24_AI_Factory;
+use PT24_Scale_Data;
 
 /**
  * Admin Panel v8.0 ENTERPRISE MAX - Full rozbudowa
@@ -346,13 +349,15 @@ class AdminPageV8Enterprise {
 	 * Render tab navigation
 	 */
 	private function render_tabs( string $current_tab ): void {
-		$base_url = admin_url( 'admin.php?page=' . self::MENU_SLUG );
+		// Use add_query_arg() without a URL argument so it resolves relative to
+		// the current REQUEST_URI (pt24.pro) rather than the stored site_url
+		// (wordpress2614653.home.pl) which is behind Cloudflare.
 		?>
 		<div class="pb-v8-tabs-wrapper">
 			<div class="pb-v8-tabs" role="tablist">
 				<?php foreach ( self::TABS as $tab_id => $tab_label ) : ?>
 					<a
-						href="<?php echo esc_url( add_query_arg( 'tab', $tab_id, $base_url ) ); ?>"
+						href="<?php echo esc_url( add_query_arg( [ 'page' => self::MENU_SLUG, 'tab' => $tab_id ] ) ); ?>"
 						class="pb-v8-tab <?php echo $current_tab === $tab_id ? 'is-active' : ''; ?>"
 						data-tab="<?php echo esc_attr( $tab_id ); ?>"
 						role="tab"
