@@ -177,6 +177,18 @@ $pt24_service_icons = array(
 );
 $pt24_service_icon = $pt24_service_icons[ $service_slug ] ?? 'wrench';
 
+// Districts per supported city — used for the local coverage section (plain text
+// for SEO; no district-level pages exist, so they are not links).
+$pt24_city_districts = array(
+    'warszawa' => array( 'Śródmieście', 'Mokotów', 'Wola', 'Praga-Południe', 'Ursynów', 'Bielany', 'Ochota', 'Bemowo', 'Targówek', 'Wilanów' ),
+    'krakow'   => array( 'Stare Miasto', 'Krowodrza', 'Podgórze', 'Nowa Huta', 'Bronowice', 'Dębniki', 'Prądnik Biały', 'Grzegórzki' ),
+    'wroclaw'  => array( 'Stare Miasto', 'Krzyki', 'Fabryczna', 'Psie Pole', 'Śródmieście', 'Ołbin', 'Gaj' ),
+    'poznan'   => array( 'Stare Miasto', 'Grunwald', 'Jeżyce', 'Wilda', 'Nowe Miasto', 'Łazarz' ),
+    'gdansk'   => array( 'Śródmieście', 'Wrzeszcz', 'Oliwa', 'Przymorze', 'Zaspa', 'Chełm', 'Brzeźno' ),
+    'katowice' => array( 'Śródmieście', 'Ligota', 'Brynów', 'Zawodzie', 'Koszutka', 'Bogucice', 'Załęże', 'Piotrowice' ),
+);
+$pt24_districts = $pt24_city_districts[ $city_slug ] ?? array();
+
 // Deterministic, illustrative client reviews — stable per service/city and in
 // line with the sample firm directory above. No review structured data emitted.
 $pt24_review_names = array( 'Anna K.', 'Marek W.', 'Tomasz L.', 'Katarzyna S.', 'Piotr M.', 'Agnieszka R.', 'Paweł D.', 'Magdalena Z.', 'Robert N.', 'Joanna P.' );
@@ -256,6 +268,13 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     <?php endforeach; ?>
                     </tbody>
                 </table>
+                <h3>Co wpływa na cenę?</h3>
+                <ul class="pt24-factors">
+                    <li><strong>Zakres prac</strong> — im większy i bardziej złożony, tym wyższy koszt.</li>
+                    <li><strong>Pilność</strong> — zlecenia awaryjne i ekspresowe bywają droższe.</li>
+                    <li><strong>Materiały i części</strong> — ich jakość i dostępność wpływają na cenę końcową.</li>
+                    <li><strong>Dojazd</strong> — odległość do Twojej lokalizacji może zwiększyć koszt.</li>
+                </ul>
             </section>
             <?php endif; ?>
 
@@ -298,6 +317,18 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     <?php endforeach; ?>
                 </div>
             </section>
+
+            <?php if ( ! empty( $pt24_districts ) ) : ?>
+            <section class="pt24-section">
+                <h2><?php echo esc_html( $service_name ); ?> w dzielnicach miasta <?php echo esc_html( $city_name ); ?></h2>
+                <p>Łączymy Cię z fachowcami z całego miasta — zamów bezpłatną wycenę niezależnie od dzielnicy.</p>
+                <ul class="pt24-districts">
+                    <?php foreach ( $pt24_districts as $pt24_d ) : ?>
+                        <li><?php echo esc_html( $service_name . ' ' . $pt24_d ); ?></li>
+                    <?php endforeach; ?>
+                </ul>
+            </section>
+            <?php endif; ?>
 
             <?php if ( ! empty( $data['faq'] ) ) : ?>
             <section class="pt24-section pt24-faq">

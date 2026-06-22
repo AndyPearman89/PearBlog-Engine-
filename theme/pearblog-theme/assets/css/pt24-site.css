@@ -127,6 +127,11 @@
 .pt24-review__author { margin: 0; font-weight: 700; font-size: .92rem; color: var(--pt24-dark); }
 .pt24-review__author span { color: var(--pt24-muted); font-weight: 400; }
 
+.pt24-factors { margin: .8rem 0 0; padding-left: 1.2rem; }
+.pt24-factors li { margin: .35rem 0; color: #334155; }
+.pt24-districts { list-style: none; padding: 0; margin: .6rem 0 0; display: flex; flex-wrap: wrap; gap: .5rem; }
+.pt24-districts li { background: var(--pt24-bg); border: 1px solid var(--pt24-border); border-radius: 999px; padding: .4rem .95rem; font-size: .9rem; color: #334155; }
+
 /* ===================================================================
    Static content pages ( wrapped in .pt24-page )
    =================================================================== */
