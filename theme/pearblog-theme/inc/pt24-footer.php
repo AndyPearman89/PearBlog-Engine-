@@ -62,6 +62,10 @@ if ( ! function_exists( 'pt24_render_full_footer' ) ) :
                         <p class="pp-footer-desc">
                             <?php echo $site_desc ? esc_html( $site_desc ) : 'PT24.PRO łączy Cię ze sprawdzonymi, lokalnymi fachowcami. Opisz zlecenie raz i odbieraj oferty od specjalistów z Twojej okolicy.'; ?>
                         </p>
+                        <p class="pt24-footer__contact">
+                            <span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span>
+                            <a href="mailto:kontakt@pt24.pro">kontakt@pt24.pro</a>
+                        </p>
                     </div>
 
                     <!-- Usługi -->

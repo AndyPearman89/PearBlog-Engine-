@@ -311,6 +311,25 @@
 .pt24-home__faq summary { font-size: 1.02rem; }
 
 /* ===================================================================
+   Interactions (JS-enhanced; degrade gracefully without JS)
+   =================================================================== */
+.pt24-nav-cta { display: inline-flex; align-items: center; background: var(--pt24-amber); color: #1f2937; font-weight: 700; padding: .55rem 1.05rem; border-radius: 8px; text-decoration: none; white-space: nowrap; transition: background .15s ease, transform .15s ease, box-shadow .15s ease; }
+.pt24-nav-cta:hover { background: var(--pt24-amber-dark); color: #fff; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(217, 119, 6, .35); }
+
+@media (prefers-reduced-motion: no-preference) {
+    body.pt24-reveal-on .pt24-anim { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s ease; }
+    body.pt24-reveal-on .pt24-anim.is-visible { opacity: 1; transform: none; }
+}
+
+.pt24-sticky-cta { position: fixed; left: 1rem; right: 1rem; bottom: 1rem; z-index: 60; display: none; align-items: center; justify-content: center; background: var(--pt24-amber); color: #1f2937; font-weight: 700; padding: .95rem 1rem; border-radius: 12px; text-decoration: none; box-shadow: 0 12px 30px rgba(15, 23, 42, .3); transform: translateY(140%); transition: transform .25s ease; }
+.pt24-sticky-cta.is-visible { transform: none; }
+
+.pt24-footer__contact { display: flex; align-items: center; gap: .5rem; margin: .9rem 0 0; }
+.pt24-footer__contact a { color: #fff; text-decoration: none; }
+.pt24-footer__contact a:hover { text-decoration: underline; }
+.pt24-footer__contact .pt24-ico { width: 18px; height: 18px; color: var(--pt24-amber); }
+
+/* ===================================================================
    Responsive
    =================================================================== */
 @media (max-width: 900px) {
@@ -323,7 +342,9 @@
     .pt24-home__hero p { font-size: 1.08rem; }
     .pt24-home__stats { gap: 1rem 1.6rem; }
     .pt24-home__stats strong { font-size: 1.4rem; }
+    .pt24-sticky-cta { display: flex; }
 }
 @media (max-width: 600px) {
     .pt24-logo-img { height: 38px; }
+    .pt24-nav-cta { display: none; }
 }

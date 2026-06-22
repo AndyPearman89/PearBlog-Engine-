@@ -184,6 +184,7 @@ function pearblog_enqueue_assets() {
     // so the shared theme on poradnik.pro / mucharski.pl is unaffected.
     if ( false !== stripos( (string) home_url( '/' ), 'pt24' ) ) {
         wp_enqueue_style('pt24-site', PEARBLOG_URI . '/assets/css/pt24-site.css', array('pearblog-components'), PEARBLOG_VERSION);
+        wp_enqueue_script('pt24-ux', PEARBLOG_URI . '/assets/js/pt24-ux.js', array(), PEARBLOG_VERSION, true);
     }
 
     // Poradnik V4 HI-PRO Content Hub
@@ -222,6 +223,94 @@ function pearblog_enqueue_assets() {
     }
 }
 add_action('wp_enqueue_scripts', 'pearblog_enqueue_assets');
+
+/**
+ * Drop poradnik.pro-only front-end scripts/styles on the PT24 install.
+ *
+ * The theme is shared, so several poradnik.pro bundles (v3 calculators,
+ * conversion trackers, the AI decision platform, v4 hub) get enqueued on PT24
+ * where they serve no purpose. Dequeue them by matching the registered source
+ * filename so the PT24 pages stay lean. Host-guarded; runs after the default
+ * enqueue priority. poradnik.pro / mucharski.pl are untouched.
+ */
+function pt24_dequeue_foreign_assets() {
+    if ( false === stripos( (string) home_url( '/' ), 'pt24' ) ) {
+        return;
+    }
+
+    $script_needles = array(
+        'v3-calculator.js', 'v3-conversion-tracker.js', 'v3-front-hub.js',
+        'poradnik-v4.js', 'personalization.js', 'decision-platform.js',
+    );
+    $scripts = wp_scripts();
+    foreach ( (array) $scripts->registered as $handle => $script ) {
+        $src = isset( $script->src ) ? (string) $script->src : '';
+        foreach ( $script_needles as $needle ) {
+            if ( '' !== $src && false !== strpos( $src, $needle ) ) {
+                wp_dequeue_script( $handle );
+                break;
+            }
+        }
+    }
+
+    $style_needles = array( 'decision-platform.css', 'poradnik-v4.css' );
+    $styles = wp_styles();
+    foreach ( (array) $styles->registered as $handle => $style ) {
+        $src = isset( $style->src ) ? (string) $style->src : '';
+        foreach ( $style_needles as $needle ) {
+            if ( '' !== $src && false !== strpos( $src, $needle ) ) {
+                wp_dequeue_style( $handle );
+                break;
+            }
+        }
+    }
+}
+add_action('wp_enqueue_scripts', 'pt24_dequeue_foreign_assets', 100);
+
+/**
+ * Keep every front-end URL on the public pt24.pro domain.
+ *
+ * The PT24 install is served through Cloudflare, but WordPress generates and
+ * stores URLs with the origin host (wordpress2614653.home.pl/pt24). That host
+ * otherwise leaks into the menu, footer, internal links and — critically — the
+ * lead-form action, which would then POST cross-origin. Rewrite the origin base
+ * to https://pt24.pro in the final front-end HTML. Host-guarded; admin, AJAX and
+ * REST responses are left untouched so wp-admin keeps working.
+ */
+function pt24_buffer_public_host() {
+    if ( is_admin() || wp_doing_ajax() || ( defined( 'REST_REQUEST' ) && REST_REQUEST ) ) {
+        return;
+    }
+    if ( false === stripos( (string) home_url( '/' ), 'pt24' ) ) {
+        return;
+    }
+    ob_start( 'pt24_rewrite_public_host' );
+}
+function pt24_rewrite_public_host( $html ) {
+    if ( ! is_string( $html ) || '' === $html ) {
+        return $html;
+    }
+    return str_replace(
+        array(
+            'https://wordpress2614653.home.pl/pt24',
+            'http://wordpress2614653.home.pl/pt24',
+            '//wordpress2614653.home.pl/pt24',
+            'wordpress2614653.home.pl%2Fpt24',
+            'wordpress2614653.home.pl%2fpt24',
+            'wordpress2614653.home.pl',
+        ),
+        array(
+            'https://pt24.pro',
+            'https://pt24.pro',
+            '//pt24.pro',
+            'pt24.pro',
+            'pt24.pro',
+            'pt24.pro',
+        ),
+        $html
+    );
+}
+add_action( 'template_redirect', 'pt24_buffer_public_host', 1 );
 
 /**
  * Get multisite dynamic CSS + Dark Mode
