@@ -93,17 +93,9 @@ jobs:
             exit 1
           fi
 
-          LFTP_SCRIPT=$(cat <<EOF
-set cmd:fail-exit true
-set net:timeout ${CONNECT_TIMEOUT}
-set net:max-retries 1
-set net:reconnect-interval-base 5
-ls
-bye
-EOF
-)
+          LFTP_CMDS="set cmd:fail-exit true; set net:timeout ${CONNECT_TIMEOUT}; set net:max-retries 1; set net:reconnect-interval-base 5; ls; bye"
 
-          if ! LFTP_OUTPUT=$(lftp -u "$USER","$PASS" -p "$PORT" "${FTP_PROTOCOL}://${HOST}" -e "$LFTP_SCRIPT" 2>&1); then
+          if ! LFTP_OUTPUT=$(lftp -u "$USER","$PASS" -p "$PORT" "${FTP_PROTOCOL}://${HOST}" -e "$LFTP_CMDS" 2>&1); then
             echo "$LFTP_OUTPUT" | tail -n 50
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
               echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
