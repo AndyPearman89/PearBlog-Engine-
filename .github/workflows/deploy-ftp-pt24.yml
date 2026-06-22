@@ -87,14 +87,14 @@ jobs:
           fi
 
           LFTP_SCRIPT=$(cat <<EOF
-          set cmd:fail-exit true
-          set net:timeout ${CONNECT_TIMEOUT}
-          set net:max-retries 1
-          set net:reconnect-interval-base 5
-          open -u "${USER}","${PASS}" -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
-          ls
-          bye
-          EOF
+set cmd:fail-exit true
+set net:timeout ${CONNECT_TIMEOUT}
+set net:max-retries 1
+set net:reconnect-interval-base 5
+open -u "${USER}","${PASS}" -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
+ls
+bye
+EOF
           )
 
           if ! LFTP_OUTPUT=$(lftp -e "$LFTP_SCRIPT" 2>&1); then
