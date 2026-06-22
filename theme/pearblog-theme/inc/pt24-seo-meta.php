@@ -241,6 +241,30 @@ function pt24_output_seo_meta() {
     }
     </script>
 
+    <?php if ( is_front_page() ) :
+        $pt24_home_faq = array(
+            array( 'Czy korzystanie z PT24 jest płatne?', 'Nie. Dla osób zlecających serwis jest w 100% bezpłatny i niezobowiązujący.' ),
+            array( 'Jak szybko otrzymam oferty?', 'Najczęściej w kilka godzin, a najpóźniej do 24 godzin od wysłania zgłoszenia.' ),
+            array( 'Czy muszę przyjąć którąś z ofert?', 'Nie. Decyzję podejmujesz samodzielnie — żadne zgłoszenie nie jest zobowiązaniem.' ),
+            array( 'W jakich miastach działacie?', 'Obsługujemy największe miasta w Polsce, a lista jest stale poszerzana o kolejne lokalizacje.' ),
+            array( 'Jak dołączyć jako fachowiec?', 'Wejdź na stronę „Dla firm” i wypełnij zgłoszenie — pomożemy uruchomić Twój profil.' ),
+        );
+        $pt24_home_faq_schema = array(
+            '@context'   => 'https://schema.org',
+            '@type'      => 'FAQPage',
+            'mainEntity' => array(),
+        );
+        foreach ( $pt24_home_faq as $pt24_qa ) {
+            $pt24_home_faq_schema['mainEntity'][] = array(
+                '@type'          => 'Question',
+                'name'           => $pt24_qa[0],
+                'acceptedAnswer' => array( '@type' => 'Answer', 'text' => $pt24_qa[1] ),
+            );
+        }
+        ?>
+    <script type="application/ld+json"><?php echo wp_json_encode( $pt24_home_faq_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
+    <?php endif; ?>
+
     <?php if (!empty($service) && !empty($city)): ?>
     <!-- Local Business Schema -->
     <script type="application/ld+json">
