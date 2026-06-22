@@ -176,6 +176,8 @@
     box-shadow: 0 6px 18px rgba(15, 23, 42, .04);
 }
 .pt24-features li strong { display: block; font-size: 1.05rem; margin-bottom: .3rem; color: var(--pt24-dark); }
+.pt24-features li .pt24-feat-ico { display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border-radius: 12px; background: rgba(37, 99, 235, .1); color: var(--pt24-blue); margin-bottom: .7rem; }
+.pt24-features li .pt24-feat-ico .pt24-ico { width: 24px; height: 24px; }
 
 /* Numbered "how it works" cards */
 .pt24-flow {
