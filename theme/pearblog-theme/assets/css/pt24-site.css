@@ -40,15 +40,25 @@
 .pt24-btn--ghost { background: transparent; border: 1px solid var(--pt24-blue); color: var(--pt24-blue); }
 .pt24-btn--ghost:hover { background: var(--pt24-blue); color: #fff; }
 .pt24-btn--block { display: block; width: 100%; text-align: center; }
+.pt24-btn--ghost-light { background: rgba(255, 255, 255, .12); border: 1px solid rgba(255, 255, 255, .55); color: #fff; }
+.pt24-btn--ghost-light:hover { background: #fff; color: var(--pt24-blue-dark); transform: translateY(-1px); }
+
+/* ===================================================================
+   Brand / logo (header + footer)
+   =================================================================== */
+.pt24-logo-img { height: 46px; width: auto; display: block; }
+.pp-footer .pt24-logo-img { height: 50px; }
 
 /* ===================================================================
    Landing pages ( /{city}/{service}/ )
    =================================================================== */
 .pt24-landing { color: var(--pt24-dark); }
-.pt24-hero { background: linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue)); color: #fff; padding: 48px 0; }
-.pt24-hero__title { font-size: 2rem; line-height: 1.2; margin: .4rem 0; color: #fff; }
-.pt24-hero__lead { font-size: 1.15rem; max-width: 46rem; opacity: .95; }
-.pt24-hero__cta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 1.2rem 0 .6rem; }
+.pt24-hero { position: relative; overflow: hidden; background: radial-gradient(1100px 380px at 85% -25%, rgba(96, 165, 250, .45), transparent 60%), linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue)); color: #fff; padding: 56px 0; }
+.pt24-hero .pb-container { position: relative; z-index: 1; }
+.pt24-hero__badge { display: inline-block; background: rgba(255, 255, 255, .14); border: 1px solid rgba(255, 255, 255, .3); color: #fff; padding: .35rem .9rem; border-radius: 999px; font-size: .85rem; font-weight: 600; margin-bottom: .5rem; }
+.pt24-hero__title { font-size: 2.4rem; line-height: 1.15; margin: .4rem 0; color: #fff; letter-spacing: -.01em; }
+.pt24-hero__lead { font-size: 1.18rem; max-width: 46rem; opacity: .95; }
+.pt24-hero__cta { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; margin: 1.4rem 0 .6rem; }
 .pt24-hero__note { font-size: .9rem; opacity: .85; }
 .pt24-trust { list-style: none; display: flex; gap: 1.5rem; flex-wrap: wrap; padding: 0; margin: 1rem 0 0; font-size: .95rem; }
 .pt24-trust li { opacity: .95; }
@@ -209,9 +219,14 @@
 /* ===================================================================
    Homepage
    =================================================================== */
-.pt24-home__hero { text-align: center; padding: 1rem 0 .5rem; }
-.pt24-home__hero h2 { font-size: 2.1rem; border: 0; padding: 0; }
-.pt24-home__hero p { font-size: 1.15rem; color: var(--pt24-muted); max-width: 42rem; margin-inline: auto; }
+.pt24-home__hero { position: relative; overflow: hidden; text-align: center; color: #fff; border-radius: 22px; padding: 3.2rem 2rem 2.6rem; margin-bottom: 2.6rem; background: radial-gradient(900px 320px at 80% -30%, rgba(96, 165, 250, .5), transparent 60%), linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue)); box-shadow: 0 24px 60px rgba(30, 58, 138, .28); }
+.pt24-home__badge { display: inline-block; background: rgba(255, 255, 255, .16); border: 1px solid rgba(255, 255, 255, .28); padding: .42rem 1.05rem; border-radius: 999px; font-weight: 600; font-size: .92rem; margin-bottom: 1rem; }
+.pt24-home__hero h1 { color: #fff; font-size: 2.7rem; line-height: 1.12; border: 0; padding: 0; margin: 0 auto .8rem; max-width: 24ch; letter-spacing: -.015em; }
+.pt24-home__hero p { font-size: 1.22rem; color: rgba(255, 255, 255, .92); max-width: 44rem; margin-inline: auto; }
+.pt24-home__hero-cta { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.7rem; }
+.pt24-home__stats { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.2rem 2.4rem; margin: 2rem 0 0; padding: 1.6rem 0 0; border-top: 1px solid rgba(255, 255, 255, .16); }
+.pt24-home__stats li { font-size: .95rem; color: rgba(255, 255, 255, .85); }
+.pt24-home__stats strong { display: block; font-size: 1.7rem; color: var(--pt24-amber); line-height: 1; margin-bottom: .2rem; }
 .pt24-home__values ul { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 1rem; }
 .pt24-home__values li { background: #fff; border: 1px solid var(--pt24-border); border-radius: 12px; padding: 1.1rem 1.2rem; box-shadow: 0 6px 18px rgba(15, 23, 42, .04); }
 .pt24-home__cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; }
@@ -229,4 +244,13 @@
     .pt24-grid { grid-template-columns: 1fr; }
     .pt24-tasks { columns: 1; }
     .pt24-leadbox { position: static; }
+    .pt24-hero__title { font-size: 1.9rem; }
+    .pt24-home__hero { padding: 2.4rem 1.3rem 2rem; border-radius: 18px; }
+    .pt24-home__hero h1 { font-size: 2.1rem; }
+    .pt24-home__hero p { font-size: 1.08rem; }
+    .pt24-home__stats { gap: 1rem 1.6rem; }
+    .pt24-home__stats strong { font-size: 1.4rem; }
+}
+@media (max-width: 600px) {
+    .pt24-logo-img { height: 38px; }
 }

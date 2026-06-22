@@ -177,6 +177,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
     <section class="pt24-hero">
         <div class="pb-container">
             <?php echo function_exists( 'pearblog_get_breadcrumbs' ) ? pearblog_get_breadcrumbs() : ''; ?>
+            <span class="pt24-hero__badge"><?php echo esc_html( $service_name . ' · ' . $city_name ); ?></span>
             <h1 class="pt24-hero__title"><?php echo esc_html( $h1 ); ?></h1>
             <p class="pt24-hero__lead"><?php echo esc_html( $hero_text ); ?></p>
             <div class="pt24-hero__cta">

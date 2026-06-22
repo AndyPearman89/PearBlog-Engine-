@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '1.1.3';
+const PT24_SEED_VERSION = '1.2.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -94,9 +94,21 @@ function pt24_seed_home_content(): string {
     );
 
     $html  = '<div class="pt24-home pt24-page">';
-    $html .= '<section class="pt24-home__hero"><h2>Znajdź sprawdzonego fachowca w swojej okolicy</h2>';
+    $html .= '<section class="pt24-home__hero">';
+    $html .= '<span class="pt24-home__badge">⚡ Pomoc techniczna 24h — fachowcy w całej Polsce</span>';
+    $html .= '<h1>Znajdź sprawdzonego fachowca w swojej okolicy</h1>';
     $html .= '<p>Opisz zlecenie raz i otrzymaj do trzech bezpłatnych ofert od lokalnych specjalistów. Bez prowizji, bez zobowiązań.</p>';
-    $html .= '<p class="pt24-home__cta"><a class="pt24-btn pt24-btn--primary" href="' . esc_url( home_url( '/jak-to-dziala/' ) ) . '">Zobacz, jak to działa</a></p></section>';
+    $html .= '<div class="pt24-home__hero-cta">';
+    $html .= '<a class="pt24-btn pt24-btn--primary" href="' . esc_url( home_url( '/jak-to-dziala/' ) ) . '">Zamów bezpłatną wycenę</a>';
+    $html .= '<a class="pt24-btn pt24-btn--ghost-light" href="#uslugi">Przeglądaj usługi</a>';
+    $html .= '</div>';
+    $html .= '<ul class="pt24-home__stats">';
+    $html .= '<li><strong>6</strong> miast w Polsce</li>';
+    $html .= '<li><strong>6</strong> kategorii usług</li>';
+    $html .= '<li><strong>do 24 h</strong> pierwsza oferta</li>';
+    $html .= '<li><strong>0 zł</strong> dla zlecających</li>';
+    $html .= '</ul>';
+    $html .= '</section>';
 
     $html .= '<section class="pt24-home__values"><h2>Dlaczego PT24?</h2><ul>';
     $html .= '<li><strong>Zweryfikowani fachowcy</strong>Opinie i oceny realnych klientów pomagają wybrać najlepszego wykonawcę.</li>';
@@ -104,7 +116,7 @@ function pt24_seed_home_content(): string {
     $html .= '<li><strong>Szybki kontakt</strong>Pierwsze oferty otrzymujesz zwykle w kilka godzin od zgłoszenia.</li>';
     $html .= '</ul></section>';
 
-    $html .= '<section class="pt24-home__services"><h2>Popularne usługi</h2><div class="pt24-home__cards">';
+    $html .= '<section class="pt24-home__services" id="uslugi"><h2>Popularne usługi</h2><div class="pt24-home__cards">';
     foreach ( $services as $sslug => $sname ) {
         $links = array();
         foreach ( $cities as $cslug => $cname ) {

@@ -13,13 +13,15 @@ pearblog_render_header();
     <?php while (have_posts()) : the_post(); ?>
         <article id="post-<?php the_ID(); ?>" <?php post_class('pb-article pb-page-article'); ?>>
 
-            <!-- Page Header -->
+            <!-- Page Header (skipped on the PT24 front page, where the hero owns the H1) -->
+            <?php if ( ! ( is_front_page() && function_exists( 'pt24_is_pt24_site' ) && pt24_is_pt24_site() ) ) : ?>
             <header class="pb-page-header">
                 <div class="pb-container">
                     <?php echo pearblog_get_breadcrumbs(); ?>
                     <h1 class="pb-page-title"><?php the_title(); ?></h1>
                 </div>
             </header>
+            <?php endif; ?>
 
             <!-- Featured Image -->
             <?php if (has_post_thumbnail()) : ?>

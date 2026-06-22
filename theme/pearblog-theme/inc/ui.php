@@ -14,6 +14,12 @@ if (!defined('ABSPATH')) {
  * Get site logo
  */
 function pearblog_get_logo() {
+    // PT24 install (shared theme): use the branded PT24.PRO logo image.
+    if ( function_exists( 'pt24_is_pt24_site' ) && pt24_is_pt24_site() && defined( 'PEARBLOG_URI' ) ) {
+        return '<img src="' . esc_url( PEARBLOG_URI . '/assets/brand/pt24-logo.png' )
+            . '" alt="PT24.PRO — pomoc techniczna 24h" class="pt24-logo-img" width="395" height="120">';
+    }
+
     $logo_url = get_option('pearblog_logo_url', '');
 
     if (empty($logo_url)) {
