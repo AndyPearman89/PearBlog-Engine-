@@ -18,6 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CONNECT_TIMEOUT_SECONDS: "20"
+      LFTP_LIST_TIMEOUT_SECONDS: "60"
       DEPLOY_TIMEOUT_MINUTES: "8"
 
     steps:
@@ -81,6 +82,7 @@ jobs:
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
           CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
+          LIST_TIMEOUT="${LFTP_LIST_TIMEOUT_SECONDS}"
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
 
@@ -93,11 +95,17 @@ jobs:
             exit 1
           fi
 
-          LFTP_CMDS="set cmd:fail-exit true; set net:timeout ${CONNECT_TIMEOUT}; set net:max-retries 1; set net:reconnect-interval-base 5; ls; bye"
+          LFTP_CMDS="set cmd:fail-exit true; set net:timeout ${LIST_TIMEOUT}; set net:max-retries 2; set net:reconnect-interval-base 5; ls; bye"
 
           if ! LFTP_OUTPUT=$(lftp -u "$USER","$PASS" -p "$PORT" "${FTP_PROTOCOL}://${HOST}" -e "$LFTP_CMDS" 2>&1); then
             echo "$LFTP_OUTPUT" | tail -n 50
-            if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
+            if echo "$LFTP_OUTPUT" | grep -qi "max-retries exceeded"; then
+              if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
+                echo "::error::SFTP endpoint reached but directory listing timed out. Verify port, credentials, and SSH/SFTP access policy."
+              else
+                echo "::error::FTP endpoint reached but directory listing timed out. Verify protocol, credentials, and passive/data-channel firewall rules."
+              fi
+            elif [[ "$FTP_PROTOCOL" == "sftp" ]]; then
               echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
             else
               echo "::error::FTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol and credentials."
