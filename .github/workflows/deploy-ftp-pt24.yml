@@ -1,4 +1,4 @@
-name: Deploy via FTP
+name: Deploy PT24 via FTP
 
 on:
   push:
@@ -13,8 +13,8 @@ permissions:
   contents: read
 
 jobs:
-  deploy-ftp:
-    name: Deploy plugin & theme via FTP
+  deploy-ftp-pt24:
+    name: Deploy plugin & theme via FTP to PT24
     runs-on: ubuntu-latest
     env:
       CONNECT_TIMEOUT_SECONDS: "20"
@@ -48,7 +48,6 @@ jobs:
               exit 1
               ;;
           esac
-          # Empty/unset FTP_PROTOCOL falls back to ftp; non-empty invalid values fail above.
           if [[ -n "${{ secrets.FTP_PORT }}" && ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
             echo "::error::FTP_PORT must be numeric."
             exit 1
@@ -75,7 +74,6 @@ jobs:
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
           CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
-          NETRC_PATH="$RUNNER_TEMP/lftp-netrc"
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
 
@@ -88,21 +86,12 @@ jobs:
             exit 1
           fi
 
-          umask 077
-          trap 'rm -f "$NETRC_PATH"' EXIT
-          cat > "$NETRC_PATH" <<EOF
-          machine $HOST
-          login $USER
-          password $PASS
-          EOF
-
           LFTP_SCRIPT=$(cat <<EOF
           set cmd:fail-exit true
           set net:timeout ${CONNECT_TIMEOUT}
           set net:max-retries 1
           set net:reconnect-interval-base 5
-          set net:netrc-file "${NETRC_PATH}"
-          open -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
+          open -u "${USER}","${PASS}" -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
           ls
           bye
           EOF
@@ -118,8 +107,7 @@ jobs:
             exit 1
           fi
 
-      - name: Deploy mu-plugin
-        # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
+      - name: Deploy mu-plugin to PT24
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -130,11 +118,24 @@ jobs:
           protocol: ${{ steps.preflight.outputs.protocol }}
           log-level: verbose
           local-dir: ./mu-plugins/pearblog-engine/
-          server-dir: /poradnik/wp-content/mu-plugins/pearblog-engine/
+          server-dir: /pt24/wp-content/mu-plugins/pearblog-engine/
           dangerous-clean-slate: false
 
-      - name: Deploy theme
-        # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
+      - name: Deploy PT24 theme
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
+        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+        with:
+          server: ${{ secrets.FTP_HOST }}
+          username: ${{ secrets.FTP_USERNAME }}
+          password: ${{ secrets.FTP_PASSWORD }}
+          port: ${{ secrets.FTP_PORT }}
+          protocol: ${{ steps.preflight.outputs.protocol }}
+          log-level: verbose
+          local-dir: ./theme/pt24/
+          server-dir: /pt24/wp-content/themes/pt24/
+          dangerous-clean-slate: false
+
+      - name: Deploy PearBlog theme to PT24
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
         with:
@@ -145,5 +146,5 @@ jobs:
           protocol: ${{ steps.preflight.outputs.protocol }}
           log-level: verbose
           local-dir: ./theme/pearblog-theme/
-          server-dir: /poradnik/wp-content/themes/pearblog-theme/
+          server-dir: /pt24/wp-content/themes/pearblog-theme/
           dangerous-clean-slate: false

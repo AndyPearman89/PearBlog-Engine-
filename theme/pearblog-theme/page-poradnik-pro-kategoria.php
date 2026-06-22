@@ -1,4 +1,11 @@
 <?php
+/**
+ * Template Name: Poradnik.pro - Kategoria
+ * @package PearBlog
+ */
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
+
 $escape = static function ($value) {
     return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
 };
@@ -42,131 +49,17 @@ foreach ($cities as $citySlug => $cityName) {
 }
 ?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title><?php echo $escape($categoryName); ?> – Poradnik.pro</title>
     <meta name="description" content="Kategoria <?php echo $escape($categoryName); ?> na Poradnik.pro: praktyczne poradniki, pytania i odpowiedzi ekspertów, rankingi i najlepsi specjaliści.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(0,0,0,0.08);
-            --shadow-md: 0 4px 12px rgba(0,0,0,0.08);
-            --max-width: 1200px;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            color: var(--gray-900);
-            background: var(--gray-50);
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-        }
-
-        a { color: inherit; text-decoration: none; }
-        ul { list-style: none; }
-
-        .container {
-            width: min(100%, var(--max-width));
-            margin: 0 auto;
-            padding: 0 24px;
-        }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255,255,255,0.96);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--gray-200);
-        }
-
-        .header-inner {
-            min-height: 72px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-
-        .logo {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 1.25rem;
-            font-weight: 800;
-            color: var(--gray-900);
-            flex-shrink: 0;
-        }
-
-        .logo-icon {
-            width: 36px;
-            height: 36px;
-            border-radius: 10px;
-            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
-            color: #fff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-sm);
-            font-weight: 800;
-        }
-
-        .main-nav {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 24px;
-            flex: 1;
-            flex-wrap: wrap;
-        }
-
-        .main-nav a {
-            font-size: 0.95rem;
-            font-weight: 500;
-            color: var(--gray-600);
-            transition: color 0.2s ease;
-        }
-
-        .main-nav a:hover,
-        .main-nav a.active { color: var(--purple-primary); }
-
-        .btn-primary {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 44px;
-            padding: 0 20px;
-            border-radius: 999px;
-            background: var(--purple-primary);
-            color: #fff;
-            font-size: 0.95rem;
-            font-weight: 700;
-            white-space: nowrap;
-            box-shadow: var(--shadow-sm);
-        }
-
         .hero {
             background:
                 radial-gradient(circle at top right, rgba(139,92,246,0.28), transparent 35%),
@@ -497,35 +390,13 @@ foreach ($cities as $citySlug => $cityName) {
         }
 
         @media (max-width: 1024px) {
-            .header-inner {
-                flex-wrap: wrap;
-                justify-content: center;
-                padding: 16px 0;
-            }
-
-            .main-nav {
-                order: 3;
-                width: 100%;
-                justify-content: center;
-            }
-
             .stats-row,
             .experts-row {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
             }
         }
 
-        @media (max-width: 768px) {
-            .container { padding: 0 18px; }
-
-            .hero { padding: 56px 0 32px; }
-
-            .section-card {
-                padding: 24px 20px;
-                border-radius: 20px;
-            }
-
-            .section-header,
+        @media (max-width: 768px) {            .section-header,
             .list-item,
             .expert-rating {
                 display: grid;
@@ -541,40 +412,16 @@ foreach ($cities as $citySlug => $cityName) {
                 grid-template-columns: 1fr;
             }
 
-            .main-nav {
-                gap: 14px 18px;
-            }
         }
 
         @media (max-width: 560px) {
-            .logo { width: 100%; justify-content: center; }
-            .btn-primary { width: 100%; }
-            .header-inner { gap: 16px; }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
-    <header class="site-header">
-        <div class="container">
-            <div class="header-inner">
-                <a href="/" class="logo" aria-label="Poradnik.pro">
-                    <span class="logo-icon">P</span>
-                    <span>Poradnik.pro</span>
-                </a>
-                <nav class="main-nav" aria-label="Główna nawigacja">
-                    <a href="/poradniki" class="active">Poradniki</a>
-                    <a href="/rankingi">Rankingi</a>
-                    <a href="/kalkulatory">Kalkulatory</a>
-                    <a href="/pytania-i-odpowiedzi">Pytania i Odpowiedzi</a>
-                    <a href="/specjalisci">Specjaliści</a>
-                    <a href="/kontakt">Kontakt</a>
-                </nav>
-                <a href="/specjalisci" class="btn-primary">Znajdź eksperta</a>
-            </div>
-        </div>
-    </header>
-
-    <section class="hero">
+<body <?php body_class(); ?>>
+<?php wp_body_open(); pp_pro_header( 'poradniki' ); ?>
+<section class="hero">
         <div class="container">
             <div class="hero-content">
                 <div class="hero-label">Kategoria / <?php echo $escape($categoryName); ?></div>
@@ -818,5 +665,6 @@ foreach ($cities as $citySlug => $cityName) {
             <div class="footer-note">Szablon kategorii Poradnik.pro zaprojektowany w układzie zgodnym z wireframe dla platformy Poradnik.pro.</div>
         </div>
     </main>
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>

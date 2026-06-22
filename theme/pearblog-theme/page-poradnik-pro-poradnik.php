@@ -1,123 +1,27 @@
 <?php
 /**
  * Template Name: Poradnik.pro - Poradnik
- *
- * Standalone guide/article page template for Poradnik.pro.
+ * @package PearBlog
  */
+defined( 'ABSPATH' ) || exit;
+require_once get_template_directory() . '/inc/poradnik-pro-shared.php';
 ?>
 <!DOCTYPE html>
-<html lang="pl">
+<html <?php language_attributes(); ?>>
 <head>
-    <meta charset="UTF-8">
+    <meta charset="<?php bloginfo( 'charset' ); ?>">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Jak sprzedać działkę? Kompletny poradnik krok po kroku | Poradnik.pro</title>
     <meta name="description" content="Praktyczny poradnik o sprzedaży działki: dokumenty, wycena, przygotowanie nieruchomości i współpraca z ekspertem.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <?php pp_pro_shared_styles(); ?>
     <style>
-        :root {
-            --purple-primary: #6c2bd9;
-            --purple-dark: #1a0a3e;
-            --purple-light: #8b5cf6;
-            --orange-cta: #f97316;
-            --gray-50: #f8fafc;
-            --gray-100: #f1f5f9;
-            --gray-200: #e2e8f0;
-            --gray-300: #cbd5e1;
-            --gray-400: #94a3b8;
-            --gray-500: #64748b;
-            --gray-600: #475569;
-            --gray-700: #334155;
-            --gray-800: #1e293b;
-            --gray-900: #0f172a;
-            --radius-sm: 8px;
-            --radius-md: 12px;
-            --radius-lg: 16px;
-            --shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08);
-            --shadow-md: 0 12px 30px rgba(15, 23, 42, 0.08);
-            --max-width: 1200px;
-        }
-
-        * { box-sizing: border-box; margin: 0; padding: 0; }
         html { scroll-behavior: smooth; }
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: var(--gray-50);
-            color: var(--gray-800);
-            line-height: 1.6;
-            -webkit-font-smoothing: antialiased;
-        }
-        a { color: inherit; text-decoration: none; }
-        img { display: block; max-width: 100%; }
-        button { border: 0; background: none; font: inherit; cursor: pointer; }
-        .container { width: min(var(--max-width), calc(100% - 32px)); margin: 0 auto; }
-
-        .site-header {
-            position: sticky;
-            top: 0;
-            z-index: 100;
-            background: rgba(255, 255, 255, 0.96);
-            backdrop-filter: blur(12px);
-            border-bottom: 1px solid var(--gray-200);
-        }
-        .header-inner {
-            min-height: 76px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 24px;
-        }
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--purple-dark);
-            font-size: 1.25rem;
-            font-weight: 800;
-        }
-        .logo-mark {
-            width: 40px;
-            height: 40px;
-            border-radius: 12px;
-            background: linear-gradient(135deg, var(--purple-primary), var(--purple-light));
-            color: #fff;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-sm);
-        }
-        .main-nav {
-            display: flex;
-            align-items: center;
-            gap: 28px;
-            color: var(--gray-600);
-            font-size: 0.95rem;
-            font-weight: 500;
-        }
-        .main-nav a:hover { color: var(--purple-primary); }
-        .header-cta {
-            padding: 12px 20px;
-            border-radius: 999px;
-            background: var(--purple-primary);
-            color: #fff;
-            font-size: 0.9rem;
-            font-weight: 700;
-            box-shadow: var(--shadow-sm);
-        }
 
         .page-shell { padding: 28px 0 64px; }
-        .breadcrumb {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
-            color: var(--gray-500);
-            font-size: 0.9rem;
-        }
         .breadcrumb span:last-child { color: var(--gray-700); font-weight: 600; }
-        .breadcrumb-sep { color: var(--gray-400); }
 
         .article-intro {
             background: #fff;
@@ -419,37 +323,14 @@
             font-size: 0.84rem;
         }
 
-        .site-footer {
-            margin-top: 56px;
-            padding: 28px 0 40px;
-            border-top: 1px solid var(--gray-200);
-            color: var(--gray-500);
-            font-size: 0.9rem;
-            background: #fff;
-        }
-        .footer-inner {
-            display: flex;
-            justify-content: space-between;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-
         @media (max-width: 980px) {
             .content-grid { grid-template-columns: 1fr; }
             .sidebar { position: static; }
-            .main-nav { display: none; }
         }
 
         @media (max-width: 720px) {
-            .container { width: min(var(--max-width), calc(100% - 24px)); }
-            .header-inner,
             .author-row,
             .author-meta { align-items: flex-start; }
-            .header-inner {
-                min-height: auto;
-                padding: 16px 0;
-                flex-wrap: wrap;
-            }
             .article-intro,
             .main-column,
             .sidebar section,
@@ -462,33 +343,19 @@
             .share-btn { width: 100%; justify-content: center; display: inline-flex; }
         }
     </style>
+    <?php wp_head(); ?>
 </head>
-<body>
-    <header class="site-header">
-        <div class="container header-inner">
-            <a href="#" class="logo" aria-label="Poradnik.pro">
-                <span class="logo-mark">P</span>
-                <span>Poradnik.pro</span>
-            </a>
-            <nav class="main-nav" aria-label="Główna nawigacja">
-                <a href="#">Kategorie</a>
-                <a href="#">Poradniki</a>
-                <a href="#">Eksperci</a>
-                <a href="#">Kontakt</a>
-            </nav>
-            <a href="#" class="header-cta">Znajdź eksperta</a>
-        </div>
-    </header>
-
+<body <?php body_class(); ?>>
+<?php wp_body_open(); pp_pro_header( 'poradniki' ); ?>
     <main class="page-shell">
         <div class="container">
             <nav class="breadcrumb" aria-label="Breadcrumb">
                 <a href="#">Strona główna</a>
-                <span class="breadcrumb-sep">&gt;</span>
+                <span class="sep">&gt;</span>
                 <a href="#">Poradniki</a>
-                <span class="breadcrumb-sep">&gt;</span>
+                <span class="sep">&gt;</span>
                 <a href="#">Nieruchomości</a>
-                <span class="breadcrumb-sep">&gt;</span>
+                <span class="sep">&gt;</span>
                 <span>Jak sprzedać działkę?</span>
             </nav>
 
@@ -667,12 +534,6 @@
             </div>
         </div>
     </main>
-
-    <footer class="site-footer">
-        <div class="container footer-inner">
-            <span>© 2026 Poradnik.pro — przewodniki, eksperci i bezpieczne decyzje.</span>
-            <span>Kontakt · Polityka prywatności · Regulamin</span>
-        </div>
-    </footer>
+<?php pp_pro_footer(); wp_footer(); ?>
 </body>
 </html>
