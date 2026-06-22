@@ -21,7 +21,7 @@ if (!defined('ABSPATH')) {
 class PearBlog_PT24_Landing_CPT {
 
     /**
-     * Services configuration
+     * Services configuration — extended dynamically from PT24_Scale_Data if available.
      */
     private static $services = [
         'mechanik' => 'Mechanik',
@@ -33,7 +33,7 @@ class PearBlog_PT24_Landing_CPT {
     ];
 
     /**
-     * Cities configuration
+     * Cities configuration — extended dynamically from PT24_Scale_Data if available.
      */
     private static $cities = [
         'krakow' => 'Kraków',
@@ -43,6 +43,25 @@ class PearBlog_PT24_Landing_CPT {
         'poznan' => 'Poznań',
         'gdansk' => 'Gdańsk',
     ];
+
+    /**
+     * Lazy-load extended cities and services from Scale_Data if available.
+     * Merges the static fallback with the full 80-city / 10-service dataset.
+     */
+    private static bool $_maps_loaded = false;
+
+    private static function ensure_maps_loaded(): void {
+        if ( self::$_maps_loaded ) {
+            return;
+        }
+        self::$_maps_loaded = true;
+
+        if ( class_exists( 'PT24_Scale_Data' ) ) {
+            // Merge: Scale_Data is authoritative; keeps static fallback for safety.
+            self::$cities   = array_merge( self::$cities,   PT24_Scale_Data::cities_map() );
+            self::$services = array_merge( self::$services, PT24_Scale_Data::services_map() );
+        }
+    }
 
     /**
      * Initialize hooks
@@ -72,6 +91,7 @@ class PearBlog_PT24_Landing_CPT {
      * @return array
      */
     public static function maybe_route_landing($query_vars) {
+        self::ensure_maps_loaded();
         $uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
         $path = (string) wp_parse_url($uri, PHP_URL_PATH);
 

@@ -79,7 +79,8 @@ class AdminPageV8Enterprise {
 		// PT24 lead management (status update + CSV export).
 		add_action( 'admin_post_pt24_update_lead_status', [ $this, 'handle_update_lead_status' ] );
 		add_action( 'admin_post_pt24_export_leads', [ $this, 'handle_export_leads' ] );
-		add_action( 'admin_post_pt24_save_settings', [ $this, 'handle_save_settings' ] );
+		add_action( 'admin_post_pt24_save_settings',          [ $this, 'handle_save_settings' ] );
+		add_action( 'admin_post_pt24_save_automation_settings', [ $this, 'handle_save_automation_settings' ] );
 	}
 
 	/**
@@ -441,6 +442,15 @@ class AdminPageV8Enterprise {
 				break;
 			case 'performance':
 				$this->render_performance_tab();
+				break;
+			case 'strategy':
+				$this->render_strategy_tab();
+				break;
+			case 'content':
+				$this->render_content_tab();
+				break;
+			case 'automation':
+				$this->render_automation_tab();
 				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
@@ -1347,6 +1357,35 @@ class AdminPageV8Enterprise {
 	}
 
 	/**
+	 * Save automation settings (webhook token + OpenAI API key).
+	 */
+	public function handle_save_automation_settings(): void {
+		if ( ! current_user_can( $this->get_required_capability() ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+		check_admin_referer( 'pt24_save_automation_settings' );
+
+		$token = isset( $_POST['pt24_webhook_token'] )
+			? sanitize_text_field( wp_unslash( $_POST['pt24_webhook_token'] ) )
+			: '';
+		update_option( 'pt24_webhook_token', $token );
+
+		$api_key = isset( $_POST['pt24_openai_api_key'] )
+			? sanitize_text_field( wp_unslash( $_POST['pt24_openai_api_key'] ) )
+			: '';
+		// Only update if not empty (keep existing key if field blank)
+		if ( '' !== $api_key ) {
+			update_option( 'pt24_openai_api_key', $api_key );
+		}
+
+		wp_safe_redirect( add_query_arg(
+			[ 'page' => self::MENU_SLUG, 'tab' => 'automation', 'pt24_notice' => 'token_saved' ],
+			admin_url( 'admin.php' )
+		) );
+		exit;
+	}
+
+	/**
 	 * Aggregate PT24 leads for a rolling period (days).
 	 *
 	 * @return array{table_exists:bool,days:int,total:int,won:int,by_service:array,by_city:array}
@@ -1593,8 +1632,430 @@ class AdminPageV8Enterprise {
 		<?php
 	}
 
+	/* =====================================================================
+	   AI FACTORY TABS
+	   ===================================================================== */
+
 	/**
-	 * Render metric card
+	 * 🧠 Strategy = AI Factory Control Center
+	 */
+	private function render_strategy_tab(): void {
+		$factory_available = class_exists( 'PT24_AI_Factory' );
+		$stats             = $factory_available ? PT24_AI_Factory::get_stats() : [];
+		$nonce             = wp_create_nonce( 'pt24_factory_nonce' );
+		$services          = class_exists( 'PT24_Scale_Data' ) ? PT24_Scale_Data::services() : [];
+		$cities            = class_exists( 'PT24_Scale_Data' ) ? PT24_Scale_Data::cities() : [];
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">🏭 AI Factory — Generator stron PT24</h2>
+
+			<?php if ( ! $factory_available ) : ?>
+				<div class="pb-v8-alert pb-v8-alert-warning">
+					<strong>⚠️ <?php esc_html_e( 'PT24 AI Factory mu-plugin not loaded.', 'pearblog-engine' ); ?></strong>
+					<p>Upewnij się, że <code>pt24-ai-factory.php</code> i <code>pt24-scale-data.php</code> są w katalogu <code>mu-plugins</code>.</p>
+				</div>
+			<?php else : ?>
+
+			<!-- KPI Stats -->
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'Opublikowane strony',    'value' => number_format_i18n( $stats['published'] ?? 0 ),   'icon' => '✅', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'W kolejce do wygenerowania', 'value' => number_format_i18n( $stats['queue_size'] ?? 0 ), 'icon' => '⏳', 'color' => 'warning' ] );
+				$this->render_metric_card( [ 'label' => 'Cel (miasta × usługi)', 'value' => number_format_i18n( $stats['target'] ?? 0 ),         'icon' => '🎯', 'color' => 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Postęp',               'value' => ( $stats['progress_pct'] ?? 0 ) . '%',               'icon' => '📈', 'color' => 'primary' ] );
+				?>
+			</div>
+
+			<!-- Progress bar -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-body">
+					<div style="display:flex;justify-content:space-between;margin-bottom:8px;font-size:13px;">
+						<span><strong><?php echo esc_html( number_format_i18n( $stats['published'] ?? 0 ) ); ?></strong> z <?php echo esc_html( number_format_i18n( $stats['target'] ?? 0 ) ); ?> stron</span>
+						<span style="color:var(--pb-v8-text-secondary)"><?php echo esc_html( $stats['cities'] ?? 0 ); ?> miast × <?php echo esc_html( $stats['services'] ?? 0 ); ?> usług</span>
+					</div>
+					<div class="pb-v8-progress" style="height:18px;">
+						<div class="pb-v8-progress-bar" style="width:<?php echo esc_attr( (string) min( 100, (float) ( $stats['progress_pct'] ?? 0 ) ) ); ?>%;transition:width .4s;"></div>
+					</div>
+					<p style="margin-top:8px;font-size:12px;color:var(--pb-v8-text-secondary);">
+						Pozostało do wygenerowania: <strong><?php echo esc_html( number_format_i18n( $stats['remaining'] ?? 0 ) ); ?></strong> stron
+						<?php if ( ! empty( $stats['ai_generated'] ) ) : ?>
+							· Wygenerowane przez AI: <strong><?php echo esc_html( number_format_i18n( $stats['ai_generated'] ) ); ?></strong>
+						<?php endif; ?>
+					</p>
+				</div>
+			</div>
+
+			<!-- Generator controls -->
+			<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;">
+
+				<!-- Quick generate single -->
+				<div class="pb-v8-card">
+					<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">⚡ Generuj jedną stronę</h3></div>
+					<div class="pb-v8-card-body">
+						<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
+							<div>
+								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Usługa</label>
+								<select id="ptfService" style="width:100%;padding:6px;font-size:13px;">
+									<?php foreach ( $services as $slug => $svc ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $svc['name'] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+							<div>
+								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Miasto</label>
+								<select id="ptfCity" style="width:100%;padding:6px;font-size:13px;">
+									<?php foreach ( $cities as $slug => $city ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $city['name'] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+						</div>
+						<label style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+							<input type="checkbox" id="ptfUseAi" <?php echo $stats['has_api_key'] ? '' : 'disabled'; ?>>
+							Użyj OpenAI (gpt-4o-mini) <?php if ( ! $stats['has_api_key'] ) echo '<span style="color:var(--pb-v8-danger);font-size:11px;">— brak klucza API</span>'; ?>
+						</label>
+						<button class="pb-v8-btn pb-v8-btn-primary" id="ptfGenerateBtn" onclick="ptFactory.generateSingle('<?php echo esc_js( $nonce ); ?>')">
+							▶ Generuj stronę
+						</button>
+						<div id="ptfSingleMsg" style="margin-top:10px;font-size:13px;"></div>
+					</div>
+				</div>
+
+				<!-- Batch via CSV -->
+				<div class="pb-v8-card">
+					<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">📋 Import CSV / Kolejkuj wszystko</h3></div>
+					<div class="pb-v8-card-body">
+						<p style="font-size:12px;color:var(--pb-v8-text-secondary);margin-bottom:8px;">Format: <code>usluga,miasto</code> — jedno zlecenie per wiersz. Puste = kolejkuje WSZYSTKIE <?php echo esc_html( number_format_i18n( $stats['remaining'] ?? 0 ) ); ?> brakujących.</p>
+						<textarea id="ptfCsvInput" rows="5" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;padding:8px;" placeholder="usluga,miasto<?php echo "\n"; ?>mechanik,ruda-slaska<?php echo "\n"; ?>hydraulik,katowice"></textarea>
+						<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptFactory.batchCSV('<?php echo esc_js( $nonce ); ?>')">
+								📥 Kolejkuj z CSV
+							</button>
+							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptFactory.queueAll('<?php echo esc_js( $nonce ); ?>')">
+								🌐 Kolejkuj wszystkie
+							</button>
+							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptFactory.runQueue('<?php echo esc_js( $nonce ); ?>')">
+								▶ Uruchom kolejkę (5 stron)
+							</button>
+						</div>
+						<div id="ptfBatchMsg" style="margin-top:10px;font-size:13px;"></div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Available combinations table -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header">
+					<h3 class="pb-v8-card-title">📊 Dostępne kombinacje (<?php echo esc_html( count( $services ) ); ?> usług × <?php echo esc_html( count( $cities ) ); ?> miast)</h3>
+				</div>
+				<div class="pb-v8-card-body" style="max-height:300px;overflow-y:auto;">
+					<table class="pb-v8-table">
+						<thead><tr><th>Usługa</th><th>Powiązane słowa kluczowe (long-tail)</th></tr></thead>
+						<tbody>
+						<?php foreach ( $services as $slug => $svc ) : ?>
+							<tr>
+								<td><strong><?php echo esc_html( $svc['name'] ); ?></strong><br><code style="font-size:11px;"><?php echo esc_html( $slug ); ?></code></td>
+								<td><?php echo esc_html( implode( ', ', $svc['long_tail'] ?? [] ) ); ?></td>
+							</tr>
+						<?php endforeach; ?>
+						</tbody>
+					</table>
+				</div>
+			</div>
+
+			<script>
+			var ptFactory = {
+				ajaxUrl: <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
+
+				generateSingle: function(nonce) {
+					var btn = document.getElementById('ptfGenerateBtn');
+					var msg = document.getElementById('ptfSingleMsg');
+					btn.disabled = true; btn.textContent = 'Generuję…';
+					msg.textContent = '';
+					var data = new FormData();
+					data.append('action', 'pt24_factory_generate');
+					data.append('nonce', nonce);
+					data.append('service', document.getElementById('ptfService').value);
+					data.append('city', document.getElementById('ptfCity').value);
+					data.append('use_ai', document.getElementById('ptfUseAi').checked ? '1' : '');
+					fetch(this.ajaxUrl, {method:'POST', body:data})
+						.then(r=>r.json())
+						.then(r=>{
+							if(r.success) {
+								msg.style.color='green';
+								msg.innerHTML = '✅ Wygenerowano: <a href="'+r.data.url+'" target="_blank">'+r.data.url+'</a> (ID: '+r.data.post_id+')';
+								ptFactory.updateStats(r.data.stats);
+							} else {
+								msg.style.color='red';
+								msg.textContent = '❌ ' + (r.data && r.data.message ? r.data.message : 'Błąd');
+							}
+							btn.disabled = false; btn.textContent = '▶ Generuj stronę';
+						}).catch(e=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; btn.disabled=false; btn.textContent='▶ Generuj stronę'; });
+				},
+
+				batchCSV: function(nonce) {
+					var msg = document.getElementById('ptfBatchMsg');
+					msg.textContent = '⏳ Kolejkuję…';
+					var data = new FormData();
+					data.append('action', 'pt24_factory_batch_csv');
+					data.append('nonce', nonce);
+					data.append('csv', document.getElementById('ptfCsvInput').value);
+					fetch(this.ajaxUrl, {method:'POST', body:data})
+						.then(r=>r.json())
+						.then(r=>{
+							if(r.success) {
+								msg.style.color='green';
+								msg.textContent = '✅ ' + r.data.message;
+								if(r.data.errors && r.data.errors.length) msg.textContent += ' ⚠ ' + r.data.errors.slice(0,3).join('; ');
+								ptFactory.updateStats(r.data.stats);
+							} else { msg.style.color='red'; msg.textContent='❌ ' + (r.data.message||'Błąd'); }
+						});
+				},
+
+				queueAll: function(nonce) {
+					document.getElementById('ptfCsvInput').value = '';
+					this.batchCSV(nonce);
+				},
+
+				runQueue: function(nonce) {
+					var msg = document.getElementById('ptfBatchMsg');
+					msg.textContent = '⏳ Przetwarzam kolejkę…';
+					var data = new FormData();
+					data.append('action', 'pt24_factory_run_queue');
+					data.append('nonce', nonce);
+					fetch(this.ajaxUrl, {method:'POST', body:data})
+						.then(r=>r.json())
+						.then(r=>{
+							if(r.success) {
+								msg.style.color='green';
+								msg.textContent = '✅ ' + r.data.message;
+								ptFactory.updateStats(r.data.stats);
+							} else { msg.style.color='red'; msg.textContent='❌ '+(r.data.message||'Błąd'); }
+						});
+				},
+
+				updateStats: function(s) {
+					if(!s) return;
+					// Update progress bar if on page
+					var bar = document.querySelector('.pb-v8-progress-bar');
+					if(bar) bar.style.width = Math.min(100, s.progress_pct) + '%';
+				}
+			};
+			</script>
+
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * ✍️ Content Engine — queue management & generated pages list
+	 */
+	private function render_content_tab(): void {
+		$factory_available = class_exists( 'PT24_AI_Factory' );
+		if ( ! $factory_available ) {
+			$this->render_coming_soon_tab( 'content' );
+			return;
+		}
+
+		global $wpdb;
+		$stats = PT24_AI_Factory::get_stats();
+		$nonce = wp_create_nonce( 'pt24_factory_nonce' );
+
+		// Recent factory-generated pages
+		$pages = $wpdb->get_results(
+			"SELECT p.ID, p.post_title, p.post_date, p.post_name,
+			        pm.meta_value AS service,
+			        pm2.meta_value AS city,
+			        pm3.meta_value AS variant
+			 FROM {$wpdb->posts} p
+			 LEFT JOIN {$wpdb->postmeta} pm  ON p.ID = pm.post_id  AND pm.meta_key  = 'pt24_service'
+			 LEFT JOIN {$wpdb->postmeta} pm2 ON p.ID = pm2.post_id AND pm2.meta_key = 'pt24_city'
+			 LEFT JOIN {$wpdb->postmeta} pm3 ON p.ID = pm3.post_id AND pm3.meta_key = 'pt24_variant'
+			 WHERE p.post_type = 'pt24_landing' AND p.post_status = 'publish'
+			 ORDER BY p.post_date DESC LIMIT 30"
+		);
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">✍️ Content Engine — wygenerowane strony</h2>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'Opublikowane',  'value' => number_format_i18n( $stats['published'] ),  'icon' => '✅' ] );
+				$this->render_metric_card( [ 'label' => 'Fabryczne',      'value' => number_format_i18n( $stats['factory_gen'] ), 'icon' => '🏭' ] );
+				$this->render_metric_card( [ 'label' => 'AI-generated',   'value' => number_format_i18n( $stats['ai_generated'] ),'icon' => '🤖' ] );
+				$this->render_metric_card( [ 'label' => 'W kolejce',      'value' => number_format_i18n( $stats['queue_size'] ),  'icon' => '⏳', 'color' => 'warning' ] );
+				?>
+			</div>
+
+			<?php if ( $stats['queue_size'] > 0 ) : ?>
+				<div class="pb-v8-alert pb-v8-alert-success" style="margin:16px 0;">
+					<strong>⏳ Kolejka aktywna: <?php echo esc_html( number_format_i18n( $stats['queue_size'] ) ); ?> stron</strong>
+					<p>WP-Cron generuje <?php echo esc_html( PT24_AI_Factory::BATCH_SIZE ); ?> stron na minutę automatycznie.</p>
+					<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptFactoryContent.runQueue('<?php echo esc_js( $nonce ); ?>')">▶ Uruchom teraz</button>
+					<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptFactoryContent.clearQueue('<?php echo esc_js( $nonce ); ?>')">🗑 Wyczyść kolejkę</button>
+					<div id="ptfContentMsg" style="margin-top:8px;font-size:13px;"></div>
+				</div>
+			<?php endif; ?>
+
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">Ostatnio wygenerowane strony (30)</h3></div>
+				<div class="pb-v8-card-body">
+					<div class="pb-v8-table-wrapper">
+						<table class="pb-v8-table">
+							<thead><tr>
+								<th>Tytuł / URL</th>
+								<th>Usługa</th>
+								<th>Miasto</th>
+								<th>Wariant</th>
+								<th>Data</th>
+							</tr></thead>
+							<tbody>
+							<?php foreach ( $pages as $pg ) :
+								$url = home_url( '/' . $pg->city . '/' . $pg->service . '/' );
+							?>
+								<tr>
+									<td><a href="<?php echo esc_url( $url ); ?>" target="_blank"><?php echo esc_html( $pg->post_title ); ?></a></td>
+									<td><?php echo esc_html( $pg->service ?? '—' ); ?></td>
+									<td><?php echo esc_html( $pg->city ?? '—' ); ?></td>
+									<td><span class="pb-v8-badge pb-v8-badge-primary">#<?php echo esc_html( $pg->variant ?? '?' ); ?></span></td>
+									<td><?php echo esc_html( mysql2date( 'Y-m-d', $pg->post_date ) ); ?></td>
+								</tr>
+							<?php endforeach; ?>
+							</tbody>
+						</table>
+					</div>
+				</div>
+			</div>
+		</div>
+		<script>
+		var ptFactoryContent = {
+			ajaxUrl: <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
+			runQueue: function(nonce) {
+				var msg = document.getElementById('ptfContentMsg');
+				if(msg) { msg.textContent = '⏳ Generuję…'; }
+				var d = new FormData(); d.append('action','pt24_factory_run_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					if(msg) { msg.style.color = r.success?'green':'red'; msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data.message||'Błąd'); }
+					if(r.success) setTimeout(()=>location.reload(),1500);
+				});
+			},
+			clearQueue: function(nonce) {
+				var d = new FormData(); d.append('action','pt24_factory_clear_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{ if(r.success) location.reload(); });
+			}
+		};
+		</script>
+		<?php
+	}
+
+	/**
+	 * ⚙️ Automation Pro — n8n integration guide + token management
+	 */
+	private function render_automation_tab(): void {
+		$token     = (string) get_option( 'pt24_webhook_token', '' );
+		$rest_base = rest_url( 'pt24/v2' );
+		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">⚙️ Automation Pro — n8n / REST API</h2>
+
+			<?php if ( 'token_saved' === $notice ) : ?>
+				<div class="pb-v8-alert pb-v8-alert-success" style="margin-bottom:16px;"><strong>✅ Token zapisany.</strong></div>
+			<?php endif; ?>
+
+			<!-- API Status -->
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'REST endpoint',   'value' => 'Aktywny', 'icon' => '🔗', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'Token webhook',   'value' => '' !== $token ? 'Ustawiony' : 'Brak', 'icon' => '🔑', 'color' => '' !== $token ? 'success' : 'warning' ] );
+				$this->render_metric_card( [ 'label' => 'OpenAI API',      'value' => '' !== get_option('pt24_openai_api_key','') ? 'Skonfigurowane' : 'Brak klucza', 'icon' => '🤖', 'color' => '' !== get_option('pt24_openai_api_key','') ? 'success' : 'warning' ] );
+				$this->render_metric_card( [ 'label' => 'Cron (batch)',    'value' => wp_next_scheduled( PT24_AI_Factory::CRON_HOOK ) ? 'Aktywny' : 'Nieaktywny', 'icon' => '⏱', 'color' => 'primary' ] );
+				?>
+			</div>
+
+			<!-- Token settings -->
+			<div class="pb-v8-card" style="margin-top:20px;max-width:680px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🔑 Token autoryzacji (n8n)</h3></div>
+				<div class="pb-v8-card-body">
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pt24_save_automation_settings">
+						<?php wp_nonce_field( 'pt24_save_automation_settings' ); ?>
+						<p>
+							<label style="font-weight:600;display:block;margin-bottom:6px;">Nagłówek: <code>X-PT24-Token: [token]</code></label>
+							<input type="text" name="pt24_webhook_token" value="<?php echo esc_attr( $token ); ?>" style="width:100%;max-width:420px;padding:8px;font-family:monospace;" placeholder="Wpisz własny token lub wygeneruj">
+							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:12px;margin-top:4px;">Wymagany przy wszystkich wywołaniach REST z zewnątrz (n8n, Postman, skrypty).</span>
+						</p>
+						<p>
+							<label style="font-weight:600;display:block;margin-bottom:6px;">OpenAI API Key</label>
+							<input type="password" name="pt24_openai_api_key" value="<?php echo esc_attr( (string) get_option( 'pt24_openai_api_key', '' ) ); ?>" style="width:100%;max-width:420px;padding:8px;" placeholder="sk-...">
+							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:12px;margin-top:4px;">Wymagany do generowania treści przez AI (gpt-4o-mini). Bez klucza działa tryb szablonowy.</span>
+						</p>
+						<button type="submit" class="button button-primary">💾 Zapisz</button>
+					</form>
+				</div>
+			</div>
+
+			<!-- Endpoint reference -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">📡 Endpointy REST (n8n HTTP Request)</h3></div>
+				<div class="pb-v8-card-body">
+					<div class="pb-v8-table-wrapper">
+						<table class="pb-v8-table">
+							<thead><tr><th>Metoda</th><th>Endpoint</th><th>Body / Opis</th></tr></thead>
+							<tbody>
+								<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/generate' ); ?></code></td><td><code>{"service":"mechanik","city":"ruda-slaska","use_ai":false}</code></td></tr>
+								<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/batch' ); ?></code></td><td><code>{"csv":"mechanik,ruda-slaska\nhydraulik,katowice"}</code> lub <code>{"pairs":[...]}</code></td></tr>
+								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/stats' ); ?></code></td><td>Statystyki factory (opublikowane, kolejka, postęp)</td></tr>
+								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/services' ); ?></code></td><td>Lista 10 usług (slug, nazwa, long-tail)</td></tr>
+								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/cities' ); ?></code></td><td>Lista 80 miast (slug, nazwa, województwo)</td></tr>
+							</tbody>
+						</table>
+					</div>
+					<p style="margin-top:12px;font-size:12px;color:var(--pb-v8-text-secondary);">
+						Autoryzacja: nagłówek <code>X-PT24-Token: [token]</code> lub sesja WordPress (admini zalogowani).<br>
+						Przykład n8n: węzeł <strong>HTTP Request</strong> → metoda POST → URL → Body JSON → Header <code>X-PT24-Token</code>.
+					</p>
+				</div>
+			</div>
+
+			<!-- Automation flow diagram -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🔄 Przepływ automatyzacji (n8n)</h3></div>
+				<div class="pb-v8-card-body">
+					<div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center;font-size:13px;">
+						<?php
+						$steps = [
+							[ '📄', 'CSV / Google Sheets', 'Źródło danych' ],
+							[ '→', '', '' ],
+							[ '⚙️', 'n8n Loop', 'Iteruje po wierszach' ],
+							[ '→', '', '' ],
+							[ '🔌', 'HTTP POST', '/pt24/v2/generate' ],
+							[ '→', '', '' ],
+							[ '🗄️', 'WordPress', 'Tworzy pt24_landing' ],
+							[ '→', '', '' ],
+							[ '🔍', 'Google', 'Indeksuje automatycznie' ],
+						];
+						foreach ( $steps as $step ) :
+							if ( $step[0] === '→' ) : ?>
+								<span style="font-size:20px;color:var(--pb-v8-text-secondary);">→</span>
+							<?php else : ?>
+								<div style="background:var(--pb-v8-bg-card,rgba(125,125,125,.06));border:1px solid rgba(125,125,125,.18);border-radius:10px;padding:12px 16px;text-align:center;">
+									<div style="font-size:24px;"><?php echo esc_html( $step[0] ); ?></div>
+									<div style="font-weight:700;font-size:12px;"><?php echo esc_html( $step[1] ); ?></div>
+									<div style="font-size:11px;color:var(--pb-v8-text-secondary);"><?php echo esc_html( $step[2] ); ?></div>
+								</div>
+							<?php endif;
+						endforeach; ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Metric card
 	 */
 	private function render_metric_card( array $args ): void {
 		$defaults = [
