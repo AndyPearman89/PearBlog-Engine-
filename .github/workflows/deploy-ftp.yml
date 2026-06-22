@@ -101,7 +101,7 @@ jobs:
           set net:timeout ${CONNECT_TIMEOUT}
           set net:max-retries 1
           set net:reconnect-interval-base 5
-          set net:netrc-file "${NETRC_PATH}"
+          set net:netrc "${NETRC_PATH}"
           open -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
           ls
           bye
