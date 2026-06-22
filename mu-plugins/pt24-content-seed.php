@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '1.6.0';
+const PT24_SEED_VERSION = '1.7.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -345,6 +345,13 @@ function pt24_seed_pages(): array {
         . '</div>'
     );
 
+    // "Dodaj firmę" sign-up page — form injected dynamically via the_content filter.
+    $ids['dodaj-firme'] = pt24_seed_page(
+        'dodaj-firme',
+        'Dodaj firmę',
+        '<!-- pt24-add-firm-form -->'
+    );
+
     return $ids;
 }
 
@@ -490,6 +497,8 @@ function pt24_seed_post( string $slug, string $title, string $content, int $cat_
 
     if ( $post_id > 0 ) {
         update_post_meta( $post_id, '_pt24_seeded', PT24_SEED_VERSION );
+        // Store slug so the blog archive template can resolve the branded thumbnail.
+        update_post_meta( $post_id, '_pt24_thumb_slug', $slug );
         if ( $cat_id > 0 ) {
             wp_set_post_categories( $post_id, array( $cat_id ) );
         }
@@ -600,6 +609,15 @@ function pt24_seed_blog(): void {
 
     foreach ( $posts as $p ) {
         pt24_seed_post( $p['slug'], $p['title'], $p['body'], $cats[ $p['cat'] ] ?? 0 );
+    }
+
+    // 3b) Back-fill _pt24_thumb_slug on existing posts (runs even when post was seeded before).
+    $known_slugs = array_column( $posts, 'slug' );
+    foreach ( $known_slugs as $pslug ) {
+        $found = get_posts( array( 'name' => $pslug, 'post_type' => 'post', 'numberposts' => 1, 'suppress_filters' => true ) );
+        if ( ! empty( $found ) ) {
+            update_post_meta( (int) $found[0]->ID, '_pt24_thumb_slug', $pslug );
+        }
     }
 
     // 4) Navigation links to the blog (idempotent on the existing primary menu).

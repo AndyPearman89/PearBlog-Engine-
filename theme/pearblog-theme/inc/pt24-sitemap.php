@@ -43,10 +43,14 @@ function pt24_sitemap_entries() {
     $entries[] = array( 'loc' => pt24_sitemap_url( '/' ), 'priority' => '1.0' );
 
     // Seeded static pages.
-    $pages = array( 'jak-to-dziala', 'dla-firm', 'o-nas', 'kontakt', 'polityka-prywatnosci', 'regulamin' );
+    $pages = array( 'jak-to-dziala', 'dla-firm', 'o-nas', 'kontakt', 'dodaj-firme', 'polityka-prywatnosci', 'regulamin' );
     foreach ( $pages as $slug ) {
         $entries[] = array( 'loc' => pt24_sitemap_url( '/' . $slug . '/' ), 'priority' => '0.6' );
     }
+
+    // Rankings hub + firm catalogue.
+    $entries[] = array( 'loc' => pt24_sitemap_url( '/rankingi/' ), 'priority' => '0.7' );
+    $entries[] = array( 'loc' => pt24_sitemap_url( '/firmy/' ),    'priority' => '0.6' );
 
     // Blog index + published posts.
     $entries[]  = array( 'loc' => pt24_sitemap_url( '/blog/' ), 'priority' => '0.6' );
@@ -89,8 +93,7 @@ function pt24_sitemap_entries() {
         }
     }
 
-    // Company catalogue + profiles.
-    $entries[] = array( 'loc' => pt24_sitemap_url( '/firmy/' ), 'priority' => '0.6' );
+    // Company catalogue + profiles (no /firmy/ duplicate — added above with /rankingi/).
     $firms = get_posts( array(
         'post_type'        => 'pt24_firm',
         'post_status'      => 'publish',

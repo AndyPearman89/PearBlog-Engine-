@@ -85,6 +85,14 @@ class PearBlog_PT24_Landing_CPT {
 
         $segments = array_values(array_filter(explode('/', trim($path, '/'))));
 
+        // /rankingi/ — hub page listing all 36 rankings.
+        if ( 1 === count( $segments ) && 'rankingi' === strtolower( $segments[0] ) ) {
+            return array(
+                'post_type'           => 'pt24_landing',
+                'pt24_rankings_index' => '1',
+            );
+        }
+
         // /ranking/{city}/{service}
         if (3 === count($segments) && 'ranking' === strtolower($segments[0])) {
             $city = sanitize_title($segments[1]);
@@ -174,6 +182,7 @@ class PearBlog_PT24_Landing_CPT {
             $vars[] = 'pt24_city';
             $vars[] = 'pt24_service';
             $vars[] = 'pt24_type';
+            $vars[] = 'pt24_rankings_index';
             return $vars;
         });
     }
@@ -200,6 +209,14 @@ class PearBlog_PT24_Landing_CPT {
      * Load custom template
      */
     public static function load_template($template) {
+        // /rankingi/ hub page.
+        if ( '1' === (string) get_query_var( 'pt24_rankings_index' ) ) {
+            $custom = locate_template( 'pt24-rankings-hub.php' );
+            if ( $custom ) {
+                return $custom;
+            }
+        }
+
         // Check if this is a PT24 landing query
         $city = get_query_var('pt24_city');
         $service = get_query_var('pt24_service');

@@ -38,8 +38,19 @@ $pt24_blog_title   = $pt24_blog_page_id ? get_the_title( $pt24_blog_page_id ) : 
 					$pt24_cats = get_the_category();
 					?>
 					<article <?php post_class( 'pt24-blog-card' ); ?>>
-						<?php if ( has_post_thumbnail() ) : ?>
-							<a class="pt24-blog-card__thumb" href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium_large' ); ?></a>
+					<?php
+					$pt24_thumb_slug = (string) get_post_meta( get_the_ID(), '_pt24_thumb_slug', true );
+					$pt24_thumb_file = $pt24_thumb_slug
+						? get_template_directory() . '/assets/brand/blog/' . sanitize_file_name( $pt24_thumb_slug ) . '.png'
+						: '';
+					$pt24_thumb_uri  = ( $pt24_thumb_slug && file_exists( $pt24_thumb_file ) )
+						? get_template_directory_uri() . '/assets/brand/blog/' . sanitize_file_name( $pt24_thumb_slug ) . '.png'
+						: '';
+					?>
+					<?php if ( has_post_thumbnail() ) : ?>
+						<a class="pt24-blog-card__thumb" href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium_large' ); ?></a>
+					<?php elseif ( $pt24_thumb_uri ) : ?>
+						<a class="pt24-blog-card__thumb" href="<?php the_permalink(); ?>"><img src="<?php echo esc_url( $pt24_thumb_uri ); ?>" alt="<?php the_title_attribute(); ?>" loading="lazy" width="1200" height="628"></a>
 						<?php else : ?>
 							<a class="pt24-blog-card__thumb pt24-blog-card__thumb--ph" href="<?php the_permalink(); ?>"><span><?php echo esc_html( ! empty( $pt24_cats ) ? $pt24_cats[0]->name : 'PT24' ); ?></span></a>
 						<?php endif; ?>
