@@ -93,6 +93,15 @@ function pearblog_render_header() {
  * Render footer
  */
 function pearblog_render_footer() {
+    // PT24.PRO ships its own footer (host-guarded function only exists on PT24);
+    // prefer it so the poradnik.pro footer never renders on the PT24 install.
+    if ( function_exists( 'pt24_render_full_footer' ) ) {
+        pt24_render_full_footer();
+        wp_footer();
+        echo '</body></html>';
+        return;
+    }
+
     // Use full Poradnik.PRO footer if function is available
     if ( function_exists( 'pp_render_full_footer' ) ) {
         pp_render_full_footer();

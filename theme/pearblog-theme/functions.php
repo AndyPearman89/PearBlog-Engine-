@@ -78,6 +78,7 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php'; // Admin generator UI.
     require_once PEARBLOG_DIR . '/inc/pt24-form-handler.php';  // Lead-form AJAX handlers.
     require_once PEARBLOG_DIR . '/inc/pt24-api.php';           // REST endpoints.
+    require_once PEARBLOG_DIR . '/inc/pt24-footer.php';        // PT24-branded site footer.
 
     // Bootstrap the landing CPT explicitly. Its own bootstrap hooks init() onto
     // the `init` action, and init() then registers register_post_type() /
