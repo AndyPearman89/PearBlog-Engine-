@@ -52,10 +52,67 @@ class PearBlog_PT24_Landing_CPT {
         add_action('init', [__CLASS__, 'add_rewrite_rules']);
         add_filter('post_type_link', [__CLASS__, 'custom_permalink'], 10, 2);
         add_filter('template_include', [__CLASS__, 'load_template']);
+        add_filter('request', [__CLASS__, 'maybe_route_landing']);
 
         // Admin columns
         add_filter('manage_pt24_landing_posts_columns', [__CLASS__, 'admin_columns']);
         add_action('manage_pt24_landing_posts_custom_column', [__CLASS__, 'admin_column_content'], 10, 2);
+    }
+
+    /**
+     * Route /{city}/{service} (and /ranking/{city}/{service}) requests to the
+     * landing CPT via the `request` filter.
+     *
+     * The generic ^([^/]+)/([^/]+)/?$ rewrite rule can be stripped on this
+     * install by other rewrite filters, so we resolve the landing here based on
+     * the request path. We only hijack the request when BOTH path segments are
+     * known city + service slugs, so genuine pages/posts are never affected.
+     *
+     * @param array $query_vars Parsed public query vars.
+     * @return array
+     */
+    public static function maybe_route_landing($query_vars) {
+        $uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+        $path = (string) wp_parse_url($uri, PHP_URL_PATH);
+
+        $home_path = (string) wp_parse_url(home_url('/'), PHP_URL_PATH);
+        if ($home_path && '/' !== $home_path) {
+            $home_path = untrailingslashit($home_path);
+            if (0 === strpos($path, $home_path . '/')) {
+                $path = substr($path, strlen($home_path));
+            }
+        }
+
+        $segments = array_values(array_filter(explode('/', trim($path, '/'))));
+
+        // /ranking/{city}/{service}
+        if (3 === count($segments) && 'ranking' === strtolower($segments[0])) {
+            $city = sanitize_title($segments[1]);
+            $service = sanitize_title($segments[2]);
+            if (isset(self::$cities[$city], self::$services[$service])) {
+                return [
+                    'post_type'    => 'pt24_landing',
+                    'pt24_city'    => $city,
+                    'pt24_service' => $service,
+                    'pt24_type'    => 'ranking',
+                ];
+            }
+        }
+
+        // /{city}/{service}
+        if (2 === count($segments)) {
+            $city = sanitize_title($segments[0]);
+            $service = sanitize_title($segments[1]);
+            if (isset(self::$cities[$city], self::$services[$service])) {
+                return [
+                    'post_type'    => 'pt24_landing',
+                    'pt24_city'    => $city,
+                    'pt24_service' => $service,
+                ];
+            }
+        }
+
+        return $query_vars;
     }
 
     /**

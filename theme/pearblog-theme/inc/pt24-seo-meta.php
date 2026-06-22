@@ -21,8 +21,89 @@ if (!defined('ABSPATH')) {
  * PT24 site; otherwise other sites inherit the wrong title / og:site_name.
  */
 function pt24_is_pt24_site() {
-    $host = (string) wp_parse_url( home_url( '/' ), PHP_URL_HOST );
-    return ( false !== stripos( $host, 'pt24' ) );
+    // The PT24 install lives at home_url() = .../pt24 (marker in the path), so
+    // match the full home_url string rather than only the host.
+    $url = (string) home_url( '/' );
+    return ( false !== stripos( $url, 'pt24' ) );
+}
+
+/**
+ * Resolve the current service / city slugs.
+ *
+ * On landing pages the query vars (pt24_service / pt24_city) are present in the
+ * main query, but PearBlog_PT24_Landing_CPT::load_template() swaps $wp_query for
+ * a fresh WP_Query when rendering, which drops those vars. In that case fall
+ * back to the post meta of the current landing post.
+ *
+ * @return array{0:string,1:string} [service, city]
+ */
+function pt24_current_service_city() {
+    $service = (string) get_query_var( 'pt24_service', '' );
+    $city    = (string) get_query_var( 'pt24_city', '' );
+
+    if ( '' !== $service && '' !== $city ) {
+        return array( $service, $city );
+    }
+
+    $post = get_post();
+    if ( $post instanceof WP_Post && 'pt24_landing' === $post->post_type ) {
+        if ( '' === $service ) {
+            $service = (string) get_post_meta( $post->ID, 'pt24_service', true );
+        }
+        if ( '' === $city ) {
+            $city = (string) get_post_meta( $post->ID, 'pt24_city', true );
+        }
+    }
+
+    // Final fallback: derive from the request URI path (/{city}/{service}/).
+    if ( '' === $service || '' === $city ) {
+        $request_uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+        $request_path = (string) wp_parse_url( $request_uri, PHP_URL_PATH );
+        $home_path    = (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+        if ( $home_path && '/' !== $home_path ) {
+            $home_path = untrailingslashit( $home_path );
+            if ( 0 === strpos( $request_path, $home_path . '/' ) ) {
+                $request_path = substr( $request_path, strlen( $home_path ) );
+            }
+        }
+        $segments = array_values( array_filter( explode( '/', trim( $request_path, '/' ) ) ) );
+        if ( 2 === count( $segments ) ) {
+            if ( '' === $city ) {
+                $city = sanitize_title( $segments[0] );
+            }
+            if ( '' === $service ) {
+                $service = sanitize_title( $segments[1] );
+            }
+        }
+    }
+
+    return array( $service, $city );
+}
+
+/**
+ * Resolve human-readable display names (with Polish diacritics) for a
+ * service / city slug, using the canonical maps from the landing CPT.
+ *
+ * @param string $service Service slug.
+ * @param string $city    City slug.
+ * @return array{0:string,1:string} [service_name, city_name]
+ */
+function pt24_display_names( $service, $city ) {
+    $service_name = '' !== $service ? ucfirst( str_replace( '-', ' ', $service ) ) : '';
+    $city_name    = '' !== $city ? ucfirst( str_replace( '-', ' ', $city ) ) : '';
+
+    if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+        $services = PearBlog_PT24_Landing_CPT::get_services();
+        $cities   = PearBlog_PT24_Landing_CPT::get_cities();
+        if ( '' !== $service && isset( $services[ $service ] ) ) {
+            $service_name = $services[ $service ];
+        }
+        if ( '' !== $city && isset( $cities[ $city ] ) ) {
+            $city_name = $cities[ $city ];
+        }
+    }
+
+    return array( $service_name, $city_name );
 }
 
 /**
@@ -35,8 +116,7 @@ function pt24_output_seo_meta() {
     }
 
     // Get current page info
-    $service = get_query_var('pt24_service', '');
-    $city = get_query_var('pt24_city', '');
+    list( $service, $city ) = pt24_current_service_city();
 
     $request_uri = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '/';
     $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
@@ -74,26 +154,25 @@ function pt24_output_seo_meta() {
         $meta['description'] = 'Porównaj oferty, sprawdź opinie i otrzymaj wycenę nawet w 15 minut. Mechanik, hydraulik, elektryk i inne usługi w Twoim mieście.';
     }
 
+    // Resolve display names (with Polish diacritics) for service / city.
+    list( $service_name, $city_name ) = pt24_display_names( $service, $city );
+
     // Service page
     if (!empty($service) && empty($city)) {
-        $service_name = ucfirst($service);
         $meta['title'] = "$service_name - Ranking najlepszych fachowców | PT24.PRO";
-        $meta['description'] = "Znajdź najlepszego {$service}a w swojej okolicy. Sprawdzone firmy, opinie klientów, szybki kontakt. Porównaj oferty za darmo.";
+        $meta['description'] = "Znajdź najlepszego specjalistę ($service_name) w swojej okolicy. Sprawdzone firmy, opinie klientów, szybki kontakt. Porównaj oferty za darmo.";
     }
 
     // City page
     if (empty($service) && !empty($city)) {
-        $city_name = ucfirst($city);
         $meta['title'] = "$city_name - Fachowcy i usługi lokalne | PT24.PRO";
         $meta['description'] = "Sprawdzeni fachowcy w mieście $city_name. Hydraulicy, mechanicy, elektrycy i inne usługi. Porównaj oferty i ceny.";
     }
 
     // Service + City page
     if (!empty($service) && !empty($city)) {
-        $service_name = ucfirst($service);
-        $city_name = ucfirst($city);
-        $meta['title'] = "$service_name $city_name - Ranking i opinie | PT24.PRO";
-        $meta['description'] = "Najlepsi {$service}cy w mieście $city_name. Sprawdź ranking, przeczytaj opinie, porównaj ceny. Szybki kontakt z fachowcami.";
+        $meta['title'] = "$service_name $city_name — ceny i oferty | PT24.PRO";
+        $meta['description'] = "$service_name $city_name — sprawdź ceny, opinie i dostępne firmy. Otrzymaj dopasowane oferty bez dzwonienia.";
     }
 
     // Output meta tags
@@ -191,22 +270,27 @@ function pt24_document_title($title) {
         return 'PT24.PRO - Znajdź sprawdzonego fachowca w swojej okolicy';
     }
 
-    $service = get_query_var('pt24_service', '');
-    $city = get_query_var('pt24_city', '');
+    list( $service, $city ) = pt24_current_service_city();
+
+    $post = get_post();
+    if ( $post instanceof WP_Post && 'pt24_landing' === $post->post_type ) {
+        $meta_title = (string) get_post_meta( $post->ID, 'pt24_meta_title', true );
+        if ( '' !== $meta_title ) {
+            return $meta_title . ' | PT24.PRO';
+        }
+    }
+
+    list( $service_name, $city_name ) = pt24_display_names( $service, $city );
 
     if (!empty($service) && !empty($city)) {
-        $service_name = ucfirst($service);
-        $city_name = ucfirst($city);
-        return "$service_name $city_name - Ranking i opinie | PT24.PRO";
+        return "$service_name $city_name — ceny i oferty | PT24.PRO";
     }
 
     if (!empty($service)) {
-        $service_name = ucfirst($service);
         return "$service_name - Ranking najlepszych fachowców | PT24.PRO";
     }
 
     if (!empty($city)) {
-        $city_name = ucfirst($city);
         return "$city_name - Fachowcy i usługi lokalne | PT24.PRO";
     }
 

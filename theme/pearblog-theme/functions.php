@@ -65,7 +65,31 @@ require_once PEARBLOG_DIR . '/inc/poradnik-pro-routing.php';
 // Navigation & Footer
 require_once PEARBLOG_DIR . '/inc/poradnik-pro-navigation.php';
 
-// PT24 integration removed — poradnik.pro multisite only
+// PT24.PRO platform — the theme is SHARED with poradnik.pro, so the PT24
+// directory subsystem must load ONLY for the PT24 install. The install lives
+// at home_url() = https://wordpress2614653.home.pl/pt24 (the 'pt24' marker is in
+// the PATH, not the host), so match against the full home_url string — this is
+// stable regardless of the proxy/Cloudflare Host header.
+$pearblog_active_url = function_exists( 'home_url' ) ? (string) home_url( '/' ) : (string) ( $_SERVER['HTTP_HOST'] ?? '' );
+if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
+    require_once PEARBLOG_DIR . '/inc/pt24-database.php';      // Lead / stats tables.
+    require_once PEARBLOG_DIR . '/inc/pt24-seo-meta.php';      // Host-guarded SEO meta.
+    require_once PEARBLOG_DIR . '/inc/pt24-landing-cpt.php';   // pt24_landing CPT + /{city}/{service} routes.
+    require_once PEARBLOG_DIR . '/inc/pt24-landing-admin.php'; // Admin generator UI.
+    require_once PEARBLOG_DIR . '/inc/pt24-form-handler.php';  // Lead-form AJAX handlers.
+    require_once PEARBLOG_DIR . '/inc/pt24-api.php';           // REST endpoints.
+
+    // Bootstrap the landing CPT explicitly. Its own bootstrap hooks init() onto
+    // the `init` action, and init() then registers register_post_type() /
+    // add_rewrite_rules() onto `init` from *inside* init — a same-priority
+    // callback added mid-action that never fires. Calling init() here (before
+    // `init` runs) registers those hooks in time so the CPT and its rewrite
+    // rules are actually created.
+    if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+        PearBlog_PT24_Landing_CPT::init();
+    }
+}
+unset( $pearblog_active_url );
 
 /**
  * Theme setup
