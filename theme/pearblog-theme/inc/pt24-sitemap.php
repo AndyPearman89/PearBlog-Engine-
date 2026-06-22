@@ -48,6 +48,26 @@ function pt24_sitemap_entries() {
         $entries[] = array( 'loc' => pt24_sitemap_url( '/' . $slug . '/' ), 'priority' => '0.6' );
     }
 
+    // Blog index + published posts.
+    $entries[]  = array( 'loc' => pt24_sitemap_url( '/blog/' ), 'priority' => '0.6' );
+    $home_path  = untrailingslashit( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ) );
+    $blog_posts = get_posts( array(
+        'post_type'        => 'post',
+        'post_status'      => 'publish',
+        'numberposts'      => 200,
+        'suppress_filters' => true,
+    ) );
+    foreach ( $blog_posts as $blog_post ) {
+        $post_path = (string) wp_parse_url( (string) get_permalink( $blog_post ), PHP_URL_PATH );
+        if ( '' !== $home_path && 0 === strpos( $post_path, $home_path ) ) {
+            $post_path = substr( $post_path, strlen( $home_path ) );
+        }
+        if ( '' === $post_path ) {
+            $post_path = '/';
+        }
+        $entries[] = array( 'loc' => pt24_sitemap_url( $post_path ), 'priority' => '0.5' );
+    }
+
     // Service x city landings.
     if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
         $services = array_keys( PearBlog_PT24_Landing_CPT::get_services() );

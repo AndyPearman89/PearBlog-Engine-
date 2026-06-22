@@ -311,6 +311,27 @@
 .pt24-home__faq summary { font-size: 1.02rem; }
 
 /* ===================================================================
+   Blog archive (/blog/)
+   =================================================================== */
+.pt24-blog { padding-top: 2rem; padding-bottom: 1rem; }
+.pt24-blog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 1.5rem; }
+.pt24-blog-card { background: #fff; border: 1px solid var(--pt24-border); border-radius: 14px; overflow: hidden; box-shadow: 0 6px 18px rgba(15, 23, 42, .05); display: flex; flex-direction: column; transition: transform .15s ease, box-shadow .15s ease; }
+.pt24-blog-card:hover { transform: translateY(-3px); box-shadow: 0 16px 34px rgba(15, 23, 42, .1); }
+.pt24-blog-card__thumb img { width: 100%; height: 175px; object-fit: cover; display: block; }
+.pt24-blog-card__body { padding: 1.3rem; display: flex; flex-direction: column; gap: .5rem; }
+.pt24-blog-card__cat { align-self: flex-start; background: rgba(37, 99, 235, .1); color: var(--pt24-blue); font-size: .76rem; font-weight: 700; padding: .25rem .7rem; border-radius: 999px; text-transform: uppercase; letter-spacing: .03em; }
+.pt24-blog-card__title { margin: .2rem 0 0; font-size: 1.2rem; line-height: 1.3; border: 0; padding: 0; }
+.pt24-blog-card__title a { color: var(--pt24-dark); text-decoration: none; }
+.pt24-blog-card__title a:hover { color: var(--pt24-blue); }
+.pt24-blog-card__meta { color: var(--pt24-muted); font-size: .85rem; margin: 0; }
+.pt24-blog-card__excerpt { color: #334155; font-size: .95rem; margin: 0; line-height: 1.55; }
+.pt24-blog-card__more { color: var(--pt24-blue); font-weight: 600; text-decoration: none; margin-top: .2rem; }
+.pt24-blog-card__more:hover { text-decoration: underline; }
+.pt24-blog-pagination { padding: 2rem 0 2.5rem; text-align: center; }
+.pt24-blog-pagination .page-numbers { display: inline-block; padding: .5rem .9rem; margin: 0 .2rem; border: 1px solid var(--pt24-border); border-radius: 8px; color: var(--pt24-blue); text-decoration: none; }
+.pt24-blog-pagination .page-numbers.current { background: var(--pt24-blue); color: #fff; border-color: var(--pt24-blue); }
+
+/* ===================================================================
    Interactions (JS-enhanced; degrade gracefully without JS)
    =================================================================== */
 .pt24-nav-cta { display: inline-flex; align-items: center; background: var(--pt24-amber); color: #1f2937; font-weight: 700; padding: .55rem 1.05rem; border-radius: 8px; text-decoration: none; white-space: nowrap; transition: background .15s ease, transform .15s ease, box-shadow .15s ease; }

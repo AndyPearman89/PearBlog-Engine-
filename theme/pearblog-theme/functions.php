@@ -81,6 +81,7 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     require_once PEARBLOG_DIR . '/inc/pt24-footer.php';        // PT24-branded site footer.
     require_once PEARBLOG_DIR . '/inc/pt24-sitemap.php';       // XML sitemap + robots.txt.
     require_once PEARBLOG_DIR . '/inc/pt24-adsense.php';       // Configurable AdSense + ads.txt.
+    require_once PEARBLOG_DIR . '/inc/pt24-blog.php';          // Blog archive routing.
 
     // Bootstrap the landing CPT explicitly. Its own bootstrap hooks init() onto
     // the `init` action, and init() then registers register_post_type() /

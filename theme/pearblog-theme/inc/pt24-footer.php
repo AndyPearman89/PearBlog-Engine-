@@ -95,6 +95,7 @@ if ( ! function_exists( 'pt24_render_full_footer' ) ) :
                             <li><a href="<?php echo esc_url( $home . 'jak-to-dziala/' ); ?>">Jak to działa</a></li>
                             <li><a href="<?php echo esc_url( $home . 'dla-firm/' ); ?>">Dla firm</a></li>
                             <li><a href="<?php echo esc_url( $home . 'o-nas/' ); ?>">O nas</a></li>
+                            <li><a href="<?php echo esc_url( $home . 'blog/' ); ?>">Blog</a></li>
                             <li><a href="<?php echo esc_url( $home . 'kontakt/' ); ?>">Kontakt</a></li>
                             <li><a href="<?php echo esc_url( $home . 'polityka-prywatnosci/' ); ?>">Polityka prywatności</a></li>
                             <li><a href="<?php echo esc_url( $home . 'regulamin/' ); ?>">Regulamin</a></li>

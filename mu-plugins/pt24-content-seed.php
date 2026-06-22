@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '1.4.0';
+const PT24_SEED_VERSION = '1.5.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -427,6 +427,192 @@ function pt24_seed_menus( array $ids ): void {
 }
 
 /**
+ * Add a menu item to a named menu only if it isn't already present (idempotent).
+ */
+function pt24_add_menu_item_once( string $menu_name, string $title, int $page_id ): void {
+    if ( $page_id <= 0 ) {
+        return;
+    }
+    $menu = wp_get_nav_menu_object( $menu_name );
+    if ( ! $menu ) {
+        return;
+    }
+    $items = wp_get_nav_menu_items( $menu->term_id );
+    if ( is_array( $items ) ) {
+        foreach ( $items as $item ) {
+            if ( (int) $item->object_id === $page_id || strtolower( trim( (string) $item->title ) ) === strtolower( $title ) ) {
+                return;
+            }
+        }
+    }
+    wp_update_nav_menu_item(
+        $menu->term_id,
+        0,
+        array(
+            'menu-item-title'     => $title,
+            'menu-item-object'    => 'page',
+            'menu-item-object-id' => $page_id,
+            'menu-item-type'      => 'post_type',
+            'menu-item-status'    => 'publish',
+        )
+    );
+}
+
+/**
+ * Insert or refresh a single seeded blog post.
+ */
+function pt24_seed_post( string $slug, string $title, string $content, int $cat_id ): void {
+    $existing = get_posts( array(
+        'name'             => $slug,
+        'post_type'        => 'post',
+        'post_status'      => 'any',
+        'numberposts'      => 1,
+        'suppress_filters' => true,
+    ) );
+
+    if ( ! empty( $existing ) ) {
+        $post_id = (int) $existing[0]->ID;
+        wp_update_post( array(
+            'ID'           => $post_id,
+            'post_title'   => $title,
+            'post_content' => $content,
+            'post_status'  => 'publish',
+        ) );
+    } else {
+        $post_id = (int) wp_insert_post( array(
+            'post_title'   => $title,
+            'post_name'    => $slug,
+            'post_content' => $content,
+            'post_status'  => 'publish',
+            'post_type'    => 'post',
+        ) );
+    }
+
+    if ( $post_id > 0 ) {
+        update_post_meta( $post_id, '_pt24_seeded', PT24_SEED_VERSION );
+        if ( $cat_id > 0 ) {
+            wp_set_post_categories( $post_id, array( $cat_id ) );
+        }
+    }
+}
+
+/**
+ * Seed the PT24 blog: posts page, categories and a set of SEO articles.
+ */
+function pt24_seed_blog(): void {
+    // 1) Blog page used as the posts archive (/blog/).
+    $blog_page = get_page_by_path( 'blog' );
+    if ( $blog_page instanceof WP_Post ) {
+        $blog_id = (int) $blog_page->ID;
+    } else {
+        $blog_id = (int) wp_insert_post( array(
+            'post_title'   => 'Blog',
+            'post_name'    => 'blog',
+            'post_content' => '',
+            'post_status'  => 'publish',
+            'post_type'    => 'page',
+        ) );
+    }
+    if ( $blog_id > 0 ) {
+        update_option( 'page_for_posts', $blog_id );
+        update_post_meta( $blog_id, '_pt24_seeded', PT24_SEED_VERSION );
+    }
+
+    // 2) Categories.
+    $cat_defs = array(
+        'porady'    => 'Porady',
+        'koszty'    => 'Koszty i cennik',
+        'poradniki' => 'Poradniki',
+    );
+    $cats = array();
+    foreach ( $cat_defs as $cslug => $cname ) {
+        $term = term_exists( $cslug, 'category' );
+        if ( ! $term ) {
+            $term = wp_insert_term( $cname, 'category', array( 'slug' => $cslug ) );
+        }
+        if ( ! is_wp_error( $term ) ) {
+            $cats[ $cslug ] = (int) ( is_array( $term ) ? $term['term_id'] : $term );
+        }
+    }
+
+    $cta = function ( string $path, string $label ): string {
+        return '<p><strong>' . esc_html( $label ) . '</strong> <a href="' . esc_url( home_url( $path ) ) . '">Zamów bezpłatną wycenę przez PT24</a>.</p>';
+    };
+
+    // 3) Articles.
+    $posts = array(
+        array(
+            'slug' => 'jak-wybrac-dobrego-hydraulika',
+            'cat'  => 'porady',
+            'title'=> 'Jak wybrać dobrego hydraulika? Praktyczny poradnik',
+            'body' => '<p>Awaria instalacji wodnej potrafi sparaliżować dom w kilka minut. Zanim jednak zadzwonisz po pierwszego z brzegu fachowca, warto wiedzieć, na co zwrócić uwagę, by uniknąć przepłacania i niesolidnego wykonania.</p>'
+                . '<h2>Na co zwrócić uwagę przy wyborze?</h2>'
+                . '<ul><li>Opinie i oceny poprzednich klientów.</li><li>Doświadczenie w konkretnym typie prac (awarie, montaż, instalacje).</li><li>Przejrzysta, pisemna wycena przed rozpoczęciem prac.</li><li>Gotowość do wystawienia faktury lub rachunku.</li></ul>'
+                . '<h2>Ile kosztuje hydraulik?</h2>'
+                . '<p>Stawki zależą od zakresu: drobna naprawa to zwykle 120–300 zł, usunięcie awarii 150–500 zł, a montaż armatury 200–450 zł. Dokładną cenę poznasz po opisaniu zlecenia i oględzinach.</p>'
+                . $cta( '/warszawa/hydraulik/', 'Potrzebujesz hydraulika?' ),
+        ),
+        array(
+            'slug' => 'ile-kosztuje-remont-lazienki-2026',
+            'cat'  => 'koszty',
+            'title'=> 'Ile kosztuje remont łazienki w 2026 roku?',
+            'body' => '<p>Remont łazienki to jedna z najczęściej planowanych inwestycji w domu. Koszt zależy od metrażu, jakości materiałów i zakresu prac — od drobnego odświeżenia po kompleksową przebudowę „pod klucz”.</p>'
+                . '<h2>Orientacyjne koszty</h2>'
+                . '<ul><li>Remont „pod klucz” (do 6 m²): 12 000–30 000 zł.</li><li>Układanie płytek (robocizna): 80–160 zł/m².</li><li>Biały montaż: 600–1 500 zł.</li><li>Skucie starych płytek: 40–90 zł/m².</li></ul>'
+                . '<h2>Jak nie przepłacić?</h2>'
+                . '<p>Zbierz kilka wycen i porównaj zakres prac, a nie tylko cenę. Rzetelna ekipa przedstawi harmonogram i kosztorys przed startem.</p>'
+                . $cta( '/warszawa/remont-lazienki/', 'Planujesz remont łazienki?' ),
+        ),
+        array(
+            'slug' => 'fotowoltaika-2026-czy-sie-oplaca',
+            'cat'  => 'poradniki',
+            'title'=> 'Fotowoltaika 2026 — czy to się jeszcze opłaca?',
+            'body' => '<p>Mimo zmian w systemie rozliczeń własna instalacja PV wciąż obniża rachunki za prąd i zwiększa niezależność energetyczną. Kluczem jest dobranie mocy do realnego zużycia.</p>'
+                . '<h2>Co wpływa na opłacalność?</h2>'
+                . '<ul><li>Roczne zużycie energii i profil jej poboru.</li><li>Dobór mocy instalacji oraz ewentualny magazyn energii.</li><li>Jakość paneli, falownika i samego montażu.</li></ul>'
+                . '<h2>Czas zwrotu</h2>'
+                . '<p>Najczęściej 6–9 lat, zależnie od zużycia, cen energii i magazynu. Dobry instalator wyliczy moc na podstawie Twoich rachunków i zajmie się formalnościami.</p>'
+                . $cta( '/gdansk/fotowoltaika/', 'Myślisz o fotowoltaice?' ),
+        ),
+        array(
+            'slug' => 'elektryk-uprawnienia-sep',
+            'cat'  => 'porady',
+            'title'=> 'Elektryk z uprawnieniami SEP — dlaczego to takie ważne',
+            'body' => '<p>Prace przy instalacji elektrycznej to nie miejsce na oszczędności i improwizację. Uprawnienia SEP potwierdzają, że fachowiec zna przepisy i wykona pracę bezpiecznie.</p>'
+                . '<h2>Co dają uprawnienia SEP?</h2>'
+                . '<ul><li>Legalny i bezpieczny montaż oraz pomiary.</li><li>Protokół pomiarów wymagany przy odbiorach i ubezpieczeniach.</li><li>Mniejsze ryzyko usterek i pożaru instalacji.</li></ul>'
+                . '<h2>Zapytaj o certyfikat</h2>'
+                . '<p>Przed rozpoczęciem prac możesz poprosić o okazanie aktualnych uprawnień. Rzetelny elektryk nie będzie miał z tym problemu.</p>'
+                . $cta( '/krakow/elektryk/', 'Szukasz elektryka?' ),
+        ),
+        array(
+            'slug' => 'pompa-ciepla-czy-kociol-gazowy',
+            'cat'  => 'koszty',
+            'title'=> 'Pompa ciepła czy kocioł gazowy? Porównanie kosztów',
+            'body' => '<p>Wybór źródła ciepła to decyzja na lata. Pompa ciepła kusi niższymi kosztami eksploatacji i dotacjami, kocioł gazowy — niższą ceną zakupu. Co wybrać?</p>'
+                . '<h2>Koszt i eksploatacja</h2>'
+                . '<ul><li>Pompa ciepła (z montażem): 25 000–55 000 zł, niższe rachunki.</li><li>Kocioł gazowy: tańszy zakup, ale rosnące koszty paliwa.</li><li>Dotacje (np. „Czyste Powietrze”) poprawiają opłacalność pompy.</li></ul>'
+                . '<h2>Co wybrać?</h2>'
+                . '<p>Dla dobrze ocieplonych budynków pompa ciepła zwykle wygrywa w perspektywie kilku lat. Instalator wykona uproszczony audyt i dobierze moc.</p>'
+                . $cta( '/poznan/pompa-ciepla/', 'Rozważasz pompę ciepła?' ),
+        ),
+    );
+
+    foreach ( $posts as $p ) {
+        pt24_seed_post( $p['slug'], $p['title'], $p['body'], $cats[ $p['cat'] ] ?? 0 );
+    }
+
+    // 4) Navigation links to the blog (idempotent on the existing primary menu).
+    pt24_add_menu_item_once( 'PT24 Menu główne', 'Blog', $blog_id );
+
+    // 5) Tidy up the default WordPress sample post.
+    $hello = get_posts( array( 'name' => 'hello-world', 'post_type' => 'post', 'post_status' => 'any', 'numberposts' => 1, 'suppress_filters' => true ) );
+    if ( ! empty( $hello ) && false !== stripos( (string) $hello[0]->post_title, 'hello' ) ) {
+        wp_trash_post( (int) $hello[0]->ID );
+    }
+}
+
+/**
  * Main seed runner — guarded so it runs once per version on the pt24 host.
  */
 function pt24_run_content_seed(): void {
@@ -447,6 +633,7 @@ function pt24_run_content_seed(): void {
 
     pt24_seed_landings();
     pt24_seed_menus( $ids );
+    pt24_seed_blog();
 
     flush_rewrite_rules();
 
