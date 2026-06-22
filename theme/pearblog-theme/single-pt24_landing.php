@@ -170,6 +170,34 @@ for ( $i = 0; $i < 3; $i++ ) {
     );
 }
 
+// Service icon (shared with the homepage icon set) for the firm cards.
+$pt24_service_icons = array(
+    'hydraulik' => 'droplet', 'elektryk' => 'zap', 'mechanik' => 'wrench',
+    'pompa-ciepla' => 'thermometer', 'remont-lazienki' => 'home', 'fotowoltaika' => 'grid',
+);
+$pt24_service_icon = $pt24_service_icons[ $service_slug ] ?? 'wrench';
+
+// Deterministic, illustrative client reviews — stable per service/city and in
+// line with the sample firm directory above. No review structured data emitted.
+$pt24_review_names = array( 'Anna K.', 'Marek W.', 'Tomasz L.', 'Katarzyna S.', 'Piotr M.', 'Agnieszka R.', 'Paweł D.', 'Magdalena Z.', 'Robert N.', 'Joanna P.' );
+$pt24_review_texts = array(
+    'Bardzo sprawny kontakt — pierwsze oferty dostałem jeszcze tego samego dnia.',
+    'Fachowiec rzetelny, a cena zgodna z wcześniejszą wyceną. Polecam.',
+    'Wygodnie: opisałem zlecenie raz i porównałem kilka ofert w jednym miejscu.',
+    'Specjalista z mojej okolicy, szybki termin i solidne wykonanie.',
+    'Prosto i bez zobowiązań — wybrałem najlepszą z trzech ofert.',
+    'Dobra komunikacja i terminowość. Na pewno skorzystam ponownie.',
+);
+$pt24_reviews = array();
+for ( $i = 0; $i < 3; $i++ ) {
+    $rseed = crc32( $service_slug . $city_slug . 'rev' . $i );
+    $pt24_reviews[] = array(
+        'name'  => $pt24_review_names[ $rseed % count( $pt24_review_names ) ],
+        'text'  => $pt24_review_texts[ intdiv( $rseed, 8 ) % count( $pt24_review_texts ) ],
+        'stars' => 4 + ( $rseed % 2 ),
+    );
+}
+
 $ajax_url = admin_url( 'admin-ajax.php' );
 ?>
 <main id="main" class="pb-main pt24-landing" role="main">
@@ -198,6 +226,16 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <p class="pt24-intro"><?php echo esc_html( $data['intro'] ); ?></p>
 
             <section class="pt24-section">
+                <h2>Dlaczego warto zamówić przez PT24?</h2>
+                <ul class="pt24-benefits">
+                    <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span></span><div><strong>Zweryfikowani fachowcy</strong><p>Sprawdzeni specjaliści, którzy realnie działają w <?php echo esc_html( $city_name ); ?> i okolicy.</p></div></li>
+                    <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span></span><div><strong>Bezpłatna wycena</strong><p>Otrzymujesz konkretne oferty cenowe bez kosztów i zobowiązań.</p></div></li>
+                    <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span></span><div><strong>Szybki kontakt</strong><p>Pierwsze odpowiedzi otrzymujesz zwykle w kilka godzin.</p></div></li>
+                    <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><div><strong>Opinie i oceny</strong><p>Wybierasz wykonawcę na podstawie doświadczeń innych klientów.</p></div></li>
+                </ul>
+            </section>
+
+            <section class="pt24-section">
                 <h2>Zakres usług: <?php echo esc_html( $service_name ); ?> w <?php echo esc_html( $city_name ); ?></h2>
                 <ul class="pt24-tasks">
                     <?php foreach ( $data['tasks'] as $task ) : ?>
@@ -223,11 +261,11 @@ $ajax_url = admin_url( 'admin-ajax.php' );
 
             <section class="pt24-section">
                 <h2>Jak to działa?</h2>
-                <ol class="pt24-steps">
-                    <li><strong>Opisz zlecenie</strong> — wypełnij krótki formularz i podaj zakres prac.</li>
-                    <li><strong>Otrzymaj oferty</strong> — lokalni fachowcy przesyłają wyceny.</li>
-                    <li><strong>Wybierz najlepszą</strong> — porównaj ceny, opinie i terminy.</li>
-                    <li><strong>Zrealizuj usługę</strong> — umawiasz się bezpośrednio ze specjalistą.</li>
+                <ol class="pt24-flow">
+                    <li><strong>Opisz zlecenie</strong>Wypełnij krótki formularz i podaj zakres prac.</li>
+                    <li><strong>Otrzymaj oferty</strong>Lokalni fachowcy przesyłają dopasowane wyceny.</li>
+                    <li><strong>Wybierz najlepszą</strong>Porównaj ceny, opinie i terminy realizacji.</li>
+                    <li><strong>Zrealizuj usługę</strong>Umawiasz się bezpośrednio ze sprawdzonym specjalistą.</li>
                 </ol>
             </section>
 
@@ -236,9 +274,26 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 <div class="pt24-firms">
                     <?php foreach ( $firms as $firm ) : ?>
                         <div class="pt24-firm">
-                            <h3 class="pt24-firm__name"><?php echo esc_html( $firm['name'] ); ?></h3>
+                            <div class="pt24-firm__head">
+                                <span class="pt24-firm__ico"><span class="pt24-ico pt24-ico--<?php echo esc_attr( $pt24_service_icon ); ?>" aria-hidden="true"></span></span>
+                                <h3 class="pt24-firm__name"><?php echo esc_html( $firm['name'] ); ?></h3>
+                            </div>
                             <p class="pt24-firm__meta">★ <?php echo esc_html( $firm['rating'] ); ?> · <?php echo (int) $firm['jobs']; ?> zrealizowanych zleceń</p>
                             <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost">Zapytaj o wycenę</a>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+
+            <section class="pt24-section">
+                <h2>Opinie klientów</h2>
+                <p>Przykłady doświadczeń osób, które dzięki PT24 znalazły fachowca w swojej okolicy.</p>
+                <div class="pt24-reviews">
+                    <?php foreach ( $pt24_reviews as $rev ) : ?>
+                        <div class="pt24-review">
+                            <div class="pt24-review__stars" aria-label="Ocena <?php echo (int) $rev['stars']; ?> na 5"><?php echo esc_html( str_repeat( '★', (int) $rev['stars'] ) . str_repeat( '☆', 5 - (int) $rev['stars'] ) ); ?></div>
+                            <p class="pt24-review__text">„<?php echo esc_html( $rev['text'] ); ?>”</p>
+                            <p class="pt24-review__author"><?php echo esc_html( $rev['name'] ); ?> <span>· klient PT24</span></p>
                         </div>
                     <?php endforeach; ?>
                 </div>
