@@ -68,55 +68,43 @@ jobs:
       - name: Validate deployment connectivity
         env:
           FTP_PROTOCOL: ${{ steps.preflight.outputs.protocol }}
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_USERNAME: ${{ secrets.FTP_USERNAME }}
+          FTP_PASSWORD: ${{ secrets.FTP_PASSWORD }}
         run: |
           set -euo pipefail
-          HOST="${{ secrets.FTP_HOST }}"
-          PORT="${{ secrets.FTP_PORT }}"
-          USER="${{ secrets.FTP_USERNAME }}"
-          PASS="${{ secrets.FTP_PASSWORD }}"
           CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
-          NETRC_PATH="$RUNNER_TEMP/lftp-netrc"
 
-          echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
+          echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$FTP_HOST port=$FTP_PORT"
 
-          if ! nc -z -w "$CONNECT_TIMEOUT" "$HOST" "$PORT"; then
+          if ! nc -z -w "$CONNECT_TIMEOUT" "$FTP_HOST" "$FTP_PORT"; then
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
-              echo "::error::SSH/SFTP endpoint unreachable at $HOST:$PORT. Verify host/port, SSH availability, and any IP allowlists/firewalls."
+              echo "::error::SSH/SFTP endpoint unreachable at $FTP_HOST:$FTP_PORT. Verify host/port, SSH availability, and any IP allowlists/firewalls."
             else
-              echo "::error::FTP endpoint unreachable at $HOST:$PORT. Verify host/port, protocol, and any IP allowlists/firewalls."
+              echo "::error::FTP endpoint unreachable at $FTP_HOST:$FTP_PORT. Verify host/port, protocol, and any IP allowlists/firewalls."
             fi
             exit 1
           fi
 
-          umask 077
-          trap 'rm -f "$NETRC_PATH"' EXIT
-          cat > "$NETRC_PATH" <<EOF
-          machine $HOST
-          login $USER
-          password $PASS
-          EOF
-
-          LFTP_SCRIPT=$(cat <<EOF
-          set cmd:fail-exit true
-          set net:timeout ${CONNECT_TIMEOUT}
-          set net:max-retries 1
-          set net:reconnect-interval-base 5
-          set net:netrc "${NETRC_PATH}"
-          open -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
-          ls
-          bye
-          EOF
-          )
-
-          if ! LFTP_OUTPUT=$(lftp -e "$LFTP_SCRIPT" 2>&1); then
+          # Pass credentials directly via URL — avoids netrc file path/format issues.
+          LFTP_OUTPUT=$(lftp -c "
+            set cmd:fail-exit true
+            set net:timeout ${CONNECT_TIMEOUT}
+            set net:max-retries 1
+            set net:reconnect-interval-base 5
+            open -u \"${FTP_USERNAME}\",\"${FTP_PASSWORD}\" -p \"${FTP_PORT}\" \"${FTP_PROTOCOL}://${FTP_HOST}\"
+            ls
+            bye
+          " 2>&1) || {
             echo "$LFTP_OUTPUT" | tail -n 50
             if [[ "$FTP_PROTOCOL" == "sftp" ]]; then
-              echo "::error::SFTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol, credentials, and SSH/SFTP permissions."
+              echo "::error::SFTP authentication/listing failed after connecting to $FTP_HOST:$FTP_PORT. Verify protocol, credentials, and SSH/SFTP permissions."
             else
-              echo "::error::FTP authentication/listing failed after connecting to $HOST:$PORT. Verify protocol and credentials."
+              echo "::error::FTP authentication/listing failed after connecting to $FTP_HOST:$FTP_PORT. Verify protocol and credentials."
             fi
             exit 1
-          fi
+          }
 
       - name: Deploy mu-plugin
         # Keep a bounded transfer window to avoid long hangs while allowing typical full syncs.
