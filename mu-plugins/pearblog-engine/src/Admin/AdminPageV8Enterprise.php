@@ -74,6 +74,10 @@ class AdminPageV8Enterprise {
 		add_action( 'wp_ajax_pb_v8_get_notifications', [ $this, 'ajax_get_notifications' ] );
 		add_action( 'wp_ajax_pb_v8_toggle_theme', [ $this, 'ajax_toggle_theme' ] );
 		add_action( 'wp_ajax_pb_v8_export_report', [ $this, 'ajax_export_report' ] );
+
+		// PT24 lead management (status update + CSV export).
+		add_action( 'admin_post_pt24_update_lead_status', [ $this, 'handle_update_lead_status' ] );
+		add_action( 'admin_post_pt24_export_leads', [ $this, 'handle_export_leads' ] );
 	}
 
 	/**
@@ -426,6 +430,9 @@ class AdminPageV8Enterprise {
 				break;
 			case 'leads':
 				$this->render_leads_tab();
+				break;
+			case 'analytics':
+				$this->render_analytics_tab();
 				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
@@ -843,6 +850,15 @@ class AdminPageV8Enterprise {
 				</div>
 			<?php else : ?>
 
+				<?php
+				$pt24_notice = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+				if ( 'updated' === $pt24_notice ) {
+					echo '<div class="notice notice-success" style="margin:0 0 16px;"><p>' . esc_html__( 'Lead status updated.', 'pearblog-engine' ) . '</p></div>';
+				} elseif ( 'error' === $pt24_notice ) {
+					echo '<div class="notice notice-error" style="margin:0 0 16px;"><p>' . esc_html__( 'Could not update the lead.', 'pearblog-engine' ) . '</p></div>';
+				}
+				?>
+
 				<div class="pb-v8-metrics-grid">
 					<?php
 					$this->render_metric_card( [ 'label' => __( 'Total Leads', 'pearblog-engine' ), 'value' => number_format_i18n( $data['total'] ), 'icon' => '👥', 'color' => 'primary' ] );
@@ -852,7 +868,14 @@ class AdminPageV8Enterprise {
 					?>
 				</div>
 
-				<h3 class="pb-v8-section-title" style="margin-top:32px;"><?php esc_html_e( 'Recent leads', 'pearblog-engine' ); ?></h3>
+				<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:32px; flex-wrap:wrap;">
+					<h3 class="pb-v8-section-title" style="margin:0;"><?php esc_html_e( 'Recent leads', 'pearblog-engine' ); ?></h3>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0;">
+						<input type="hidden" name="action" value="pt24_export_leads">
+						<?php wp_nonce_field( 'pt24_export_leads' ); ?>
+						<button type="submit" class="button">⬇ <?php esc_html_e( 'Export CSV', 'pearblog-engine' ); ?></button>
+					</form>
+				</div>
 
 				<?php if ( empty( $leads ) ) : ?>
 					<p style="color: var(--pb-v8-text-secondary);"><?php esc_html_e( 'No leads yet. New enquiries from the site will appear here.', 'pearblog-engine' ); ?></p>
@@ -890,7 +913,20 @@ class AdminPageV8Enterprise {
 										</td>
 										<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', (string) $lead->service ) ) ); ?></td>
 										<td><?php echo esc_html( ucfirst( (string) $lead->city ) ); ?></td>
-										<td><span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $badge ); ?>"><?php echo esc_html( $status ); ?></span></td>
+										<td>
+											<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex; align-items:center; gap:8px; margin:0;">
+												<input type="hidden" name="action" value="pt24_update_lead_status">
+												<input type="hidden" name="lead_id" value="<?php echo (int) $lead->id; ?>">
+												<?php wp_nonce_field( 'pt24_update_lead_status' ); ?>
+												<span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $badge ); ?>"><?php echo esc_html( $status ); ?></span>
+												<select name="status" onchange="this.form.submit()" style="max-width:140px;">
+													<?php foreach ( $this->pt24_lead_statuses() as $st_key => $st_label ) : ?>
+														<option value="<?php echo esc_attr( $st_key ); ?>" <?php selected( $status, $st_key ); ?>><?php echo esc_html( $st_label ); ?></option>
+													<?php endforeach; ?>
+												</select>
+												<noscript><button type="submit" class="button button-small">OK</button></noscript>
+											</form>
+										</td>
 									</tr>
 								<?php endforeach; ?>
 							</tbody>
@@ -943,6 +979,245 @@ class AdminPageV8Enterprise {
 		$out['today'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m-d' ) . ' 00:00:00' ) );
 		$out['week']  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) - 7 * DAY_IN_SECONDS ) ) );
 		$out['rows']  = (array) $wpdb->get_results( "SELECT id, name, email, phone, city, service, source, status, created_at FROM `{$table}` ORDER BY created_at DESC LIMIT 50" );
+
+		return $out;
+	}
+
+	/**
+	 * Allowed PT24 lead statuses (CRM funnel) => display label.
+	 */
+	private function pt24_lead_statuses(): array {
+		return [
+			'new'         => __( 'New', 'pearblog-engine' ),
+			'contacted'   => __( 'Contacted', 'pearblog-engine' ),
+			'in_progress' => __( 'In progress', 'pearblog-engine' ),
+			'won'         => __( 'Won', 'pearblog-engine' ),
+			'lost'        => __( 'Lost', 'pearblog-engine' ),
+		];
+	}
+
+	/**
+	 * admin-post handler: update a single PT24 lead's status.
+	 */
+	public function handle_update_lead_status(): void {
+		if ( ! current_user_can( $this->get_required_capability() ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+		check_admin_referer( 'pt24_update_lead_status' );
+
+		$lead_id = isset( $_POST['lead_id'] ) ? absint( $_POST['lead_id'] ) : 0;
+		$status  = isset( $_POST['status'] ) ? sanitize_key( wp_unslash( $_POST['status'] ) ) : '';
+		$allowed = array_keys( $this->pt24_lead_statuses() );
+		$notice  = 'error';
+
+		if ( $lead_id > 0 && in_array( $status, $allowed, true ) ) {
+			global $wpdb;
+			$table = $wpdb->prefix . 'pt24_leads';
+			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) {
+				$wpdb->update(
+					$table,
+					[ 'status' => $status, 'updated_at' => current_time( 'mysql' ) ],
+					[ 'id' => $lead_id ],
+					[ '%s', '%s' ],
+					[ '%d' ]
+				);
+				$notice = 'updated';
+			}
+		}
+
+		wp_safe_redirect( add_query_arg(
+			[ 'page' => self::MENU_SLUG, 'tab' => 'leads', 'pt24_notice' => $notice ],
+			admin_url( 'admin.php' )
+		) );
+		exit;
+	}
+
+	/**
+	 * admin-post handler: export all PT24 leads to CSV.
+	 */
+	public function handle_export_leads(): void {
+		if ( ! current_user_can( $this->get_required_capability() ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+		check_admin_referer( 'pt24_export_leads' );
+
+		global $wpdb;
+		$table = $wpdb->prefix . 'pt24_leads';
+		$rows  = [];
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) {
+			$rows = (array) $wpdb->get_results(
+				"SELECT id, name, phone, email, service, city, message, source, status, created_at FROM `{$table}` ORDER BY created_at DESC",
+				ARRAY_A
+			);
+		}
+
+		nocache_headers();
+		header( 'Content-Type: text/csv; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=pt24-leads-' . gmdate( 'Y-m-d' ) . '.csv' );
+
+		$output = fopen( 'php://output', 'w' );
+		fwrite( $output, "\xEF\xBB\xBF" ); // UTF-8 BOM for Excel.
+		fputcsv( $output, [ 'ID', 'Imię', 'Telefon', 'E-mail', 'Usługa', 'Miasto', 'Opis', 'Źródło', 'Status', 'Data' ] );
+		foreach ( $rows as $row ) {
+			fputcsv( $output, (array) $row );
+		}
+		fclose( $output );
+		exit;
+	}
+
+	/**
+	 * Render the Analytics Deep tab — real PT24 lead analytics.
+	 */
+	private function render_analytics_tab(): void {
+		$a = $this->get_pt24_analytics_data();
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Analytics Deep — PT24', 'pearblog-engine' ); ?></h2>
+
+			<?php if ( ! $a['table_exists'] ) : ?>
+				<div class="pb-v8-coming-soon" style="text-align:center; padding:60px 20px;">
+					<div style="font-size:56px; margin-bottom:16px;">📭</div>
+					<h2><?php esc_html_e( 'No analytics data on this site', 'pearblog-engine' ); ?></h2>
+					<p style="color: var(--pb-v8-text-secondary);"><?php esc_html_e( 'The PT24 leads table was not found on this installation.', 'pearblog-engine' ); ?></p>
+				</div>
+			<?php else :
+				$conversion = $a['total'] > 0 ? round( $a['won'] / $a['total'] * 100, 1 ) : 0.0;
+				$trend_max  = 1;
+				foreach ( $a['trend'] as $point ) {
+					$trend_max = max( $trend_max, (int) $point['count'] );
+				}
+				?>
+				<style>
+					.pt24-bars{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+					.pt24-bar-row{display:flex;align-items:center;gap:12px}
+					.pt24-bar-label{flex:0 0 130px;font-size:13px;color:var(--pb-v8-text-secondary);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+					.pt24-bar-track{flex:1;height:14px;background:rgba(125,125,125,.15);border-radius:7px;overflow:hidden}
+					.pt24-bar-fill{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#1e3a8a)}
+					.pt24-bar-val{flex:0 0 46px;font-weight:700;font-size:13px}
+					.pt24-trend{display:flex;align-items:flex-end;gap:6px;height:160px;margin-top:8px;padding:10px;background:rgba(125,125,125,.06);border-radius:10px}
+					.pt24-trend-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+					.pt24-trend-bar{width:72%;min-height:2px;background:linear-gradient(180deg,#f59e0b,#d97706);border-radius:4px 4px 0 0}
+					.pt24-trend-day{font-size:10px;color:var(--pb-v8-text-secondary)}
+					.pt24-analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px}
+					.pt24-card{background:var(--pb-v8-bg-card,rgba(125,125,125,.04));border:1px solid rgba(125,125,125,.18);border-radius:14px;padding:20px}
+					.pt24-card h3{margin:0 0 12px;font-size:15px}
+				</style>
+
+				<div class="pb-v8-metrics-grid">
+					<?php
+					$this->render_metric_card( [ 'label' => __( 'Total Leads', 'pearblog-engine' ), 'value' => number_format_i18n( $a['total'] ), 'icon' => '👥' ] );
+					$this->render_metric_card( [ 'label' => __( 'This month', 'pearblog-engine' ), 'value' => number_format_i18n( $a['this_month'] ), 'icon' => '🗓️' ] );
+					$this->render_metric_card( [ 'label' => __( 'Won', 'pearblog-engine' ), 'value' => number_format_i18n( $a['won'] ), 'icon' => '✅' ] );
+					$this->render_metric_card( [ 'label' => __( 'Conversion', 'pearblog-engine' ), 'value' => $conversion . '%', 'icon' => '🎯' ] );
+					?>
+				</div>
+
+				<div class="pt24-card" style="margin-top:24px;">
+					<h3><?php esc_html_e( 'Leads — last 14 days', 'pearblog-engine' ); ?></h3>
+					<div class="pt24-trend">
+						<?php foreach ( $a['trend'] as $point ) :
+							$height = (int) round( (int) $point['count'] / $trend_max * 100 );
+							?>
+							<div class="pt24-trend-col" title="<?php echo esc_attr( $point['date'] . ': ' . $point['count'] ); ?>">
+								<div class="pt24-trend-bar" style="height:<?php echo (int) max( 2, $height ); ?>%"></div>
+								<span class="pt24-trend-day"><?php echo esc_html( substr( (string) $point['date'], 8, 2 ) ); ?></span>
+							</div>
+						<?php endforeach; ?>
+					</div>
+				</div>
+
+				<div class="pt24-analytics-grid">
+					<div class="pt24-card">
+						<h3><?php esc_html_e( 'By service', 'pearblog-engine' ); ?></h3>
+						<?php $this->render_bar_list( $a['by_service'] ); ?>
+					</div>
+					<div class="pt24-card">
+						<h3><?php esc_html_e( 'By city', 'pearblog-engine' ); ?></h3>
+						<?php $this->render_bar_list( $a['by_city'] ); ?>
+					</div>
+					<div class="pt24-card">
+						<h3><?php esc_html_e( 'By status', 'pearblog-engine' ); ?></h3>
+						<?php $this->render_bar_list( $a['by_status'] ); ?>
+					</div>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
+	}
+
+	/**
+	 * Render a simple horizontal bar list from [ ['label'=>.., 'c'=>..], .. ].
+	 */
+	private function render_bar_list( array $rows ): void {
+		if ( empty( $rows ) ) {
+			echo '<p style="color:var(--pb-v8-text-secondary);">' . esc_html__( 'No data yet.', 'pearblog-engine' ) . '</p>';
+			return;
+		}
+		$max = 1;
+		foreach ( $rows as $row ) {
+			$max = max( $max, (int) $row['c'] );
+		}
+		echo '<div class="pt24-bars">';
+		foreach ( $rows as $row ) {
+			$label = ucfirst( str_replace( '-', ' ', (string) $row['label'] ) );
+			$count = (int) $row['c'];
+			$pct   = (int) max( 2, round( $count / $max * 100 ) );
+			printf(
+				'<div class="pt24-bar-row"><span class="pt24-bar-label">%s</span><span class="pt24-bar-track"><span class="pt24-bar-fill" style="width:%d%%"></span></span><span class="pt24-bar-val">%s</span></div>',
+				esc_html( '' !== $label ? $label : '—' ),
+				$pct,
+				esc_html( number_format_i18n( $count ) )
+			);
+		}
+		echo '</div>';
+	}
+
+	/**
+	 * Fetch PT24 analytics aggregates.
+	 *
+	 * @return array{table_exists:bool,total:int,won:int,lost:int,this_month:int,by_service:array,by_city:array,by_status:array,trend:array}
+	 */
+	private function get_pt24_analytics_data(): array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pt24_leads';
+		$out   = [
+			'table_exists' => false,
+			'total'        => 0,
+			'won'          => 0,
+			'lost'         => 0,
+			'this_month'   => 0,
+			'by_service'   => [],
+			'by_city'      => [],
+			'by_status'    => [],
+			'trend'        => [],
+		];
+
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
+			return $out;
+		}
+		$out['table_exists'] = true;
+
+		$out['total']      = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
+		$out['won']        = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s", 'won' ) );
+		$out['lost']       = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s", 'lost' ) );
+		$out['this_month'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m' ) . '-01 00:00:00' ) );
+
+		$out['by_service'] = (array) $wpdb->get_results( "SELECT service AS label, COUNT(*) AS c FROM `{$table}` GROUP BY service ORDER BY c DESC LIMIT 12", ARRAY_A );
+		$out['by_city']    = (array) $wpdb->get_results( "SELECT city AS label, COUNT(*) AS c FROM `{$table}` GROUP BY city ORDER BY c DESC LIMIT 12", ARRAY_A );
+		$out['by_status']  = (array) $wpdb->get_results( "SELECT status AS label, COUNT(*) AS c FROM `{$table}` GROUP BY status ORDER BY c DESC", ARRAY_A );
+
+		$since = gmdate( 'Y-m-d 00:00:00', current_time( 'timestamp' ) - 13 * DAY_IN_SECONDS );
+		$daily = (array) $wpdb->get_results(
+			$wpdb->prepare( "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY DATE(created_at)", $since ),
+			OBJECT_K
+		);
+		for ( $i = 13; $i >= 0; $i-- ) {
+			$day = gmdate( 'Y-m-d', current_time( 'timestamp' ) - $i * DAY_IN_SECONDS );
+			$out['trend'][] = [
+				'date'  => $day,
+				'count' => isset( $daily[ $day ] ) ? (int) $daily[ $day ]->c : 0,
+			];
+		}
 
 		return $out;
 	}
