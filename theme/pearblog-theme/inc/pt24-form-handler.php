@@ -71,19 +71,25 @@ function pt24_handle_lead_submission() {
 
     $lead_id = $wpdb->insert_id;
 
-    // Send notification email to admin
-    $admin_email = get_option('admin_email');
-    $subject = "Nowy lead: $service w $city";
-    $message = "Nowy lead od: $name\n\n";
-    $message .= "Email: $email\n";
-    $message .= "Telefon: $phone\n";
-    $message .= "Miasto: $city\n";
-    $message .= "Usługa: $service\n";
-    $message .= "Potrzeba:\n$service_need\n\n";
-    $message .= "Źródło: $source_url\n";
-    $message .= "Data: " . current_time('Y-m-d H:i:s') . "\n";
+    // Send notification email to the configured lead inbox (Enterprise V8 → Settings).
+    $notify_enabled = '0' !== (string) get_option( 'pt24_notify_enabled', '1' );
+    $notify_email   = sanitize_email( (string) get_option( 'pt24_notify_email', '' ) );
+    if ( '' === $notify_email || ! is_email( $notify_email ) ) {
+        $notify_email = (string) get_option( 'admin_email' );
+    }
+    if ( $notify_enabled && is_email( $notify_email ) ) {
+        $subject = "Nowy lead: $service w $city";
+        $message = "Nowy lead od: $name\n\n";
+        $message .= "Email: $email\n";
+        $message .= "Telefon: $phone\n";
+        $message .= "Miasto: $city\n";
+        $message .= "Usługa: $service\n";
+        $message .= "Potrzeba:\n$service_need\n\n";
+        $message .= "Źródło: $source_url\n";
+        $message .= "Data: " . current_time('Y-m-d H:i:s') . "\n";
 
-    wp_mail($admin_email, $subject, $message);
+        wp_mail($notify_email, $subject, $message);
+    }
 
     // Send confirmation email to user
     $user_subject = "Otrzymaliśmy Twoje zapytanie — PT24.pro";

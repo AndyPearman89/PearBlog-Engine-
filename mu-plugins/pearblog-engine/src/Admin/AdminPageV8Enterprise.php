@@ -38,6 +38,7 @@ class AdminPageV8Enterprise {
 	private const OPTION_GRP = 'pearblog_enterprise_v8';
 	private const VERSION    = '8.0.0';
 	private ?PerformanceDashboard $performance_dashboard = null;
+	private bool $pt24_styles_done = false;
 
 	/**
 	 * All 15 tabs in Enterprise v8.0
@@ -78,6 +79,7 @@ class AdminPageV8Enterprise {
 		// PT24 lead management (status update + CSV export).
 		add_action( 'admin_post_pt24_update_lead_status', [ $this, 'handle_update_lead_status' ] );
 		add_action( 'admin_post_pt24_export_leads', [ $this, 'handle_export_leads' ] );
+		add_action( 'admin_post_pt24_save_settings', [ $this, 'handle_save_settings' ] );
 	}
 
 	/**
@@ -434,6 +436,9 @@ class AdminPageV8Enterprise {
 			case 'analytics':
 				$this->render_analytics_tab();
 				break;
+			case 'settings':
+				$this->render_settings_tab();
+				break;
 			default:
 				$this->render_coming_soon_tab( $tab_id );
 				break;
@@ -683,6 +688,8 @@ class AdminPageV8Enterprise {
 		?>
 		<div class="pb-v8-reporting">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Advanced Reports', 'pearblog-engine' ); ?></h2>
+
+			<?php $this->render_pt24_report_section(); ?>
 
 			<!-- Report Types -->
 			<div class="pb-v8-metrics-grid">
@@ -1087,21 +1094,7 @@ class AdminPageV8Enterprise {
 					$trend_max = max( $trend_max, (int) $point['count'] );
 				}
 				?>
-				<style>
-					.pt24-bars{display:flex;flex-direction:column;gap:10px;margin-top:8px}
-					.pt24-bar-row{display:flex;align-items:center;gap:12px}
-					.pt24-bar-label{flex:0 0 130px;font-size:13px;color:var(--pb-v8-text-secondary);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-					.pt24-bar-track{flex:1;height:14px;background:rgba(125,125,125,.15);border-radius:7px;overflow:hidden}
-					.pt24-bar-fill{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#1e3a8a)}
-					.pt24-bar-val{flex:0 0 46px;font-weight:700;font-size:13px}
-					.pt24-trend{display:flex;align-items:flex-end;gap:6px;height:160px;margin-top:8px;padding:10px;background:rgba(125,125,125,.06);border-radius:10px}
-					.pt24-trend-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
-					.pt24-trend-bar{width:72%;min-height:2px;background:linear-gradient(180deg,#f59e0b,#d97706);border-radius:4px 4px 0 0}
-					.pt24-trend-day{font-size:10px;color:var(--pb-v8-text-secondary)}
-					.pt24-analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px}
-					.pt24-card{background:var(--pb-v8-bg-card,rgba(125,125,125,.04));border:1px solid rgba(125,125,125,.18);border-radius:14px;padding:20px}
-					.pt24-card h3{margin:0 0 12px;font-size:15px}
-				</style>
+				<?php $this->render_pt24_chart_styles(); ?>
 
 				<div class="pb-v8-metrics-grid">
 					<?php
@@ -1220,6 +1213,185 @@ class AdminPageV8Enterprise {
 		}
 
 		return $out;
+	}
+
+	/**
+	 * Shared inline styles for the PT24 chart widgets (printed once per page).
+	 */
+	private function render_pt24_chart_styles(): void {
+		if ( $this->pt24_styles_done ) {
+			return;
+		}
+		$this->pt24_styles_done = true;
+		?>
+		<style>
+			.pt24-bars{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+			.pt24-bar-row{display:flex;align-items:center;gap:12px}
+			.pt24-bar-label{flex:0 0 130px;font-size:13px;color:var(--pb-v8-text-secondary);text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+			.pt24-bar-track{flex:1;height:14px;background:rgba(125,125,125,.15);border-radius:7px;overflow:hidden}
+			.pt24-bar-fill{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#1e3a8a)}
+			.pt24-bar-val{flex:0 0 46px;font-weight:700;font-size:13px}
+			.pt24-trend{display:flex;align-items:flex-end;gap:6px;height:160px;margin-top:8px;padding:10px;background:rgba(125,125,125,.06);border-radius:10px}
+			.pt24-trend-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
+			.pt24-trend-bar{width:72%;min-height:2px;background:linear-gradient(180deg,#f59e0b,#d97706);border-radius:4px 4px 0 0}
+			.pt24-trend-day{font-size:10px;color:var(--pb-v8-text-secondary)}
+			.pt24-analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px}
+			.pt24-card{background:var(--pb-v8-bg-card,rgba(125,125,125,.04));border:1px solid rgba(125,125,125,.18);border-radius:14px;padding:20px}
+			.pt24-card h3{margin:0 0 12px;font-size:15px}
+		</style>
+		<?php
+	}
+
+	/**
+	 * Render the Settings Enterprise tab — PT24 lead notification settings.
+	 */
+	private function render_settings_tab(): void {
+		$email     = (string) get_option( 'pt24_notify_email', (string) get_option( 'admin_email' ) );
+		$enabled   = '0' !== (string) get_option( 'pt24_notify_enabled', '1' );
+		$threshold = (int) get_option( 'pt24_daily_alert_threshold', 0 );
+		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Settings Enterprise — PT24', 'pearblog-engine' ); ?></h2>
+
+			<?php if ( 'saved' === $notice ) : ?>
+				<div class="notice notice-success" style="margin:0 0 16px;"><p><?php esc_html_e( 'Settings saved.', 'pearblog-engine' ); ?></p></div>
+			<?php endif; ?>
+
+			<div class="pb-v8-card" style="max-width:680px;">
+				<div class="pb-v8-card-body">
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+						<input type="hidden" name="action" value="pt24_save_settings">
+						<?php wp_nonce_field( 'pt24_save_settings' ); ?>
+
+						<p>
+							<label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e( 'Lead notification e-mail', 'pearblog-engine' ); ?></label>
+							<input type="email" name="pt24_notify_email" value="<?php echo esc_attr( $email ); ?>" style="width:100%;max-width:420px;padding:8px;">
+							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( 'New enquiries from the site are e-mailed here.', 'pearblog-engine' ); ?></span>
+						</p>
+
+						<p style="margin-top:18px;">
+							<label><input type="checkbox" name="pt24_notify_enabled" value="1" <?php checked( $enabled ); ?>> <?php esc_html_e( 'Send an e-mail when a new lead arrives', 'pearblog-engine' ); ?></label>
+						</p>
+
+						<p style="margin-top:18px;">
+							<label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e( 'Daily lead alert threshold', 'pearblog-engine' ); ?></label>
+							<input type="number" name="pt24_daily_alert_threshold" value="<?php echo esc_attr( (string) $threshold ); ?>" min="0" step="1" style="width:120px;padding:8px;">
+							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( '0 = disabled. Highlights the dashboard when daily leads exceed this number.', 'pearblog-engine' ); ?></span>
+						</p>
+
+						<p style="margin-top:24px;">
+							<button type="submit" class="button button-primary"><?php esc_html_e( 'Save settings', 'pearblog-engine' ); ?></button>
+						</p>
+					</form>
+				</div>
+			</div>
+		</div>
+		<?php
+	}
+
+	/**
+	 * admin-post handler: save PT24 settings.
+	 */
+	public function handle_save_settings(): void {
+		if ( ! current_user_can( $this->get_required_capability() ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+		check_admin_referer( 'pt24_save_settings' );
+
+		$email = isset( $_POST['pt24_notify_email'] ) ? sanitize_email( wp_unslash( $_POST['pt24_notify_email'] ) ) : '';
+		update_option( 'pt24_notify_email', $email );
+		update_option( 'pt24_notify_enabled', isset( $_POST['pt24_notify_enabled'] ) ? '1' : '0' );
+		update_option( 'pt24_daily_alert_threshold', isset( $_POST['pt24_daily_alert_threshold'] ) ? absint( $_POST['pt24_daily_alert_threshold'] ) : 0 );
+
+		wp_safe_redirect( add_query_arg(
+			[ 'page' => self::MENU_SLUG, 'tab' => 'settings', 'pt24_notice' => 'saved' ],
+			admin_url( 'admin.php' )
+		) );
+		exit;
+	}
+
+	/**
+	 * Aggregate PT24 leads for a rolling period (days).
+	 *
+	 * @return array{table_exists:bool,days:int,total:int,won:int,by_service:array,by_city:array}
+	 */
+	private function get_pt24_report_data( int $days ): array {
+		global $wpdb;
+		$table = $wpdb->prefix . 'pt24_leads';
+		$out   = [ 'table_exists' => false, 'days' => $days, 'total' => 0, 'won' => 0, 'by_service' => [], 'by_city' => [] ];
+
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
+			return $out;
+		}
+		$out['table_exists'] = true;
+
+		$since = gmdate( 'Y-m-d 00:00:00', current_time( 'timestamp' ) - ( $days - 1 ) * DAY_IN_SECONDS );
+		$out['total']      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", $since ) );
+		$out['won']        = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s AND created_at >= %s", 'won', $since ) );
+		$out['by_service'] = (array) $wpdb->get_results( $wpdb->prepare( "SELECT service AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY service ORDER BY c DESC LIMIT 10", $since ), ARRAY_A );
+		$out['by_city']    = (array) $wpdb->get_results( $wpdb->prepare( "SELECT city AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY city ORDER BY c DESC LIMIT 10", $since ), ARRAY_A );
+
+		return $out;
+	}
+
+	/**
+	 * Render the PT24 leads report block (period KPIs + breakdowns + CSV export).
+	 * No-op when the leads table is absent (shared engine on other installs).
+	 */
+	private function render_pt24_report_section(): void {
+		$days = isset( $_GET['report_days'] ) ? absint( $_GET['report_days'] ) : 30;
+		if ( ! in_array( $days, [ 7, 30, 90 ], true ) ) {
+			$days = 30;
+		}
+		$r = $this->get_pt24_report_data( $days );
+		if ( ! $r['table_exists'] ) {
+			return;
+		}
+		$this->render_pt24_chart_styles();
+		$conversion = $r['total'] > 0 ? round( $r['won'] / $r['total'] * 100, 1 ) : 0.0;
+		$avg        = $days > 0 ? round( $r['total'] / $days, 1 ) : 0.0;
+		$base       = admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=reporting' );
+		?>
+		<div class="pb-v8-card" style="margin-bottom: var(--pb-v8-space-lg);">
+			<div class="pb-v8-card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+				<h3 class="pb-v8-card-title"><?php esc_html_e( 'PT24 Leads Report', 'pearblog-engine' ); ?></h3>
+				<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+					<?php foreach ( [ 7, 30, 90 ] as $option_days ) : ?>
+						<a class="button <?php echo $days === $option_days ? 'button-primary' : ''; ?>" href="<?php echo esc_url( $base . '&report_days=' . $option_days ); ?>">
+							<?php /* translators: %d: number of days */ printf( esc_html__( '%d days', 'pearblog-engine' ), $option_days ); ?>
+						</a>
+					<?php endforeach; ?>
+					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0;">
+						<input type="hidden" name="action" value="pt24_export_leads">
+						<?php wp_nonce_field( 'pt24_export_leads' ); ?>
+						<button type="submit" class="button">⬇ <?php esc_html_e( 'Export CSV', 'pearblog-engine' ); ?></button>
+					</form>
+				</div>
+			</div>
+			<div class="pb-v8-card-body">
+				<div class="pb-v8-metrics-grid">
+					<?php
+					/* translators: %d: number of days */
+					$this->render_metric_card( [ 'label' => sprintf( __( 'Leads (%d days)', 'pearblog-engine' ), $days ), 'value' => number_format_i18n( $r['total'] ), 'icon' => '👥' ] );
+					$this->render_metric_card( [ 'label' => __( 'Won', 'pearblog-engine' ), 'value' => number_format_i18n( $r['won'] ), 'icon' => '✅' ] );
+					$this->render_metric_card( [ 'label' => __( 'Conversion', 'pearblog-engine' ), 'value' => $conversion . '%', 'icon' => '🎯' ] );
+					$this->render_metric_card( [ 'label' => __( 'Avg / day', 'pearblog-engine' ), 'value' => number_format_i18n( $avg, 1 ), 'icon' => '📊' ] );
+					?>
+				</div>
+				<div class="pt24-analytics-grid" style="margin-top:20px;">
+					<div class="pt24-card">
+						<h3><?php esc_html_e( 'Top services', 'pearblog-engine' ); ?></h3>
+						<?php $this->render_bar_list( $r['by_service'] ); ?>
+					</div>
+					<div class="pt24-card">
+						<h3><?php esc_html_e( 'Top cities', 'pearblog-engine' ); ?></h3>
+						<?php $this->render_bar_list( $r['by_city'] ); ?>
+					</div>
+				</div>
+			</div>
+		</div>
+		<?php
 	}
 
 	/**
