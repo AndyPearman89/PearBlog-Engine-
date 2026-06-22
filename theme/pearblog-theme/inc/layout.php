@@ -57,7 +57,13 @@ function pearblog_render_header() {
                     </a>
                 </div>
 
-                <?php pearblog_render_nav_menu('primary'); ?>
+                <?php
+                if ( has_nav_menu( 'primary' ) ) {
+                    pearblog_render_nav_menu( 'primary' );
+                } else {
+                    pp_render_primary_nav_fallback();
+                }
+                ?>
 
                 <div class="pb-nav-actions">
                     <!-- Search toggle -->
@@ -87,6 +93,15 @@ function pearblog_render_header() {
  * Render footer
  */
 function pearblog_render_footer() {
+    // Use full Poradnik.PRO footer if function is available
+    if ( function_exists( 'pp_render_full_footer' ) ) {
+        pp_render_full_footer();
+        wp_footer();
+        echo '</body></html>';
+        return;
+    }
+
+    // Fallback: original minimal footer
     $site_name = get_bloginfo('name');
     $site_desc = get_bloginfo('description');
     ?>

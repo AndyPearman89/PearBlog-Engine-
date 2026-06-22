@@ -1,0 +1,289 @@
+/**
+ * Poradnik.PRO — Navigation & Footer Styles
+ *
+ * @package PearBlog
+ * @subpackage PoradnikPro
+ */
+
+/* ==========================================================================
+   Primary Navigation — Dropdown Submenu
+   ========================================================================== */
+
+.pp-main-menu {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pp-main-menu > .menu-item {
+  position: relative;
+}
+
+.pp-main-menu > .menu-item > a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: var(--pb-text, #1f2937);
+  text-decoration: none;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pp-main-menu > .menu-item > a:hover,
+.pp-main-menu > .menu-item > a:focus {
+  background: var(--pb-primary-light, #ede9fe);
+  color: var(--pb-primary, #6d28d9);
+}
+
+/* CTA button style */
+.pp-main-menu > .menu-item-cta > a {
+  background: var(--pb-primary, #6d28d9);
+  color: #fff !important;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-weight: 600;
+}
+
+.pp-main-menu > .menu-item-cta > a:hover {
+  background: var(--pb-primary-dark, #5b21b6);
+}
+
+/* Submenu */
+.pp-main-menu .sub-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  min-width: 200px;
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
+  padding: 0.5rem 0;
+  list-style: none;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(4px);
+  transition: opacity 0.2s, transform 0.2s, visibility 0.2s;
+  z-index: 100;
+}
+
+.pp-main-menu > .menu-item:hover > .sub-menu,
+.pp-main-menu > .menu-item:focus-within > .sub-menu {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.pp-main-menu .sub-menu li a {
+  display: block;
+  padding: 0.5rem 1rem;
+  font-size: 0.85rem;
+  color: #374151;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+.pp-main-menu .sub-menu li a:hover {
+  background: #f3f4f6;
+  color: var(--pb-primary, #6d28d9);
+}
+
+/* Hide nav on mobile (handled by hamburger) */
+@media (max-width: 768px) {
+  .pp-main-menu {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Footer — Full Multi-Column Layout
+   ========================================================================== */
+
+.pp-footer {
+  background: #111827;
+  color: #d1d5db;
+  padding: 3rem 0 1.5rem;
+  margin-top: 4rem;
+  font-size: 0.9rem;
+}
+
+.pp-footer a {
+  color: #e5e7eb;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.pp-footer a:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Grid: 4 columns on desktop */
+.pp-footer-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr;
+  gap: 2rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid #374151;
+}
+
+@media (max-width: 1024px) {
+  .pp-footer-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .pp-footer-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Brand column */
+.pp-footer-brand .pp-footer-logo {
+  margin-bottom: 1rem;
+}
+
+.pp-footer-brand .pp-footer-logo img,
+.pp-footer-brand .pp-footer-logo svg {
+  max-height: 32px;
+  width: auto;
+}
+
+.pp-footer-desc {
+  color: #9ca3af;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.pp-footer-social {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.pp-footer-social a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: #1f2937;
+  color: #d1d5db;
+  transition: background 0.2s, color 0.2s;
+}
+
+.pp-footer-social a:hover {
+  background: var(--pb-primary, #6d28d9);
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Footer headings */
+.pp-footer-heading {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem;
+}
+
+/* Footer link lists */
+.pp-footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pp-footer-links li {
+  margin-bottom: 0.5rem;
+}
+
+.pp-footer-links a {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.pp-footer-links a:hover {
+  color: #fff;
+}
+
+/* Cities section */
+.pp-footer-cities {
+  padding: 1.5rem 0;
+  border-bottom: 1px solid #374151;
+}
+
+.pp-footer-cities .pp-footer-heading {
+  margin-bottom: 0.75rem;
+}
+
+.pp-footer-city-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.25rem;
+}
+
+.pp-footer-city-links a {
+  color: #9ca3af;
+  font-size: 0.85rem;
+}
+
+.pp-footer-city-links a:hover {
+  color: #fff;
+}
+
+/* Footer bottom */
+.pp-footer-bottom {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  padding-top: 1.5rem;
+}
+
+.pp-footer-copyright {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.8rem;
+}
+
+.pp-footer-copyright a {
+  color: #9ca3af;
+}
+
+.pp-footer-powered {
+  margin: 0;
+  color: #6b7280;
+  font-size: 0.75rem;
+}
+
+.pp-footer-powered a {
+  color: #9ca3af;
+}
+
+/* Dark mode overrides (footer is already dark) */
+[data-theme="dark"] .pp-footer {
+  background: #0a0a0a;
+  border-top: 1px solid #1f2937;
+}
+
+[data-theme="dark"] .pp-main-menu .sub-menu {
+  background: #1f2937;
+  border-color: #374151;
+}
+
+[data-theme="dark"] .pp-main-menu .sub-menu li a {
+  color: #d1d5db;
+}
+
+[data-theme="dark"] .pp-main-menu .sub-menu li a:hover {
+  background: #374151;
+}
