@@ -361,6 +361,30 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <script type="application/ld+json"><?php echo wp_json_encode( $pt24_faq_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
             <?php endif; ?>
 
+            <?php
+            $pt24_related = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 3, 's' => $service_name, 'suppress_filters' => true ) );
+            if ( count( $pt24_related ) < 3 ) {
+                $pt24_fill    = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 3, 'post__not_in' => wp_list_pluck( $pt24_related, 'ID' ), 'suppress_filters' => true ) );
+                $pt24_related = array_merge( $pt24_related, $pt24_fill );
+            }
+            $pt24_related = array_slice( $pt24_related, 0, 3 );
+            if ( ! empty( $pt24_related ) ) : ?>
+            <section class="pt24-section pt24-fromblog">
+                <h2>Z bloga PT24</h2>
+                <div class="pt24-fromblog__grid">
+                    <?php foreach ( $pt24_related as $pt24_rp ) :
+                        $pt24_rcats = get_the_category( $pt24_rp->ID );
+                        ?>
+                        <a class="pt24-fromblog__card" href="<?php echo esc_url( get_permalink( $pt24_rp ) ); ?>">
+                            <?php if ( ! empty( $pt24_rcats ) ) : ?><span class="pt24-fromblog__cat"><?php echo esc_html( $pt24_rcats[0]->name ); ?></span><?php endif; ?>
+                            <span class="pt24-fromblog__title"><?php echo esc_html( get_the_title( $pt24_rp ) ); ?></span>
+                            <span class="pt24-fromblog__excerpt"><?php echo esc_html( wp_trim_words( wp_strip_all_tags( $pt24_rp->post_content ), 16 ) ); ?></span>
+                        </a>
+                    <?php endforeach; ?>
+                </div>
+            </section>
+            <?php endif; ?>
+
         </article>
 
         <aside class="pt24-sidebar">

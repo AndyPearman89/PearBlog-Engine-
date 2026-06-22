@@ -22,7 +22,17 @@ if ( ! defined( 'ABSPATH' ) ) {
  * @return string
  */
 function pt24_blog_template_include( $template ) {
-	if ( is_home() && ! is_front_page() ) {
+	$posts_page = (int) get_option( 'page_for_posts' );
+
+	// Only hijack the genuine posts index (/blog/) — never a singular landing/post
+	// (the landing CPT query swap can leave is_home() truthy, so match the queried
+	// object against the configured posts page explicitly).
+	if (
+		$posts_page > 0
+		&& is_home()
+		&& ! is_singular()
+		&& (int) get_queried_object_id() === $posts_page
+	) {
 		$custom = locate_template( 'pt24-blog-archive.php' );
 		if ( $custom ) {
 			return $custom;

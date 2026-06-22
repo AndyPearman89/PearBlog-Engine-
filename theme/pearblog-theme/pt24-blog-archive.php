@@ -40,6 +40,8 @@ $pt24_blog_title   = $pt24_blog_page_id ? get_the_title( $pt24_blog_page_id ) : 
 					<article <?php post_class( 'pt24-blog-card' ); ?>>
 						<?php if ( has_post_thumbnail() ) : ?>
 							<a class="pt24-blog-card__thumb" href="<?php the_permalink(); ?>"><?php the_post_thumbnail( 'medium_large' ); ?></a>
+						<?php else : ?>
+							<a class="pt24-blog-card__thumb pt24-blog-card__thumb--ph" href="<?php the_permalink(); ?>"><span><?php echo esc_html( ! empty( $pt24_cats ) ? $pt24_cats[0]->name : 'PT24' ); ?></span></a>
 						<?php endif; ?>
 						<div class="pt24-blog-card__body">
 							<?php if ( ! empty( $pt24_cats ) ) : ?>
