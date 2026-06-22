@@ -74,7 +74,6 @@ jobs:
           USER="${{ secrets.FTP_USERNAME }}"
           PASS="${{ secrets.FTP_PASSWORD }}"
           CONNECT_TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
-          NETRC_PATH="$RUNNER_TEMP/lftp-netrc"
 
           echo "Preflight connectivity check: protocol=$FTP_PROTOCOL host=$HOST port=$PORT"
 
@@ -87,21 +86,12 @@ jobs:
             exit 1
           fi
 
-          umask 077
-          trap 'rm -f "$NETRC_PATH"' EXIT
-          cat > "$NETRC_PATH" <<EOF
-          machine $HOST
-          login $USER
-          password $PASS
-          EOF
-
           LFTP_SCRIPT=$(cat <<EOF
           set cmd:fail-exit true
           set net:timeout ${CONNECT_TIMEOUT}
           set net:max-retries 1
           set net:reconnect-interval-base 5
-          set net:netrc-file "${NETRC_PATH}"
-          open -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
+          open -u "${USER}","${PASS}" -p "${PORT}" "${FTP_PROTOCOL}://${HOST}"
           ls
           bye
           EOF
