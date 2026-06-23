@@ -310,14 +310,16 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <h1 class="pt24-hero__title"><?php echo esc_html( $h1 ); ?></h1>
             <p class="pt24-hero__lead"><?php echo esc_html( $hero_text ); ?></p>
             <div class="pt24-hero__cta">
-                <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Otrzymaj bezpłatne wyceny</a>
-                <span class="pt24-hero__note">Bez zobowiązań • Odpowiedź do 24 h</span>
+                <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">🎯 Otrzymaj bezpłatne wyceny</a>
+                <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost-light">Napisz opis zlecenia</a>
             </div>
-            <ul class="pt24-trust">
-                <li>✓ Zweryfikowani fachowcy</li>
-                <li>✓ Lokalni specjaliści z <?php echo esc_html( $city_name ); ?></li>
-                <li>✓ Darmowa wycena</li>
-            </ul>
+            <div class="pt24-hero__trust">
+                <span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
+                <span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
+                <span class="pt24-hero__trust-item">⏱ Odpowiedź <strong>w 2 h</strong></span>
+                <span class="pt24-hero__trust-item">🔒 <strong>Bezpłatna</strong> wycena</span>
+                <span class="pt24-hero__trust-item">📍 Lokalni z <strong><?php echo esc_html( $city_name ); ?></strong></span>
+            </div>
         </div>
     </section>
 
@@ -380,22 +382,31 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <section class="pt24-section">
                 <h2>Polecani fachowcy w <?php echo esc_html( $city_name ); ?></h2>
                 <div class="pt24-firms">
-                    <?php foreach ( $firms as $firm ) : ?>
+                    <?php foreach ( $firms as $firm ) :
+                        $stars_full = min( 5, (int) round( (float) $firm['rating'] ) );
+                        $stars_str  = str_repeat( '★', $stars_full ) . str_repeat( '☆', max( 0, 5 - $stars_full ) );
+                    ?>
                         <div class="pt24-firm">
                             <div class="pt24-firm__head">
                                 <span class="pt24-firm__ico"><span class="pt24-ico pt24-ico--<?php echo esc_attr( $pt24_service_icon ); ?>" aria-hidden="true"></span></span>
-                                <h3 class="pt24-firm__name"><?php if ( ! empty( $firm['url'] ) ) : ?><a href="<?php echo esc_url( $firm['url'] ); ?>"><?php echo esc_html( $firm['name'] ); ?></a><?php else : ?><?php echo esc_html( $firm['name'] ); ?><?php endif; ?></h3>
+                                <div>
+                                    <h3 class="pt24-firm__name"><?php if ( ! empty( $firm['url'] ) ) : ?><a href="<?php echo esc_url( $firm['url'] ); ?>"><?php echo esc_html( $firm['name'] ); ?></a><?php else : ?><?php echo esc_html( $firm['name'] ); ?><?php endif; ?></h3>
+                                    <span class="pt24-firm__verified">✓ Zweryfikowany</span>
+                                </div>
                             </div>
-                            <p class="pt24-firm__meta">★ <?php echo esc_html( $firm['rating'] ); ?> · <?php echo (int) $firm['jobs']; ?> zrealizowanych zleceń</p>
+                            <p>
+                                <span class="pt24-firm__stars" aria-label="Ocena <?php echo esc_attr( $firm['rating'] ); ?> na 5"><?php echo esc_html( $stars_str ); ?></span>
+                                <span class="pt24-firm__rating-text"><?php echo esc_html( $firm['rating'] ); ?> · <?php echo (int) $firm['jobs']; ?> zleceń</span>
+                            </p>
                             <?php if ( ! empty( $firm['url'] ) ) : ?>
-                                <a href="<?php echo esc_url( $firm['url'] ); ?>" class="pt24-btn pt24-btn--ghost">Zobacz profil</a>
+                                <a href="<?php echo esc_url( $firm['url'] ); ?>" class="pt24-btn pt24-btn--ghost">Zobacz profil →</a>
                             <?php else : ?>
-                                <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost">Zapytaj o wycenę</a>
+                                <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost">Zamów wycenę →</a>
                             <?php endif; ?>
                         </div>
                     <?php endforeach; ?>
                 </div>
-                <p class="pt24-ranking-link"><a href="<?php echo esc_url( home_url( '/ranking/' . $city_slug . '/' . $service_slug . '/' ) ); ?>">Zobacz pełny ranking: <?php echo esc_html( $service_name . ' ' . $city_name ); ?> →</a></p>
+                <p class="pt24-ranking-link"><a href="<?php echo esc_url( home_url( '/ranking/' . $city_slug . '/' . $service_slug . '/' ) ); ?>">🏆 Pełny ranking: <?php echo esc_html( $service_name . ' ' . $city_name ); ?> →</a></p>
             </section>
 
             <section class="pt24-section">

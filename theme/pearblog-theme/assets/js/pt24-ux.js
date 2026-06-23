@@ -28,6 +28,9 @@
 		initSmoothScroll();
 		initScrollReveal();
 		initStickyCta();
+		initStickyNav();
+		initHamburger();
+		initScrollProgress();
 	});
 
 	/* 1. Smooth scroll for in-page anchors. */
@@ -127,4 +130,52 @@
 		window.addEventListener('resize', update, { passive: true });
 		update();
 	}
+
+	/* 4. Sticky nav — adds .is-scrolled class for backdrop-blur & shadow. */
+	function initStickyNav() {
+		var header = document.getElementById('pb-header');
+		if (!header) return;
+		var update = function () {
+			header.classList.toggle('is-scrolled', window.pageYOffset > 50);
+		};
+		window.addEventListener('scroll', update, { passive: true });
+		update();
+	}
+
+	/* 5. Mobile hamburger toggle. */
+	function initHamburger() {
+		var btn = document.querySelector('.pb-menu-toggle');
+		var menu = document.getElementById('primary-menu');
+		if (!btn || !menu) return;
+		btn.addEventListener('click', function () {
+			var expanded = btn.getAttribute('aria-expanded') === 'true';
+			btn.setAttribute('aria-expanded', !expanded);
+			menu.classList.toggle('is-open', !expanded);
+		});
+		// Close on outside click
+		document.addEventListener('click', function (e) {
+			if (!btn.contains(e.target) && !menu.contains(e.target)) {
+				btn.setAttribute('aria-expanded', 'false');
+				menu.classList.remove('is-open');
+			}
+		});
+	}
+
+	/* 6. Scroll progress bar. */
+	function initScrollProgress() {
+		var bar = document.createElement('div');
+		bar.className = 'pt24-scroll-progress';
+		bar.style.width = '0%';
+		document.body.appendChild(bar);
+		var update = function () {
+			var doc = document.documentElement;
+			var scrollTop = window.pageYOffset || doc.scrollTop;
+			var scrollHeight = doc.scrollHeight - doc.clientHeight;
+			var pct = scrollHeight > 0 ? Math.round(scrollTop / scrollHeight * 100) : 0;
+			bar.style.width = pct + '%';
+		};
+		window.addEventListener('scroll', update, { passive: true });
+	}
+
+
 })();
