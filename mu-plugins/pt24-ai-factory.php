@@ -116,10 +116,15 @@ class PT24_AI_Factory {
 		}
 
 		// Meta
-		update_post_meta( $post_id, 'pt24_city',      $city );
-		update_post_meta( $post_id, 'pt24_service',   $service );
-		update_post_meta( $post_id, 'pt24_variant',   $variant );
-		update_post_meta( $post_id, 'pt24_factory',   '1' );
+		update_post_meta( $post_id, 'pt24_city',    $city );
+		update_post_meta( $post_id, 'pt24_service', $service );
+		update_post_meta( $post_id, 'pt24_variant', $variant );
+		update_post_meta( $post_id, 'pt24_factory', '1' );
+		// Store display names so the landing template renders correct diacritics
+		if ( class_exists( 'PT24_Scale_Data' ) ) {
+			update_post_meta( $post_id, 'pt24_city_display',    \PT24_Scale_Data::city_name( $city ) );
+			update_post_meta( $post_id, 'pt24_service_display', \PT24_Scale_Data::service_name( $service ) );
+		}
 		if ( '' !== $ai_content ) {
 			update_post_meta( $post_id, '_pt24_ai_content', '1' );
 		}

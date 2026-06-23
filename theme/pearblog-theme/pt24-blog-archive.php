@@ -18,6 +18,17 @@ pearblog_render_header();
 
 $pt24_blog_page_id = (int) get_option( 'page_for_posts' );
 $pt24_blog_title   = $pt24_blog_page_id ? get_the_title( $pt24_blog_page_id ) : __( 'Blog', 'pearblog-theme' );
+
+// Run an explicit WP_Query so the template is independent of $wp_query state
+// (needed when routed via the slug-based fallback in pt24-blog.php).
+$pt24_paged      = max( 1, (int) ( get_query_var( 'paged' ) ?: ( get_query_var( 'page' ) ?: 1 ) ) );
+$pt24_blog_query = new WP_Query( array(
+	'post_type'           => 'post',
+	'post_status'         => 'publish',
+	'posts_per_page'      => (int) get_option( 'posts_per_page', 10 ),
+	'paged'               => $pt24_paged,
+	'ignore_sticky_posts' => true,
+) );
 ?>
 <main id="main" class="pb-main pt24-landing" role="main">
 
@@ -30,11 +41,11 @@ $pt24_blog_title   = $pt24_blog_page_id ? get_the_title( $pt24_blog_page_id ) : 
 	</section>
 
 	<div class="pb-container pt24-blog">
-		<?php if ( have_posts() ) : ?>
+		<?php if ( $pt24_blog_query->have_posts() ) : ?>
 			<div class="pt24-blog-grid">
 				<?php
-				while ( have_posts() ) :
-					the_post();
+				while ( $pt24_blog_query->have_posts() ) :
+					$pt24_blog_query->the_post();
 					$pt24_cats = get_the_category();
 					?>
 					<article <?php post_class( 'pt24-blog-card' ); ?>>
@@ -68,11 +79,11 @@ $pt24_blog_title   = $pt24_blog_page_id ? get_the_title( $pt24_blog_page_id ) : 
 			</div>
 
 			<div class="pt24-blog-pagination">
-				<?php the_posts_pagination( array( 'mid_size' => 1, 'prev_text' => '←', 'next_text' => '→' ) ); ?>
+				<?php the_posts_pagination( array( 'mid_size' => 1, 'prev_text' => '←', 'next_text' => '→', 'screen_reader_text' => '' ) ); ?>
 			</div>
 		<?php else : ?>
 			<p><?php esc_html_e( 'Brak wpisów.', 'pearblog-theme' ); ?></p>
-		<?php endif; ?>
+		<?php endif; wp_reset_postdata(); ?>
 	</div>
 
 </main>

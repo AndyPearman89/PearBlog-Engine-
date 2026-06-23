@@ -16,17 +16,26 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 /**
+ * Self-heal: ensure page_for_posts points to the /blog/ page if it's missing.
+ * Runs at init priority 1 so WP can detect is_home() correctly.
+ */
+add_action( 'init', static function() {
+	$posts_page = (int) get_option( 'page_for_posts', 0 );
+	if ( $posts_page <= 0 ) {
+		$blog = get_page_by_path( 'blog' );
+		if ( $blog instanceof WP_Post ) {
+			update_option( 'page_for_posts', $blog->ID );
+			update_option( 'show_on_front', 'page' );
+		}
+	}
+}, 1 );
+
+/**
  * Use the PT24 blog archive template for the posts index (/blog/).
- *
- * @param string $template Resolved template path.
- * @return string
  */
 function pt24_blog_template_include( $template ) {
+	// Primary check: queried object matches page_for_posts option
 	$posts_page = (int) get_option( 'page_for_posts' );
-
-	// Only hijack the genuine posts index (/blog/) — never a singular landing/post
-	// (the landing CPT query swap can leave is_home() truthy, so match the queried
-	// object against the configured posts page explicitly).
 	if (
 		$posts_page > 0
 		&& is_home()
@@ -38,6 +47,44 @@ function pt24_blog_template_include( $template ) {
 			return $custom;
 		}
 	}
+
+	// Fallback: match /blog/ path directly in case page_for_posts is stale
+	$uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+	$path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+	$home_path = untrailingslashit( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ) );
+	if ( '' !== $home_path && '/' !== $home_path && 0 === strpos( $path, $home_path ) ) {
+		$path = substr( $path, strlen( $home_path ) );
+	}
+	if ( preg_match( '#^/?blog/?$#', $path ) ) {
+		// Auto-fix page_for_posts while we're here
+		if ( 0 === $posts_page ) {
+			$blog = get_page_by_path( 'blog' );
+			if ( $blog instanceof WP_Post ) {
+				update_option( 'page_for_posts', $blog->ID );
+				update_option( 'show_on_front', 'page' );
+			}
+		}
+		$custom = locate_template( 'pt24-blog-archive.php' );
+		if ( $custom ) {
+			// Force WP into blog-index mode for correct have_posts() etc.
+			global $wp_query;
+			$wp_query->is_home = true;
+			$wp_query->is_page = false;
+			if ( 0 === $wp_query->posts_per_page || $wp_query->found_posts === 0 ) {
+				$blog_q = new WP_Query( [
+					'post_type'           => 'post',
+					'post_status'         => 'publish',
+					'posts_per_page'      => (int) get_option( 'posts_per_page', 10 ),
+					'paged'               => max( 1, (int) get_query_var( 'paged' ) ),
+					'ignore_sticky_posts' => true,
+				] );
+				$wp_query = $blog_q;
+				rewind_posts();
+			}
+			return $custom;
+		}
+	}
+
 	return $template;
 }
 add_filter( 'template_include', 'pt24_blog_template_include', 99 );

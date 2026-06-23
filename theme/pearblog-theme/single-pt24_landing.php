@@ -30,10 +30,14 @@ $meta_title     = (string) get_post_meta( $post_id, 'pt24_meta_title', true );
 $meta_desc      = (string) get_post_meta( $post_id, 'pt24_meta_description', true );
 
 if ( '' === $service_name ) {
-    $service_name = ucfirst( str_replace( '-', ' ', $service_slug ) );
+	$service_name = class_exists( 'PT24_Scale_Data' )
+		? \PT24_Scale_Data::service_name( $service_slug )
+		: ucfirst( str_replace( '-', ' ', $service_slug ) );
 }
 if ( '' === $city_name ) {
-    $city_name = ucfirst( $city_slug );
+	$city_name = class_exists( 'PT24_Scale_Data' )
+		? \PT24_Scale_Data::city_name( $city_slug )
+		: ucfirst( str_replace( '-', ' ', $city_slug ) );
 }
 if ( '' === $h1 ) {
     $h1 = sprintf( '%s %s — sprawdź ceny i zamów wycenę', $service_name, $city_name );
@@ -190,15 +194,87 @@ $pt24_service_icons = array(
 );
 $pt24_service_icon = $pt24_service_icons[ $service_slug ] ?? 'wrench';
 
-// Districts per supported city — used for the local coverage section (plain text
-// for SEO; no district-level pages exist, so they are not links).
+// Districts per city — used for the local coverage section (plain text for SEO;
+// no district-level pages exist, so they are not links).
 $pt24_city_districts = array(
-    'warszawa' => array( 'Śródmieście', 'Mokotów', 'Wola', 'Praga-Południe', 'Ursynów', 'Bielany', 'Ochota', 'Bemowo', 'Targówek', 'Wilanów' ),
-    'krakow'   => array( 'Stare Miasto', 'Krowodrza', 'Podgórze', 'Nowa Huta', 'Bronowice', 'Dębniki', 'Prądnik Biały', 'Grzegórzki' ),
-    'wroclaw'  => array( 'Stare Miasto', 'Krzyki', 'Fabryczna', 'Psie Pole', 'Śródmieście', 'Ołbin', 'Gaj' ),
-    'poznan'   => array( 'Stare Miasto', 'Grunwald', 'Jeżyce', 'Wilda', 'Nowe Miasto', 'Łazarz' ),
-    'gdansk'   => array( 'Śródmieście', 'Wrzeszcz', 'Oliwa', 'Przymorze', 'Zaspa', 'Chełm', 'Brzeźno' ),
-    'katowice' => array( 'Śródmieście', 'Ligota', 'Brynów', 'Zawodzie', 'Koszutka', 'Bogucice', 'Załęże', 'Piotrowice' ),
+	'warszawa'          => array( 'Śródmieście', 'Mokotów', 'Wola', 'Praga-Południe', 'Ursynów', 'Bielany', 'Ochota', 'Bemowo', 'Targówek', 'Wilanów' ),
+	'krakow'            => array( 'Stare Miasto', 'Krowodrza', 'Podgórze', 'Nowa Huta', 'Bronowice', 'Dębniki', 'Prądnik Biały', 'Grzegórzki' ),
+	'wroclaw'           => array( 'Stare Miasto', 'Krzyki', 'Fabryczna', 'Psie Pole', 'Śródmieście', 'Ołbin', 'Gaj', 'Grabiszyn' ),
+	'poznan'            => array( 'Stare Miasto', 'Grunwald', 'Jeżyce', 'Wilda', 'Nowe Miasto', 'Łazarz', 'Winogrady', 'Rataje' ),
+	'gdansk'            => array( 'Śródmieście', 'Wrzeszcz', 'Oliwa', 'Przymorze', 'Zaspa', 'Chełm', 'Brzeźno', 'Jasień' ),
+	'katowice'          => array( 'Śródmieście', 'Ligota', 'Brynów', 'Zawodzie', 'Koszutka', 'Bogucice', 'Załęże', 'Piotrowice' ),
+	// === Mazowieckie ===
+	'radom'             => array( 'Śródmieście', 'Gołębiów', 'Ustronie', 'Idalin', 'Obozisko', 'Młodzianów' ),
+	'plock'             => array( 'Stare Miasto', 'Podolszyce', 'Łukasiewicza', 'Wyszogrodzka', 'Ciechomice' ),
+	// === Śląskie ===
+	'sosnowiec'         => array( 'Śródmieście', 'Dańdówka', 'Maczki', 'Pogoń', 'Klimontów', 'Milowice' ),
+	'gliwice'           => array( 'Śródmieście', 'Łabędy', 'Trynek', 'Brzezinka', 'Sikornik', 'Ostropa', 'Ligota' ),
+	'zabrze'            => array( 'Śródmieście', 'Rokitnica', 'Mikulczyce', 'Pawłów', 'Helenka', 'Maciejów' ),
+	'bielsko-biala'     => array( 'Śródmieście', 'Lipnik', 'Wapienica', 'Stare Bielsko', 'Kamienica', 'Aleksandrowice' ),
+	'bytom'             => array( 'Śródmieście', 'Bobrek', 'Miechowice', 'Szombierki', 'Rozbark', 'Łagiewniki' ),
+	'rybnik'            => array( 'Śródmieście', 'Chwałowice', 'Niedobczyce', 'Boguszowice', 'Wielopole', 'Zamysłów' ),
+	'ruda-slaska'       => array( 'Nowy Bytom', 'Wirek', 'Halemba', 'Kochłowice', 'Orzegów', 'Czarny Las' ),
+	'tychy'             => array( 'Śródmieście', 'Wartogłowiec', 'Wilkowyje', 'Urbanowice', 'Glinka', 'Mąkołowiec' ),
+	'dabrowa-gornicza'  => array( 'Śródmieście', 'Strzemieszyce', 'Ząbkowice', 'Łosień', 'Łęknice', 'Mydlice' ),
+	'chorzow'           => array( 'Śródmieście', 'Centrum', 'Klimzowiec', 'Batory', 'Maciejkowice' ),
+	'jaworzno'          => array( 'Śródmieście', 'Szczakowa', 'Byczyna', 'Dąbrowa Narodowa', 'Jeleń' ),
+	'jastrzebie-zdroj'  => array( 'Śródmieście', 'Bzie', 'Moszczenica', 'Szeroka', 'Ruptawa' ),
+	'siemianowice'      => array( 'Centrum', 'Bytków', 'Przełajka', 'Michałkowice' ),
+	'myslowice'         => array( 'Śródmieście', 'Bończyk', 'Wesoła', 'Kosztowy', 'Brzęczkowice' ),
+	'zory'              => array( 'Śródmieście', 'Baranowice', 'Rój', 'Pawłowice', 'Folwarki' ),
+	// === Dolnośląskie ===
+	'walbrzych'         => array( 'Śródmieście', 'Piaskowa Góra', 'Nowe Miasto', 'Stary Zdrój', 'Biały Kamień' ),
+	'legnica'           => array( 'Śródmieście', 'Piekary', 'Tarninów', 'Miedziane', 'Łubin' ),
+	'lubin'             => array( 'Śródmieście', 'Stare Miasto', 'Ustronie', 'Przylesie' ),
+	'jelenia-gora'      => array( 'Śródmieście', 'Cieplice', 'Zabobrze', 'Sobieszów', 'Maciejowa' ),
+	// === Wielkopolskie ===
+	'kalisz'            => array( 'Śródmieście', 'Tyniec', 'Rajsków', 'Zagorzynek', 'Stobno' ),
+	'konin'             => array( 'Śródmieście', 'Gosławice', 'Chorzeń', 'Laskówiec' ),
+	'leszno'            => array( 'Śródmieście', 'Gronowo', 'Zaborowo', 'Święciechowa' ),
+	'gniezno'           => array( 'Śródmieście', 'Dalki', 'Skiereszewo', 'Żolichowo' ),
+	// === Pomorskie ===
+	'gdynia'            => array( 'Śródmieście', 'Redłowo', 'Witomino', 'Chwarzno', 'Leszczynki', 'Wzgórze Świętego Maksymiliana' ),
+	'slupsk'            => array( 'Śródmieście', 'Piastów', 'Nadrzecze', 'Zatorze' ),
+	'sopot'             => array( 'Dolny Sopot', 'Górny Sopot', 'Kamienny Potok' ),
+	// === Zachodniopomorskie ===
+	'szczecin'          => array( 'Śródmieście', 'Niebuszewo', 'Pogodno', 'Żelechowa', 'Bukowe', 'Prawobrzeże' ),
+	'koszalin'          => array( 'Śródmieście', 'Rokosowo', 'Jamno', 'Raduszka' ),
+	'stargard'          => array( 'Śródmieście', 'Stare Miasto', 'Pyrzyce', 'Lipnik' ),
+	// === Łódzkie ===
+	'lodz'              => array( 'Śródmieście', 'Bałuty', 'Polesie', 'Widzew', 'Górna', 'Ruda' ),
+	'piotrkow-tryb'     => array( 'Śródmieście', 'Bugaj', 'Południe', 'Śródka' ),
+	'zgierz'            => array( 'Centrum', 'Dąbrówka', 'Ciosny', 'Karszew' ),
+	// === Kujawsko-Pomorskie ===
+	'bydgoszcz'         => array( 'Śródmieście', 'Fordon', 'Szwederowo', 'Wilczak', 'Wzgórze Wolności', 'Bartodzieje' ),
+	'torun'             => array( 'Stare Miasto', 'Nowe Miasto', 'Jakubskie Przedmieście', 'Rubinkowo', 'Na Skarpie' ),
+	'wloclawek'         => array( 'Śródmieście', 'Zawiśle', 'Michelin', 'Szpetal' ),
+	'grudziadz'         => array( 'Śródmieście', 'Rządz', 'Mniszek', 'Tarpno' ),
+	// === Lubelskie ===
+	'lublin'            => array( 'Śródmieście', 'Czuby', 'Wieniawa', 'Bronowice', 'Kalinowszczyzna', 'Sławin' ),
+	'zamosc'            => array( 'Stare Miasto', 'Nowe Miasto', 'Osiedle Powiatowe', 'Infułacka' ),
+	'chelm'             => array( 'Śródmieście', 'Dyrekcja', 'Klimusin', 'Śródka' ),
+	// === Podkarpackie ===
+	'rzeszow'           => array( 'Śródmieście', 'Przybyszówka', 'Słocina', 'Baranówka', 'Budziwój' ),
+	'przemysl'          => array( 'Śródmieście', 'Zasanie', 'Lipowica', 'Winna Góra' ),
+	'stalowa-wola'      => array( 'Centrum', 'Piaski', 'Metalowców', 'Fabryczna' ),
+	// === Podlaskie ===
+	'bialystok'         => array( 'Śródmieście', 'Antoniuk', 'Nowe Miasto', 'Bojary', 'Sienkiewicza', 'Wygoda' ),
+	'suwalki'           => array( 'Śródmieście', 'Centrum', 'Os. Hańcza', 'Szwajcaria' ),
+	'lomza'             => array( 'Śródmieście', 'Stare Miasto', 'Podmiejska', 'Łomżyca' ),
+	// === Świętokrzyskie ===
+	'kielce'            => array( 'Śródmieście', 'Czarnów', 'KSM', 'Herby', 'Barwinek', 'Dąbrowa' ),
+	'ostrowiec-sw'      => array( 'Śródmieście', 'Ćmielów', 'Denków', 'Gutwin' ),
+	// === Warmińsko-Mazurskie ===
+	'olsztyn'           => array( 'Śródmieście', 'Zatorze', 'Jarocka', 'Dajtki', 'Redykajny', 'Gutkowo' ),
+	'elblag'            => array( 'Śródmieście', 'Zawada', 'Zatorze', 'Bażantarnia' ),
+	// === Opolskie ===
+	'opole'             => array( 'Śródmieście', 'Nowa Wieś Królewska', 'Półwieś', 'Metalchem', 'Winów' ),
+	// === Lubuskie ===
+	'zielona-gora'      => array( 'Śródmieście', 'Łężyca', 'Zaborek', 'Zacisze', 'Ochla' ),
+	'gorzow-wlkp'       => array( 'Śródmieście', 'Zawarcie', 'Stilon', 'Górczyn', 'Staszica' ),
+	// === Małopolskie ===
+	'tarnow'            => array( 'Śródmieście', 'Grabówka', 'Mościce', 'Rzędzin', 'Piaskówka' ),
+	'nowy-sacz'         => array( 'Śródmieście', 'Gołąbkowice', 'Kaduk', 'Falkowa' ),
 );
 $pt24_districts = $pt24_city_districts[ $city_slug ] ?? array();
 
