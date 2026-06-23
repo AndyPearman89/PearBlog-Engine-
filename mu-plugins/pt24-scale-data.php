@@ -610,3 +610,4 @@ class PT24_Scale_Data {
 		return count( self::cities() ) * count( self::services() );
 	}
 }
+
