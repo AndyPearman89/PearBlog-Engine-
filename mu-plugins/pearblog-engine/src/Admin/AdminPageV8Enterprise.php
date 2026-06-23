@@ -214,7 +214,7 @@ class AdminPageV8Enterprise {
 
 		// Localize script
 		wp_localize_script( 'pearblog-admin-v8-js', 'pbV8Data', [
-			'ajaxUrl'           => admin_url( 'admin-ajax.php' ),
+			'ajaxUrl'           => $this->get_admin_ajax_url(),
 			'nonce'             => wp_create_nonce( 'pb_v8_nonce' ),
 			'currentTab'        => isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'dashboard',
 			'theme'             => get_option( 'pearblog_v8_theme', 'light' ),
@@ -223,6 +223,44 @@ class AdminPageV8Enterprise {
 			'version'           => self::VERSION,
 			'translations'      => $this->get_translations(),
 		] );
+	}
+
+	/**
+	 * Returns the admin-ajax.php URL using the ACTUAL request host (handles Cloudflare proxy).
+	 *
+	 * WordPress stores site_url = https://wordpress2614653.home.pl/pt24, but the user
+	 * accesses the admin via https://pt24.pro (Cloudflare).  Cookies are set for pt24.pro,
+	 * so AJAX calls must go to pt24.pro — otherwise the browser sends no auth cookies and
+	 * every wp_verify_nonce() call fails (user_id mismatch → returns -1).
+	 */
+	private function get_admin_ajax_url(): string {
+		$ajax_url = admin_url( 'admin-ajax.php' );
+
+		$http_host = isset( $_SERVER['HTTP_HOST'] )
+			? sanitize_text_field( wp_unslash( $_SERVER['HTTP_HOST'] ) )
+			: '';
+
+		if ( '' === $http_host ) {
+			return $ajax_url;
+		}
+
+		$origin_host = (string) wp_parse_url( $ajax_url, PHP_URL_HOST );
+		if ( $origin_host === $http_host ) {
+			return $ajax_url; // same host, no rewrite needed
+		}
+
+		// Strip the WP subdirectory prefix (e.g. /pt24/) that Cloudflare removes.
+		$ajax_path  = (string) wp_parse_url( $ajax_url, PHP_URL_PATH );
+		$home_path  = untrailingslashit( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ) );
+		if ( '' !== $home_path && '/' !== $home_path && 0 === strpos( $ajax_path, $home_path ) ) {
+			$ajax_path = '/' . ltrim( substr( $ajax_path, strlen( $home_path ) ), '/' );
+		}
+
+		$scheme = ( isset( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) && 'https' === sanitize_key( wp_unslash( $_SERVER['HTTP_X_FORWARDED_PROTO'] ) ) )
+			? 'https'
+			: ( ( isset( $_SERVER['HTTPS'] ) && 'off' !== $_SERVER['HTTPS'] ) ? 'https' : 'http' );
+
+		return $scheme . '://' . $http_host . $ajax_path;
 	}
 
 	/**
@@ -2043,7 +2081,7 @@ class AdminPageV8Enterprise {
 
 			<script>
 			var ptFactory = {
-				ajaxUrl: <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
+				ajaxUrl: <?php echo wp_json_encode( $this->get_admin_ajax_url() ); ?>,
 
 				generateSingle: function(nonce) {
 					var btn = document.getElementById('ptfGenerateBtn');
@@ -2208,7 +2246,7 @@ class AdminPageV8Enterprise {
 		</div>
 		<script>
 		var ptFactoryContent = {
-			ajaxUrl: <?php echo wp_json_encode( admin_url( 'admin-ajax.php' ) ); ?>,
+			ajaxUrl: <?php echo wp_json_encode( $this->get_admin_ajax_url() ); ?>,
 			runQueue: function(nonce) {
 				var msg = document.getElementById('ptfContentMsg');
 				if(msg) { msg.textContent = '⏳ Generuję…'; }
