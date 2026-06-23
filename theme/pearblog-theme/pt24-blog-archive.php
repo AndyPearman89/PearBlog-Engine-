@@ -34,13 +34,57 @@ $pt24_blog_query = new WP_Query( array(
 
 	<section class="pt24-hero">
 		<div class="pb-container">
-			<span class="pt24-hero__badge">Blog PT24</span>
+			<span class="pt24-hero__badge">Poradnik PT24</span>
 			<h1 class="pt24-hero__title"><?php echo esc_html( $pt24_blog_title ); ?></h1>
-			<p class="pt24-hero__lead">Porady, koszty i poradniki — jak wybrać sprawdzonego fachowca i ile zapłacić za usługi.</p>
+			<p class="pt24-hero__lead">Porady, koszty i poradniki — jak wybrać sprawdzonego fachowca i ile zapłacić za usługi w Twoim mieście.</p>
+			<div class="pt24-hero__cta">
+				<a href="<?php echo esc_url( home_url( '/szukaj/' ) ); ?>" class="pt24-btn pt24-btn--primary">Zamów bezpłatną wycenę</a>
+				<a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>" class="pt24-btn pt24-btn--ghost-light">Wszystkie poradniki</a>
+			</div>
+			<div class="pt24-hero__trust">
+				<span class="pt24-hero__trust-item">✅ <strong>Rzetelne</strong> porady eksperckie</span>
+				<span class="pt24-hero__trust-item">💰 <strong>Orientacyjne</strong> ceny usług</span>
+				<span class="pt24-hero__trust-item">📍 Lokalni <strong>sprawdzeni</strong> fachowcy</span>
+				<span class="pt24-hero__trust-item">🔒 <strong>Bezpłatna</strong> wycena</span>
+			</div>
 		</div>
 	</section>
 
 	<div class="pb-container pt24-blog">
+
+		<!-- Category filter bar -->
+		<?php
+		$pt24_blog_cats = [
+			'poradniki'      => 'Poradniki',
+			'awarie'         => 'Awarie',
+			'koszty'         => 'Koszty',
+			'jak-zrobic'     => 'Jak zrobić',
+			'rankingi'       => 'Rankingi',
+			'pt24-24h'       => '24h',
+			'bezpieczenstwo' => 'Bezpieczeństwo',
+			'sezonowe'       => 'Sezonowe',
+			'problemy'       => 'Problemy',
+			'lokalne'        => 'Lokalne',
+		];
+		$pt24_active_cat = isset( $_GET['cat'] ) ? sanitize_key( wp_unslash( $_GET['cat'] ) ) : '';
+		?>
+		<div class="pt24-blog-cats" style="display:flex;flex-wrap:wrap;gap:.45rem;margin-bottom:1.8rem;">
+			<a href="<?php echo esc_url( home_url( '/blog/' ) ); ?>"
+			   class="pt24-blog-cat-btn<?php echo '' === $pt24_active_cat ? ' is-active' : ''; ?>">
+				Wszystkie
+			</a>
+			<?php foreach ( $pt24_blog_cats as $slug => $label ) :
+				$term = get_term_by( 'slug', $slug, 'category' );
+				if ( ! $term ) continue;
+			?>
+			<a href="<?php echo esc_url( get_term_link( $term ) ); ?>"
+			   class="pt24-blog-cat-btn">
+				<?php echo esc_html( $label ); ?>
+				<span class="pt24-blog-cat-count"><?php echo (int) $term->count; ?></span>
+			</a>
+			<?php endforeach; ?>
+		</div>
+
 		<?php if ( $pt24_blog_query->have_posts() ) : ?>
 			<div class="pt24-blog-grid">
 				<?php

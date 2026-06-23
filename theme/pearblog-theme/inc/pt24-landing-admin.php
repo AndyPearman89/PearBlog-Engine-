@@ -1,237 +1,376 @@
 <?php
 /**
- * PT24 Landing Generator Admin Page
+ * PT24 Landing Generator — Admin UI
  *
- * Admin interface for bulk generation and management
+ * Submenu page under pt24_landing CPT.
+ * Integrates with PT24_AI_Factory (AI generation) and PT24_Scale_Data (full
+ * 80-city × 10-service dataset).
+ *
+ * Tabs:
+ *   Generator — quick generate / batch queue / CSV import
+ *   Statystyki — factory stats, queue status, recent pages
+ *   WP-CLI     — command reference
  *
  * @package PearBlog
- * @version 2.0.0
+ * @subpackage PT24
+ * @version 3.0.0
  */
 
-// Exit if accessed directly
-if (!defined('ABSPATH')) {
-    exit;
+if ( ! defined( 'ABSPATH' ) ) {
+	exit;
 }
 
-/**
- * PT24 Landing Admin Class
- */
 class PearBlog_PT24_Landing_Admin {
 
-    /**
-     * Initialize
-     */
-    public static function init() {
-        add_action('admin_menu', [__CLASS__, 'add_admin_page']);
-        add_action('admin_post_pt24_bulk_generate', [__CLASS__, 'handle_bulk_generate']);
-    }
+	public static function init(): void {
+		add_action( 'admin_menu', [ __CLASS__, 'add_admin_page' ] );
+	}
 
-    /**
-     * Add admin page
-     */
-    public static function add_admin_page() {
-        add_submenu_page(
-            'edit.php?post_type=pt24_landing',
-            'PT24 Generator',
-            'Generator',
-            'manage_options',
-            'pt24-generator',
-            [__CLASS__, 'render_admin_page']
-        );
-    }
+	public static function add_admin_page(): void {
+		add_submenu_page(
+			'edit.php?post_type=pt24_landing',
+			'PT24 — Generator i Statystyki',
+			'⚙ Generator',
+			'manage_options',
+			'pt24-generator',
+			[ __CLASS__, 'render_admin_page' ]
+		);
+	}
 
-    /**
-     * Render admin page
-     */
-    public static function render_admin_page() {
-        $services = PearBlog_PT24_Landing_CPT::get_services();
-        $cities = PearBlog_PT24_Landing_CPT::get_cities();
+	/* =====================================================================
+	   RENDER
+	   ===================================================================== */
 
-        // Get counts
-        $total_posts = wp_count_posts('pt24_landing');
-        $published_count = $total_posts->publish ?? 0;
+	public static function render_admin_page(): void {
+		$factory_ok = class_exists( 'PT24_AI_Factory' );
+		$scale_ok   = class_exists( 'PT24_Scale_Data' );
 
-        ?>
-        <div class="wrap">
-            <h1>PT24 Landing Page Generator</h1>
+		$services = $scale_ok
+			? array_map( fn( $d ) => $d['name'], PT24_Scale_Data::services() )
+			: ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ? PearBlog_PT24_Landing_CPT::get_services() : [] );
 
-            <?php if (isset($_GET['generated'])): ?>
-                <div class="notice notice-success is-dismissible">
-                    <p><strong>Success!</strong> Generated <?php echo intval($_GET['generated']); ?> landing pages.</p>
-                </div>
-            <?php endif; ?>
+		$cities = $scale_ok
+			? array_map( fn( $d ) => is_array( $d ) ? $d['name'] : $d, PT24_Scale_Data::cities() )
+			: ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ? PearBlog_PT24_Landing_CPT::get_cities() : [] );
 
-            <div class="card" style="max-width: 800px;">
-                <h2>Bulk Generation</h2>
-                <p>Generate landing pages for all service/city combinations automatically.</p>
+		$stats  = $factory_ok ? PT24_AI_Factory::get_stats() : [];
+		$nonce  = wp_create_nonce( 'pt24_factory_nonce' );
 
-                <form method="post" action="<?php echo admin_url('admin-post.php'); ?>">
-                    <?php wp_nonce_field('pt24_bulk_generate', 'pt24_nonce'); ?>
-                    <input type="hidden" name="action" value="pt24_bulk_generate">
+		$tab = isset( $_GET['pt24tab'] ) ? sanitize_key( $_GET['pt24tab'] ) : 'generator';
 
-                    <table class="form-table">
-                        <tr>
-                            <th scope="row">Services</th>
-                            <td>
-                                <label>
-                                    <input type="checkbox" id="select_all_services" checked>
-                                    <strong>Select All (<?php echo count($services); ?>)</strong>
-                                </label>
-                                <br><br>
-                                <?php foreach ($services as $slug => $name): ?>
-                                    <label style="display: block; margin-bottom: 5px;">
-                                        <input type="checkbox" name="services[]" value="<?php echo esc_attr($slug); ?>" class="service-checkbox" checked>
-                                        <?php echo esc_html($name); ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Cities</th>
-                            <td>
-                                <label>
-                                    <input type="checkbox" id="select_all_cities" checked>
-                                    <strong>Select All (<?php echo count($cities); ?>)</strong>
-                                </label>
-                                <br><br>
-                                <?php foreach ($cities as $slug => $name): ?>
-                                    <label style="display: block; margin-bottom: 5px;">
-                                        <input type="checkbox" name="cities[]" value="<?php echo esc_attr($slug); ?>" class="city-checkbox" checked>
-                                        <?php echo esc_html($name); ?>
-                                    </label>
-                                <?php endforeach; ?>
-                            </td>
-                        </tr>
-                        <tr>
-                            <th scope="row">Total Pages</th>
-                            <td>
-                                <p class="description">
-                                    <strong id="total_combinations"><?php echo count($services) * count($cities); ?></strong> landing pages will be generated.
-                                </p>
-                            </td>
-                        </tr>
-                    </table>
+		$tab_url = fn( $t ) => esc_url( add_query_arg( [
+			'post_type' => 'pt24_landing',
+			'page'      => 'pt24-generator',
+			'pt24tab'   => $t,
+		], admin_url( 'edit.php' ) ) );
+		?>
+		<div class="wrap">
+			<h1 style="display:flex;align-items:center;gap:10px;">
+				PT24 — Generator landing pages
+				<a href="<?php echo esc_url( add_query_arg( [ 'page' => 'pearblog-enterprise-v8', 'tab' => 'content' ], admin_url( 'admin.php' ) ) ); ?>"
+				   style="font-size:13px;font-weight:400;text-decoration:none;color:#2563eb;">
+					→ Pełny panel Enterprise V8
+				</a>
+			</h1>
 
-                    <?php submit_button('Generate Landing Pages', 'primary', 'submit', true, ['onclick' => 'return confirm("Generate landing pages for selected combinations?");']); ?>
-                </form>
-            </div>
+			<!-- Tab navigation -->
+			<nav class="nav-tab-wrapper" style="margin-bottom:20px;">
+				<a href="<?php echo $tab_url('generator'); ?>" class="nav-tab<?php echo 'generator' === $tab ? ' nav-tab-active' : ''; ?>">⚙ Generator</a>
+				<a href="<?php echo $tab_url('stats'); ?>"     class="nav-tab<?php echo 'stats'     === $tab ? ' nav-tab-active' : ''; ?>">📊 Statystyki</a>
+				<a href="<?php echo $tab_url('cli'); ?>"       class="nav-tab<?php echo 'cli'       === $tab ? ' nav-tab-active' : ''; ?>">⌨ WP-CLI</a>
+			</nav>
 
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h2>Statistics</h2>
-                <table class="widefat">
-                    <tr>
-                        <td><strong>Published Landing Pages:</strong></td>
-                        <td><?php echo $published_count; ?></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Available Services:</strong></td>
-                        <td><?php echo count($services); ?></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Available Cities:</strong></td>
-                        <td><?php echo count($cities); ?></td>
-                    </tr>
-                    <tr>
-                        <td><strong>Max Combinations:</strong></td>
-                        <td><?php echo count($services) * count($cities); ?></td>
-                    </tr>
-                </table>
-            </div>
+			<?php if ( 'generator' === $tab ) : ?>
+			<!-- ──────────────────── GENERATOR ──────────────────── -->
+			<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;max-width:1100px;">
 
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h2>WP-CLI Commands</h2>
-                <p>For bulk operations, use WP-CLI for better performance:</p>
-                <pre style="background: #f1f1f1; padding: 15px; border-radius: 4px; overflow-x: auto;">
-# Generate all landing pages
+				<!-- Quick generate -->
+				<div class="card" style="padding:20px;">
+					<h2 style="margin-top:0">🤖 Generuj jedną stronę (AI)</h2>
+					<p style="color:#666;font-size:13px;">Wybierz usługę + miasto → OpenAI generuje gotową stronę lokalną.</p>
+					<?php if ( ! $factory_ok ) : ?>
+						<div class="notice notice-warning inline" style="margin:10px 0;"><p>PT24_AI_Factory nie znaleziona.</p></div>
+					<?php else : ?>
+					<table class="form-table" style="margin:0;">
+						<tr>
+							<th style="width:100px;">Usługa</th>
+							<td>
+								<select id="pt24svc" style="min-width:200px;padding:5px;">
+									<?php foreach ( $services as $slug => $name ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>Miasto</th>
+							<td>
+								<select id="pt24city" style="min-width:200px;padding:5px;">
+									<?php foreach ( $cities as $slug => $name ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</td>
+						</tr>
+						<tr>
+							<th>Tryb</th>
+							<td>
+								<label><input type="radio" name="pt24mode" value="ai" <?php echo '' !== get_option( 'pt24_openai_api_key', '' ) ? 'checked' : ''; ?>> 🤖 AI (OpenAI)</label>
+								&nbsp;&nbsp;
+								<label><input type="radio" name="pt24mode" value="template" <?php echo '' === get_option( 'pt24_openai_api_key', '' ) ? 'checked' : ''; ?>> 📄 Szablon</label>
+							</td>
+						</tr>
+					</table>
+					<button class="button button-primary" style="margin-top:12px;" onclick="pt24gen.generateSingle('<?php echo esc_js( $nonce ); ?>')">
+						Generuj stronę
+					</button>
+					<span id="pt24GenMsg" style="margin-left:10px;font-size:13px;"></span>
+					<?php endif; ?>
+				</div>
+
+				<!-- Batch queue -->
+				<div class="card" style="padding:20px;">
+					<h2 style="margin-top:0">📦 Batch — kolejkuj masowo</h2>
+					<p style="color:#666;font-size:13px;">Dodaje kombinacje do kolejki WP-Cron (<?php echo esc_html( $factory_ok ? PT24_AI_Factory::BATCH_SIZE : 5 ); ?> stron/minutę).</p>
+					<table class="form-table" style="margin:0;">
+						<tr>
+							<th style="width:100px;">Tryb</th>
+							<td>
+								<label><input type="radio" name="pt24batchmode" value="ai" checked> 🤖 AI</label>
+								&nbsp;
+								<label><input type="radio" name="pt24batchmode" value="template"> 📄 Szablon</label>
+							</td>
+						</tr>
+					</table>
+					<div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+						<button class="button button-primary" onclick="pt24gen.queueAll('<?php echo esc_js( $nonce ); ?>')">
+							📦 Kolejkuj wszystkie (<?php echo count( $services ) * count( $cities ); ?> stron)
+						</button>
+						<button class="button" onclick="pt24gen.runQueue('<?php echo esc_js( $nonce ); ?>')">
+							▶ Uruchom kolejkę
+						</button>
+						<?php if ( ( $stats['queue_size'] ?? 0 ) > 0 ) : ?>
+						<button class="button" style="color:#b32d2e;" onclick="pt24gen.clearQueue('<?php echo esc_js( $nonce ); ?>')">
+							🗑 Wyczyść kolejkę
+						</button>
+						<?php endif; ?>
+					</div>
+					<div id="pt24BatchMsg" style="margin-top:10px;font-size:13px;"></div>
+
+					<?php if ( ( $stats['queue_size'] ?? 0 ) > 0 ) : ?>
+					<div class="notice notice-info inline" style="margin-top:12px;">
+						<p>⏳ W kolejce: <strong><?php echo number_format_i18n( $stats['queue_size'] ); ?></strong> stron — WP-Cron generuje automatycznie.</p>
+					</div>
+					<?php endif; ?>
+				</div>
+
+				<!-- CSV import -->
+				<div class="card" style="padding:20px;">
+					<h2 style="margin-top:0">📥 Import CSV</h2>
+					<p style="color:#666;font-size:13px;">Format: <code>usluga,miasto</code> (jeden wiersz = jedna strona).</p>
+					<textarea id="pt24csv" rows="6" style="width:100%;font-family:monospace;font-size:12px;padding:6px;" placeholder="hydraulik,krakow&#10;elektryk,warszawa&#10;mechanik,katowice"></textarea>
+					<div style="margin-top:8px;display:flex;gap:8px;align-items:center;">
+						<button class="button button-primary" onclick="pt24gen.importCsv('<?php echo esc_js( $nonce ); ?>')">📥 Kolejkuj z CSV</button>
+						<label><input type="checkbox" id="pt24csvAI" checked> AI</label>
+					</div>
+					<div id="pt24CsvMsg" style="margin-top:8px;font-size:13px;"></div>
+				</div>
+
+				<!-- Stats snapshot -->
+				<div class="card" style="padding:20px;">
+					<h2 style="margin-top:0">📊 Statystyki (live)</h2>
+					<table class="widefat striped" style="font-size:13px;">
+						<tr><td>Opublikowane strony</td><td><strong><?php echo number_format_i18n( $stats['published'] ?? 0 ); ?></strong></td></tr>
+						<tr><td>Wygenerowane przez AI</td><td><strong><?php echo number_format_i18n( $stats['ai_generated'] ?? 0 ); ?></strong></td></tr>
+						<tr><td>Z szablonu (factory)</td><td><strong><?php echo number_format_i18n( $stats['factory_gen'] ?? 0 ); ?></strong></td></tr>
+						<tr><td>W kolejce</td><td><strong><?php echo number_format_i18n( $stats['queue_size'] ?? 0 ); ?></strong></td></tr>
+						<tr><td>Cel (usługi × miasta)</td><td><strong><?php echo number_format_i18n( $stats['target'] ?? 0 ); ?></strong></td></tr>
+						<tr><td>Postęp</td><td><strong><?php echo number_format( $stats['progress_pct'] ?? 0, 1 ); ?>%</strong></td></tr>
+						<tr><td>Pozostało</td><td><strong><?php echo number_format_i18n( $stats['remaining'] ?? 0 ); ?></strong></td></tr>
+						<tr><td>Klucz OpenAI</td><td><?php echo ( $stats['has_api_key'] ?? false ) ? '<span style="color:green">✓ Ustawiony</span>' : '<span style="color:red">✗ Brak</span>'; ?></td></tr>
+					</table>
+					<p style="margin-top:12px;"><a href="<?php echo $tab_url('stats'); ?>" class="button">📋 Szczegółowe statystyki →</a></p>
+				</div>
+
+			</div><!-- grid -->
+
+			<?php elseif ( 'stats' === $tab ) : ?>
+			<!-- ──────────────────── STATYSTYKI ──────────────────── -->
+			<div style="max-width:1100px;">
+				<h2>Ostatnio wygenerowane strony</h2>
+				<?php
+				global $wpdb;
+				$pages = $wpdb->get_results(
+					"SELECT p.ID, p.post_title, p.post_date, p.post_name,
+					        pm.meta_value  AS service,
+					        pm2.meta_value AS city,
+					        pm3.meta_value AS ai_flag,
+					        pm4.meta_value AS variant
+					 FROM {$wpdb->posts} p
+					 LEFT JOIN {$wpdb->postmeta} pm  ON p.ID = pm.post_id  AND pm.meta_key  = 'pt24_service'
+					 LEFT JOIN {$wpdb->postmeta} pm2 ON p.ID = pm2.post_id AND pm2.meta_key = 'pt24_city'
+					 LEFT JOIN {$wpdb->postmeta} pm3 ON p.ID = pm3.post_id AND pm3.meta_key = '_pt24_ai_content'
+					 LEFT JOIN {$wpdb->postmeta} pm4 ON p.ID = pm4.post_id AND pm4.meta_key = 'pt24_variant'
+					 WHERE p.post_type = 'pt24_landing' AND p.post_status = 'publish'
+					 ORDER BY p.post_date DESC LIMIT 50"
+				);
+				?>
+				<table class="widefat striped" style="font-size:13px;">
+					<thead><tr>
+						<th>Tytuł</th><th>Usługa</th><th>Miasto</th><th>Wariant</th><th>AI</th><th>Data</th><th>URL</th>
+					</tr></thead>
+					<tbody>
+					<?php foreach ( $pages as $pg ) :
+						$url = home_url( '/' . $pg->city . '/' . $pg->service . '/' );
+					?>
+					<tr>
+						<td><?php echo esc_html( $pg->post_title ); ?></td>
+						<td><?php echo esc_html( $pg->service ?: '—' ); ?></td>
+						<td><?php echo esc_html( $pg->city ?: '—' ); ?></td>
+						<td><code>#<?php echo esc_html( $pg->variant ?? '?' ); ?></code></td>
+						<td><?php echo $pg->ai_flag ? '<span style="color:green">🤖</span>' : '📄'; ?></td>
+						<td><?php echo esc_html( mysql2date( 'd.m.Y', $pg->post_date ) ); ?></td>
+						<td><a href="<?php echo esc_url( $url ); ?>" target="_blank">↗</a></td>
+					</tr>
+					<?php endforeach; ?>
+					</tbody>
+				</table>
+			</div>
+
+			<?php elseif ( 'cli' === $tab ) : ?>
+			<!-- ──────────────────── WP-CLI ──────────────────── -->
+			<div style="max-width:800px;">
+				<h2>WP-CLI — Landing Pages</h2>
+				<pre style="background:#f1f1f1;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px;">
+# Generuj strony (szablon)
 wp pt24 generate
-
-# Generate specific combinations
 wp pt24 generate --services=hydraulik,elektryk --cities=krakow,warszawa
 
-# Import from CSV
+# Import CSV
 wp pt24 import landings.csv
 
-# List all landing pages
+# Listuj
 wp pt24 list
 
-# Delete all landing pages
+# Usuń wszystkie
 wp pt24 delete-all
 
-# Flush rewrite rules
-wp pt24 flush-rewrites
-                </pre>
-            </div>
+# Flush rewrites
+wp pt24 flush-rewrites</pre>
 
-            <div class="card" style="max-width: 800px; margin-top: 20px;">
-                <h2>CSV Import Format</h2>
-                <p>Create a CSV file with the following format:</p>
-                <pre style="background: #f1f1f1; padding: 15px; border-radius: 4px;">service,city
-hydraulik,krakow
-elektryk,warszawa
-pompa-ciepla,wroclaw</pre>
-                <p>Then import via WP-CLI: <code>wp pt24 import your-file.csv</code></p>
-            </div>
-        </div>
+				<h2 style="margin-top:20px;">WP-CLI — Blog Engine</h2>
+				<pre style="background:#f1f1f1;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px;">
+# Generuj artykuł
+wp pt24-blog generate "Pękła rura" --service=hydraulik --city=katowice
 
-        <script>
-        jQuery(document).ready(function($) {
-            function updateTotal() {
-                var serviceCount = $('.service-checkbox:checked').length;
-                var cityCount = $('.city-checkbox:checked').length;
-                $('#total_combinations').text(serviceCount * cityCount);
-            }
+# 100 tematów startowych
+wp pt24-blog queue-starters --city=katowice
 
-            $('#select_all_services').change(function() {
-                $('.service-checkbox').prop('checked', this.checked);
-                updateTotal();
-            });
+# Import CSV (temat,usluga,miasto)
+wp pt24-blog import-csv topics.csv
 
-            $('#select_all_cities').change(function() {
-                $('.city-checkbox').prop('checked', this.checked);
-                updateTotal();
-            });
+# Uruchom kolejkę (10 batchy × 5 artykułów)
+wp pt24-blog run-queue --batches=10
 
-            $('.service-checkbox, .city-checkbox').change(function() {
-                updateTotal();
-            });
-        });
-        </script>
-        <?php
-    }
+# Statystyki
+wp pt24-blog stats</pre>
 
-    /**
-     * Handle bulk generation
-     */
-    public static function handle_bulk_generate() {
-        // Verify nonce
-        if (!isset($_POST['pt24_nonce']) || !wp_verify_nonce($_POST['pt24_nonce'], 'pt24_bulk_generate')) {
-            wp_die('Security check failed');
-        }
+				<h2 style="margin-top:20px;">WP-CLI — Google Places</h2>
+				<pre style="background:#f1f1f1;padding:16px;border-radius:6px;overflow-x:auto;font-size:13px;">
+# Seed firm dla pary
+wp pt24-places seed --service=mechanik --city=katowice --ai
 
-        // Check permissions
-        if (!current_user_can('manage_options')) {
-            wp_die('Insufficient permissions');
-        }
+# Kolejkuj wszystkie kombinacje (800 par)
+wp pt24-places queue-all --ai
 
-        $services = $_POST['services'] ?? [];
-        $cities = $_POST['cities'] ?? [];
+# Uruchom kolejkę
+wp pt24-places run-queue --batches=100
 
-        if (empty($services) || empty($cities)) {
-            wp_redirect(admin_url('edit.php?post_type=pt24_landing&page=pt24-generator&error=1'));
-            exit;
-        }
+# Import CSV (places_seed)
+wp pt24-places import-csv places_seed.csv --ai
 
-        // Generate
-        $result = PearBlog_PT24_Landing_CPT::bulk_generate($services, $cities);
+# Statystyki
+wp pt24-places stats</pre>
+			</div>
 
-        // Flush rewrite rules
-        flush_rewrite_rules();
+			<?php endif; ?>
 
-        // Redirect with success message
-        wp_redirect(admin_url('edit.php?post_type=pt24_landing&page=pt24-generator&generated=' . $result['total']));
-        exit;
-    }
+		</div><!-- .wrap -->
+
+		<script>
+		var pt24gen = {
+			ajaxUrl: '<?php echo esc_js( admin_url( 'admin-ajax.php' ) ); ?>',
+			generateSingle: function(nonce) {
+				var svc  = document.getElementById('pt24svc').value;
+				var city = document.getElementById('pt24city').value;
+				var mode = document.querySelector('input[name=pt24mode]:checked')?.value || 'template';
+				var msg  = document.getElementById('pt24GenMsg');
+				msg.style.color=''; msg.textContent = '⏳ Generuję…';
+				var d = new FormData();
+				d.append('action','pt24_factory_generate'); d.append('nonce',nonce);
+				d.append('service',svc); d.append('city',city);
+				d.append('use_ai', mode === 'ai' ? '1' : '');
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color = r.success?'green':'red';
+					if(r.success){
+						msg.innerHTML='✅ '+r.data.message+' — <a href="'+r.data.url+'" target="_blank">Podgląd</a>';
+					} else {
+						msg.textContent='❌ '+(r.data?.message||'Błąd');
+					}
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			},
+			queueAll: function(nonce) {
+				var mode = document.querySelector('input[name=pt24batchmode]:checked')?.value || 'ai';
+				var msg  = document.getElementById('pt24BatchMsg');
+				msg.style.color=''; msg.textContent='⏳ Kolejkuję wszystko…';
+				var d = new FormData();
+				d.append('action','pt24_factory_batch_csv'); d.append('nonce',nonce);
+				d.append('use_ai', mode === 'ai' ? '1' : '');
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color=r.success?'green':'red';
+					msg.textContent=r.success?'✅ '+r.data.message:'❌ '+(r.data?.message||'Błąd');
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			},
+			runQueue: function(nonce) {
+				var msg = document.getElementById('pt24BatchMsg');
+				msg.style.color=''; msg.textContent='⏳ Generuję partię…';
+				var d = new FormData();
+				d.append('action','pt24_factory_run_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color=r.success?'green':'red';
+					msg.textContent=r.success?'✅ '+r.data.message:'❌ '+(r.data?.message||'Błąd');
+					if(r.success) setTimeout(()=>location.reload(),1500);
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			},
+			clearQueue: function(nonce) {
+				if(!confirm('Wyczyścić kolejkę landing pages?')) return;
+				var msg = document.getElementById('pt24BatchMsg');
+				var d = new FormData();
+				d.append('action','pt24_factory_clear_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color=r.success?'green':'red';
+					msg.textContent=r.success?'✅ '+r.data.message:'❌ '+(r.data?.message||'Błąd');
+					if(r.success) setTimeout(()=>location.reload(),1000);
+				});
+			},
+			importCsv: function(nonce) {
+				var csv  = document.getElementById('pt24csv').value.trim();
+				var ai   = document.getElementById('pt24csvAI').checked;
+				var msg  = document.getElementById('pt24CsvMsg');
+				if(!csv){ msg.textContent='⚠️ Podaj dane CSV.'; return; }
+				msg.style.color=''; msg.textContent='⏳ Przetwarzam CSV…';
+				var d = new FormData();
+				d.append('action','pt24_factory_batch_csv'); d.append('nonce',nonce);
+				d.append('csv',csv); d.append('use_ai', ai ? '1' : '');
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color=r.success?'green':'red';
+					msg.textContent=r.success?'✅ '+r.data.message:'❌ '+(r.data?.message||'Błąd');
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			}
+		};
+		</script>
+		<?php
+	}
 }
 
-// Initialize
-add_action('admin_init', ['PearBlog_PT24_Landing_Admin', 'init']);
+add_action( 'admin_menu', [ 'PearBlog_PT24_Landing_Admin', 'add_admin_page' ] );

@@ -13,7 +13,7 @@
     margin: 2rem 0;
     padding: 1.5rem;
     background: linear-gradient(135deg, #f3f4f6 0%, #e5e7eb 100%);
-    border-left: 4px solid #7c3aed;
+    border-left: 4px solid #2563eb;
     border-radius: 0.75rem;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -42,7 +42,7 @@
 .pearblog-cta-inline .cta-button {
     display: inline-block;
     padding: 0.75rem 1.5rem;
-    background: #7c3aed;
+    background: #2563eb;
     color: #ffffff;
     text-decoration: none;
     border-radius: 0.5rem;
@@ -54,7 +54,7 @@
 }
 
 .pearblog-cta-inline .cta-button:hover {
-    background: #6d28d9;
+    background: #1d4ed8;
     transform: translateX(4px);
     box-shadow: 0 4px 8px rgba(124, 58, 237, 0.3);
 }
@@ -67,7 +67,7 @@
     margin: 1.5rem 0;
     padding: 1rem;
     background: #f9fafb;
-    border: 2px solid #7c3aed;
+    border: 2px solid #2563eb;
     border-radius: 0.5rem;
     text-align: center;
     transition: all 0.3s ease;
@@ -75,7 +75,7 @@
 
 .pearblog-cta-compact:hover {
     background: #f3f4f6;
-    border-color: #6d28d9;
+    border-color: #1d4ed8;
 }
 
 .pearblog-cta-compact p {
@@ -84,19 +84,19 @@
 }
 
 .pearblog-cta-compact strong {
-    color: #7c3aed;
+    color: #2563eb;
     font-size: 1.1rem;
 }
 
 .pearblog-cta-compact a {
-    color: #7c3aed;
+    color: #2563eb;
     font-weight: 600;
     text-decoration: none;
     transition: color 0.3s ease;
 }
 
 .pearblog-cta-compact a:hover {
-    color: #6d28d9;
+    color: #1d4ed8;
     text-decoration: underline;
 }
 
@@ -109,7 +109,7 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     padding: 1rem;
     box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
     z-index: 9999;
@@ -276,7 +276,7 @@
     display: block;
     width: 100%;
     padding: 1rem;
-    background: #7c3aed;
+    background: #2563eb;
     color: #ffffff;
     text-decoration: none;
     text-align: center;
@@ -287,7 +287,7 @@
 }
 
 .pearblog-cta-exit-intent .exit-button:hover {
-    background: #6d28d9;
+    background: #1d4ed8;
 }
 
 /* ================================================== */
@@ -297,7 +297,7 @@
 .pearblog-cta-footer {
     margin: 3rem 0 2rem;
     padding: 2.5rem;
-    background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%);
+    background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
     border-radius: 1rem;
     text-align: center;
     color: #ffffff;
@@ -322,7 +322,7 @@
     display: inline-block;
     padding: 1rem 2rem;
     background: #ffffff;
-    color: #7c3aed;
+    color: #2563eb;
     text-decoration: none;
     border-radius: 0.5rem;
     font-weight: 700;
@@ -354,7 +354,7 @@
 /* ================================================== */
 
 .pearblog-pt24-link {
-    color: #7c3aed;
+    color: #2563eb;
     font-weight: 600;
     text-decoration: none;
     border-bottom: 2px solid transparent;
@@ -362,8 +362,8 @@
 }
 
 .pearblog-pt24-link:hover {
-    color: #6d28d9;
-    border-bottom-color: #6d28d9;
+    color: #1d4ed8;
+    border-bottom-color: #1d4ed8;
 }
 
 /* ================================================== */

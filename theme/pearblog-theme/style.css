@@ -23,6 +23,8 @@ Frontend Operating System (FOS) - Not just a theme.
   /* Primary Brand Colors - Override per multisite */
   --pb-primary: #2563eb;
   --pb-primary-hover: #1d4ed8;
+  --pb-primary-light: #eff6ff;
+  --pb-primary-dark: #1e40af;
   --pb-secondary: #7c3aed;
   --pb-secondary-hover: #6d28d9;
 

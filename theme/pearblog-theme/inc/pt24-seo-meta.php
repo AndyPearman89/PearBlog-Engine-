@@ -200,6 +200,53 @@ function pt24_output_seo_meta() {
         $meta['description'] = "$service_name $city_name — sprawdź ceny, opinie i dostępne firmy. Otrzymaj dopasowane oferty bez dzwonienia.";
     }
 
+    // AI Blog article — override from stored meta
+    $current_post = get_post();
+    if ( $current_post instanceof WP_Post && is_singular( 'post' ) && '1' === (string) get_post_meta( $current_post->ID, '_pt24_blog_ai', true ) ) {
+        $ai_title = (string) get_post_meta( $current_post->ID, 'pt24_meta_title', true );
+        $ai_desc  = (string) get_post_meta( $current_post->ID, 'pt24_meta_description', true );
+        if ( '' !== $ai_title ) {
+            $meta['title'] = $ai_title . ' | PT24.PRO';
+        } else {
+            $meta['title'] = get_the_title( $current_post ) . ' | PT24.PRO';
+        }
+        if ( '' !== $ai_desc ) {
+            $meta['description'] = $ai_desc;
+        }
+        $meta['og_type'] = 'article';
+        $meta['canonical'] = pt24_public_home_url( wp_make_link_relative( get_permalink( $current_post ) ) );
+    }
+
+    // Firm profile — override from stored meta
+    if ( $current_post instanceof WP_Post && 'pt24_firm' === $current_post->post_type ) {
+        $firm_title    = (string) get_post_meta( $current_post->ID, 'pt24_meta_title', true );
+        $firm_desc     = (string) get_post_meta( $current_post->ID, 'pt24_meta_description', true );
+        $firm_city     = (string) get_post_meta( $current_post->ID, 'pt24_firm_city_name', true );
+        $firm_rating   = (string) get_post_meta( $current_post->ID, 'pt24_firm_rating', true );
+        $firm_svc      = (string) get_post_meta( $current_post->ID, 'pt24_firm_services', true );
+        $firm_svc_name = class_exists( 'PT24_Scale_Data' )
+            ? PT24_Scale_Data::service_name( $firm_svc )
+            : ucfirst( str_replace( '-', ' ', $firm_svc ) );
+
+        if ( '' !== $firm_title ) {
+            $meta['title'] = $firm_title . ' | PT24.PRO';
+        } else {
+            $meta['title'] = get_the_title( $current_post )
+                . ( $firm_city ? " — {$firm_svc_name} {$firm_city}" : '' )
+                . ' | PT24.PRO';
+        }
+        if ( '' !== $firm_desc ) {
+            $meta['description'] = $firm_desc;
+        } else {
+            $meta['description'] = get_the_title( $current_post )
+                . ( $firm_city ? " świadczy usługi z zakresu {$firm_svc_name} w {$firm_city}." : '.' )
+                . ( $firm_rating ? " Ocena: {$firm_rating}/5." : '' )
+                . ' Zamów bezpłatną wycenę na PT24.PRO.';
+        }
+        $meta['og_type'] = 'business.business';
+        $meta['canonical'] = pt24_public_home_url( wp_make_link_relative( get_permalink( $current_post ) ) );
+    }
+
     // Output meta tags
     ?>
     <!-- SEO Meta Tags -->
@@ -325,9 +372,29 @@ function pt24_document_title($title) {
         return 'PT24.PRO - Znajdź sprawdzonego fachowca w swojej okolicy';
     }
 
+    $post = get_post();
+
+    // AI blog article — use stored meta title
+    if ( $post instanceof WP_Post && is_singular( 'post' ) && '1' === (string) get_post_meta( $post->ID, '_pt24_blog_ai', true ) ) {
+        $meta_title = (string) get_post_meta( $post->ID, 'pt24_meta_title', true );
+        if ( '' !== $meta_title ) {
+            return $meta_title . ' | PT24.PRO';
+        }
+        return get_the_title( $post ) . ' | PT24.PRO';
+    }
+
+    // Firm profile — use stored meta title
+    if ( $post instanceof WP_Post && 'pt24_firm' === $post->post_type ) {
+        $meta_title = (string) get_post_meta( $post->ID, 'pt24_meta_title', true );
+        if ( '' !== $meta_title ) {
+            return $meta_title . ' | PT24.PRO';
+        }
+        $city_name = (string) get_post_meta( $post->ID, 'pt24_firm_city_name', true );
+        return get_the_title( $post ) . ( $city_name ? ' — ' . $city_name : '' ) . ' | PT24.PRO';
+    }
+
     list( $service, $city ) = pt24_current_service_city();
 
-    $post = get_post();
     if ( $post instanceof WP_Post && 'pt24_landing' === $post->post_type ) {
         $meta_title = (string) get_post_meta( $post->ID, 'pt24_meta_title', true );
         if ( '' !== $meta_title ) {

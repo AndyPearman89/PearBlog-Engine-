@@ -121,6 +121,33 @@ EOF
           server-dir: /pt24/wp-content/mu-plugins/pearblog-engine/
           dangerous-clean-slate: false
 
+      - name: Deploy PT24 root mu-plugins (AI Factory, Blog Engine, Places Seeder)
+        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
+        env:
+          FTP_HOST: ${{ secrets.FTP_HOST }}
+          FTP_PORT: ${{ secrets.FTP_PORT }}
+          FTP_USER: ${{ secrets.FTP_USERNAME }}
+          FTP_PASS: ${{ secrets.FTP_PASSWORD }}
+          FTP_PROTO: ${{ steps.preflight.outputs.protocol }}
+        run: |
+          set -euo pipefail
+          REMOTE="/pt24/wp-content/mu-plugins"
+          for f in \
+            mu-plugins/pearblog-engine-loader.php \
+            mu-plugins/pt24-ai-factory.php \
+            mu-plugins/pt24-ai-factory-loader.php \
+            mu-plugins/pt24-blog-engine.php \
+            mu-plugins/pt24-blog-engine-loader.php \
+            mu-plugins/pt24-content-seed.php \
+            mu-plugins/pt24-local-services.php \
+            mu-plugins/pt24-places-loader.php \
+            mu-plugins/pt24-places-seeder.php \
+            mu-plugins/pt24-scale-data.php; do
+            echo "Uploading $f ..."
+            lftp -c "set net:timeout 30; open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'; put '$f' -o '$REMOTE/$(basename $f)'; bye"
+          done
+          echo "All root mu-plugins uploaded."
+
       - name: Deploy PT24 theme
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5

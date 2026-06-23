@@ -74,8 +74,15 @@ pearblog_render_header();
 			<h1 class="pt24-hero__title"><?php echo esc_html( $service_name . ' ' . $city_name ); ?> — ranking najlepszych firm <?php echo esc_html( $year ); ?></h1>
 			<p class="pt24-hero__lead">Porównaj najwyżej oceniane firmy: <?php echo esc_html( $service_name . ' ' . $city_name ); ?>. Zamów bezpłatną, niezobowiązującą wycenę.</p>
 			<div class="pt24-hero__cta">
-				<a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Zamów bezpłatne wyceny</a>
-				<span class="pt24-hero__note">Bez zobowiązań • Odpowiedź do 24 h</span>
+				<a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Otrzymaj bezpłatne wyceny</a>
+				<a href="#pt24-ranking" class="pt24-btn pt24-btn--ghost-light">Zobacz ranking</a>
+			</div>
+			<div class="pt24-hero__trust">
+				<span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
+				<span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
+				<span class="pt24-hero__trust-item">⏱ Odpowiedź <strong>w 2&nbsp;h</strong></span>
+				<span class="pt24-hero__trust-item">🔒 <strong>Bezpłatna</strong> wycena</span>
+				<span class="pt24-hero__trust-item">📍 Lokalni z <strong><?php echo esc_html( $city_name ); ?></strong></span>
 			</div>
 		</div>
 	</section>
@@ -85,7 +92,7 @@ pearblog_render_header();
 
 			<p class="pt24-intro">Zebraliśmy najwyżej oceniane firmy świadczące usługi (<?php echo esc_html( mb_strtolower( $service_name ) ); ?>) w mieście <?php echo esc_html( $city_name ); ?>. Ranking powstał na podstawie ocen klientów oraz liczby zrealizowanych zleceń.</p>
 
-			<section class="pt24-section">
+			<section class="pt24-section" id="pt24-ranking">
 				<h2>Ranking: <?php echo esc_html( $service_name . ' ' . $city_name ); ?></h2>
 				<?php if ( empty( $firms ) ) : ?>
 					<p>Wkrótce dodamy ranking firm w tym mieście. Zostaw zgłoszenie, a dopasujemy oferty.</p>
@@ -139,10 +146,10 @@ pearblog_render_header();
 						<input type="email" name="email" autocomplete="email">
 					</label>
 					<label>Opis zlecenia
-						<textarea name="description" rows="4" placeholder="Opisz, czego potrzebujesz…"></textarea>
+						<textarea name="description" rows="4" placeholder="Np. Wymiana baterii w łazience, potrzebuję termin do piątku…"></textarea>
 					</label>
 					<button type="submit" class="pt24-btn pt24-btn--primary pt24-btn--block">Wyślij zapytanie</button>
-					<p class="pt24-leadform__note">Wysyłając formularz akceptujesz regulamin i politykę prywatności serwisu.</p>
+					<p class="pt24-leadform__note">Wysyłając formularz akceptujesz <a href="/regulamin/">regulamin</a> i <a href="/polityka-prywatnosci/">politykę prywatności</a>.</p>
 					<p class="pt24-leadform__result" hidden></p>
 				</form>
 			</div>

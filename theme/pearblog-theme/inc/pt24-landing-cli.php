@@ -298,3 +298,377 @@ class PT24_Landing_CLI {
 }
 
 WP_CLI::add_command('pt24', 'PT24_Landing_CLI');
+
+/**
+ * WP-CLI: Blog Engine commands
+ *
+ *     wp pt24-blog generate --topic="Pękła rura" --service=hydraulik --city=katowice
+ *     wp pt24-blog queue-starters [--city=katowice]
+ *     wp pt24-blog import-csv <file.csv>
+ *     wp pt24-blog run-queue [--batches=5]
+ *     wp pt24-blog stats
+ */
+class PT24_Blog_CLI {
+
+    /**
+     * Generate a single blog article via OpenAI.
+     *
+     * ## OPTIONS
+     * <topic>
+     * : Article topic (e.g. "Pękła rura - co robić?")
+     *
+     * --service=<slug>
+     * : PT24 service slug (e.g. hydraulik)
+     *
+     * [--city=<slug>]
+     * : PT24 city slug (optional; creates generic article if omitted)
+     *
+     * [--cat=<slug>]
+     * : Category slug (auto-detected if omitted)
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-blog generate "Pękła rura - co robić?" --service=hydraulik --city=katowice
+     *
+     * @when after_wp_load
+     */
+    public function generate( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Blog_Engine' ) ) {
+            WP_CLI::error( 'PT24_Blog_Engine not found. Ensure pt24-blog-engine.php is in mu-plugins.' );
+        }
+
+        $topic   = $args[0] ?? '';
+        $service = $assoc_args['service'] ?? '';
+        $city    = $assoc_args['city']    ?? '';
+        $cat     = $assoc_args['cat']     ?? '';
+
+        if ( '' === $topic || '' === $service ) {
+            WP_CLI::error( 'Provide topic as first argument and --service=<slug>.' );
+        }
+
+        WP_CLI::log( "Generating: \"$topic\" | $service" . ( $city ? " | $city" : '' ) . ' …' );
+
+        $ai = PT24_Blog_Engine::generate_article( $topic, $service, $city );
+        if ( null === $ai ) {
+            WP_CLI::error( 'AI generation failed. Check pt24_openai_api_key option.' );
+        }
+
+        $post_id = PT24_Blog_Engine::publish_article( $ai, $cat );
+        if ( 0 === $post_id ) {
+            WP_CLI::error( 'Failed to create post.' );
+        }
+
+        WP_CLI::success( "Published: #{$post_id} — {$ai['h1']}" );
+        WP_CLI::log( 'URL: ' . get_permalink( $post_id ) );
+    }
+
+    /**
+     * Queue the 100 starter topics for batch generation.
+     *
+     * ## OPTIONS
+     *
+     * [--city=<slug>]
+     * : Apply this city to all generic starter topics.
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-blog queue-starters --city=katowice
+     *
+     * @when after_wp_load
+     */
+    public function queue_starters( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Blog_Engine' ) ) {
+            WP_CLI::error( 'PT24_Blog_Engine not found.' );
+        }
+
+        $city   = sanitize_title( $assoc_args['city'] ?? '' );
+        $queued = PT24_Blog_Engine::queue_starters( $city );
+        WP_CLI::success( "Queued $queued starter topics. Run: wp pt24-blog run-queue --batches=20" );
+    }
+
+    /**
+     * Import topics from a CSV file.
+     *
+     * ## OPTIONS
+     *
+     * <file>
+     * : Path to CSV file (format: temat,usluga,miasto[,kategoria])
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-blog import-csv topics.csv
+     *
+     * @when after_wp_load
+     */
+    public function import_csv( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Blog_Engine' ) ) {
+            WP_CLI::error( 'PT24_Blog_Engine not found.' );
+        }
+
+        $file = $args[0] ?? '';
+        if ( ! file_exists( $file ) ) {
+            WP_CLI::error( "File not found: $file" );
+        }
+
+        $csv    = file_get_contents( $file );
+        $result = PT24_Blog_Engine::queue_from_csv( $csv );
+        WP_CLI::success( "Queued: {$result['queued']}, skipped: {$result['skipped']}." );
+        if ( ! empty( $result['errors'] ) ) {
+            foreach ( $result['errors'] as $err ) {
+                WP_CLI::warning( $err );
+            }
+        }
+    }
+
+    /**
+     * Process the blog article generation queue.
+     *
+     * ## OPTIONS
+     *
+     * [--batches=<n>]
+     * : Number of batches to run (default: 1, each batch = 5 articles)
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-blog run-queue --batches=10
+     *
+     * @when after_wp_load
+     */
+    public function run_queue( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Blog_Engine' ) ) {
+            WP_CLI::error( 'PT24_Blog_Engine not found.' );
+        }
+
+        $batches = max( 1, (int) ( $assoc_args['batches'] ?? 1 ) );
+        $total   = 0;
+
+        $progress = \WP_CLI\Utils\make_progress_bar( 'Generating articles', $batches );
+        for ( $i = 0; $i < $batches; $i++ ) {
+            $done   = PT24_Blog_Engine::process_queue();
+            $total += $done;
+            $progress->tick();
+            if ( $done < PT24_Blog_Engine::BATCH_SIZE ) {
+                break; // Queue exhausted
+            }
+        }
+        $progress->finish();
+
+        WP_CLI::success( "Generated $total articles total." );
+    }
+
+    /**
+     * Show Blog Engine statistics.
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-blog stats
+     *
+     * @when after_wp_load
+     */
+    public function stats( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Blog_Engine' ) ) {
+            WP_CLI::error( 'PT24_Blog_Engine not found.' );
+        }
+
+        $s = PT24_Blog_Engine::get_stats();
+        WP_CLI::log( "Articles published : {$s['total_articles']}" );
+        WP_CLI::log( "Queue size         : {$s['queue_size']}" );
+        WP_CLI::log( "Starter topics     : {$s['starters']}" );
+        WP_CLI::log( "OpenAI key         : " . ( $s['has_openai_key'] ? 'SET' : 'MISSING' ) );
+    }
+}
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+    WP_CLI::add_command( 'pt24-blog', 'PT24_Blog_CLI' );
+}
+
+/**
+ * WP-CLI: Google Places Seeder commands
+ *
+ *     wp pt24-places seed --service=mechanik --city=katowice [--ai]
+ *     wp pt24-places queue-all [--service=mechanik] [--ai]
+ *     wp pt24-places run-queue [--batches=10]
+ *     wp pt24-places import-csv places.csv [--ai]
+ *     wp pt24-places stats
+ */
+class PT24_Places_CLI {
+
+    /**
+     * Seed firms from Google Places for a specific service+city.
+     *
+     * ## OPTIONS
+     *
+     * --service=<slug>
+     * : PT24 service slug
+     *
+     * --city=<slug>
+     * : PT24 city slug
+     *
+     * [--ai]
+     * : Generate AI-enriched profiles (requires pt24_openai_api_key)
+     *
+     * [--max=<n>]
+     * : Max firms to save (default: 5)
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-places seed --service=mechanik --city=katowice --ai
+     *
+     * @when after_wp_load
+     */
+    public function seed( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Places_Seeder' ) ) {
+            WP_CLI::error( 'PT24_Places_Seeder not found.' );
+        }
+
+        $service = sanitize_key( $assoc_args['service'] ?? '' );
+        $city    = sanitize_title( $assoc_args['city']    ?? '' );
+        $use_ai  = isset( $assoc_args['ai'] );
+        $max     = max( 1, min( 20, (int) ( $assoc_args['max'] ?? 5 ) ) );
+        $api_key = (string) get_option( PT24_Places_Seeder::OPTION_API_KEY, '' );
+
+        if ( '' === $service || '' === $city ) {
+            WP_CLI::error( 'Provide --service=<slug> and --city=<slug>.' );
+        }
+        if ( '' === $api_key ) {
+            WP_CLI::error( 'Google Places API key not set. Run: wp option set pt24_google_places_api_key YOUR_KEY' );
+        }
+
+        WP_CLI::log( "Seeding: $service / $city (max $max firms, AI=" . ( $use_ai ? 'yes' : 'no' ) . ') …' );
+        $saved = PT24_Places_Seeder::seed_service_city( $service, $city, $api_key, $use_ai, $max );
+        WP_CLI::success( "Saved $saved firms." );
+    }
+
+    /**
+     * Queue all city × service combinations for batch seeding.
+     *
+     * ## OPTIONS
+     *
+     * [--service=<slug>]
+     * : Limit to a single service (optional)
+     *
+     * [--ai]
+     * : Enable AI enrichment for queued items
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-places queue-all --ai
+     *     wp pt24-places queue-all --service=mechanik
+     *
+     * @when after_wp_load
+     */
+    public function queue_all( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Places_Seeder' ) ) {
+            WP_CLI::error( 'PT24_Places_Seeder not found.' );
+        }
+
+        $service = sanitize_key( $assoc_args['service'] ?? '' );
+        $use_ai  = isset( $assoc_args['ai'] );
+        $api_key = (string) get_option( PT24_Places_Seeder::OPTION_API_KEY, '' );
+
+        if ( '' === $api_key ) {
+            WP_CLI::error( 'Google Places API key not set.' );
+        }
+
+        $service_filter = $service ? [ $service ] : [];
+        $queued = PT24_Places_Seeder::queue_all( $api_key, $service_filter, [], $use_ai );
+        WP_CLI::success( "Queued $queued pairs. Run: wp pt24-places run-queue --batches=100" );
+    }
+
+    /**
+     * Process the Places seeder queue.
+     *
+     * ## OPTIONS
+     *
+     * [--batches=<n>]
+     * : Number of batches (default: 1, each = 3 service×city pairs)
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-places run-queue --batches=50
+     *
+     * @when after_wp_load
+     */
+    public function run_queue( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Places_Seeder' ) ) {
+            WP_CLI::error( 'PT24_Places_Seeder not found.' );
+        }
+
+        $batches  = max( 1, (int) ( $assoc_args['batches'] ?? 1 ) );
+        $total    = 0;
+        $progress = \WP_CLI\Utils\make_progress_bar( 'Seeding firms', $batches );
+
+        for ( $i = 0; $i < $batches; $i++ ) {
+            $done   = PT24_Places_Seeder::process_queue();
+            $total += $done;
+            $progress->tick();
+        }
+        $progress->finish();
+        WP_CLI::success( "Saved $total firms total." );
+    }
+
+    /**
+     * Import firms from a places_seed CSV file.
+     *
+     * ## OPTIONS
+     *
+     * <file>
+     * : Path to CSV (format: place_id,company_name,service,city,address,phone,website,rating,reviews,status)
+     *
+     * [--ai]
+     * : Generate AI profiles for imported firms
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-places import-csv places_seed.csv --ai
+     *
+     * @when after_wp_load
+     */
+    public function import_csv( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Places_Seeder' ) ) {
+            WP_CLI::error( 'PT24_Places_Seeder not found.' );
+        }
+
+        $file   = $args[0] ?? '';
+        $use_ai = isset( $assoc_args['ai'] );
+
+        if ( ! file_exists( $file ) ) {
+            WP_CLI::error( "File not found: $file" );
+        }
+
+        $csv    = file_get_contents( $file );
+        $result = PT24_Places_Seeder::import_from_csv( $csv, $use_ai );
+        WP_CLI::success( "Imported: {$result['imported']}, skipped: {$result['skipped']}." );
+        foreach ( $result['errors'] as $err ) {
+            WP_CLI::warning( $err );
+        }
+    }
+
+    /**
+     * Show Places Seeder statistics.
+     *
+     * ## EXAMPLES
+     *
+     *     wp pt24-places stats
+     *
+     * @when after_wp_load
+     */
+    public function stats( $args, $assoc_args ) {
+        if ( ! class_exists( 'PT24_Places_Seeder' ) ) {
+            WP_CLI::error( 'PT24_Places_Seeder not found.' );
+        }
+
+        $s = PT24_Places_Seeder::get_stats();
+        WP_CLI::log( "Total firms (published) : {$s['total_firms']}" );
+        WP_CLI::log( "From Google Places      : {$s['places_firms']}" );
+        WP_CLI::log( "AI-enriched             : {$s['ai_enriched']}" );
+        WP_CLI::log( "Queue size              : {$s['queue_size']}" );
+        WP_CLI::log( "Google Places API key   : " . ( $s['has_places_key'] ? 'SET' : 'MISSING' ) );
+        WP_CLI::log( "OpenAI key              : " . ( $s['has_openai_key'] ? 'SET' : 'MISSING' ) );
+        WP_CLI::log( "Possible pairs          : {$s['possible_pairs']}" );
+    }
+}
+
+if ( defined( 'WP_CLI' ) && WP_CLI ) {
+    WP_CLI::add_command( 'pt24-places', 'PT24_Places_CLI' );
+}

@@ -917,16 +917,43 @@ class AdminPageV8Enterprise {
 								</select>
 							</div>
 							<?php endif; ?>
+							<div style="align-self:flex-end;">
+								<label style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;">
+									<input type="checkbox" id="ptPlacesAI" style="width:16px;height:16px;">
+									🤖 AI enrichment
+								</label>
+							</div>
 						</div>
 
-						<div style="display:flex;gap:8px;flex-wrap:wrap;">
+						<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
 							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptPlaces.seed('<?php echo esc_js( $nonce ); ?>')">
-								🔍 Importuj firmy z Google
+								🔍 Importuj firmy (wybrana para)
+							</button>
+							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.queueAll('<?php echo esc_js( $nonce ); ?>')">
+								📦 Kolejkuj WSZYSTKIE kombinacje
 							</button>
 							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.runQueue('<?php echo esc_js( $nonce ); ?>')">
 								▶ Uruchom kolejkę (3 pary)
 							</button>
+							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.clearQueue('<?php echo esc_js( $nonce ); ?>')" style="color:#dc2626;border-color:#dc2626;">
+								🗑 Wyczyść kolejkę
+							</button>
 						</div>
+
+						<!-- CSV import (places_seed format) -->
+						<details style="margin-top:12px;">
+							<summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--pb-v8-text-secondary);">📥 Import CSV (places_seed)</summary>
+							<div style="margin-top:10px;">
+								<p style="font-size:12px;color:var(--pb-v8-text-secondary);margin-bottom:6px;">
+									Format: <code>place_id,company_name,service,city,address,phone,website,rating,reviews,status</code>
+								</p>
+								<textarea id="ptPlacesCsv" rows="5" placeholder="ChIJxxx,Auto Serwis Kowalski,mechanik,ruda-slaska,ul. Przykładowa 1,+48500111222,https://firma.pl,4.7,213,new" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;box-sizing:border-box;"></textarea>
+								<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.importCsv('<?php echo esc_js( $nonce ); ?>')" style="margin-top:6px;">
+									📥 Importuj CSV
+								</button>
+							</div>
+						</details>
+
 						<div id="ptPlacesMsg" style="margin-top:10px;font-size:13px;"></div>
 					<?php endif; ?>
 				</div>
@@ -938,11 +965,25 @@ class AdminPageV8Enterprise {
 			ajaxUrl: <?php echo wp_json_encode( $this->get_admin_ajax_url() ); ?>,
 			seed: function(nonce) {
 				var msg = document.getElementById('ptPlacesMsg');
-				msg.textContent = '⏳ Kolejkuję zapytania Google Places…';
+				msg.style.color = ''; msg.textContent = '⏳ Kolejkuję zapytania Google Places…';
 				var d = new FormData();
 				d.append('action','pt24_places_seed'); d.append('nonce',nonce);
 				d.append('service', document.getElementById('ptPlacesService')?.value || 'all');
 				d.append('city', document.getElementById('ptPlacesCity')?.value || '');
+				d.append('use_ai', document.getElementById('ptPlacesAI')?.checked ? '1' : '');
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color = r.success ? 'green' : 'red';
+					msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data?.message||'Błąd');
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			},
+			queueAll: function(nonce) {
+				var msg = document.getElementById('ptPlacesMsg');
+				var ai = document.getElementById('ptPlacesAI')?.checked;
+				msg.style.color=''; msg.textContent='⏳ Kolejkuję wszystkie kombinacje…';
+				var d = new FormData();
+				d.append('action','pt24_places_seed'); d.append('nonce',nonce);
+				d.append('service','all'); d.append('city','');
+				d.append('use_ai', ai ? '1' : '');
 				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
 					msg.style.color = r.success ? 'green' : 'red';
 					msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data?.message||'Błąd');
@@ -950,9 +991,35 @@ class AdminPageV8Enterprise {
 			},
 			runQueue: function(nonce) {
 				var msg = document.getElementById('ptPlacesMsg');
-				msg.textContent = '⏳ Przetwarzam…';
+				msg.style.color=''; msg.textContent = '⏳ Przetwarzam kolejkę…';
 				var d = new FormData();
 				d.append('action','pt24_places_run_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color = r.success ? 'green' : 'red';
+					msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data?.message||'Błąd');
+					if(r.success) setTimeout(()=>location.reload(),1500);
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			},
+			clearQueue: function(nonce) {
+				if(!confirm('Wyczyścić całą kolejkę Google Places?')) return;
+				var msg = document.getElementById('ptPlacesMsg');
+				var d = new FormData();
+				d.append('action','pt24_places_clear_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color = r.success ? 'green' : 'red';
+					msg.textContent = r.success ? '✅ Kolejka wyczyszczona.' : '❌ '+(r.data?.message||'Błąd');
+					if(r.success) setTimeout(()=>location.reload(),1000);
+				});
+			},
+			importCsv: function(nonce) {
+				var csv = document.getElementById('ptPlacesCsv').value.trim();
+				var msg = document.getElementById('ptPlacesMsg');
+				if(!csv){ msg.textContent='⚠️ Wklej dane CSV.'; return; }
+				msg.style.color=''; msg.textContent='⏳ Importuję CSV…';
+				var ai = document.getElementById('ptPlacesAI')?.checked;
+				var d = new FormData();
+				d.append('action','pt24_places_import_csv'); d.append('nonce',nonce);
+				d.append('csv',csv); d.append('use_ai', ai ? '1' : '');
 				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
 					msg.style.color = r.success ? 'green' : 'red';
 					msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data?.message||'Błąd');
@@ -2371,6 +2438,154 @@ class AdminPageV8Enterprise {
 			}
 		};
 		</script>
+
+		<?php /* ── BLOG ENGINE ───────────────────────────────────────────── */
+		$blog_ok    = class_exists( 'PT24_Blog_Engine' );
+		$blog_nonce = wp_create_nonce( 'pt24_blog_nonce' );
+		$blog_stats = $blog_ok ? \PT24_Blog_Engine::get_stats() : [];
+		?>
+		<div class="pb-v8-card" style="margin-top:28px;">
+			<div class="pb-v8-card-header">
+				<h3 class="pb-v8-card-title">📝 Blog Engine — SEO Content Factory</h3>
+			</div>
+			<div class="pb-v8-card-body">
+				<?php if ( ! $blog_ok ) : ?>
+					<div class="pb-v8-alert" style="background:#fef9c3;border:1px solid #ca8a04;padding:12px 16px;border-radius:8px;">
+						<strong>⚠️ Blog Engine nie jest aktywny.</strong>
+						<p style="margin:4px 0 0;">Upewnij się, że <code>pt24-blog-engine.php</code> i <code>pt24-blog-engine-loader.php</code> są w <code>mu-plugins/</code>.</p>
+					</div>
+				<?php else : ?>
+
+				<!-- Stats -->
+				<div class="pb-v8-metrics-grid" style="margin-bottom:20px;">
+					<?php
+					$this->render_metric_card( [ 'label' => 'Artykuły AI',   'value' => number_format_i18n( $blog_stats['total_articles'] ?? 0 ), 'icon' => '📝' ] );
+					$this->render_metric_card( [ 'label' => 'W kolejce',      'value' => number_format_i18n( $blog_stats['queue_size'] ?? 0 ),     'icon' => '⏳', 'color' => ( ( $blog_stats['queue_size'] ?? 0 ) > 0 ) ? 'warning' : '' ] );
+					$this->render_metric_card( [ 'label' => 'Tematy startowe','value' => number_format_i18n( $blog_stats['starters'] ?? 0 ),       'icon' => '🚀' ] );
+					$this->render_metric_card( [ 'label' => 'OpenAI',         'value' => ( $blog_stats['has_openai_key'] ?? false ) ? 'Aktywny' : 'Brak klucza', 'icon' => '🤖', 'color' => ( $blog_stats['has_openai_key'] ?? false ) ? 'success' : 'warning' ] );
+					?>
+				</div>
+
+				<!-- Queue controls -->
+				<?php if ( ( $blog_stats['queue_size'] ?? 0 ) > 0 ) : ?>
+				<div class="pb-v8-alert pb-v8-alert-success" style="margin-bottom:16px;">
+					<strong>⏳ Kolejka: <?php echo esc_html( number_format_i18n( $blog_stats['queue_size'] ?? 0 ) ); ?> artykułów</strong>
+					<p style="margin:4px 0 8px;">WP-Cron generuje 5 artykułów / minutę.</p>
+					<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptBlog.runQueue('<?php echo esc_js( $blog_nonce ); ?>')">▶ Generuj teraz (paczka 5)</button>
+					<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptBlog.clearQueue('<?php echo esc_js( $blog_nonce ); ?>')" style="color:#dc2626;border-color:#dc2626;">🗑 Wyczyść kolejkę</button>
+					<div id="ptBlogQueueMsg" style="margin-top:8px;font-size:13px;"></div>
+				</div>
+				<?php endif; ?>
+
+				<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+					<!-- Generate single article -->
+					<div>
+						<h4 style="margin:0 0 10px;font-size:14px;">🖊 Generuj jeden artykuł (AI)</h4>
+						<div style="display:flex;flex-direction:column;gap:8px;">
+							<input type="text" id="ptBlogTopic" placeholder="Temat: np. Pękła rura - co robić?" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+							<select id="ptBlogService" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+								<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+									foreach ( PT24_Scale_Data::services() as $slug => $name ) : ?>
+									<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+								<?php endforeach; endif; ?>
+							</select>
+							<select id="ptBlogCity" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+								<option value="">— Bez miasta (generyczny) —</option>
+								<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+									foreach ( PT24_Scale_Data::cities() as $slug => $name ) : ?>
+									<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+								<?php endforeach; endif; ?>
+							</select>
+							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptBlog.generate('<?php echo esc_js( $blog_nonce ); ?>')">🤖 Generuj artykuł</button>
+							<div id="ptBlogGenMsg" style="font-size:13px;margin-top:4px;"></div>
+						</div>
+					</div>
+
+					<!-- Batch: starters + CSV -->
+					<div>
+						<h4 style="margin:0 0 10px;font-size:14px;">🚀 Kolejkuj tematy</h4>
+						<div style="display:flex;flex-direction:column;gap:8px;">
+							<select id="ptBlogStarterCity" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
+								<option value="">— Bez miasta (generyczne) —</option>
+								<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+									foreach ( PT24_Scale_Data::cities() as $slug => $name ) : ?>
+									<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+								<?php endforeach; endif; ?>
+							</select>
+							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptBlog.queueStarters('<?php echo esc_js( $blog_nonce ); ?>')">📋 Kolejkuj 100 tematów startowych</button>
+							<hr style="border:none;border-top:1px solid #eee;margin:4px 0;">
+							<textarea id="ptBlogCsv" rows="4" placeholder="CSV: temat,usluga,miasto&#10;Pękła rura,hydraulik,katowice&#10;Auto nie odpala,mechanik,ruda-slaska" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;"></textarea>
+							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptBlog.importCsv('<?php echo esc_js( $blog_nonce ); ?>')">📥 Importuj CSV</button>
+							<div id="ptBlogBatchMsg" style="font-size:13px;margin-top:4px;"></div>
+						</div>
+					</div>
+
+				</div><!-- grid -->
+
+				<script>
+				var ptBlog = {
+					ajaxUrl: <?php echo wp_json_encode( $this->get_admin_ajax_url() ); ?>,
+					generate: function(nonce) {
+						var topic   = document.getElementById('ptBlogTopic').value.trim();
+						var service = document.getElementById('ptBlogService').value;
+						var city    = document.getElementById('ptBlogCity').value;
+						var msg     = document.getElementById('ptBlogGenMsg');
+						if(!topic){ msg.textContent='⚠️ Podaj temat artykułu.'; return; }
+						msg.style.color=''; msg.textContent='⏳ Generuję artykuł… (może potrwać 20-40 s)';
+						var d=new FormData(); d.append('action','pt24_blog_generate'); d.append('nonce',nonce);
+						d.append('topic',topic); d.append('service',service); d.append('city',city);
+						fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+							if(r.success){ msg.style.color='green'; msg.innerHTML='✅ '+r.data.message+' — <a href="'+r.data.url+'" target="_blank">Podgląd</a>'; }
+							else { msg.style.color='red'; msg.textContent='❌ '+(r.data?.message||'Błąd AI'); }
+						}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+					},
+					queueStarters: function(nonce) {
+						var city = document.getElementById('ptBlogStarterCity').value;
+						var msg  = document.getElementById('ptBlogBatchMsg');
+						msg.style.color=''; msg.textContent='⏳ Kolejkuję 100 tematów…';
+						var d=new FormData(); d.append('action','pt24_blog_queue_starters'); d.append('nonce',nonce); d.append('city',city);
+						fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+							if(r.success){ msg.style.color='green'; msg.textContent='✅ '+r.data.message; }
+							else { msg.style.color='red'; msg.textContent='❌ '+(r.data?.message||'Błąd'); }
+						});
+					},
+					importCsv: function(nonce) {
+						var csv = document.getElementById('ptBlogCsv').value.trim();
+						var msg = document.getElementById('ptBlogBatchMsg');
+						if(!csv){ msg.textContent='⚠️ Podaj dane CSV.'; return; }
+						msg.style.color=''; msg.textContent='⏳ Importuję CSV…';
+						var d=new FormData(); d.append('action','pt24_blog_import_csv'); d.append('nonce',nonce); d.append('csv',csv);
+						fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+							if(r.success){ msg.style.color='green'; msg.textContent='✅ '+r.data.message; }
+							else { msg.style.color='red'; msg.textContent='❌ '+(r.data?.message||'Błąd'); }
+						});
+					},
+					runQueue: function(nonce) {
+						var msg = document.getElementById('ptBlogQueueMsg');
+						if(msg) { msg.textContent='⏳ Generuję…'; }
+						var d=new FormData(); d.append('action','pt24_blog_run_queue'); d.append('nonce',nonce);
+						fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+							if(msg){ msg.style.color=r.success?'green':'red'; msg.textContent=r.success?'✅ '+r.data.message:'❌ '+(r.data?.message||'Błąd'); }
+							if(r.success) setTimeout(()=>location.reload(),2000);
+						});
+					},
+					clearQueue: function(nonce) {
+						if(!confirm('Wyczyścić całą kolejkę artykułów bloga?')) return;
+						var msg = document.getElementById('ptBlogQueueMsg');
+						var d=new FormData(); d.append('action','pt24_blog_clear_queue'); d.append('nonce',nonce);
+						fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+							if(msg){ msg.style.color=r.success?'green':'red'; msg.textContent=r.success?'✅ '+r.data.message:'❌ '+(r.data?.message||'Błąd'); }
+							if(r.success) setTimeout(()=>location.reload(),1000);
+						});
+					}
+				};
+				</script>
+
+				<?php endif; ?>
+			</div><!-- card-body -->
+		</div><!-- blog engine card -->
+
 		<?php
 	}
 
@@ -2435,6 +2650,14 @@ class AdminPageV8Enterprise {
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/stats' ); ?></code></td><td>Statystyki factory (opublikowane, kolejka, postęp)</td></tr>
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/services' ); ?></code></td><td>Lista 10 usług (slug, nazwa, long-tail)</td></tr>
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/cities' ); ?></code></td><td>Lista 80 miast (slug, nazwa, województwo)</td></tr>
+																<tr style="background:rgba(37,99,235,.05);"><td colspan="3" style="padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;color:#64748b;">BLOG ENGINE</td></tr>
+																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/blog-generate' ); ?></code></td><td><code>{"topic":"Pękła rura","service":"hydraulik","city":"katowice","use_queue":false}</code></td></tr>
+																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/blog-csv' ); ?></code></td><td><code>{"csv":"temat,usluga,miasto\n..."}</code> lub <code>{"starters":true,"city":"katowice"}</code></td></tr>
+																<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/blog-stats' ); ?></code></td><td>Artykuły, kolejka, klucze API</td></tr>
+																<tr style="background:rgba(37,99,235,.05);"><td colspan="3" style="padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;color:#64748b;">GOOGLE PLACES</td></tr>
+																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/places-seed' ); ?></code></td><td><code>{"service":"mechanik","city":"katowice","use_ai":true}</code></td></tr>
+																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/places-import-csv' ); ?></code></td><td><code>{"csv":"place_id,company_name,service,city,..."}</code></td></tr>
+																<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/places-stats' ); ?></code></td><td>Firmy, AI-enriched, kolejka</td></tr>
 							</tbody>
 						</table>
 					</div>

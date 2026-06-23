@@ -26,6 +26,15 @@ $pt24_cities = class_exists( 'PearBlog_PT24_Landing_CPT' )
 			<span class="pt24-hero__badge">Katalog firm</span>
 			<h1 class="pt24-hero__title">Sprawdzone firmy i fachowcy</h1>
 			<p class="pt24-hero__lead">Przeglądaj zweryfikowane firmy usługowe w największych miastach w Polsce i zamów bezpłatną wycenę.</p>
+			<div class="pt24-hero__cta">
+				<a href="<?php echo esc_url( home_url( '/szukaj/' ) ); ?>" class="pt24-btn pt24-btn--primary">Znajdź fachowca</a>
+			</div>
+			<div class="pt24-hero__trust">
+				<span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
+				<span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
+				<span class="pt24-hero__trust-item">⏱ Odpowiedź <strong>w 2&nbsp;h</strong></span>
+				<span class="pt24-hero__trust-item">🔒 <strong>Bezpłatna</strong> wycena</span>
+			</div>
 		</div>
 	</section>
 

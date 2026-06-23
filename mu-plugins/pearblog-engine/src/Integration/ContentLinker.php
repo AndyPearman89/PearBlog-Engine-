@@ -312,8 +312,8 @@ class ContentLinker {
 
                 // Create CTA box
                 $cta_html = sprintf(
-                    '<div class="pearblog-pt24-link" style="margin: 1.5rem 0; padding: 1rem; background: #f3f4f6; border-left: 4px solid #7c3aed; border-radius: 0.5rem;">' .
-                    '<p style="margin: 0; font-weight: 600;">👉 <a href="%s" style="color: #7c3aed; text-decoration: none;">%s</a></p>' .
+                    '<div class="pearblog-pt24-link" style="margin: 1.5rem 0; padding: 1rem; background: #f3f4f6; border-left: 4px solid #2563eb; border-radius: 0.5rem;">' .
+                    '<p style="margin: 0; font-weight: 600;">👉 <a href="%s" style="color: #2563eb; text-decoration: none;">%s</a></p>' .
                     '</div>',
                     esc_url($link['url']),
                     esc_html($link['text'])

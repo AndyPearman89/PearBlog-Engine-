@@ -30,18 +30,18 @@
 
 .pt24-cta--hybrid,
 .pt24-cta--card {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
     border-radius: 12px;
     padding: 2rem;
     color: #ffffff;
-    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+    box-shadow: 0 10px 30px rgba(37, 99, 235, 0.25);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .pt24-cta--hybrid:hover,
 .pt24-cta--card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 15px 40px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 15px 40px rgba(37, 99, 235, 0.35);
 }
 
 .pt24-cta__container {
@@ -88,22 +88,22 @@
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
-    background: #ffffff;
-    color: #667eea;
-    font-weight: 600;
+    background: #f59e0b;
+    color: #1f2937;
+    font-weight: 700;
     font-size: 1.125rem;
     padding: 1rem 2rem;
     border-radius: 8px;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 16px rgba(245, 158, 11, 0.4);
 }
 
 .pt24-cta__button:hover {
-    background: #f8fafc;
+    background: #d97706;
+    color: #ffffff;
     transform: translateX(4px);
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
-    color: #667eea;
+    box-shadow: 0 6px 22px rgba(245, 158, 11, 0.5);
 }
 
 .pt24-cta__button:active {
@@ -226,8 +226,8 @@
    ========================================================================== */
 
 .pt24-cta--inline {
-    background: #f8fafc;
-    border-left: 4px solid #667eea;
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
     border-radius: 6px;
     padding: 1.25rem;
     margin: 1.5rem 0;
@@ -264,7 +264,7 @@
 }
 
 .pt24-cta__inline-button {
-    background: #667eea;
+    background: #2563eb;
     color: #ffffff;
     font-weight: 600;
     padding: 0.625rem 1.25rem;
@@ -275,7 +275,7 @@
 }
 
 .pt24-cta__inline-button:hover {
-    background: #5568d3;
+    background: #1d4ed8;
     transform: translateX(4px);
     color: #ffffff;
 }
@@ -383,7 +383,7 @@
 .pt24-cta__button:focus,
 .pt24-cta__banner-button:focus,
 .pt24-cta__inline-button:focus {
-    outline: 2px solid #667eea;
+    outline: 2px solid #2563eb;
     outline-offset: 2px;
 }
 
@@ -404,7 +404,7 @@
 @media (prefers-color-scheme: dark) {
     .pt24-cta--inline {
         background: #1e293b;
-        border-left-color: #667eea;
+        border-left-color: #2563eb;
     }
 
     .pt24-cta__inline-text strong {

@@ -43,7 +43,7 @@ class CTAInjector {
         }
 
         return sprintf(
-            '<div class="pearblog-cta-inline" style="margin: 2rem 0; padding: 1.5rem; background: linear-gradient(135deg, #f3f4f6 0%%, #e5e7eb 100%); border-left: 4px solid #7c3aed; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+            '<div class="pearblog-cta-inline" style="margin: 2rem 0; padding: 1.5rem; background: linear-gradient(135deg, #f3f4f6 0%%, #e5e7eb 100%); border-left: 4px solid #2563eb; border-radius: 0.75rem; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <div class="cta-content">
                     <h3 style="margin: 0 0 0.75rem 0; color: #1f2937; font-size: 1.25rem; font-weight: 700;">
                         💡 Potrzebujesz %s w %s?
@@ -51,7 +51,7 @@ class CTAInjector {
                     <p style="margin: 0 0 1rem 0; color: #4b5563; line-height: 1.6;">
                         Sprawdź sprawdzonych specjalistów w Twojej okolicy. Szybki kontakt, uczciwe ceny, lokalna obsługa.
                     </p>
-                    <a href="%s" class="cta-button" style="display: inline-block; padding: 0.75rem 1.5rem; background: #7c3aed; color: #ffffff; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background=\'#6d28d9\'" onmouseout="this.style.background=\'#7c3aed\'">
+                    <a href="%s" class="cta-button" style="display: inline-block; padding: 0.75rem 1.5rem; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background=\'#1d4ed8\'" onmouseout="this.style.background=\'#2563eb\'">
                         Zobacz oferty ▸
                     </a>
                 </div>
@@ -71,10 +71,10 @@ class CTAInjector {
      */
     public function get_compact_cta(string $text, string $url): string {
         return sprintf(
-            '<div class="pearblog-cta-compact" style="margin: 1.5rem 0; padding: 1rem; background: #f9fafb; border: 2px solid #7c3aed; border-radius: 0.5rem;">
+            '<div class="pearblog-cta-compact" style="margin: 1.5rem 0; padding: 1rem; background: #f9fafb; border: 2px solid #2563eb; border-radius: 0.5rem;">
                 <p style="margin: 0; text-align: center;">
-                    <strong style="color: #7c3aed;">👉</strong>
-                    <a href="%s" style="color: #7c3aed; font-weight: 600; text-decoration: none;">%s</a>
+                    <strong style="color: #2563eb;">👉</strong>
+                    <a href="%s" style="color: #2563eb; font-weight: 600; text-decoration: none;">%s</a>
                 </p>
             </div>',
             esc_url($url),
@@ -95,12 +95,12 @@ class CTAInjector {
         }
 
         return sprintf(
-            '<div class="pearblog-cta-sticky" style="position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #7c3aed 0%%, #6d28d9 100%%); padding: 1rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); z-index: 9999; display: none;" id="pearblog-sticky-cta">
+            '<div class="pearblog-cta-sticky" style="position: fixed; bottom: 0; left: 0; right: 0; background: linear-gradient(135deg, #1e3a8a 0%%, #2563eb 100%%); padding: 1rem; box-shadow: 0 -4px 12px rgba(0,0,0,0.15); z-index: 9999; display: none;" id="pearblog-sticky-cta">
                 <div style="max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1rem;">
                     <div style="color: #ffffff; font-weight: 600;">
                         ☎ Potrzebujesz pomocy? Zadzwoń do lokalnego specjalisty
                     </div>
-                    <a href="tel:%s" style="display: inline-block; padding: 0.75rem 2rem; background: #ffffff; color: #7c3aed; text-decoration: none; border-radius: 0.5rem; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#ffffff\'">
+                    <a href="tel:%s" style="display: inline-block; padding: 0.75rem 2rem; background: #ffffff; color: #2563eb; text-decoration: none; border-radius: 0.5rem; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.background=\'#f3f4f6\'" onmouseout="this.style.background=\'#ffffff\'">
                         %s: %s
                     </a>
                     <button onclick="document.getElementById(\'pearblog-sticky-cta\').style.display=\'none\'" style="background: transparent; border: none; color: #ffffff; font-size: 1.5rem; cursor: pointer; padding: 0.5rem;" aria-label="Zamknij">
@@ -153,7 +153,7 @@ class CTAInjector {
                         Potrzebujesz <strong>%s</strong> w <strong>%s</strong>?<br>
                         Zobacz sprawdzonych specjalistów i umów wizytę w 2 minuty!
                     </p>
-                    <a href="%s" style="display: block; padding: 1rem; background: #7c3aed; color: #ffffff; text-decoration: none; border-radius: 0.5rem; font-weight: 600; text-align: center; transition: all 0.3s;" onmouseover="this.style.background=\'#6d28d9\'" onmouseout="this.style.background=\'#7c3aed\'">
+                    <a href="%s" style="display: block; padding: 1rem; background: #2563eb; color: #ffffff; text-decoration: none; border-radius: 0.5rem; font-weight: 600; text-align: center; transition: all 0.3s;" onmouseover="this.style.background=\'#1d4ed8\'" onmouseout="this.style.background=\'#2563eb\'">
                         Zobacz oferty teraz ▸
                     </a>
                 </div>
@@ -200,7 +200,7 @@ class CTAInjector {
      */
     public function get_footer_cta(string $service, string $city, string $url, string $phone): string {
         return sprintf(
-            '<div class="pearblog-cta-footer" style="margin: 3rem 0; padding: 2rem; background: linear-gradient(135deg, #667eea 0%%, #764ba2 100%%); border-radius: 1rem; color: #ffffff; text-align: center;">
+            '<div class="pearblog-cta-footer" style="margin: 3rem 0; padding: 2rem; background: linear-gradient(135deg, #1e3a8a 0%%, #2563eb 100%%); border-radius: 1rem; color: #ffffff; text-align: center;">
                 <h3 style="margin: 0 0 1rem 0; font-size: 1.75rem; font-weight: 800;">
                     Szukasz %s w %s?
                 </h3>
@@ -208,7 +208,7 @@ class CTAInjector {
                     Sprawdź sprawdzonych specjalistów w Twojej okolicy
                 </p>
                 <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
-                    <a href="%s" style="display: inline-block; padding: 1rem 2rem; background: #ffffff; color: #7c3aed; text-decoration: none; border-radius: 0.5rem; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">
+                    <a href="%s" style="display: inline-block; padding: 1rem 2rem; background: #ffffff; color: #2563eb; text-decoration: none; border-radius: 0.5rem; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.transform=\'scale(1.05)\'" onmouseout="this.style.transform=\'scale(1)\'">
                         📋 Zobacz oferty
                     </a>
                     <a href="tel:%s" style="display: inline-block; padding: 1rem 2rem; background: #f59e0b; color: #ffffff; text-decoration: none; border-radius: 0.5rem; font-weight: 700; transition: all 0.3s;" onmouseover="this.style.background=\'#d97706\'" onmouseout="this.style.background=\'#f59e0b\'">

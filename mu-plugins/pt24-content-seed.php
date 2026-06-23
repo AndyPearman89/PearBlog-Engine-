@@ -580,9 +580,19 @@ function pt24_seed_blog(): void {
 
     // 2) Categories.
     $cat_defs = array(
-        'porady'    => 'Porady',
-        'koszty'    => 'Koszty i cennik',
-        'poradniki' => 'Poradniki',
+        // Legacy categories (kept for existing posts)
+        'porady'         => 'Porady',
+        'koszty'         => 'Koszty i cennik',
+        // Blog Engine categories (all 10)
+        'poradniki'      => 'Poradniki',
+        'awarie'         => 'Awarie',
+        'jak-zrobic'     => 'Jak zrobić',
+        'rankingi'       => 'Rankingi',
+        'pt24-24h'       => '24h',
+        'bezpieczenstwo' => 'Bezpieczeństwo',
+        'sezonowe'       => 'Sezonowe',
+        'problemy'       => 'Najczęstsze problemy',
+        'lokalne'        => 'Lokalne poradniki',
     );
     $cats = array();
     foreach ( $cat_defs as $cslug => $cname ) {

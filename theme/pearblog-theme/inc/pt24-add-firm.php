@@ -80,16 +80,39 @@ class PearBlog_PT24_Add_Firm {
 			wp_send_json_error( array( 'message' => 'Wystąpił błąd techniczny. Spróbuj ponownie.' ) );
 		}
 
-		// --- store meta ---
-		update_post_meta( $post_id, 'pt24_firm_city',    $city );
-		update_post_meta( $post_id, 'pt24_firm_service', $service );
-		update_post_meta( $post_id, 'pt24_firm_phone',   $phone );
-		update_post_meta( $post_id, 'pt24_firm_email',   $email );
-		update_post_meta( $post_id, 'pt24_firm_website', $website );
-		update_post_meta( $post_id, 'pt24_firm_rating',  '5.0' );
-		update_post_meta( $post_id, 'pt24_firm_jobs',    '0' );
-		update_post_meta( $post_id, 'pt24_firm_source',  'form' );
-		update_post_meta( $post_id, 'pt24_firm_year',    (string) gmdate( 'Y' ) );
+		// --- store meta (aligned with single-pt24_firm.php meta keys) ---
+		// Resolve city slug and display name
+		$city_slug = sanitize_title( $city );
+		$city_name = $city; // display name fallback
+		if ( class_exists( 'PT24_Scale_Data' ) ) {
+			$cities_data = PT24_Scale_Data::cities();
+			if ( isset( $cities_data[ $city_slug ] ) ) {
+				$city_entry = $cities_data[ $city_slug ];
+				$city_name  = is_array( $city_entry ) ? (string) ( $city_entry['name'] ?? $city ) : (string) $city_entry;
+			} else {
+				// Try to match by display name
+				foreach ( $cities_data as $cslug => $cdata ) {
+					$cname = is_array( $cdata ) ? ( $cdata['name'] ?? '' ) : $cdata;
+					if ( mb_strtolower( $cname ) === mb_strtolower( $city ) ) {
+						$city_slug = $cslug;
+						$city_name = $cname;
+						break;
+					}
+				}
+			}
+		}
+
+		update_post_meta( $post_id, 'pt24_firm_city',         $city_slug );  // slug
+		update_post_meta( $post_id, 'pt24_firm_city_name',    $city_name );  // display name (used by template)
+		update_post_meta( $post_id, 'pt24_firm_services',     $service );    // plural key (matches single-pt24_firm.php)
+		update_post_meta( $post_id, 'pt24_firm_service',      $service );    // legacy singular key (kept for compatibility)
+		update_post_meta( $post_id, 'pt24_firm_phone',        $phone );
+		update_post_meta( $post_id, 'pt24_firm_email',        $email );
+		update_post_meta( $post_id, 'pt24_firm_website',      $website );
+		update_post_meta( $post_id, 'pt24_firm_rating',       '5,0' );
+		update_post_meta( $post_id, 'pt24_firm_jobs',         '0' );
+		update_post_meta( $post_id, 'pt24_firm_source',       'form' );
+		update_post_meta( $post_id, 'pt24_firm_established',  (string) gmdate( 'Y' ) );
 
 		// --- admin email notification ---
 		$notify_email = (string) get_option( 'pt24_notify_email', (string) get_option( 'admin_email' ) );

@@ -37,9 +37,18 @@ $cities = [
 
 	<section class="pt24-hero">
 		<div class="pb-container">
-			<span class="pt24-hero__badge">🏆 Rankingi firm</span>
+			<span class="pt24-hero__badge">Rankingi firm</span>
 			<h1 class="pt24-hero__title">Ranking najlepszych fachowców</h1>
 			<p class="pt24-hero__lead">Sprawdź, kto jest najwyżej oceniany w Twoim mieście. Wszystkie rankingi oparte na opiniach klientów i liczbie zrealizowanych zleceń.</p>
+			<div class="pt24-hero__cta">
+				<a href="<?php echo esc_url( home_url( '/szukaj/' ) ); ?>" class="pt24-btn pt24-btn--primary">Znajdź fachowca w swoim mieście</a>
+			</div>
+			<div class="pt24-hero__trust">
+				<span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
+				<span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
+				<span class="pt24-hero__trust-item">🏆 <strong>Rankingi</strong> oparte na opiniach</span>
+				<span class="pt24-hero__trust-item">🔒 <strong>Bezpłatna</strong> wycena</span>
+			</div>
 		</div>
 	</section>
 

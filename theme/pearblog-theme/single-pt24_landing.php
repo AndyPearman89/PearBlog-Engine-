@@ -29,6 +29,10 @@ $hero_text      = (string) get_post_meta( $post_id, 'pt24_hero_text', true );
 $meta_title     = (string) get_post_meta( $post_id, 'pt24_meta_title', true );
 $meta_desc      = (string) get_post_meta( $post_id, 'pt24_meta_description', true );
 
+// AI-generated FAQ (from pt24-ai-factory transient pickup)
+$ai_faq_json    = (string) get_post_meta( $post_id, 'pt24_faq', true );
+$ai_faq         = $ai_faq_json ? (array) json_decode( $ai_faq_json, true ) : [];
+
 if ( '' === $service_name ) {
 	$service_name = class_exists( 'PT24_Scale_Data' )
 		? \PT24_Scale_Data::service_name( $service_slug )
@@ -171,7 +175,8 @@ $data = $pt24_service_data[ $service_slug ] ?? array(
 );
 
 /**
- * Deterministic sample firms for the city (real-looking local directory entries).
+ * Load verified firms for this city from the pt24_firm CPT.
+ * Section is hidden when no real entries exist.
  */
 $firms = array();
 $pt24_city_firms = get_posts( array( 'post_type' => 'pt24_firm', 'post_status' => 'publish', 'numberposts' => 3, 'meta_key' => 'pt24_firm_city', 'meta_value' => $city_slug, 'orderby' => 'title', 'order' => 'ASC', 'suppress_filters' => true ) );
@@ -182,16 +187,6 @@ if ( ! empty( $pt24_city_firms ) ) {
             'rating' => (string) get_post_meta( $pt24_cf->ID, 'pt24_firm_rating', true ),
             'jobs'   => (int) get_post_meta( $pt24_cf->ID, 'pt24_firm_jobs', true ),
             'url'    => get_permalink( $pt24_cf ),
-        );
-    }
-} else {
-    $pt24_suffixes = array( 'Serwis', 'Profi', 'Express', 'Fachowcy', 'Mistrz', 'Partner' );
-    for ( $i = 0; $i < 3; $i++ ) {
-        $firms[] = array(
-            'name'   => sprintf( '%s %s %s', $service_name, $city_name, $pt24_suffixes[ ( crc32( $city_slug . $service_slug . $i ) % count( $pt24_suffixes ) ) ] ),
-            'rating' => number_format( 4.5 + ( ( crc32( $city_slug . $i ) % 5 ) / 10 ), 1, ',', '' ),
-            'jobs'   => 60 + ( crc32( $service_slug . $city_slug . $i ) % 240 ),
-            'url'    => '',
         );
     }
 }
@@ -319,13 +314,13 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <h1 class="pt24-hero__title"><?php echo esc_html( $h1 ); ?></h1>
             <p class="pt24-hero__lead"><?php echo esc_html( $hero_text ); ?></p>
             <div class="pt24-hero__cta">
-                <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">🎯 Otrzymaj bezpłatne wyceny</a>
-                <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost-light">Napisz opis zlecenia</a>
+                <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Otrzymaj bezpłatne wyceny</a>
+                <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost-light">Opisz zlecenie</a>
             </div>
             <div class="pt24-hero__trust">
                 <span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
                 <span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
-                <span class="pt24-hero__trust-item">⏱ Odpowiedź <strong>w 2 h</strong></span>
+                <span class="pt24-hero__trust-item">⏱ Odpowiedź <strong>w 2&nbsp;h</strong></span>
                 <span class="pt24-hero__trust-item">🔒 <strong>Bezpłatna</strong> wycena</span>
                 <span class="pt24-hero__trust-item">📍 Lokalni z <strong><?php echo esc_html( $city_name ); ?></strong></span>
             </div>
@@ -390,6 +385,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
 
             <section class="pt24-section">
                 <h2>Polecani fachowcy <?php echo esc_html( $city_loc ); ?></h2>
+                <?php if ( ! empty( $firms ) ) : ?>
                 <div class="pt24-firms">
                     <?php foreach ( $firms as $firm ) :
                         $stars_full = min( 5, (int) round( (float) $firm['rating'] ) );
@@ -416,6 +412,9 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     <?php endforeach; ?>
                 </div>
                 <p class="pt24-ranking-link"><a href="<?php echo esc_url( home_url( '/ranking/' . $city_slug . '/' . $service_slug . '/' ) ); ?>">🏆 Pełny ranking: <?php echo esc_html( $service_name . ' ' . $city_name ); ?> →</a></p>
+                <?php else : ?>
+                <p><a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Wyślij zapytanie — odezwiemy się do Ciebie</a></p>
+                <?php endif; ?>
             </section>
 
             <section class="pt24-section">
@@ -425,7 +424,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     <?php foreach ( $pt24_reviews as $rev ) : ?>
                         <div class="pt24-review">
                             <div class="pt24-review__stars" aria-label="Ocena <?php echo (int) $rev['stars']; ?> na 5"><?php echo esc_html( str_repeat( '★', (int) $rev['stars'] ) . str_repeat( '☆', 5 - (int) $rev['stars'] ) ); ?></div>
-                            <p class="pt24-review__text">„<?php echo esc_html( $rev['text'] ); ?>”</p>
+                            <p class="pt24-review__text">„<?php echo esc_html( $rev['text'] ); ?>"</p>
                             <p class="pt24-review__author"><?php echo esc_html( $rev['name'] ); ?> <span>· klient PT24</span></p>
                         </div>
                     <?php endforeach; ?>
@@ -444,10 +443,24 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             </section>
             <?php endif; ?>
 
-            <?php if ( ! empty( $data['faq'] ) ) : ?>
+            <?php
+            // AI-generated FAQ has priority; fall back to service-library FAQ.
+            $faq_to_render = [];
+            if ( ! empty( $ai_faq ) ) {
+                foreach ( $ai_faq as $qa ) {
+                    if ( is_array( $qa ) && isset( $qa['q'], $qa['a'] ) ) {
+                        $faq_to_render[] = [ $qa['q'], $qa['a'] ];
+                    }
+                }
+            }
+            if ( empty( $faq_to_render ) && ! empty( $data['faq'] ) ) {
+                $faq_to_render = $data['faq'];
+            }
+            ?>
+            <?php if ( ! empty( $faq_to_render ) ) : ?>
             <section class="pt24-section pt24-faq">
                 <h2>Najczęstsze pytania</h2>
-                <?php foreach ( $data['faq'] as $qa ) : ?>
+                <?php foreach ( $faq_to_render as $qa ) : ?>
                     <details class="pt24-faq__item">
                         <summary><?php echo esc_html( $qa[0] ); ?></summary>
                         <p><?php echo esc_html( $qa[1] ); ?></p>
@@ -455,13 +468,12 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 <?php endforeach; ?>
             </section>
             <?php
-            // FAQPage schema for rich results, built from the same Q&A pairs.
             $pt24_faq_schema = array(
                 '@context'   => 'https://schema.org',
                 '@type'      => 'FAQPage',
                 'mainEntity' => array(),
             );
-            foreach ( $data['faq'] as $qa ) {
+            foreach ( $faq_to_render as $qa ) {
                 $pt24_faq_schema['mainEntity'][] = array(
                     '@type'          => 'Question',
                     'name'           => $qa[0],
@@ -476,9 +488,19 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <?php endif; ?>
 
             <?php
-            $pt24_related = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 3, 's' => $service_name, 'suppress_filters' => true ) );
+            // Prefer Blog Engine articles for this service/city; fallback to text search.
+            $pt24_related = get_posts( array(
+                'post_type'        => 'post',
+                'post_status'      => 'publish',
+                'numberposts'      => 3,
+                'meta_query'       => array( array( 'key' => 'pt24_blog_service', 'value' => $service_slug, 'compare' => '=' ) ),
+                'suppress_filters' => true,
+            ) );
+            if ( empty( $pt24_related ) ) {
+                $pt24_related = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 3, 'meta_key' => '_pt24_blog_ai', 'meta_value' => '1', 'suppress_filters' => true ) );
+            }
             if ( count( $pt24_related ) < 3 ) {
-                $pt24_fill    = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 3, 'post__not_in' => wp_list_pluck( $pt24_related, 'ID' ), 'suppress_filters' => true ) );
+                $pt24_fill    = get_posts( array( 'post_type' => 'post', 'post_status' => 'publish', 'numberposts' => 3 - count( $pt24_related ), 'post__not_in' => array_merge( wp_list_pluck( $pt24_related, 'ID' ), [ 0 ] ), 'suppress_filters' => true ) );
                 $pt24_related = array_merge( $pt24_related, $pt24_fill );
             }
             $pt24_related = array_slice( $pt24_related, 0, 3 );
@@ -503,8 +525,10 @@ $ajax_url = admin_url( 'admin-ajax.php' );
 
         <aside class="pt24-sidebar">
             <div id="pt24-lead" class="pt24-leadbox">
-                <h2 class="pt24-leadbox__title">Zamów bezpłatną wycenę</h2>
-                <p class="pt24-leadbox__sub"><?php echo esc_html( $service_name ); ?> · <?php echo esc_html( $city_name ); ?></p>
+                <div class="pt24-leadbox__header">
+                    Zamów bezpłatną wycenę<br>
+                    <small style="font-weight:400;opacity:.85"><?php echo esc_html( $service_name . ' · ' . $city_name ); ?></small>
+                </div>
                 <form class="pt24-leadform" method="post" action="<?php echo esc_url( $ajax_url ); ?>">
                     <input type="hidden" name="action" value="pt24_submit_lead">
                     <input type="hidden" name="service" value="<?php echo esc_attr( $service_slug ); ?>">
@@ -521,10 +545,10 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                         <input type="email" name="email" autocomplete="email">
                     </label>
                     <label>Opis zlecenia
-                        <textarea name="description" rows="4" placeholder="Opisz, czego potrzebujesz…"></textarea>
+                        <textarea name="description" rows="4" placeholder="Np. Wymiana baterii w łazience, potrzebuję termin do piątku…"></textarea>
                     </label>
                     <button type="submit" class="pt24-btn pt24-btn--primary pt24-btn--block">Wyślij zapytanie</button>
-                    <p class="pt24-leadform__note">Wysyłając formularz akceptujesz regulamin i politykę prywatności serwisu.</p>
+                    <p class="pt24-leadform__note">Wysyłając formularz akceptujesz <a href="/regulamin/">regulamin</a> i <a href="/polityka-prywatnosci/">politykę prywatności</a>.</p>
                     <p class="pt24-leadform__result" hidden></p>
                 </form>
             </div>

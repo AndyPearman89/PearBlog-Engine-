@@ -124,10 +124,10 @@ class RankingSyncer {
         $content .= "<p>Wybór odpowiedniego {$category_name} w {$city_name} nie musi być trudny. Skorzystaj z naszego rankingu, porównaj oferty i wybierz najlepszą firmę dla siebie.</p>\n\n";
 
         $landing_url = "https://pt24.pro/{$city}/{$category}/";
-        $content .= "<div class=\"pearblog-cta-footer\" style=\"margin: 2rem 0; padding: 2rem; background: linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%); border-radius: 1rem; text-align: center; color: #ffffff;\">\n";
+        $content .= "<div class=\"pearblog-cta-footer\" style=\"margin: 2rem 0; padding: 2rem; background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%); border-radius: 1rem; text-align: center; color: #ffffff;\">\n";
         $content .= "<h3 style=\"color: #ffffff; margin: 0 0 1rem 0;\">Potrzebujesz {$category_name} w {$city_name}?</h3>\n";
         $content .= "<p style=\"color: rgba(255,255,255,0.9); margin: 0 0 1.5rem 0;\">Sprawdź pełną listę sprawdzonych firm i porównaj oferty</p>\n";
-        $content .= "<a href=\"{$landing_url}\" style=\"display: inline-block; padding: 1rem 2rem; background: #ffffff; color: #7c3aed; border-radius: 0.5rem; font-weight: 700; text-decoration: none;\">Zobacz wszystkie oferty →</a>\n";
+        $content .= "<a href=\"{$landing_url}\" style=\"display: inline-block; padding: 1rem 2rem; background: #ffffff; color: #2563eb; border-radius: 0.5rem; font-weight: 700; text-decoration: none;\">Zobacz wszystkie oferty →</a>\n";
         $content .= "</div>\n\n";
 
         return $content;
@@ -144,7 +144,7 @@ class RankingSyncer {
     private function build_listing_entry(array $listing, int $rank, string $category_name): string {
         $medal = $rank <= 3 ? ['🥇', '🥈', '🥉'][$rank - 1] : "#{$rank}";
 
-        $entry = "<div class=\"ranking-entry\" style=\"margin: 2rem 0; padding: 1.5rem; background: #f9fafb; border-left: 4px solid #7c3aed; border-radius: 0.5rem;\">\n";
+        $entry = "<div class=\"ranking-entry\" style=\"margin: 2rem 0; padding: 1.5rem; background: #f9fafb; border-left: 4px solid #2563eb; border-radius: 0.5rem;\">\n";
         $entry .= "<h3 style=\"margin: 0 0 0.75rem 0;\">{$medal} {$listing['name']}</h3>\n";
 
         // Rating
@@ -181,7 +181,7 @@ class RankingSyncer {
 
         // CTA
         if (!empty($listing['url'])) {
-            $entry .= "<p style=\"margin: 1rem 0 0 0;\"><a href=\"{$listing['url']}\" style=\"display: inline-block; padding: 0.75rem 1.5rem; background: #7c3aed; color: #ffffff; border-radius: 0.5rem; text-decoration: none; font-weight: 600;\">Zobacz profil →</a></p>\n";
+            $entry .= "<p style=\"margin: 1rem 0 0 0;\"><a href=\"{$listing['url']}\" style=\"display: inline-block; padding: 0.75rem 1.5rem; background: #2563eb; color: #ffffff; border-radius: 0.5rem; text-decoration: none; font-weight: 600;\">Zobacz profil →</a></p>\n";
         }
 
         $entry .= "</div>\n\n";

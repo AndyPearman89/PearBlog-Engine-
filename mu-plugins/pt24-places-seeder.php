@@ -1,48 +1,52 @@
 <?php
 /**
- * PT24.PRO — Google Places Seeder
+ * PT24.PRO — Google Places Seeder v3.0 (New Places API + AI Enrichment)
  *
- * Fetches real business data from Google Places API (Text Search + Details)
- * and creates/updates pt24_firm CPT profiles.
+ * Workflow:
+ *   CSV / batch → Google Places API (New) → AI → profil firmy → pt24_firm CPT
  *
- * Features:
- *  - Maps PT24 service slugs → Polish search terms for Google
- *  - Text Search returns up to 20 places; we take top N (configurable)
- *  - Details call fetches phone, website, rating, address
- *  - Idempotent: firms deduped by Google Place ID (pt24_firm_place_id meta)
- *  - Cost-aware: 1 text-search + N detail calls per service×city pair
- *  - REST endpoint: POST /wp-json/pt24/v2/places-seed
- *  - AJAX endpoint: wp_ajax_pt24_places_seed
+ * API (New — places.googleapis.com/v1/):
+ *   Text Search  POST …/places:searchText
+ *   Details      GET  …/places/{id}
+ *   Dozwolone pola: place_id · displayName · formattedAddress · nationalPhoneNumber
+ *                   websiteUri · rating · userRatingCount · regularOpeningHours
+ *                   location · businessStatus · googleMapsUri · primaryType
  *
- * Host-guarded: PT24 install only.
+ * Zasady ToS Google:
+ *   ✅ pobieramy: displayName, adres, telefon, rating, liczba opinii, godziny
+ *   ❌ NIE kopiujemy: opinii, opisów, zdjęć, cudzych treści marketingowych
+ *
+ * REST endpoints:
+ *   POST /wp-json/pt24/v2/places-seed           { service?, city?, use_ai?, services[]?, cities[]? }
+ *   POST /wp-json/pt24/v2/places-import-csv     { csv, use_ai? }
+ *   GET  /wp-json/pt24/v2/places-stats
  *
  * @package PearBlog\PT24
- * @since   2.1.0
+ * @since   3.0.0
  */
 
-if ( ! defined( 'ABSPATH' ) ) {
-	exit;
-}
+if ( ! defined( 'ABSPATH' ) ) { exit; }
 
 class PT24_Places_Seeder {
 
-	const OPTION_API_KEY    = 'pt24_google_places_api_key';
-	const REST_NAMESPACE    = 'pt24/v2';
-	const MAX_PER_SEARCH    = 5;  // Firms saved per service×city search.
-	const QUEUE_OPTION      = 'pt24_places_queue';
+	const OPTION_API_KEY = 'pt24_google_places_api_key';
+	const REST_NAMESPACE = 'pt24/v2';
+	const BATCH_SIZE     = 3;   // Pairs per cron tick (rate limit safe).
+	const QUEUE_OPTION   = 'pt24_places_queue';
+	const NEW_API_BASE   = 'https://places.googleapis.com/v1/places';
 
-	/** Maps PT24 service slug → Polish Google search term. */
+	/** PT24 service slug → Polish Google search term. */
 	private static array $search_terms = [
-		'hydraulik'          => 'hydraulik',
-		'elektryk'           => 'elektryk',
-		'mechanik'           => 'mechanik samochodowy serwis',
-		'fotowoltaika'       => 'instalacja fotowoltaiczna panele',
-		'pompa-ciepla'       => 'pompa ciepła montaż serwis',
-		'remont-lazienki'    => 'remont łazienki firma',
-		'laweta'             => 'laweta pomoc drogowa',
-		'wulkanizacja'       => 'wulkanizacja wymiana opon',
-		'klimatyzacja'       => 'montaż klimatyzacji serwis',
-		'instalacje-gazowe'  => 'instalacje gazowe certyfikat',
+		'hydraulik'         => 'hydraulik',
+		'elektryk'          => 'elektryk instalacje elektryczne',
+		'mechanik'          => 'mechanik samochodowy serwis',
+		'fotowoltaika'      => 'instalacja fotowoltaiczna panele słoneczne',
+		'pompa-ciepla'      => 'pompa ciepła montaż serwis',
+		'remont-lazienki'   => 'remont łazienki ekipa',
+		'laweta'            => 'laweta pomoc drogowa',
+		'wulkanizacja'      => 'wulkanizacja wymiana opon',
+		'klimatyzacja'      => 'klimatyzacja montaż serwis',
+		'instalacje-gazowe' => 'instalacje gazowe certyfikat',
 	];
 
 	/* =====================================================================
@@ -50,11 +54,13 @@ class PT24_Places_Seeder {
 	   ===================================================================== */
 
 	public static function register(): void {
-		add_action( 'wp_ajax_pt24_places_seed',       [ __CLASS__, 'ajax_seed' ] );
-		add_action( 'wp_ajax_pt24_places_seed_stats', [ __CLASS__, 'ajax_stats' ] );
-		add_action( 'wp_ajax_pt24_places_run_queue',  [ __CLASS__, 'ajax_run_queue' ] );
-		add_action( 'rest_api_init',                  [ __CLASS__, 'register_rest' ] );
-		add_action( 'pt24_places_cron',               [ __CLASS__, 'process_queue' ] );
+		add_action( 'wp_ajax_pt24_places_seed',        [ __CLASS__, 'ajax_seed' ] );
+		add_action( 'wp_ajax_pt24_places_import_csv',  [ __CLASS__, 'ajax_import_csv' ] );
+		add_action( 'wp_ajax_pt24_places_run_queue',   [ __CLASS__, 'ajax_run_queue' ] );
+		add_action( 'wp_ajax_pt24_places_clear_queue', [ __CLASS__, 'ajax_clear_queue' ] );
+		add_action( 'wp_ajax_pt24_places_stats',       [ __CLASS__, 'ajax_stats' ] );
+		add_action( 'rest_api_init',                   [ __CLASS__, 'register_rest' ] );
+		add_action( 'pt24_places_cron',                [ __CLASS__, 'process_queue' ] );
 
 		if ( ! wp_next_scheduled( 'pt24_places_cron' ) ) {
 			wp_schedule_event( time(), 'every_minute', 'pt24_places_cron' );
@@ -62,64 +68,178 @@ class PT24_Places_Seeder {
 	}
 
 	/* =====================================================================
-	   GOOGLE PLACES API
+	   GOOGLE PLACES API (NEW)
 	   ===================================================================== */
 
 	/**
-	 * Text Search — returns up to 20 places matching a query.
-	 *
-	 * @param string $query   e.g. "hydraulik Warszawa"
-	 * @param string $api_key Google Places API key
-	 * @return array  Array of place stubs or empty array on error.
+	 * Text Search — POST places:searchText.
+	 * Returns array of place stubs (only allowed fields).
 	 */
-	public static function text_search( string $query, string $api_key ): array {
-		$url = add_query_arg( [
-			'query'    => $query,
-			'language' => 'pl',
-			'region'   => 'pl',
-			'type'     => 'establishment',
-			'key'      => $api_key,
-		], 'https://maps.googleapis.com/maps/api/place/textsearch/json' );
+	public static function text_search( string $query, string $api_key, int $max = 20 ): array {
+		$response = wp_safe_remote_post(
+			self::NEW_API_BASE . ':searchText',
+			[
+				'timeout' => 20,
+				'headers' => [
+					'Content-Type'     => 'application/json',
+					'X-Goog-Api-Key'   => $api_key,
+					'X-Goog-FieldMask' => 'places.id,places.displayName,places.formattedAddress,'
+						. 'places.nationalPhoneNumber,places.websiteUri,places.rating,'
+						. 'places.userRatingCount,places.location,places.businessStatus,'
+						. 'places.googleMapsUri,places.primaryType',
+				],
+				'body' => wp_json_encode( [
+					'textQuery'      => $query,
+					'languageCode'   => 'pl',
+					'regionCode'     => 'PL',
+					'maxResultCount' => min( $max, 20 ),
+				] ),
+			]
+		);
 
-		$response = wp_safe_remote_get( $url, [ 'timeout' => 15 ] );
-		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+		if ( is_wp_error( $response ) ) {
+			error_log( 'PT24 Places text_search WP_Error: ' . $response->get_error_message() );
+			return [];
+		}
+		if ( 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
+			error_log( 'PT24 Places text_search HTTP error: ' . wp_remote_retrieve_body( $response ) );
 			return [];
 		}
 
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( JSON_ERROR_NONE !== json_last_error() || ! isset( $data['results'] ) ) {
-			return [];
-		}
-
-		return (array) $data['results'];
+		return ( JSON_ERROR_NONE === json_last_error() ) ? (array) ( $data['places'] ?? [] ) : [];
 	}
 
 	/**
-	 * Place Details — fetches phone, website, rating, address for a place_id.
-	 *
-	 * @param string $place_id Google Place ID
-	 * @param string $api_key
-	 * @return array|null  Details array or null on error.
+	 * Place Details — GET places/{id}.
+	 * Fetches regularOpeningHours not available in text-search.
 	 */
 	public static function get_details( string $place_id, string $api_key ): ?array {
-		$url = add_query_arg( [
-			'place_id' => $place_id,
-			'fields'   => 'name,formatted_address,formatted_phone_number,website,rating,user_ratings_total,opening_hours',
-			'language' => 'pl',
-			'key'      => $api_key,
-		], 'https://maps.googleapis.com/maps/api/place/details/json' );
+		$response = wp_safe_remote_get(
+			self::NEW_API_BASE . '/' . rawurlencode( $place_id ),
+			[
+				'timeout' => 15,
+				'headers' => [
+					'X-Goog-Api-Key'   => $api_key,
+					'X-Goog-FieldMask' => 'id,displayName,formattedAddress,'
+						. 'nationalPhoneNumber,websiteUri,rating,userRatingCount,'
+						. 'regularOpeningHours,location,businessStatus,googleMapsUri,primaryType',
+				],
+			]
+		);
 
-		$response = wp_safe_remote_get( $url, [ 'timeout' => 15 ] );
 		if ( is_wp_error( $response ) || 200 !== (int) wp_remote_retrieve_response_code( $response ) ) {
 			return null;
 		}
 
 		$data = json_decode( wp_remote_retrieve_body( $response ), true );
-		if ( JSON_ERROR_NONE !== json_last_error() || empty( $data['result'] ) ) {
-			return null;
+		return ( JSON_ERROR_NONE === json_last_error() && ! empty( $data['id'] ) ) ? $data : null;
+	}
+
+	/* =====================================================================
+	   AI ENRICHMENT — Prompt Nr 3 (profil firmy z danych Places)
+	   ===================================================================== */
+
+	/**
+	 * Generate AI-written firm profile.
+	 * Uses "PROMPT NR 3 - GOOGLE PLACES → PT24".
+	 * NIE kopiuje treści z Google — tworzy całkowicie nową treść.
+	 */
+	private static function generate_ai_profile( array $d ): string {
+		$oai_key = (string) get_option( 'pt24_openai_api_key', '' );
+		if ( '' === $oai_key ) {
+			return self::build_fallback_content( $d );
 		}
 
-		return $data['result'];
+		$hours_txt = '';
+		if ( ! empty( $d['opening_hours'] ) ) {
+			$hours_txt = 'Godziny otwarcia: ' . implode( '; ', array_slice( $d['opening_hours'], 0, 7 ) );
+		}
+
+		$prompt = "Na podstawie danych firmy wygeneruj profil SEO dla platformy pt24.pro.\n\n"
+			. "DANE:\n"
+			. "Nazwa firmy: {$d['name']}\n"
+			. "Usługa: {$d['service_name']}\n"
+			. "Miasto: {$d['city_name']}\n"
+			. "Adres: {$d['address']}\n"
+			. ( $d['phone']        ? "Telefon: {$d['phone']}\n"      : '' )
+			. ( $d['website']      ? "Strona www: {$d['website']}\n" : '' )
+			. ( $d['rating']       ? "Ocena: {$d['rating']}/5 ({$d['review_count']} opinii)\n" : '' )
+			. ( $hours_txt         ? $hours_txt . "\n"               : '' )
+			. "\nZASADY:\n"
+			. "- NIE kopiuj treści z Google — stwórz całkowicie nową treść\n"
+			. "- Język: prosty, wiarygodny, lokalny\n"
+			. "- NIE używaj: 'najwyższa jakość', 'lider rynku', 'najlepsza firma'\n"
+			. "- Użyj konkretnych słów kluczowych: {$d['service_name']} {$d['city_name']}\n"
+			. "- 600-900 słów\n\n"
+			. "WYGENERUJ JSON:\n"
+			. '{"h1":"...","description":"<p>...</p><p>...</p><p>...</p>",'
+			. '"services":["...","...","...","...","...","...","...","..."],'
+			. '"area":"...","faq":[{"q":"...","a":"..."},{"q":"...","a":"..."},{"q":"...","a":"..."}],'
+			. '"cta":"...","meta_title":"...","meta_description":"..."}';
+
+		$body = wp_json_encode( [
+			'model'           => 'gpt-4o-mini',
+			'messages'        => [
+				[ 'role' => 'system', 'content' => 'Jesteś polskim copywriterem SEO. Odpowiadasz WYŁĄCZNIE w formacie JSON.' ],
+				[ 'role' => 'user',   'content' => $prompt ],
+			],
+			'max_tokens'      => 2000,
+			'temperature'     => 0.7,
+			'response_format' => [ 'type' => 'json_object' ],
+		] );
+
+		$resp = wp_safe_remote_post( 'https://api.openai.com/v1/chat/completions', [
+			'headers' => [
+				'Authorization' => 'Bearer ' . $oai_key,
+				'Content-Type'  => 'application/json',
+			],
+			'body'    => $body,
+			'timeout' => 60,
+		] );
+
+		if ( is_wp_error( $resp ) || 200 !== (int) wp_remote_retrieve_response_code( $resp ) ) {
+			return self::build_fallback_content( $d );
+		}
+
+		$resp_data = json_decode( wp_remote_retrieve_body( $resp ), true );
+		$ai        = json_decode( $resp_data['choices'][0]['message']['content'] ?? '{}', true );
+
+		if ( JSON_ERROR_NONE !== json_last_error() || empty( $ai['description'] ) ) {
+			return self::build_fallback_content( $d );
+		}
+
+		// Cache AI meta for post-insert pickup
+		$slug = sanitize_title( $d['name'] . '-' . $d['city_slug'] );
+		set_transient( 'pt24_firm_ai_' . $slug, $ai, 600 );
+
+		return wp_kses_post( $ai['description'] );
+	}
+
+	/** Static fallback — no placeholders, real data only. */
+	private static function build_fallback_content( array $d ): string {
+		$name = esc_html( $d['name'] );
+		$svc  = esc_html( $d['service_name'] );
+		$city = esc_html( $d['city_name'] );
+		$addr = esc_html( $d['address'] );
+
+		$html = "<p><strong>{$name}</strong> świadczy usługi z zakresu {$svc} w {$city} i okolicach.</p>\n";
+		if ( $addr ) {
+			$html .= "<p>Adres: {$addr}.</p>\n";
+		}
+		if ( $d['rating'] && $d['review_count'] > 0 ) {
+			$html .= '<p>Ocena klientów: <strong>' . esc_html( $d['rating'] ) . '/5</strong>'
+				. ' na podstawie <strong>' . (int) $d['review_count'] . ' opinii</strong>.</p>' . "\n";
+		}
+		if ( ! empty( $d['opening_hours'] ) ) {
+			$html .= "<h3>Godziny otwarcia</h3>\n<ul>\n";
+			foreach ( array_slice( $d['opening_hours'], 0, 7 ) as $day ) {
+				$html .= '<li>' . esc_html( $day ) . "</li>\n";
+			}
+			$html .= "</ul>\n";
+		}
+		$html .= "<p>Skontaktuj się, aby otrzymać bezpłatną wycenę usługi.</p>\n";
+		return $html;
 	}
 
 	/* =====================================================================
@@ -127,16 +247,22 @@ class PT24_Places_Seeder {
 	   ===================================================================== */
 
 	/**
-	 * Seed firms for a service × city pair from Google Places.
-	 * Returns number of firms created/updated.
+	 * Seed firms for one service × city pair from Google Places.
+	 *
+	 * @param string $service_slug  PT24 service slug (e.g. 'mechanik')
+	 * @param string $city_slug     PT24 city slug   (e.g. 'ruda-slaska')
+	 * @param string $api_key       Google Places API key
+	 * @param bool   $use_ai        Generate AI profile (requires OpenAI key)
+	 * @param int    $max           Max firms to save (1-20)
+	 * @return int   Firms created/updated
 	 */
 	public static function seed_service_city(
 		string $service_slug,
 		string $city_slug,
 		string $api_key,
-		int    $max = self::MAX_PER_SEARCH
+		bool   $use_ai = false,
+		int    $max    = 5
 	): int {
-		// Resolve display names
 		$service_name = class_exists( 'PT24_Scale_Data' )
 			? PT24_Scale_Data::service_name( $service_slug )
 			: ucfirst( str_replace( '-', ' ', $service_slug ) );
@@ -146,114 +272,267 @@ class PT24_Places_Seeder {
 			: ucfirst( str_replace( '-', ' ', $city_slug ) );
 
 		$search_term = self::$search_terms[ $service_slug ] ?? str_replace( '-', ' ', $service_slug );
-		$query       = $search_term . ' ' . $city_name;
+		$places      = self::text_search( $search_term . ' ' . $city_name, $api_key, $max );
 
-		$places = self::text_search( $query, $api_key );
 		if ( empty( $places ) ) {
 			return 0;
 		}
 
 		$saved = 0;
 		foreach ( array_slice( $places, 0, $max ) as $place ) {
-			$place_id = (string) ( $place['place_id'] ?? '' );
-			if ( '' === $place_id ) {
-				continue;
+			// New API uses 'id'
+			$place_id = (string) ( $place['id'] ?? $place['place_id'] ?? '' );
+			if ( '' === $place_id ) continue;
+
+			// Skip permanently closed
+			if ( 'CLOSED_PERMANENTLY' === ( $place['businessStatus'] ?? '' ) ) continue;
+
+			// Deduplicate
+			if ( self::firm_exists_by_place_id( $place_id ) ) continue;
+
+			// Details call for opening hours
+			$det    = self::get_details( $place_id, $api_key ) ?? $place;
+			$src    = $det;
+
+			// Extract only allowed fields
+			$name         = sanitize_text_field( $src['displayName']['text'] ?? $src['displayName'] ?? '' );
+			$address      = sanitize_text_field( $src['formattedAddress'] ?? '' );
+			$phone        = sanitize_text_field( $src['nationalPhoneNumber'] ?? '' );
+			$website      = esc_url_raw( $src['websiteUri'] ?? '' );
+			$rating       = round( (float) ( $src['rating'] ?? 0 ), 1 );
+			$review_count = (int) ( $src['userRatingCount'] ?? 0 );
+			$maps_url     = esc_url_raw( $src['googleMapsUri'] ?? '' );
+			$primary_type = sanitize_key( $src['primaryType'] ?? '' );
+			$lat          = (float) ( $src['location']['latitude']  ?? 0 );
+			$lng          = (float) ( $src['location']['longitude'] ?? 0 );
+
+			$opening_hours = [];
+			foreach ( (array) ( $src['regularOpeningHours']['weekdayDescriptions'] ?? [] ) as $day ) {
+				$opening_hours[] = sanitize_text_field( $day );
 			}
 
-			// Deduplicate by Google Place ID.
-			if ( self::firm_exists_by_place_id( $place_id ) ) {
-				continue;
+			if ( '' === $name ) continue;
+
+			$firm_data = compact( 'name', 'address', 'phone', 'website', 'opening_hours', 'maps_url', 'primary_type' ) + [
+				'service_slug'  => $service_slug,
+				'service_name'  => $service_name,
+				'city_slug'     => $city_slug,
+				'city_name'     => $city_name,
+				'rating'        => $rating > 0 ? number_format( $rating, 1, ',', '' ) : '',
+				'review_count'  => $review_count,
+				'lat'           => $lat,
+				'lng'           => $lng,
+			];
+
+			$content = $use_ai ? self::generate_ai_profile( $firm_data ) : self::build_fallback_content( $firm_data );
+			$post_id = self::upsert_firm_post( $name, $city_slug, $content );
+
+			if ( $post_id > 0 ) {
+				self::save_firm_meta( $post_id, $firm_data, $place_id, 'google_places_v3' );
+				$saved++;
 			}
-
-			// Fetch details (phone, website, etc.)
-			$details = self::get_details( $place_id, $api_key );
-			if ( null === $details ) {
-				$details = $place; // Fallback to text-search stub
-			}
-
-			$name    = sanitize_text_field( $details['name'] ?? $place['name'] ?? '' );
-			$address = sanitize_text_field( $details['formatted_address'] ?? $place['formatted_address'] ?? '' );
-			$phone   = sanitize_text_field( $details['formatted_phone_number'] ?? '' );
-			$website = esc_url_raw( $details['website'] ?? '' );
-			$rating  = number_format( (float) ( $details['rating'] ?? $place['rating'] ?? 5.0 ), 1 );
-			$reviews = absint( $details['user_ratings_total'] ?? $place['user_ratings_total'] ?? 0 );
-
-			if ( '' === $name ) {
-				continue;
-			}
-
-			$slug    = sanitize_title( $name . '-' . $city_slug );
-			$content = '<p>' . esc_html( $name ) . ' — ' . esc_html( $service_name ) . ' w mieście ' . esc_html( $city_name ) . '.</p>';
-			if ( '' !== $address ) {
-				$content .= '<p>📍 ' . esc_html( $address ) . '</p>';
-			}
-
-			// Create or update CPT post
-			$existing_post = get_posts( [
-				'post_type'        => 'pt24_firm',
-				'name'             => $slug,
-				'numberposts'      => 1,
-				'suppress_filters' => true,
-			] );
-
-			if ( ! empty( $existing_post ) ) {
-				$post_id = (int) $existing_post[0]->ID;
-				wp_update_post( [
-					'ID'           => $post_id,
-					'post_title'   => $name,
-					'post_content' => $content,
-					'post_status'  => 'publish',
-				] );
-			} else {
-				$post_id = (int) wp_insert_post( [
-					'post_title'   => $name,
-					'post_name'    => $slug,
-					'post_content' => $content,
-					'post_status'  => 'publish',
-					'post_type'    => 'pt24_firm',
-				] );
-			}
-
-			if ( $post_id <= 0 ) {
-				continue;
-			}
-
-			// Store meta
-			update_post_meta( $post_id, 'pt24_firm_city',          $city_slug );
-			update_post_meta( $post_id, 'pt24_firm_city_name',     $city_name );
-			update_post_meta( $post_id, 'pt24_firm_services',      $service_slug );
-			update_post_meta( $post_id, 'pt24_firm_rating',        $rating );
-			update_post_meta( $post_id, 'pt24_firm_jobs',          (string) $reviews );
-			update_post_meta( $post_id, 'pt24_firm_phone',         $phone );
-			update_post_meta( $post_id, 'pt24_firm_website',       $website );
-			update_post_meta( $post_id, 'pt24_firm_address',       $address );
-			update_post_meta( $post_id, 'pt24_firm_place_id',      $place_id );
-			update_post_meta( $post_id, 'pt24_firm_established',   (string) gmdate( 'Y' ) );
-			update_post_meta( $post_id, 'pt24_firm_source',        'google_places' );
-			update_post_meta( $post_id, '_pt24_google_seeded',     '1' );
-
-			$saved++;
 		}
 
 		return $saved;
 	}
 
-	/** Check if a firm with this Google Place ID already exists. */
+	/* =====================================================================
+	   CSV IMPORT — places_seed format
+	   place_id,company_name,service,city,address,phone,website,rating,reviews,status
+	   ===================================================================== */
+
+	/**
+	 * Import firms from a places_seed CSV (no extra API calls needed).
+	 *
+	 * @param string $csv_text  Raw CSV.
+	 * @param bool   $use_ai    AI-enrich each firm.
+	 * @return array{ imported:int, skipped:int, errors:string[] }
+	 */
+	public static function import_from_csv( string $csv_text, bool $use_ai = false ): array {
+		$lines    = preg_split( '/\r?\n/', trim( $csv_text ) );
+		$imported = 0;
+		$skipped  = 0;
+		$errors   = [];
+
+		$cities   = class_exists( 'PT24_Scale_Data' ) ? PT24_Scale_Data::cities()   : [];
+		$services = class_exists( 'PT24_Scale_Data' ) ? PT24_Scale_Data::services() : [];
+
+		foreach ( $lines as $idx => $line ) {
+			$line = trim( $line );
+			if ( '' === $line ) continue;
+
+			$cols = str_getcsv( $line );
+
+			// Skip header row
+			if ( 0 === $idx && in_array( strtolower( $cols[0] ?? '' ), [ 'place_id', 'id' ], true ) ) {
+				continue;
+			}
+
+			if ( count( $cols ) < 4 ) {
+				$errors[] = "Linia " . ( $idx + 1 ) . ": za mało kolumn (min. 4).";
+				$skipped++;
+				continue;
+			}
+
+			$place_id     = sanitize_text_field( trim( $cols[0] ?? '' ) );
+			$name         = sanitize_text_field( trim( $cols[1] ?? '' ) );
+			$service_raw  = trim( $cols[2] ?? '' );
+			$city_raw     = trim( $cols[3] ?? '' );
+			$address      = sanitize_text_field( trim( $cols[4] ?? '' ) );
+			$phone        = sanitize_text_field( trim( $cols[5] ?? '' ) );
+			$website      = esc_url_raw( trim( $cols[6] ?? '' ) );
+			$rating_raw   = (float) str_replace( ',', '.', trim( $cols[7] ?? '0' ) );
+			$review_count = (int) trim( $cols[8] ?? '0' );
+			$status       = strtolower( trim( $cols[9] ?? 'new' ) );
+
+			if ( in_array( $status, [ 'closed', 'closed_permanently' ], true ) ) {
+				$skipped++;
+				continue;
+			}
+
+			$service_slug = sanitize_key( str_replace( ' ', '-', strtolower( $service_raw ) ) );
+			if ( ! empty( $services ) && ! isset( $services[ $service_slug ] ) ) {
+				$errors[] = "Linia " . ( $idx + 1 ) . ": nieznana usługa '{$service_raw}'.";
+				$skipped++;
+				continue;
+			}
+
+			$city_slug = sanitize_title( $city_raw );
+			$city_name = $cities[ $city_slug ] ?? ucfirst( str_replace( '-', ' ', $city_slug ) );
+			$svc_name  = $services[ $service_slug ] ?? ucfirst( str_replace( '-', ' ', $service_slug ) );
+
+			if ( '' === $name || '' === $service_slug || '' === $city_slug ) {
+				$errors[] = "Linia " . ( $idx + 1 ) . ": brak wymaganego pola.";
+				$skipped++;
+				continue;
+			}
+
+			if ( '' !== $place_id && self::firm_exists_by_place_id( $place_id ) ) {
+				$skipped++;
+				continue;
+			}
+
+			$firm_data = [
+				'name'          => $name,
+				'service_slug'  => $service_slug,
+				'service_name'  => $svc_name,
+				'city_slug'     => $city_slug,
+				'city_name'     => $city_name,
+				'address'       => $address,
+				'phone'         => $phone,
+				'website'       => $website,
+				'rating'        => $rating_raw > 0 ? number_format( $rating_raw, 1, ',', '' ) : '',
+				'review_count'  => $review_count,
+				'lat'           => 0.0,
+				'lng'           => 0.0,
+				'opening_hours' => [],
+				'maps_url'      => '',
+				'primary_type'  => '',
+			];
+
+			$content = $use_ai ? self::generate_ai_profile( $firm_data ) : self::build_fallback_content( $firm_data );
+			$post_id = self::upsert_firm_post( $name, $city_slug, $content );
+
+			if ( $post_id > 0 ) {
+				self::save_firm_meta( $post_id, $firm_data, $place_id, 'csv_import' );
+				$imported++;
+			} else {
+				$errors[] = "Linia " . ( $idx + 1 ) . ": błąd zapisu '{$name}'.";
+				$skipped++;
+			}
+		}
+
+		return [ 'imported' => $imported, 'skipped' => $skipped, 'errors' => $errors ];
+	}
+
+	/* =====================================================================
+	   SHARED HELPERS
+	   ===================================================================== */
+
+	/** Create or update a pt24_firm CPT post. Returns post ID or 0. */
+	private static function upsert_firm_post( string $name, string $city_slug, string $content ): int {
+		$slug     = sanitize_title( $name . '-' . $city_slug );
+		$existing = get_posts( [
+			'post_type'        => 'pt24_firm',
+			'name'             => $slug,
+			'numberposts'      => 1,
+			'post_status'      => 'any',
+			'suppress_filters' => true,
+		] );
+
+		if ( ! empty( $existing ) ) {
+			$post_id = (int) $existing[0]->ID;
+			wp_update_post( [
+				'ID'           => $post_id,
+				'post_title'   => $name,
+				'post_content' => $content,
+				'post_status'  => 'publish',
+			] );
+			return $post_id;
+		}
+
+		return (int) wp_insert_post( [
+			'post_title'   => $name,
+			'post_name'    => $slug,
+			'post_content' => $content,
+			'post_status'  => 'publish',
+			'post_type'    => 'pt24_firm',
+		] );
+	}
+
+	/** Save all meta for a firm post; pick up AI transient if available. */
+	private static function save_firm_meta( int $post_id, array $d, string $place_id, string $source ): void {
+		update_post_meta( $post_id, 'pt24_firm_city',          $d['city_slug'] );
+		update_post_meta( $post_id, 'pt24_firm_city_name',     $d['city_name'] );
+		update_post_meta( $post_id, 'pt24_firm_services',      $d['service_slug'] );
+		update_post_meta( $post_id, 'pt24_firm_rating',        $d['rating'] );
+		update_post_meta( $post_id, 'pt24_firm_jobs',          (string) $d['review_count'] );
+		update_post_meta( $post_id, 'pt24_firm_phone',         $d['phone'] );
+		update_post_meta( $post_id, 'pt24_firm_website',       $d['website'] );
+		update_post_meta( $post_id, 'pt24_firm_address',       $d['address'] );
+		update_post_meta( $post_id, 'pt24_firm_place_id',      $place_id );
+		update_post_meta( $post_id, 'pt24_firm_maps_url',      $d['maps_url'] );
+		update_post_meta( $post_id, 'pt24_firm_lat',           (string) $d['lat'] );
+		update_post_meta( $post_id, 'pt24_firm_lng',           (string) $d['lng'] );
+		update_post_meta( $post_id, 'pt24_firm_primary_type',  $d['primary_type'] );
+		update_post_meta( $post_id, 'pt24_firm_source',        $source );
+		update_post_meta( $post_id, '_pt24_google_seeded',     '1' );
+
+		if ( ! empty( $d['opening_hours'] ) ) {
+			update_post_meta( $post_id, 'pt24_firm_hours', wp_json_encode( $d['opening_hours'] ) );
+		}
+
+		// AI-generated meta (stored in transient by generate_ai_profile)
+		$slug    = sanitize_title( $d['name'] . '-' . $d['city_slug'] );
+		$ai_meta = get_transient( 'pt24_firm_ai_' . $slug );
+		if ( is_array( $ai_meta ) ) {
+			if ( ! empty( $ai_meta['meta_title'] ) )        update_post_meta( $post_id, 'pt24_meta_title',         sanitize_text_field( $ai_meta['meta_title'] ) );
+			if ( ! empty( $ai_meta['meta_description'] ) )  update_post_meta( $post_id, 'pt24_meta_description',   sanitize_text_field( $ai_meta['meta_description'] ) );
+			if ( ! empty( $ai_meta['faq'] ) )               update_post_meta( $post_id, 'pt24_firm_faq',           wp_json_encode( $ai_meta['faq'] ) );
+			if ( ! empty( $ai_meta['services'] ) )          update_post_meta( $post_id, 'pt24_firm_services_list', wp_json_encode( $ai_meta['services'] ) );
+			delete_transient( 'pt24_firm_ai_' . $slug );
+		}
+	}
+
 	private static function firm_exists_by_place_id( string $place_id ): bool {
 		global $wpdb;
+		if ( '' === $place_id ) return false;
 		return (bool) $wpdb->get_var( $wpdb->prepare(
-			"SELECT post_id FROM {$wpdb->postmeta}
-			 WHERE meta_key = 'pt24_firm_place_id' AND meta_value = %s LIMIT 1",
+			"SELECT post_id FROM {$wpdb->postmeta} WHERE meta_key='pt24_firm_place_id' AND meta_value=%s LIMIT 1",
 			$place_id
 		) );
 	}
 
 	/* =====================================================================
-	   QUEUE / BATCH
+	   QUEUE / BATCH (WP-Cron)
 	   ===================================================================== */
 
-	/** Queue all city × service pairs that don't have Google Places data yet. */
-	public static function queue_all( string $api_key, array $service_filter = [], array $city_filter = [] ): int {
+	public static function queue_all(
+		string $api_key,
+		array  $service_filter = [],
+		array  $city_filter    = [],
+		bool   $use_ai         = false
+	): int {
 		$all_services = class_exists( 'PT24_Scale_Data' ) ? array_keys( PT24_Scale_Data::services() ) : array_keys( self::$search_terms );
 		$all_cities   = class_exists( 'PT24_Scale_Data' ) ? array_keys( PT24_Scale_Data::cities() )   : [];
 
@@ -262,34 +541,27 @@ class PT24_Places_Seeder {
 
 		$queue = (array) get_option( self::QUEUE_OPTION, [] );
 		$added = 0;
-
-		foreach ( $services as $service ) {
-			foreach ( $cities as $city ) {
-				$key = $service . '|' . $city;
+		foreach ( $services as $svc ) {
+			foreach ( $cities as $cty ) {
+				$key = $svc . '|' . $cty;
 				if ( ! isset( $queue[ $key ] ) ) {
-					$queue[ $key ] = [ 'service' => $service, 'city' => $city, 'api_key' => $api_key ];
+					$queue[ $key ] = [ 'service' => $svc, 'city' => $cty, 'api_key' => $api_key, 'use_ai' => $use_ai ];
 					$added++;
 				}
 			}
 		}
-
 		update_option( self::QUEUE_OPTION, $queue, false );
 		return $added;
 	}
 
-	/** WP-Cron: process 3 pairs per tick (API calls are slow). */
 	public static function process_queue(): int {
 		$api_key = (string) get_option( self::OPTION_API_KEY, '' );
-		if ( '' === $api_key ) {
-			return 0;
-		}
+		if ( '' === $api_key ) return 0;
 
 		$queue = (array) get_option( self::QUEUE_OPTION, [] );
-		if ( empty( $queue ) ) {
-			return 0;
-		}
+		if ( empty( $queue ) ) return 0;
 
-		$batch = array_splice( $queue, 0, 3 );
+		$batch = array_splice( $queue, 0, self::BATCH_SIZE );
 		update_option( self::QUEUE_OPTION, $queue, false );
 
 		$total = 0;
@@ -297,14 +569,13 @@ class PT24_Places_Seeder {
 			$total += self::seed_service_city(
 				(string) $pair['service'],
 				(string) $pair['city'],
-				$api_key
+				$api_key,
+				! empty( $pair['use_ai'] )
 			);
 		}
 
-		// Update stats
-		$stats            = (array) get_option( 'pt24_places_stats', [] );
+		$stats = (array) get_option( 'pt24_places_stats', [] );
 		$stats['total']   = ( $stats['total'] ?? 0 ) + $total;
-		$stats['pairs']   = ( $stats['pairs'] ?? 0 ) + count( $batch );
 		$stats['last_ts'] = time();
 		update_option( 'pt24_places_stats', $stats, false );
 
@@ -318,24 +589,16 @@ class PT24_Places_Seeder {
 	public static function get_stats(): array {
 		global $wpdb;
 
-		$total_firms = (int) $wpdb->get_var(
-			"SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type='pt24_firm' AND post_status='publish'"
-		);
-		$places_firms = (int) $wpdb->get_var(
-			"SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key='_pt24_google_seeded' AND meta_value='1'"
-		);
-		$queue       = (array) get_option( self::QUEUE_OPTION, [] );
-		$has_api_key = '' !== (string) get_option( self::OPTION_API_KEY, '' );
-
-		$all_cities   = class_exists( 'PT24_Scale_Data' ) ? count( PT24_Scale_Data::cities() )   : 0;
-		$all_services = class_exists( 'PT24_Scale_Data' ) ? count( PT24_Scale_Data::services() ) : 0;
-
 		return [
-			'total_firms'    => $total_firms,
-			'places_firms'   => $places_firms,
-			'queue_size'     => count( $queue ),
-			'has_api_key'    => $has_api_key,
-			'possible_pairs' => $all_cities * $all_services,
+			'total_firms'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type='pt24_firm' AND post_status='publish'" ),
+			'places_firms'   => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key='_pt24_google_seeded' AND meta_value='1'" ),
+			'ai_enriched'    => (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->postmeta} WHERE meta_key='pt24_firm_faq'" ),
+			'queue_size'     => count( (array) get_option( self::QUEUE_OPTION, [] ) ),
+			'has_places_key' => '' !== (string) get_option( self::OPTION_API_KEY, '' ),
+			'has_openai_key' => '' !== (string) get_option( 'pt24_openai_api_key', '' ),
+			'possible_pairs' => class_exists( 'PT24_Scale_Data' )
+				? count( PT24_Scale_Data::cities() ) * count( PT24_Scale_Data::services() )
+				: 0,
 		];
 	}
 
@@ -344,15 +607,23 @@ class PT24_Places_Seeder {
 	   ===================================================================== */
 
 	public static function register_rest(): void {
+		$auth = function( WP_REST_Request $r ): bool {
+			if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) return true;
+			$token  = (string) get_option( 'pt24_webhook_token', '' );
+			$header = (string) $r->get_header( 'X-PT24-Token' );
+			return '' !== $token && hash_equals( $token, $header );
+		};
+
 		register_rest_route( self::REST_NAMESPACE, '/places-seed', [
 			'methods'             => 'POST',
 			'callback'            => [ __CLASS__, 'rest_seed' ],
-			'permission_callback' => function( WP_REST_Request $r ) {
-				if ( is_user_logged_in() && current_user_can( 'manage_options' ) ) return true;
-				$token  = (string) get_option( 'pt24_webhook_token', '' );
-				$header = (string) $r->get_header( 'X-PT24-Token' );
-				return '' !== $token && hash_equals( $token, $header );
-			},
+			'permission_callback' => $auth,
+		] );
+
+		register_rest_route( self::REST_NAMESPACE, '/places-import-csv', [
+			'methods'             => 'POST',
+			'callback'            => [ __CLASS__, 'rest_import_csv' ],
+			'permission_callback' => $auth,
 		] );
 
 		register_rest_route( self::REST_NAMESPACE, '/places-stats', [
@@ -366,6 +637,7 @@ class PT24_Places_Seeder {
 		$body    = $request->get_json_params();
 		$service = sanitize_key( $body['service'] ?? '' );
 		$city    = sanitize_title( $body['city'] ?? '' );
+		$use_ai  = ! empty( $body['use_ai'] );
 		$api_key = sanitize_text_field( $body['api_key'] ?? (string) get_option( self::OPTION_API_KEY, '' ) );
 
 		if ( '' === $api_key ) {
@@ -373,17 +645,33 @@ class PT24_Places_Seeder {
 		}
 
 		if ( '' !== $service && '' !== $city ) {
-			// Single pair
-			$saved = self::seed_service_city( $service, $city, $api_key );
+			$saved = self::seed_service_city( $service, $city, $api_key, $use_ai );
 			return new WP_REST_Response( [ 'success' => true, 'saved' => $saved ], 200 );
 		}
 
-		// Queue all
-		$queued = self::queue_all( $api_key );
+		$queued = self::queue_all(
+			$api_key,
+			(array) ( $body['services'] ?? [] ),
+			(array) ( $body['cities']   ?? [] ),
+			$use_ai
+		);
 		return new WP_REST_Response( [ 'success' => true, 'queued' => $queued ], 202 );
 	}
 
-	public static function rest_stats( WP_REST_Request $request ): WP_REST_Response {
+	public static function rest_import_csv( WP_REST_Request $request ): WP_REST_Response {
+		$body   = $request->get_json_params();
+		$csv    = (string) ( $body['csv'] ?? '' );
+		$use_ai = ! empty( $body['use_ai'] );
+
+		if ( '' === $csv ) {
+			return new WP_REST_Response( [ 'error' => 'Provide csv field.' ], 400 );
+		}
+
+		$result = self::import_from_csv( $csv, $use_ai );
+		return new WP_REST_Response( array_merge( [ 'success' => true ], $result ), 202 );
+	}
+
+	public static function rest_stats( WP_REST_Request $r ): WP_REST_Response {
 		return new WP_REST_Response( self::get_stats(), 200 );
 	}
 
@@ -393,42 +681,53 @@ class PT24_Places_Seeder {
 
 	public static function ajax_seed(): void {
 		check_ajax_referer( 'pt24_places_nonce', 'nonce' );
-		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Insufficient permissions.' ] );
-		}
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( [ 'message' => 'Brak uprawnień.' ] );
 
 		$service = sanitize_key( wp_unslash( $_POST['service'] ?? '' ) );
 		$city    = sanitize_title( wp_unslash( $_POST['city'] ?? '' ) );
+		$use_ai  = ! empty( $_POST['use_ai'] );
 		$api_key = (string) get_option( self::OPTION_API_KEY, '' );
 
-		if ( '' === $api_key ) {
-			wp_send_json_error( [ 'message' => 'Brak klucza Google Places API. Dodaj go w ustawieniach.' ] );
-		}
-
-		if ( 'all' === $service || '' === $service ) {
-			// Queue all pairs
-			$queued = self::queue_all( $api_key );
-			wp_send_json_success( [
-				'message' => "Dodano {$queued} par do kolejki. WP-Cron przetworzy 3 pary/minutę.",
-				'stats'   => self::get_stats(),
-			] );
-			return;
-		}
+		if ( '' === $api_key ) wp_send_json_error( [ 'message' => 'Brak klucza Google Places API. Dodaj go w ustawieniach.' ] );
 
 		if ( '' !== $service && '' !== $city ) {
-			$saved = self::seed_service_city( $service, $city, $api_key );
-			wp_send_json_success( [
-				'message' => "Zapisano {$saved} firm dla {$service}/{$city}.",
-				'stats'   => self::get_stats(),
-			] );
+			$saved = self::seed_service_city( $service, $city, $api_key, $use_ai );
+			wp_send_json_success( [ 'message' => "Zapisano {$saved} firm dla {$service}/{$city}.", 'stats' => self::get_stats() ] );
 			return;
 		}
 
-		// Queue specific service, all cities
 		$cities = class_exists( 'PT24_Scale_Data' ) ? array_keys( PT24_Scale_Data::cities() ) : [];
-		$queued = self::queue_all( $api_key, [ $service ], $cities );
+		$queued = self::queue_all( $api_key, $service ? [ $service ] : [], $cities, $use_ai );
 		wp_send_json_success( [
-			'message' => "Dodano {$queued} par usługi {$service} do kolejki.",
+			'message' => "Dodano {$queued} par do kolejki. WP-Cron: " . self::BATCH_SIZE . " par/min.",
+			'stats'   => self::get_stats(),
+		] );
+	}
+
+	public static function ajax_import_csv(): void {
+		check_ajax_referer( 'pt24_places_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( [ 'message' => 'Brak uprawnień.' ] );
+
+		$csv    = sanitize_textarea_field( wp_unslash( $_POST['csv'] ?? '' ) );
+		$use_ai = ! empty( $_POST['use_ai'] );
+
+		if ( '' === $csv ) wp_send_json_error( [ 'message' => 'Podaj dane CSV.' ] );
+
+		$result = self::import_from_csv( $csv, $use_ai );
+		wp_send_json_success( [
+			'message' => "Zaimportowano {$result['imported']} firm, pominięto {$result['skipped']}.",
+			'errors'  => $result['errors'],
+			'stats'   => self::get_stats(),
+		] );
+	}
+
+	public static function ajax_run_queue(): void {
+		check_ajax_referer( 'pt24_places_nonce', 'nonce' );
+		if ( ! current_user_can( 'manage_options' ) ) wp_send_json_error( [ 'message' => 'Brak uprawnień.' ] );
+
+		$saved = self::process_queue();
+		wp_send_json_success( [
+			'message' => "Przetworzono " . self::BATCH_SIZE . " par, zapisano {$saved} firm.",
 			'stats'   => self::get_stats(),
 		] );
 	}
@@ -438,16 +737,12 @@ class PT24_Places_Seeder {
 		wp_send_json_success( self::get_stats() );
 	}
 
-	public static function ajax_run_queue(): void {
+	public static function ajax_clear_queue(): void {
 		check_ajax_referer( 'pt24_places_nonce', 'nonce' );
 		if ( ! current_user_can( 'manage_options' ) ) {
-			wp_send_json_error( [ 'message' => 'Insufficient permissions.' ] );
+			wp_send_json_error( [ 'message' => 'Brak uprawnień.' ] );
 		}
-
-		$saved = self::process_queue();
-		wp_send_json_success( [
-			'message' => "Przetworzono 3 pary, zapisano {$saved} firm.",
-			'stats'   => self::get_stats(),
-		] );
+		update_option( self::QUEUE_OPTION, [], false );
+		wp_send_json_success( [ 'message' => 'Kolejka wyczyszczona.', 'stats' => self::get_stats() ] );
 	}
 }
