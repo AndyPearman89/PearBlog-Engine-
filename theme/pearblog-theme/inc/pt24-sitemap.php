@@ -58,7 +58,7 @@ function pt24_sitemap_entries() {
     $blog_posts = get_posts( array(
         'post_type'        => 'post',
         'post_status'      => 'publish',
-        'numberposts'      => 200,
+        'numberposts'      => 2000,
         'suppress_filters' => true,
     ) );
     foreach ( $blog_posts as $blog_post ) {
@@ -72,8 +72,13 @@ function pt24_sitemap_entries() {
         $entries[] = array( 'loc' => pt24_sitemap_url( $post_path ), 'priority' => '0.5' );
     }
 
-    // Service x city landings.
-    if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+    // Service × city landings — use PT24_Scale_Data for full 64 × 10 dataset.
+    // PearBlog_PT24_Landing_CPT::get_cities() only returns the original 6 cities
+    // because ensure_maps_loaded() is never called before the sitemap exits on init.
+    if ( class_exists( 'PT24_Scale_Data' ) ) {
+        $services = array_keys( PT24_Scale_Data::services() );
+        $cities   = array_keys( PT24_Scale_Data::cities() );
+    } elseif ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
         $services = array_keys( PearBlog_PT24_Landing_CPT::get_services() );
         $cities   = array_keys( PearBlog_PT24_Landing_CPT::get_cities() );
     } else {
@@ -97,7 +102,7 @@ function pt24_sitemap_entries() {
     $firms = get_posts( array(
         'post_type'        => 'pt24_firm',
         'post_status'      => 'publish',
-        'numberposts'      => 200,
+        'numberposts'      => 2000,
         'suppress_filters' => true,
     ) );
     foreach ( $firms as $firm ) {
