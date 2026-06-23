@@ -828,52 +828,138 @@ class AdminPageV8Enterprise {
 	 * Render Integrations Tab
 	 */
 	private function render_integrations_tab(): void {
+		$places_ok  = class_exists( 'PT24_Places_Seeder' );
+		$places_key = $places_ok ? ( '' !== (string) get_option( \PT24_Places_Seeder::OPTION_API_KEY, '' ) ) : false;
+		$places_stats = $places_ok ? \PT24_Places_Seeder::get_stats() : [];
+		$nonce = wp_create_nonce( 'pt24_places_nonce' );
+		$pt24_ads_on = '' !== (string) get_option( 'pt24_adsense_pub_id', '' ) && '1' === (string) get_option( 'pt24_adsense_enabled', '0' );
 		?>
 		<div class="pb-v8-integrations">
-			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Integrations & API', 'pearblog-engine' ); ?></h2>
+			<h2 class="pb-v8-section-title">🔗 Integrations & API</h2>
 
-			<!-- API Status -->
-			<div class="pb-v8-alert pb-v8-alert-success" style="margin-bottom: var(--pb-v8-space-lg);">
-				<strong>✅ <?php esc_html_e( 'API Status: Active', 'pearblog-engine' ); ?></strong>
-				<p><?php esc_html_e( 'All API endpoints are operational', 'pearblog-engine' ); ?></p>
+			<!-- KPI kart integracji -->
+			<div class="pb-v8-metrics-grid">
+				<div class="pb-v8-card"><div class="pb-v8-card-body">
+					<h3>🗺️ Google Places</h3>
+					<p><?php echo $places_key ? 'Klucz API ustawiony' : 'Brak klucza API'; ?></p>
+					<span class="pb-v8-badge pb-v8-badge-<?php echo $places_key ? 'success' : 'warning'; ?>"><?php echo $places_key ? 'Aktywny' : 'Wymaga konfiguracji'; ?></span>
+					<?php if ( $places_ok ) : ?>
+						<p style="margin-top:8px;font-size:12px;color:var(--pb-v8-text-secondary);">
+							<?php echo esc_html( $places_stats['places_firms'] ?? 0 ); ?> firm z Google Places
+						</p>
+					<?php endif; ?>
+				</div></div>
+				<div class="pb-v8-card"><div class="pb-v8-card-body">
+					<h3>💰 Google AdSense</h3>
+					<p><?php echo $pt24_ads_on ? esc_html__( 'Configured', 'pearblog-engine' ) : esc_html__( 'Not configured', 'pearblog-engine' ); ?></p>
+					<span class="pb-v8-badge pb-v8-badge-<?php echo $pt24_ads_on ? 'success' : 'warning'; ?>"><?php echo $pt24_ads_on ? 'Active' : 'Inactive'; ?></span>
+				</div></div>
+				<div class="pb-v8-card"><div class="pb-v8-card-body">
+					<h3>🔍 Google Search Console</h3>
+					<p>Zgłoś sitemap: <code>/sitemap.xml</code></p>
+					<a href="https://search.google.com/search-console" target="_blank" rel="noopener" class="pb-v8-btn pb-v8-btn-outline" style="font-size:12px;margin-top:8px;">Otwórz GSC</a>
+				</div></div>
+				<div class="pb-v8-card"><div class="pb-v8-card-body">
+					<h3>⚙️ n8n / REST API</h3>
+					<p><?php echo '' !== get_option('pt24_webhook_token','') ? 'Token ustawiony' : 'Brak tokenu'; ?></p>
+					<a href="<?php echo esc_url( add_query_arg( [ 'page' => 'pearblog-enterprise-v8', 'tab' => 'automation' ] ) ); ?>" class="pb-v8-btn pb-v8-btn-outline" style="font-size:12px;margin-top:8px;">→ Automation</a>
+				</div></div>
 			</div>
 
-			<!-- Available Integrations -->
-			<div class="pb-v8-metrics-grid">
-				<div class="pb-v8-card">
-					<div class="pb-v8-card-body">
-						<h3>🔗 Google Analytics</h3>
-						<p>Connected</p>
-						<span class="pb-v8-badge pb-v8-badge-success">Active</span>
-					</div>
+			<!-- Google Places seeder -->
+			<div class="pb-v8-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header">
+					<h3 class="pb-v8-card-title">🗺️ Google Places — Import realnych firm</h3>
 				</div>
+				<div class="pb-v8-card-body">
+					<?php if ( ! $places_ok ) : ?>
+						<div class="pb-v8-alert pb-v8-alert-warning">
+							<strong>⚠️ Seeder nie załadowany.</strong>
+							<p>Upewnij się, że <code>pt24-places-seeder.php</code> i <code>pt24-places-loader.php</code> są w <code>mu-plugins/</code>.</p>
+						</div>
+					<?php elseif ( ! $places_key ) : ?>
+						<div class="pb-v8-alert pb-v8-alert-warning">
+							<strong>🔑 Dodaj klucz Google Places API w zakładce Settings.</strong>
+							<p>Wymagane: <em>Places API</em> włączone w Google Cloud Console.</p>
+							<a href="<?php echo esc_url( add_query_arg( [ 'page' => 'pearblog-enterprise-v8', 'tab' => 'settings' ] ) ); ?>" class="pb-v8-btn pb-v8-btn-primary" style="margin-top:8px;">→ Przejdź do Settings</a>
+						</div>
+					<?php else : ?>
+						<div class="pb-v8-metrics-grid" style="margin-bottom:16px;">
+							<?php
+							$this->render_metric_card( [ 'label' => 'Firm z Google Places', 'value' => number_format_i18n( $places_stats['places_firms'] ?? 0 ), 'icon' => '🗺️', 'color' => 'success' ] );
+							$this->render_metric_card( [ 'label' => 'Wszystkich firm',      'value' => number_format_i18n( $places_stats['total_firms'] ?? 0 ),  'icon' => '🏢', 'color' => 'primary' ] );
+							$this->render_metric_card( [ 'label' => 'Możliwych par',         'value' => number_format_i18n( $places_stats['possible_pairs'] ?? 0 ), 'icon' => '🎯', 'color' => 'primary' ] );
+							$this->render_metric_card( [ 'label' => 'W kolejce',             'value' => number_format_i18n( $places_stats['queue_size'] ?? 0 ),  'icon' => '⏳', 'color' => 'warning' ] );
+							?>
+						</div>
 
-				<div class="pb-v8-card">
-					<div class="pb-v8-card-body">
-						<h3>💰 Google AdSense</h3>
-						<?php $pt24_ads_on = '' !== (string) get_option( 'pt24_adsense_pub_id', '' ) && '1' === (string) get_option( 'pt24_adsense_enabled', '0' ); ?>
-						<p><?php echo $pt24_ads_on ? esc_html__( 'Configured', 'pearblog-engine' ) : esc_html__( 'Not configured', 'pearblog-engine' ); ?></p>
-						<span class="pb-v8-badge pb-v8-badge-<?php echo $pt24_ads_on ? 'success' : 'warning'; ?>"><?php echo $pt24_ads_on ? esc_html__( 'Active', 'pearblog-engine' ) : esc_html__( 'Inactive', 'pearblog-engine' ); ?></span>
-					</div>
-				</div>
+						<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+							<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+								$services = PT24_Scale_Data::services();
+								$cities   = PT24_Scale_Data::cities();
+							?>
+							<div>
+								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Usługa</label>
+								<select id="ptPlacesService" style="padding:6px;font-size:13px;">
+									<option value="all">— Wszystkie usługi (<?php echo count($services); ?>) —</option>
+									<?php foreach ( $services as $s_slug => $s_data ) : ?>
+										<option value="<?php echo esc_attr( $s_slug ); ?>"><?php echo esc_html( $s_data['name'] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+							<div>
+								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Miasto</label>
+								<select id="ptPlacesCity" style="padding:6px;font-size:13px;">
+									<option value="">— Wszystkie miasta (<?php echo count($cities); ?>) —</option>
+									<?php foreach ( $cities as $c_slug => $c_data ) : ?>
+										<option value="<?php echo esc_attr( $c_slug ); ?>"><?php echo esc_html( $c_data['name'] ); ?></option>
+									<?php endforeach; ?>
+								</select>
+							</div>
+							<?php endif; ?>
+						</div>
 
-				<div class="pb-v8-card">
-					<div class="pb-v8-card-body">
-						<h3>🔍 Google Search Console</h3>
-						<p>Not Connected</p>
-						<span class="pb-v8-badge pb-v8-badge-warning">Pending</span>
-					</div>
-				</div>
-
-				<div class="pb-v8-card">
-					<div class="pb-v8-card-body">
-						<h3>📧 Mailchimp</h3>
-						<p>Not Connected</p>
-						<span class="pb-v8-badge pb-v8-badge-warning">Pending</span>
-					</div>
+						<div style="display:flex;gap:8px;flex-wrap:wrap;">
+							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptPlaces.seed('<?php echo esc_js( $nonce ); ?>')">
+								🔍 Importuj firmy z Google
+							</button>
+							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.runQueue('<?php echo esc_js( $nonce ); ?>')">
+								▶ Uruchom kolejkę (3 pary)
+							</button>
+						</div>
+						<div id="ptPlacesMsg" style="margin-top:10px;font-size:13px;"></div>
+					<?php endif; ?>
 				</div>
 			</div>
 		</div>
+
+		<script>
+		var ptPlaces = {
+			ajaxUrl: <?php echo wp_json_encode( $this->get_admin_ajax_url() ); ?>,
+			seed: function(nonce) {
+				var msg = document.getElementById('ptPlacesMsg');
+				msg.textContent = '⏳ Kolejkuję zapytania Google Places…';
+				var d = new FormData();
+				d.append('action','pt24_places_seed'); d.append('nonce',nonce);
+				d.append('service', document.getElementById('ptPlacesService')?.value || 'all');
+				d.append('city', document.getElementById('ptPlacesCity')?.value || '');
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color = r.success ? 'green' : 'red';
+					msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data?.message||'Błąd');
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			},
+			runQueue: function(nonce) {
+				var msg = document.getElementById('ptPlacesMsg');
+				msg.textContent = '⏳ Przetwarzam…';
+				var d = new FormData();
+				d.append('action','pt24_places_run_queue'); d.append('nonce',nonce);
+				fetch(this.ajaxUrl,{method:'POST',body:d}).then(r=>r.json()).then(r=>{
+					msg.style.color = r.success ? 'green' : 'red';
+					msg.textContent = r.success ? '✅ '+r.data.message : '❌ '+(r.data?.message||'Błąd');
+				}).catch(()=>{ msg.style.color='red'; msg.textContent='❌ Błąd połączenia'; });
+			}
+		};
+		</script>
 		<?php
 	}
 
@@ -1317,6 +1403,7 @@ class AdminPageV8Enterprise {
 		$ads_pub     = (string) get_option( 'pt24_adsense_pub_id', '' );
 		$ads_enabled = '1' === (string) get_option( 'pt24_adsense_enabled', '0' );
 		$ads_auto    = '1' === (string) get_option( 'pt24_adsense_auto_ads', '1' );
+		$places_key  = (string) get_option( 'pt24_google_places_api_key', '' );
 		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
 		?>
 		<div class="pb-v8-dashboard">
@@ -1364,6 +1451,21 @@ class AdminPageV8Enterprise {
 							<label><input type="checkbox" name="pt24_adsense_auto_ads" value="1" <?php checked( $ads_auto ); ?>> <?php esc_html_e( 'Enable Auto Ads (page-level)', 'pearblog-engine' ); ?></label>
 						</p>
 
+						<hr style="margin:24px 0;border:0;border-top:1px solid rgba(125,125,125,.2);">
+						<h3 style="margin:0 0 12px;font-size:16px;">🗺️ <?php esc_html_e( 'Google Places API', 'pearblog-engine' ); ?></h3>
+
+						<p>
+							<label style="display:block;font-weight:600;margin-bottom:6px;">Google Places API Key</label>
+							<input type="password" name="pt24_google_places_api_key" value="<?php echo esc_attr( $places_key ); ?>" placeholder="AIza..." style="width:100%;max-width:420px;padding:8px;" autocomplete="off">
+							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;">
+								Wymagane do importu realnych firm z Google Maps. Włącz <em>Places API</em> w 
+								<a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a>.
+								<?php if ( '' !== $places_key ) : ?>
+									<strong style="color:var(--pb-v8-success);">✅ Klucz ustawiony.</strong>
+								<?php endif; ?>
+							</span>
+						</p>
+
 						<p style="margin-top:24px;">
 							<button type="submit" class="button button-primary"><?php esc_html_e( 'Save settings', 'pearblog-engine' ); ?></button>
 						</p>
@@ -1392,6 +1494,13 @@ class AdminPageV8Enterprise {
 		$ads_pub = (string) preg_replace( '/[^a-zA-Z0-9\-]/', '', $ads_pub );
 		update_option( 'pt24_adsense_pub_id', $ads_pub );
 		update_option( 'pt24_adsense_enabled', isset( $_POST['pt24_adsense_enabled'] ) ? '1' : '0' );
+		update_option( 'pt24_adsense_auto_ads', isset( $_POST['pt24_adsense_auto_ads'] ) ? '1' : '0' );
+
+		// Google Places API key (only update if non-empty to avoid accidental clear)
+		if ( ! empty( $_POST['pt24_google_places_api_key'] ) ) {
+			$places_key = sanitize_text_field( wp_unslash( $_POST['pt24_google_places_api_key'] ) );
+			update_option( 'pt24_google_places_api_key', $places_key );
+		}
 		update_option( 'pt24_adsense_auto_ads', isset( $_POST['pt24_adsense_auto_ads'] ) ? '1' : '0' );
 
 		wp_safe_redirect( add_query_arg(
