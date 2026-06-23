@@ -40,10 +40,17 @@ if ( '' === $city_name ) {
 		: ucfirst( str_replace( '-', ' ', $city_slug ) );
 }
 if ( '' === $h1 ) {
-    $h1 = sprintf( '%s %s — sprawdź ceny i zamów wycenę', $service_name, $city_name );
+	$h1 = sprintf( '%s %s — sprawdź ceny i zamów wycenę', $service_name, $city_name );
 }
 if ( '' === $hero_text ) {
-    $hero_text = sprintf( 'Znajdź sprawdzonych specjalistów (%s) w mieście %s i otrzymaj do 3 dopasowanych ofert.', mb_strtolower( $service_name ), $city_name );
+	// Natural Polish: "Szukasz hydraulika w Warszawie?" with locative case.
+	if ( class_exists( 'PT24_Scale_Data' ) ) {
+		$city_loc   = \PT24_Scale_Data::city_locative( $city_slug );
+		$svc_prep   = \PT24_Scale_Data::service_preposition( $service_slug );
+		$hero_text  = sprintf( 'Szukasz %s w %s? Opisz zlecenie raz i otrzymaj do 3 bezpłatnych ofert od sprawdzonych lokalnych specjalistów.', $svc_prep, $city_loc );
+	} else {
+		$hero_text = sprintf( 'Znajdź sprawdzonego %s w %s i otrzymaj do 3 bezpłatnych ofert.', mb_strtolower( $service_name ), $city_name );
+	}
 }
 if ( '' === $meta_title ) {
     $meta_title = sprintf( '%s %s — ceny i oferty | PT24.PRO', $service_name, $city_name );

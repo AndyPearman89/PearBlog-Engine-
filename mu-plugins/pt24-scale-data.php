@@ -505,6 +505,101 @@ class PT24_Scale_Data {
 		return self::cities()[ $slug ]['name'] ?? ucfirst( str_replace( '-', ' ', $slug ) );
 	}
 
+	/**
+	 * City name in Polish locative case (e.g. "w Warszawie", "w Krakowie").
+	 * Used in hero lead text on landing pages.
+	 */
+	public static function city_locative( string $slug ): string {
+		$map = [
+			'warszawa'          => 'Warszawie',
+			'krakow'            => 'Krakowie',
+			'lodz'              => 'Łodzi',
+			'wroclaw'           => 'Wrocławiu',
+			'poznan'            => 'Poznaniu',
+			'gdansk'            => 'Gdańsku',
+			'szczecin'          => 'Szczecinie',
+			'bydgoszcz'         => 'Bydgoszczy',
+			'lublin'            => 'Lublinie',
+			'katowice'          => 'Katowicach',
+			'bialystok'         => 'Białymstoku',
+			'gdynia'            => 'Gdyni',
+			'czestochowa'       => 'Częstochowie',
+			'sosnowiec'         => 'Sosnowcu',
+			'radom'             => 'Radomiu',
+			'torun'             => 'Toruniu',
+			'kielce'            => 'Kielcach',
+			'rzeszow'           => 'Rzeszowie',
+			'gliwice'           => 'Gliwicach',
+			'zabrze'            => 'Zabrzu',
+			'bytom'             => 'Bytomiu',
+			'bielsko-biala'     => 'Bielsku-Białej',
+			'rybnik'            => 'Rybniku',
+			'tychy'             => 'Tychach',
+			'ruda-slaska'       => 'Rudzie Śląskiej',
+			'dabrowa-gornicza'  => 'Dąbrowie Górniczej',
+			'chorzow'           => 'Chorzowie',
+			'jaworzno'          => 'Jaworznie',
+			'jastrzebie-zdroj'  => 'Jastrzębiu-Zdroju',
+			'myslowice'         => 'Mysłowicach',
+			'siemianowice'      => 'Siemianowicach Śl.',
+			'zory'              => 'Żorach',
+			'opole'             => 'Opolu',
+			'elblag'            => 'Elblągu',
+			'plock'             => 'Płocku',
+			'walbrzych'         => 'Wałbrzychu',
+			'wloclawek'         => 'Włocławku',
+			'tarnow'            => 'Tarnowie',
+			'zielona-gora'      => 'Zielonej Górze',
+			'kalisz'            => 'Kaliszu',
+			'legnica'           => 'Legnicy',
+			'grudziadz'         => 'Grudziądzu',
+			'slupsk'            => 'Słupsku',
+			'jelenia-gora'      => 'Jeleniej Górze',
+			'olsztyn'           => 'Olsztynie',
+			'konin'             => 'Koninie',
+			'lubin'             => 'Lubinie',
+			'leszno'            => 'Lesznie',
+			'gniezno'           => 'Gnieźnie',
+			'sopot'             => 'Sopocie',
+			'koszalin'          => 'Koszalinie',
+			'stargard'          => 'Stargardzie',
+			'zgierz'            => 'Zgierzu',
+			'piotrkow-tryb'     => 'Piotrkowie Tryb.',
+			'pruszków'          => 'Pruszkowie',
+			'stalowa-wola'      => 'Stalowej Woli',
+			'przemysl'          => 'Przemyślu',
+			'zamosc'            => 'Zamościu',
+			'chelm'             => 'Chełmie',
+			'suwalki'           => 'Suwałkach',
+			'lomza'             => 'Łomży',
+			'ostrowiec-sw'      => 'Ostrowcu Świętokrzyskim',
+			'nowy-sacz'         => 'Nowym Sączu',
+			'oswiecim'          => 'Oświęcimiu',
+			'gorzow-wlkp'       => 'Gorzowie Wlkp.',
+		];
+		return $map[ $slug ] ?? self::city_name( $slug );
+	}
+
+	/**
+	 * Preposition phrase for service in Polish (e.g. "hydraulika", "elektryka").
+	 * Used in hero lead: "Szukasz {service_prep} w {city_loc}?"
+	 */
+	public static function service_preposition( string $slug ): string {
+		$map = [
+			'hydraulik'         => 'hydraulika',
+			'elektryk'          => 'elektryka',
+			'mechanik'          => 'mechanika samochodowego',
+			'fotowoltaika'      => 'instalacji fotowoltaicznej',
+			'pompa-ciepla'      => 'pompy ciepła',
+			'remont-lazienki'   => 'ekipy do remontu łazienki',
+			'laweta'            => 'lawety lub pomocy drogowej',
+			'wulkanizacja'      => 'wulkanizacji lub wymiany opon',
+			'klimatyzacja'      => 'montażu lub serwisu klimatyzacji',
+			'instalacje-gazowe' => 'gazownika z certyfikatem',
+		];
+		return $map[ $slug ] ?? mb_strtolower( self::service_name( $slug ) );
+	}
+
 	/** Lookup display name for a service slug. */
 	public static function service_name( string $slug ): string {
 		return self::services()[ $slug ]['name'] ?? ucfirst( str_replace( '-', ' ', $slug ) );
