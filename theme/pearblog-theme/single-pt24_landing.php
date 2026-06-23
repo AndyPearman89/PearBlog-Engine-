@@ -39,18 +39,20 @@ if ( '' === $city_name ) {
 		? \PT24_Scale_Data::city_name( $city_slug )
 		: ucfirst( str_replace( '-', ' ', $city_slug ) );
 }
+
+// Locative form for use in prepositions ("w Warszawie").
+$city_loc = class_exists( 'PT24_Scale_Data' )
+	? \PT24_Scale_Data::city_locative( $city_slug )
+	: 'w ' . $city_name;
+// Preposition phrase for service ("hydraulika").
+$svc_prep = class_exists( 'PT24_Scale_Data' )
+	? \PT24_Scale_Data::service_preposition( $service_slug )
+	: mb_strtolower( $service_name );
 if ( '' === $h1 ) {
 	$h1 = sprintf( '%s %s — sprawdź ceny i zamów wycenę', $service_name, $city_name );
 }
 if ( '' === $hero_text ) {
-	// Natural Polish: "Szukasz hydraulika w Warszawie?" with locative case.
-	if ( class_exists( 'PT24_Scale_Data' ) ) {
-		$city_loc   = \PT24_Scale_Data::city_locative( $city_slug );
-		$svc_prep   = \PT24_Scale_Data::service_preposition( $service_slug );
-		$hero_text  = sprintf( 'Szukasz %s w %s? Opisz zlecenie raz i otrzymaj do 3 bezpłatnych ofert od sprawdzonych lokalnych specjalistów.', $svc_prep, $city_loc );
-	} else {
-		$hero_text = sprintf( 'Znajdź sprawdzonego %s w %s i otrzymaj do 3 bezpłatnych ofert.', mb_strtolower( $service_name ), $city_name );
-	}
+	$hero_text = sprintf( 'Szukasz %s %s? Opisz zlecenie raz i otrzymaj do 3 bezpłatnych ofert od sprawdzonych lokalnych specjalistów.', $svc_prep, $city_loc );
 }
 if ( '' === $meta_title ) {
     $meta_title = sprintf( '%s %s — ceny i oferty | PT24.PRO', $service_name, $city_name );
@@ -159,7 +161,7 @@ $pt24_service_data = array(
 );
 
 $data = $pt24_service_data[ $service_slug ] ?? array(
-    'intro'  => sprintf( 'Szukasz specjalisty w kategorii „%s” w mieście %s? PT24 łączy Cię ze sprawdzonymi fachowcami z Twojej okolicy. Opisz zlecenie raz i otrzymaj dopasowane oferty.', mb_strtolower( $service_name ), $city_name ),
+    'intro'  => sprintf( 'Szukasz specjalisty od %s %s? PT24 łączy Cię ze sprawdzonymi fachowcami z okolicy. Opisz zlecenie raz i otrzymaj do 3 dopasowanych ofert.', mb_strtolower( $service_name ), $city_loc ),
     'tasks'  => array( 'Bezpłatna i niezobowiązująca wycena', 'Zweryfikowani lokalni specjaliści', 'Szybki kontakt i realizacja', 'Oceny i opinie innych klientów' ),
     'prices' => array(),
     'faq'    => array(
@@ -338,7 +340,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             <section class="pt24-section">
                 <h2>Dlaczego warto zamówić przez PT24?</h2>
                 <ul class="pt24-benefits">
-                    <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span></span><div><strong>Zweryfikowani fachowcy</strong><p>Sprawdzeni specjaliści, którzy realnie działają w <?php echo esc_html( $city_name ); ?> i okolicy.</p></div></li>
+                    <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span></span><div><strong>Zweryfikowani fachowcy</strong><p>Sprawdzeni specjaliści, którzy realnie działają <?php echo esc_html( $city_loc ); ?> i w okolicy.</p></div></li>
                     <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span></span><div><strong>Bezpłatna wycena</strong><p>Otrzymujesz konkretne oferty cenowe bez kosztów i zobowiązań.</p></div></li>
                     <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span></span><div><strong>Szybki kontakt</strong><p>Pierwsze odpowiedzi otrzymujesz zwykle w kilka godzin.</p></div></li>
                     <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><div><strong>Opinie i oceny</strong><p>Wybierasz wykonawcę na podstawie doświadczeń innych klientów.</p></div></li>
@@ -346,7 +348,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             </section>
 
             <section class="pt24-section">
-                <h2>Zakres usług: <?php echo esc_html( $service_name ); ?> w <?php echo esc_html( $city_name ); ?></h2>
+                <h2>Zakres usług: <?php echo esc_html( $service_name ); ?> <?php echo esc_html( $city_loc ); ?></h2>
                 <ul class="pt24-tasks">
                     <?php foreach ( $data['tasks'] as $task ) : ?>
                         <li><?php echo esc_html( $task ); ?></li>
@@ -356,7 +358,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
 
             <?php if ( ! empty( $data['prices'] ) ) : ?>
             <section class="pt24-section">
-                <h2>Ile kosztuje <?php echo esc_html( mb_strtolower( $service_name ) ); ?> w <?php echo esc_html( $city_name ); ?>?</h2>
+                <h2>Ile kosztuje <?php echo esc_html( mb_strtolower( $service_name ) ); ?> <?php echo esc_html( $city_loc ); ?>?</h2>
                 <p>Poniższe widełki mają charakter orientacyjny — dokładną wycenę otrzymasz od fachowca po opisaniu zlecenia.</p>
                 <table class="pt24-prices">
                     <thead><tr><th>Usługa</th><th>Orientacyjna cena</th></tr></thead>
@@ -387,7 +389,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             </section>
 
             <section class="pt24-section">
-                <h2>Polecani fachowcy w <?php echo esc_html( $city_name ); ?></h2>
+                <h2>Polecani fachowcy <?php echo esc_html( $city_loc ); ?></h2>
                 <div class="pt24-firms">
                     <?php foreach ( $firms as $firm ) :
                         $stars_full = min( 5, (int) round( (float) $firm['rating'] ) );
@@ -432,7 +434,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
 
             <?php if ( ! empty( $pt24_districts ) ) : ?>
             <section class="pt24-section">
-                <h2><?php echo esc_html( $service_name ); ?> w dzielnicach miasta <?php echo esc_html( $city_name ); ?></h2>
+                <h2><?php echo esc_html( $service_name ); ?> w dzielnicach <?php echo esc_html( $city_name ); ?></h2>
                 <p>Łączymy Cię z fachowcami z całego miasta — zamów bezpłatną wycenę niezależnie od dzielnicy.</p>
                 <ul class="pt24-districts">
                     <?php foreach ( $pt24_districts as $pt24_d ) : ?>
@@ -550,7 +552,7 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 }
                 ?>
             </ul>
-            <h2>Inne usługi w <?php echo esc_html( $city_name ); ?></h2>
+            <h2>Inne usługi <?php echo esc_html( $city_loc ); ?></h2>
             <ul class="pt24-links">
                 <?php
                 if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {

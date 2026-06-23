@@ -577,7 +577,7 @@ class PT24_Scale_Data {
 			'oswiecim'          => 'Oświęcimiu',
 			'gorzow-wlkp'       => 'Gorzowie Wlkp.',
 		];
-		return $map[ $slug ] ?? self::city_name( $slug );
+		return isset( $map[ $slug ] ) ? 'w ' . $map[ $slug ] : 'w ' . self::city_name( $slug );
 	}
 
 	/**
