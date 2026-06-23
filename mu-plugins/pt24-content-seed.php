@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '1.7.0';
+const PT24_SEED_VERSION = '1.8.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -604,8 +604,58 @@ function pt24_seed_blog(): void {
                 . '<h2>Co wybrać?</h2>'
                 . '<p>Dla dobrze ocieplonych budynków pompa ciepła zwykle wygrywa w perspektywie kilku lat. Instalator wykona uproszczony audyt i dobierze moc.</p>'
                 . $cta( '/poznan/pompa-ciepla/', 'Rozważasz pompę ciepła?' ),
+        ),        array(
+            'slug' => 'klimatyzacja-montaz-serwis-koszty',
+            'cat'  => 'koszty',
+            'title'=> 'Klimatyzacja w domu — montaż, serwis i koszty 2026',
+            'body' => '<p>Klimatyzacja stała się standardem nie tylko w biurach, ale też w mieszkaniach i domach. Warto wiedzieć, ile kosztuje montaż i na co zwrócić uwagę przy wyborze urządzenia.</p>'
+                . '<h2>Ile kosztuje klimatyzacja?</h2>'
+                . '<ul><li>Klimatyzator split (montaż + urządzenie): 3 000–8 000 zł/pomieszczenie.</li><li>Montaż multi-split: 8 000–20 000 zł (kilka pomieszczeń).</li><li>Serwis/czyszczenie: 200–400 zł/rok.</li></ul>'
+                . '<h2>Co obejmuje montaż klimatyzacji?</h2>'
+                . '<p>Dobry instalator dobierze moc do kubatury, wykona okablowanie, podłączy czynnik chłodniczy (F-GAZ) i uruchomi urządzenie. Certyfikat F-GAZ jest obowiązkowy przy pracach z czynnikiem.</p>'
+                . '<h2>Serwis i czyszczenie</h2>'
+                . '<p>Klimatyzacja wymaga czyszczenia filtrów co miesiąc i przeglądu serwisowego co rok. Zaniedbany serwis to wyższe zużycie prądu i ryzyko awarii.</p>'
+                . $cta( '/katowice/klimatyzacja/', 'Chcesz zainstalować klimatyzację?' ),
         ),
-    );
+        array(
+            'slug' => 'laweta-pomoc-drogowa-co-warto-wiedziec',
+            'cat'  => 'porady',
+            'title'=> 'Laweta i pomoc drogowa — co warto wiedzieć przed awarią',
+            'body' => '<p>Awaria samochodu zawsze zaskakuje w najmniej oczekiwanym momencie. Dobrze jest wiedzieć, jak szybko zorganizować pomoc, zanim trzeba będzie z niej skorzystać.</p>'
+                . '<h2>Kiedy wezwać lawetę?</h2>'
+                . '<ul><li>Samochód nie odpala i nie można ustalić przyczyny w terenie.</li><li>Wypadek lub uszkodzenie pojazdu uniemożliwiające bezpieczną jazdę.</li><li>Awaria na autostradzie lub ekspresówce (holowanie to ostateczność).</li></ul>'
+                . '<h2>Ile kosztuje laweta?</h2>'
+                . '<p>Stawki zaczynają się od 100–200 zł za dojazd i transport w obrębie miasta. Długodystansowe holowanie to 5–12 zł/km. Zawsze pytaj o cenę całościową przed zamówieniem.</p>'
+                . '<h2>Jak szybko przyjedzie pomoc?</h2>'
+                . '<p>Sprawdzeni partnerzy PT24 działają 24/7. Czas przyjazdu w mieście to zazwyczaj 30–60 minut. Na autostradzie może być nieco dłużej.</p>'
+                . $cta( '/warszawa/laweta/', 'Potrzebujesz lawety?' ),
+        ),
+        array(
+            'slug' => 'wulkanizacja-wymiana-opon-poradnik',
+            'cat'  => 'poradniki',
+            'title'=> 'Wulkanizacja i wymiana opon — kiedy i jak?',
+            'body' => '<p>Sezonowa wymiana opon to obowiązek każdego kierowcy. Dobra wulkanizacja skróci ten czas do minimum i zadbaje o prawidłowe wyważenie.</p>'
+                . '<h2>Kiedy wymieniać opony?</h2>'
+                . '<ul><li>Zimowe montuj przed 1 listopada, letnie — po połowie marca.</li><li>Bieżnik zimowy: min. 4 mm, letni: min. 1,6 mm (dla bezpieczeństwa zalecane 3 mm).</li><li>Wiek opony powyżej 6–8 lat to też powód wymiany.</li></ul>'
+                . '<h2>Co obejmuje wizyta u wulkanizatora?</h2>'
+                . '<p>Standardowo: wymiana opon, wyważenie kół i kontrola ciśnienia. Dopłata za mycie felg czy sprawdzenie hamulców bywa przydatna.</p>'
+                . '<h2>Ile kosztuje wymiana opon?</h2>'
+                . '<p>Wymiana 4 kół z wyważeniem: 100–200 zł (osobówka). Przechowywanie sezonowe: 150–250 zł/sezon.</p>'
+                . $cta( '/wroclaw/wulkanizacja/', 'Szukasz wulkanizacji?' ),
+        ),
+        array(
+            'slug' => 'instalacje-gazowe-bezpieczenstwo-przeglad',
+            'cat'  => 'porady',
+            'title'=> 'Instalacje gazowe — bezpieczeństwo, przegląd i certyfikaty',
+            'body' => '<p>Instalacja gazowa w domu wymaga szczególnej dbałości. Błędy przy wykonaniu lub zaniedbanie przeglądów mogą prowadzić do poważnych awarii.</p>'
+                . '<h2>Kto może wykonywać prace przy gazie?</h2>'
+                . '<p>Wyłącznie osoby z certyfikatem gazowym. W Polsce obowiązują uprawnienia SEP G3 (instalacje gazowe) — zawsze sprawdzaj, czy fachowiec posiada aktualne dokumenty.</p>'
+                . '<h2>Jak często przegląd instalacji gazowej?</h2>'
+                . '<ul><li>Kocioł gazowy: przegląd co roku (obowiązek wynikający z prawa budowlanego).</li><li>Instalacja wewnętrzna: co 5 lat lub po remoncie.</li><li>Piec gazowy starszy niż 15 lat: rozważ wymianę na nowocześniejszy model.</li></ul>'
+                . '<h2>Objawy problemów z instalacją</h2>'
+                . '<p>Zapach gazu, nieregularne płomienie, częste zagasanie palnika — to sygnały do natychmiastowego kontaktu z gazownikiem. Nie lekceważ tych objawów.</p>'
+                . $cta( '/bydgoszcz/instalacje-gazowe/', 'Potrzebujesz gazownika?' ),
+        ),    );
 
     foreach ( $posts as $p ) {
         pt24_seed_post( $p['slug'], $p['title'], $p['body'], $cats[ $p['cat'] ] ?? 0 );
