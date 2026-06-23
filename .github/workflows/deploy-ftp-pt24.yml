@@ -83,7 +83,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: ${{ steps.preflight.outputs.protocol }}
+          protocol: sftp
           log-level: verbose
           local-dir: ./mu-plugins/pearblog-engine/
           server-dir: /pt24/wp-content/mu-plugins/pearblog-engine/
@@ -112,7 +112,7 @@ jobs:
             mu-plugins/pt24-places-seeder.php \
             mu-plugins/pt24-scale-data.php; do
             echo "Uploading $f ..."
-            lftp -c "set net:timeout 30; open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'; put '$f' -o '$REMOTE/$(basename $f)'; bye"
+            lftp -c "set net:timeout 30; open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' 'sftp://$FTP_HOST'; put '$f' -o '$REMOTE/$(basename $f)'; bye"
           done
           echo "All root mu-plugins uploaded."
 
@@ -124,7 +124,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: ${{ steps.preflight.outputs.protocol }}
+          protocol: sftp
           log-level: verbose
           local-dir: ./theme/pt24/
           server-dir: /pt24/wp-content/themes/pt24/
@@ -138,7 +138,7 @@ jobs:
           username: ${{ secrets.FTP_USERNAME }}
           password: ${{ secrets.FTP_PASSWORD }}
           port: ${{ secrets.FTP_PORT }}
-          protocol: ${{ steps.preflight.outputs.protocol }}
+          protocol: sftp
           log-level: verbose
           local-dir: ./theme/pearblog-theme/
           server-dir: /pt24/wp-content/themes/pearblog-theme/
