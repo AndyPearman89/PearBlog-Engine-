@@ -67,13 +67,18 @@ function pearblog_render_header() {
 
                 <div class="pb-nav-actions">
                     <?php if ( function_exists( 'pt24_is_pt24_site' ) && pt24_is_pt24_site() ) : ?>
-                    <a class="pt24-nav-cta" href="<?php echo esc_url( home_url( '/#uslugi' ) ); ?>">Zamów wycenę</a>
-                    <?php endif; ?>
-
-                    <!-- Search toggle -->
+                    <!-- PT24: search link to /szukaj/ -->
+                    <a class="pt24-nav-search" href="<?php echo esc_url( home_url( '/szukaj/' ) ); ?>" aria-label="Szukaj fachowca">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                        <span class="pt24-nav-search__label">Szukaj</span>
+                    </a>
+                    <a class="pt24-nav-cta" href="<?php echo esc_url( home_url( '/szukaj/' ) ); ?>">Zamów wycenę</a>
+                    <?php else : ?>
+                    <!-- Poradnik / other: WP search toggle -->
                     <button class="pb-icon-btn pb-search-toggle" id="pb-search-toggle" aria-label="<?php esc_attr_e('Open search', 'pearblog-theme'); ?>" aria-expanded="false" aria-controls="pb-search-panel">
                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
                     </button>
+                    <?php endif; ?>
 
                     <!-- Dark mode toggle -->
                     <button class="pb-icon-btn pb-dark-toggle" id="pb-dark-mode-toggle" aria-label="<?php esc_attr_e('Toggle dark mode', 'pearblog-theme'); ?>">

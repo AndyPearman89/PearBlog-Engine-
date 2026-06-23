@@ -1009,3 +1009,123 @@
 }
 
 /* Print / prefers-reduced-motion already covered above */
+
+/* ===================================================================
+   NAV SEARCH BUTTON (PT24 — links to /szukaj/)
+   =================================================================== */
+.pt24-nav-search {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: var(--pt24-dark, #0f172a); text-decoration: none;
+    font-size: .88rem; font-weight: 600;
+    background: #f1f5f9; border: 1.5px solid #e2e8f0;
+    border-radius: 999px; padding: .38rem .85rem .38rem .7rem;
+    transition: background .15s, color .15s, border-color .15s;
+    white-space: nowrap;
+}
+.pt24-nav-search svg { flex-shrink: 0; color: var(--pt24-blue, #2563eb); }
+.pt24-nav-search:hover { background: var(--pt24-blue, #2563eb); color: #fff; border-color: var(--pt24-blue, #2563eb); }
+.pt24-nav-search:hover svg { color: #fff; }
+/* Hide text label on small screens to save space */
+@media (max-width: 640px) { .pt24-nav-search__label { display: none; } .pt24-nav-search { padding: .38rem .55rem; } }
+/* Dark mode */
+.pb-dark-mode .pt24-nav-search { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+.pb-dark-mode .pt24-nav-search:hover { background: var(--pt24-blue); border-color: var(--pt24-blue); color: #fff; }
+
+/* ===================================================================
+   JASNY (LIGHT) CSS — explicit light-mode overrides
+   Ensures correct contrast on white/light backgrounds.
+   =================================================================== */
+
+/* Nav links in light mode */
+.pb-nav .pb-nav-menu a,
+.pb-nav .menu-item a {
+    color: #1e293b;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color .15s;
+}
+.pb-nav .pb-nav-menu a:hover,
+.pb-nav .menu-item a:hover { color: var(--pt24-blue, #2563eb); }
+.pb-nav .current-menu-item > a,
+.pb-nav .current_page_item > a { color: var(--pt24-blue, #2563eb); font-weight: 700; }
+
+/* Content areas — explicit white/light backgrounds */
+.pt24-content,
+.pt24-sidebar,
+.pt24-leadbox,
+.pt24-page { background: transparent; color: #1e293b; }
+
+/* Section text defaults */
+.pt24-section { color: #1e293b; }
+.pt24-section p { color: #334155; }
+.pt24-section li { color: #334155; }
+.pt24-section h2,
+.pt24-section h3 { color: #0f172a; }
+
+/* Static pages (.pt24-page) */
+.pt24-page h1, .pt24-page h2, .pt24-page h3 { color: #0f172a; }
+.pt24-page p, .pt24-page li { color: #374151; }
+.pt24-page a { color: var(--pt24-blue, #2563eb); }
+.pt24-page a:hover { color: var(--pt24-blue-dark, #1e3a8a); text-decoration: underline; }
+
+/* Tables */
+.pt24-prices th { background: var(--pt24-blue, #2563eb); color: #fff; font-weight: 700; padding: .85rem 1rem; }
+.pt24-prices td { color: #1e293b; background: #fff; border: 1px solid #e2e8f0; padding: .7rem 1rem; }
+.pt24-prices tr:nth-child(even) td { background: #f8fafc; }
+.pt24-prices tr.is-recommended td { background: #eff6ff; font-weight: 600; }
+
+/* Cards light */
+.pt24-home__card { color: #1e293b; }
+.pt24-home__card h3 { color: #0f172a; }
+.pt24-home__card-desc { color: #475569; }
+
+/* FAQ light */
+.pt24-faq__item summary { color: #0f172a; }
+.pt24-faq__item p { color: #475569; }
+
+/* Blog light */
+.pt24-blog-card__title a { color: #0f172a; text-decoration: none; }
+.pt24-blog-card__title a:hover { color: var(--pt24-blue, #2563eb); }
+.pt24-blog-card__cat { color: var(--pt24-blue, #2563eb); font-size: .8rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; }
+.pt24-blog-card__meta { color: #94a3b8; font-size: .85rem; }
+
+/* Firm cards light */
+.pt24-firm__name { font-size: 1rem; font-weight: 700; }
+.pt24-firm__name a { color: #0f172a; text-decoration: none; }
+.pt24-firm__name a:hover { color: var(--pt24-blue, #2563eb); }
+
+/* Rankings light */
+.pt24-rankings-card { color: #1e293b; }
+.pt24-rankings-section__head h2 { color: #0f172a; }
+
+/* Districts pills */
+.pt24-districts li { color: #1e40af; background: #eff6ff; border-color: #bfdbfe; }
+
+/* Search page light */
+.pt24-search-card__name { color: #0f172a; }
+.pt24-search-card:hover .pt24-search-card__name { color: var(--pt24-blue, #2563eb); }
+.pt24-search-city-btn { color: #374151; }
+.pt24-search-cities h2, .pt24-search-services h2 { color: #0f172a; }
+
+/* Finder on white background (search page, not hero) */
+.pt24-finder--lg {
+    background: #f8fafc;
+    border-color: #e2e8f0;
+}
+.pt24-finder--lg .pt24-finder__select,
+.pt24-finder--lg .pt24-finder__input {
+    background: #fff;
+    border: 1.5px solid #e2e8f0;
+    color: #1e293b;
+}
+.pt24-finder--lg .pt24-finder__select:focus,
+.pt24-finder--lg .pt24-finder__input:focus {
+    border-color: var(--pt24-blue, #2563eb);
+    box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+}
+
+/* Ranking page */
+.pt24-ranking__pos { background: var(--pt24-blue, #2563eb); color: #fff; width: 2rem; height: 2rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; font-weight: 800; font-size: .9rem; flex-shrink: 0; }
+.pt24-ranking__item:first-child .pt24-ranking__pos { background: #f59e0b; color: #1f2937; }
+.pt24-ranking__name { font-weight: 700; color: #0f172a; }
+.pt24-ranking__meta { color: #64748b; font-size: .88rem; }
