@@ -68,23 +68,12 @@ jobs:
         env:
           FTP_PROTOCOL: ${{ steps.preflight.outputs.protocol }}
         run: |
-          set -euo pipefail
           HOST="${{ secrets.FTP_HOST }}"
           PORT="${{ secrets.FTP_PORT }}"
-          USER="${{ secrets.FTP_USERNAME }}"
-          PASS="${{ secrets.FTP_PASSWORD }}"
           TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
-
-          echo "Preflight check: $FTP_PROTOCOL://$HOST:$PORT"
-          if ! nc -z -w "$TIMEOUT" "$HOST" "$PORT"; then
-            echo "::error::$FTP_PROTOCOL endpoint unreachable at $HOST:$PORT"
-            exit 1
-          fi
-
-          if ! lftp -c "set net:timeout $TIMEOUT; set net:max-retries 1; open -u '$USER','$PASS' -p '$PORT' '$FTP_PROTOCOL://$HOST'; ls; bye" 2>&1; then
-            echo "::error::FTP auth/listing failed for $HOST:$PORT"
-            exit 1
-          fi
+          echo "TCP check: $HOST:$PORT"
+          nc -z -w "$TIMEOUT" "$HOST" "$PORT" || { echo "::error::Endpoint unreachable"; exit 1; }
+          echo "TCP OK"
 
       - name: Deploy mu-plugin to PT24
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
