@@ -84,6 +84,7 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     require_once PEARBLOG_DIR . '/inc/pt24-blog.php';          // Blog archive routing.
     require_once PEARBLOG_DIR . '/inc/pt24-firm-cpt.php';      // Company profile CPT (/firma/{slug}/).
     require_once PEARBLOG_DIR . '/inc/pt24-add-firm.php';      // "Dodaj firmę" form + AJAX handler.
+    require_once PEARBLOG_DIR . '/inc/pt24-search.php';        // Finder / search page.
 
     // Bootstrap the landing CPT explicitly. Its own bootstrap hooks init() onto
     // the `init` action, and init() then registers register_post_type() /

@@ -725,3 +725,91 @@
     .pt24-anim { opacity: 0; transform: translateY(18px); transition: opacity .5s ease, transform .5s ease; }
     body.pt24-reveal-on .pt24-anim.is-visible { opacity: 1; transform: none; }
 }
+
+/* ===================================================================
+   FINDER WIDGET (homepage + /szukaj/)
+   =================================================================== */
+.pt24-finder {
+    display: flex; flex-wrap: wrap; gap: .6rem;
+    align-items: stretch;
+    background: rgba(255,255,255,.15);
+    border: 1.5px solid rgba(255,255,255,.35);
+    border-radius: 14px; padding: .7rem;
+    backdrop-filter: blur(6px);
+    margin: 1.4rem 0 .6rem;
+}
+.pt24-finder__select,
+.pt24-finder__input {
+    flex: 1 1 200px; min-width: 160px;
+    padding: .75rem 1rem; border: 0; border-radius: 10px;
+    font-size: 1rem; background: #fff; color: var(--pt24-dark);
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
+}
+.pt24-finder__city-wrap { flex: 1 1 200px; min-width: 160px; display: flex; }
+.pt24-finder__city-wrap .pt24-finder__input { width: 100%; }
+.pt24-finder__btn { flex: 0 0 auto; padding: .75rem 1.6rem; font-size: 1rem; white-space: nowrap; }
+.pt24-finder__select:focus,
+.pt24-finder__input:focus { outline: 2px solid var(--pt24-amber); outline-offset: 0; }
+/* Large variant for search page */
+.pt24-finder--lg .pt24-finder__select,
+.pt24-finder--lg .pt24-finder__input { padding: .95rem 1.1rem; font-size: 1.05rem; }
+.pt24-finder--lg .pt24-finder__btn { padding: .95rem 2rem; font-size: 1.05rem; }
+/* Hero note link */
+.pt24-home__hero-note { font-size: .9rem; opacity: .8; color: #fff; }
+.pt24-home__hero-note a { color: rgba(255,255,255,.9); text-decoration: underline; }
+.pt24-home__hero-content { max-width: 680px; }
+
+/* ===================================================================
+   SEARCH PAGE (/szukaj/)
+   =================================================================== */
+.pt24-search-page { padding: 0; }
+.pt24-search-bar {
+    background: linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue));
+    color: #fff; padding: 3.5rem 0; text-align: center;
+}
+.pt24-search-bar .pb-container { max-width: 780px; }
+.pt24-search-bar__title { font-size: clamp(1.6rem,3.5vw,2.4rem); font-weight: 800; margin: 0 0 .6rem; }
+.pt24-search-bar__lead { font-size: 1.05rem; opacity: .9; margin: 0 0 .2rem; }
+.pt24-search-bar .pt24-finder { max-width: 700px; margin: 1.4rem auto .5rem; }
+.pt24-search-msg { padding: .8rem 1rem; border-radius: 8px; font-size: .95rem; font-weight: 600; margin-top: .5rem; }
+.pt24-search-msg--err { background: #fef2f2; color: #991b1b; }
+.pt24-search-msg--ok { background: #ecfdf5; color: #065f46; }
+
+.pt24-search-services { padding: 2.5rem 0; }
+.pt24-search-services h2 { font-size: 1.3rem; font-weight: 700; margin: 0 0 1.2rem; color: var(--pt24-dark); }
+.pt24-search-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: .9rem;
+}
+.pt24-search-card {
+    display: flex; flex-direction: column; align-items: flex-start; gap: .5rem;
+    background: #fff; border: 1.5px solid var(--pt24-border);
+    border-radius: var(--pt24-radius); padding: 1.3rem 1.4rem;
+    text-decoration: none; color: var(--pt24-dark);
+    box-shadow: var(--pt24-shadow-sm);
+    transition: transform var(--pt24-transition), box-shadow var(--pt24-transition), border-color var(--pt24-transition);
+}
+.pt24-search-card:hover { transform: translateY(-3px); box-shadow: var(--pt24-shadow); border-color: var(--pt24-blue); }
+.pt24-search-card.is-selected { border-color: var(--pt24-amber); background: #fffbeb; box-shadow: 0 0 0 3px rgba(245,158,11,.25); }
+.pt24-search-card__ico { width: 40px; height: 40px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; }
+.pt24-search-card__ico .pt24-ico { color: var(--pt24-blue); width: 22px; height: 22px; }
+.pt24-search-card__name { font-weight: 700; font-size: 1rem; line-height: 1.25; }
+.pt24-search-card__cta { font-size: .82rem; color: var(--pt24-blue); font-weight: 600; }
+
+.pt24-search-cities { padding: 0 0 3rem; }
+.pt24-search-cities h2 { font-size: 1.3rem; font-weight: 700; margin: 0 0 1.2rem; color: var(--pt24-dark); }
+.pt24-search-city-grid {
+    display: flex; flex-wrap: wrap; gap: .5rem;
+}
+.pt24-search-city-btn {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: #fff; border: 1.5px solid var(--pt24-border);
+    border-radius: 999px; padding: .45rem 1rem;
+    font-size: .9rem; font-weight: 500; cursor: pointer; color: var(--pt24-dark);
+    transition: background var(--pt24-transition), border-color var(--pt24-transition), color var(--pt24-transition);
+}
+.pt24-search-city-btn:hover { background: #eff6ff; border-color: var(--pt24-blue); color: var(--pt24-blue); }
+.pt24-search-city-btn.is-selected { background: var(--pt24-blue); border-color: var(--pt24-blue); color: #fff; }
+.pt24-search-city-btn .pt24-ico { width: 14px; height: 14px; color: var(--pt24-blue); }
+.pt24-search-city-btn.is-selected .pt24-ico { color: #fff; }

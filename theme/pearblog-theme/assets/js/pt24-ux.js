@@ -31,6 +31,8 @@
 		initStickyNav();
 		initHamburger();
 		initScrollProgress();
+		initFinder();
+		initSearchPage();
 	});
 
 	/* 1. Smooth scroll for in-page anchors. */
@@ -175,6 +177,78 @@
 			bar.style.width = pct + '%';
 		};
 		window.addEventListener('scroll', update, { passive: true });
+	}
+
+	/* 7. Finder widget — service + city → redirect to landing page. */
+	function initFinder() {
+		var finders = document.querySelectorAll('.pt24-finder');
+		if (!finders.length) return;
+		function buildCityMap(datalist) {
+			var map = {};
+			if (!datalist) return map;
+			datalist.querySelectorAll('option').forEach(function(o) {
+				var name = (o.getAttribute('value') || '').trim();
+				var slug = o.getAttribute('data-slug') || '';
+				if (name && slug) map[name.toLowerCase()] = slug;
+			});
+			return map;
+		}
+		finders.forEach(function(finder) {
+			var serviceEl = finder.querySelector('select');
+			var cityEl    = finder.querySelector('input[type="search"],input[type="text"]');
+			var btn       = finder.querySelector('.pt24-finder__btn');
+			if (!serviceEl || !cityEl || !btn) return;
+			var datalist  = document.getElementById(cityEl.getAttribute('list'));
+			var cityMap   = buildCityMap(datalist);
+			function doRedirect() {
+				var svc  = (serviceEl.value || '').trim();
+				var city = (cityEl.value || '').trim().toLowerCase();
+				var slug = cityMap[city];
+				if (!slug) {
+					// prefix match
+					var k = Object.keys(cityMap).find(function(k){ return k.indexOf(city) === 0; });
+					slug = k ? cityMap[k] : null;
+				}
+				if (!svc) { cityEl.focus(); return; }
+				if (!slug) { cityEl.select(); return; }
+				window.location.href = '/' + slug + '/' + svc + '/';
+			}
+			btn.addEventListener('click', doRedirect);
+			cityEl.addEventListener('keydown', function(e){ if(e.key==='Enter') doRedirect(); });
+		});
+	}
+
+	/* 8. Search page — interactive service × city picker. */
+	function initSearchPage() {
+		var cards    = document.querySelectorAll('.pt24-search-card');
+		var cityBtns = document.querySelectorAll('.pt24-search-city-btn');
+		if (!cards.length && !cityBtns.length) return;
+		var selSvc = ''; var selCitySlug = '';
+		var cityInput = document.getElementById('pt24-search-city');
+		var svcSelect = document.getElementById('pt24-search-service');
+		cards.forEach(function(card) {
+			card.addEventListener('click', function(e) {
+				e.preventDefault();
+				var svc = card.getAttribute('data-service');
+				cards.forEach(function(c){ c.classList.remove('is-selected'); });
+				card.classList.add('is-selected');
+				selSvc = svc;
+				if (svcSelect) svcSelect.value = svc;
+				if (selCitySlug) window.location.href = '/' + selCitySlug + '/' + svc + '/';
+				else if (cityInput) cityInput.focus();
+			});
+		});
+		cityBtns.forEach(function(btn) {
+			btn.addEventListener('click', function() {
+				var city = btn.getAttribute('data-city');
+				var name = btn.getAttribute('data-name');
+				cityBtns.forEach(function(b){ b.classList.remove('is-selected'); });
+				btn.classList.add('is-selected');
+				selCitySlug = city;
+				if (cityInput) cityInput.value = name;
+				if (selSvc) window.location.href = '/' + city + '/' + selSvc + '/';
+			});
+		});
 	}
 
 
