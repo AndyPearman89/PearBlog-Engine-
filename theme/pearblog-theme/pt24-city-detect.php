@@ -28,10 +28,10 @@ if ( empty( $pt24_cities ) && class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
 if ( empty( $pt24_cities ) ) {
 	$pt24_cities = array(
 		'warszawa' => 'Warszawa',
-		'krakow'   => 'Krakow',
-		'wroclaw'  => 'Wroclaw',
-		'poznan'   => 'Poznan',
-		'gdansk'   => 'Gdansk',
+		'krakow'   => 'Kraków',
+		'wroclaw'  => 'Wrocław',
+		'poznan'   => 'Poznań',
+		'gdansk'   => 'Gdańsk',
 		'katowice' => 'Katowice',
 	);
 }

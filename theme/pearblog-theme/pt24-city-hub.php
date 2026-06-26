@@ -23,10 +23,10 @@ if ( empty( $cities ) && class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
 if ( empty( $cities ) ) {
 	$cities = array(
 		'warszawa' => 'Warszawa',
-		'krakow'   => 'Krakow',
-		'wroclaw'  => 'Wroclaw',
-		'poznan'   => 'Poznan',
-		'gdansk'   => 'Gdansk',
+		'krakow'   => 'Kraków',
+		'wroclaw'  => 'Wrocław',
+		'poznan'   => 'Poznań',
+		'gdansk'   => 'Gdańsk',
 		'katowice' => 'Katowice',
 	);
 }
@@ -58,9 +58,9 @@ $city_locative = function_exists( 'pt24_city_locative_label' )
 $city_genitive = [
 	'warszawa' => 'Warszawy',
 	'krakow'   => 'Krakowa',
-	'wroclaw'  => 'Wroclawia',
+	'wroclaw'  => 'Wrocławia',
 	'poznan'   => 'Poznania',
-	'gdansk'   => 'Gdanska',
+	'gdansk'   => 'Gdańska',
 	'katowice' => 'Katowic',
 ];
 $city_geo_target = isset( $city_genitive[ $city_slug ] )

@@ -238,10 +238,10 @@ function pt24_cities_from_database() {
     if ( empty( $cities ) ) {
         $cities = array(
             'warszawa' => 'Warszawa',
-            'krakow'   => 'Krakow',
-            'wroclaw'  => 'Wroclaw',
-            'poznan'   => 'Poznan',
-            'gdansk'   => 'Gdansk',
+            'krakow'   => 'Kraków',
+            'wroclaw'  => 'Wrocław',
+            'poznan'   => 'Poznań',
+            'gdansk'   => 'Gdańsk',
             'katowice' => 'Katowice',
         );
     }
@@ -261,9 +261,9 @@ function pt24_city_locative_label( $city_slug, $city_name ) {
     $loc_map = array(
         'warszawa' => 'Warszawie',
         'krakow'   => 'Krakowie',
-        'wroclaw'  => 'Wroclawiu',
+        'wroclaw'  => 'Wrocławiu',
         'poznan'   => 'Poznaniu',
-        'gdansk'   => 'Gdansku',
+        'gdansk'   => 'Gdańsku',
         'katowice' => 'Katowicach',
     );
 
@@ -271,7 +271,7 @@ function pt24_city_locative_label( $city_slug, $city_name ) {
         return $loc_map[ $city_slug ];
     }
 
-    return 'miescie ' . ( $city_name ?: ucfirst( str_replace( '-', ' ', (string) $city_slug ) ) );
+    return 'mieście ' . ( $city_name ?: ucfirst( str_replace( '-', ' ', (string) $city_slug ) ) );
 }
 
 /**
