@@ -265,6 +265,13 @@ function pt24_output_seo_meta() {
         $meta['canonical']   = pt24_public_home_url( '/miasto/' );
     }
 
+    // /uslugi/ — services hub
+    if ( '1' === (string) get_query_var( 'pt24_uslugi_index' ) ) {
+        $meta['title']       = 'Wszystkie usługi fachowców — hydraulik, elektryk, laweta i inne | PT24.PRO';
+        $meta['description'] = 'Porównaj firmy w 10 kategoriach: hydraulik, elektryk, mechanik, klimatyzacja, laweta, wulkanizacja, instalacje gazowe i więcej. Bezpłatna wycena w 6 miastach Polski.';
+        $meta['canonical']   = pt24_public_home_url( '/uslugi/' );
+    }
+
     // /miasto/{city}/ — city hub page
     $city_hub_slug = (string) get_query_var( 'pt24_city_hub' );
     if ( '' !== $city_hub_slug ) {
@@ -579,6 +586,43 @@ function pt24_output_seo_meta() {
     ?>
     <!-- FAQ Schema for ranking page -->
     <script type="application/ld+json"><?php echo wp_json_encode( $ranking_faq_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
+    <?php endif; ?>
+
+    <?php
+    // BreadcrumbList for city hub /miasto/{city}/ pages.
+    $bc_city_hub = (string) get_query_var( 'pt24_city_hub' );
+    if ( '' !== $bc_city_hub ) :
+        $bc_city_names = [
+            'warszawa' => 'Warszawa', 'krakow' => 'Kraków', 'wroclaw' => 'Wrocław',
+            'poznan'   => 'Poznań',   'gdansk' => 'Gdańsk', 'katowice' => 'Katowice',
+        ];
+        $bc_city_name = $bc_city_names[ $bc_city_hub ] ?? ucfirst( $bc_city_hub );
+        $bc_schema = [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                [ '@type' => 'ListItem', 'position' => 1, 'name' => 'Home',       'item' => pt24_public_home_url( '/' ) ],
+                [ '@type' => 'ListItem', 'position' => 2, 'name' => 'Miasta',     'item' => pt24_public_home_url( '/miasto/' ) ],
+                [ '@type' => 'ListItem', 'position' => 3, 'name' => $bc_city_name,'item' => pt24_public_home_url( '/miasto/' . $bc_city_hub . '/' ) ],
+            ],
+        ];
+    ?>
+    <script type="application/ld+json"><?php echo wp_json_encode( $bc_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
+    <?php endif; ?>
+
+    <?php
+    // BreadcrumbList for /uslugi/ hub.
+    if ( '1' === (string) get_query_var( 'pt24_uslugi_index' ) ) :
+        $bc_svc_schema = [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => [
+                [ '@type' => 'ListItem', 'position' => 1, 'name' => 'Home',    'item' => pt24_public_home_url( '/' ) ],
+                [ '@type' => 'ListItem', 'position' => 2, 'name' => 'Usługi', 'item' => pt24_public_home_url( '/uslugi/' ) ],
+            ],
+        ];
+    ?>
+    <script type="application/ld+json"><?php echo wp_json_encode( $bc_svc_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
     <?php endif; ?>
     <?php
 }

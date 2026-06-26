@@ -243,6 +243,49 @@ pearblog_render_header();
 	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
 </button>
 <script>
+/* --- Geo-banner: suggest ranking for visitor's actual city --- */
+(function(){
+	if ( localStorage.getItem('pt24_geo_dismissed') === '1' ) return;
+	var curCity    = '<?php echo esc_js( $city_slug ); ?>';
+	var curService = '<?php echo esc_js( $service_slug ); ?>';
+	var homeUrl    = '<?php echo esc_js( home_url( '/ranking/' ) ); ?>';
+	var names = {warszawa:'Warszawie',krakow:'Krakowie',wroclaw:'Wrocławiu',poznan:'Poznaniu',gdansk:'Gdańsku',katowice:'Katowicach'};
+	var map   = {warsaw:'warszawa',warszawa:'warszawa',krakow:'krakow',cracow:'krakow',wroclaw:'wroclaw',poznan:'poznan',gdansk:'gdansk',katowice:'katowice'};
+
+	var CACHE_KEY = 'pt24_geo_city', CACHE_TS = 'pt24_geo_ts', now = Date.now();
+	var cached = localStorage.getItem(CACHE_KEY), ts = parseInt(localStorage.getItem(CACHE_TS) || '0');
+
+	function showBar(slug) {
+		if ( !slug || slug === curCity ) return;
+		var loc = names[slug] || slug;
+		var bar = document.createElement('div');
+		bar.className = 'pt24-geo-bar';
+		bar.innerHTML =
+			'<span>\uD83D\uDCCD Twoja lokalizacja: <strong>' + loc + '</strong></span>' +
+			'<a href="' + homeUrl + slug + '/' + curService + '/" class="pt24-btn pt24-btn--primary pt24-btn--sm">Ranking w ' + loc + ' \u2192</a>' +
+			'<button class="pt24-geo-bar__x" aria-label="Zamknij" type="button">\u2715</button>';
+		bar.querySelector('.pt24-geo-bar__x').addEventListener('click', function(){
+			bar.remove();
+			localStorage.setItem('pt24_geo_dismissed', '1');
+		});
+		var main = document.getElementById('main');
+		if ( main ) main.prepend(bar); else document.body.prepend(bar);
+	}
+
+	if ( cached !== null && (now - ts) < 86400000 ) { showBar(cached); return; }
+
+	fetch('https://ipapi.co/json/')
+		.then(function(r){ return r.json(); })
+		.then(function(d){
+			var raw = (d.city || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+			var slug = map[raw] || '';
+			localStorage.setItem(CACHE_KEY, slug);
+			localStorage.setItem(CACHE_TS, String(now));
+			showBar(slug);
+		}).catch(function(){});
+})();
+</script>
+<script>
 (function(){
 	var form = document.querySelector('.pt24-leadform');
 	if(!form) return;

@@ -50,6 +50,7 @@ function pt24_sitemap_entries() {
 
     // Rankings hub + firm catalogue.
     $entries[] = array( 'loc' => pt24_sitemap_url( '/rankingi/' ), 'priority' => '0.7' );
+    $entries[] = array( 'loc' => pt24_sitemap_url( '/uslugi/' ),   'priority' => '0.7' );
     $entries[] = array( 'loc' => pt24_sitemap_url( '/firmy/' ),    'priority' => '0.6' );
 
     // City hubs.

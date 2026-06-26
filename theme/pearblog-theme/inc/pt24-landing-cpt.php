@@ -113,6 +113,14 @@ class PearBlog_PT24_Landing_CPT {
             );
         }
 
+        // /uslugi/ — all services hub page.
+        if ( 1 === count( $segments ) && 'uslugi' === strtolower( $segments[0] ) ) {
+            return array(
+                'post_type'          => 'pt24_landing',
+                'pt24_uslugi_index'  => '1',
+            );
+        }
+
         // /miasto/ — auto-detect visitor city and redirect.
         if ( 1 === count( $segments ) && 'miasto' === strtolower( $segments[0] ) ) {
             return array(
@@ -224,6 +232,7 @@ class PearBlog_PT24_Landing_CPT {
             $vars[] = 'pt24_rankings_index';
             $vars[] = 'pt24_city_hub';
             $vars[] = 'pt24_miasto_auto';
+            $vars[] = 'pt24_uslugi_index';
             return $vars;
         });
     }
@@ -253,6 +262,14 @@ class PearBlog_PT24_Landing_CPT {
         // /rankingi/ hub page.
         if ( '1' === (string) get_query_var( 'pt24_rankings_index' ) ) {
             $custom = locate_template( 'pt24-rankings-hub.php' );
+            if ( $custom ) {
+                return $custom;
+            }
+        }
+
+        // /uslugi/ hub page.
+        if ( '1' === (string) get_query_var( 'pt24_uslugi_index' ) ) {
+            $custom = locate_template( 'pt24-services-hub.php' );
             if ( $custom ) {
                 return $custom;
             }
