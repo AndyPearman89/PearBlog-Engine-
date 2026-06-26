@@ -110,6 +110,34 @@ function pt24_register_rest_routes() {
         'callback' => 'pt24_api_submit_lead',
         'permission_callback' => '__return_true',
     ]);
+
+    // Cache diagnostics endpoint (admin only)
+    register_rest_route($namespace, '/cache/status', [
+        'methods' => 'GET',
+        'callback' => 'pt24_api_get_cache_status',
+        'permission_callback' => function() {
+            return current_user_can('manage_options');
+        },
+    ]);
+
+    // Cache purge endpoint (admin only)
+    register_rest_route($namespace, '/cache/purge', [
+        'methods' => 'POST',
+        'callback' => 'pt24_api_purge_cache',
+        'permission_callback' => function() {
+            return current_user_can('manage_options');
+        },
+        'args' => [
+            'service' => [
+                'required' => false,
+                'type' => 'string',
+            ],
+            'city' => [
+                'required' => false,
+                'type' => 'string',
+            ],
+        ],
+    ]);
 }
 add_action('rest_api_init', 'pt24_register_rest_routes');
 
@@ -236,6 +264,70 @@ function pt24_api_invalidate_business_list_cache($service = null, $city = null) 
     }
 
     pt24_api_set_business_cache_index($index);
+}
+
+/**
+ * Return cache diagnostics for PT24 business API cache index.
+ *
+ * @param WP_REST_Request $request Request object.
+ * @return WP_REST_Response
+ */
+function pt24_api_get_cache_status($request) {
+    unset($request);
+
+    $index = pt24_api_get_business_cache_index();
+    $service_counts = [];
+    $city_counts = [];
+
+    foreach ($index as $entry) {
+        $service = isset($entry['service']) ? pt24_api_normalize_optional_slug($entry['service']) : '';
+        $city = isset($entry['city']) ? pt24_api_normalize_optional_slug($entry['city']) : '';
+
+        $service_key = '' === $service ? '*' : $service;
+        $city_key = '' === $city ? '*' : $city;
+
+        if (!isset($service_counts[$service_key])) {
+            $service_counts[$service_key] = 0;
+        }
+        if (!isset($city_counts[$city_key])) {
+            $city_counts[$city_key] = 0;
+        }
+
+        $service_counts[$service_key]++;
+        $city_counts[$city_key]++;
+    }
+
+    ksort($service_counts);
+    ksort($city_counts);
+
+    return new WP_REST_Response([
+        'cache_index_size' => count($index),
+        'services' => $service_counts,
+        'cities' => $city_counts,
+        'generated_at' => current_time('mysql'),
+    ], 200);
+}
+
+/**
+ * Purge PT24 business API cache globally or by scope.
+ *
+ * @param WP_REST_Request $request Request object.
+ * @return WP_REST_Response
+ */
+function pt24_api_purge_cache($request) {
+    $service = pt24_api_normalize_optional_slug($request->get_param('service'));
+    $city = pt24_api_normalize_optional_slug($request->get_param('city'));
+
+    pt24_api_invalidate_business_list_cache($service, $city);
+
+    return new WP_REST_Response([
+        'success' => true,
+        'purged_scope' => [
+            'service' => '' === $service ? null : $service,
+            'city' => '' === $city ? null : $city,
+        ],
+        'cache_index_size_after' => count(pt24_api_get_business_cache_index()),
+    ], 200);
 }
 
 /**
