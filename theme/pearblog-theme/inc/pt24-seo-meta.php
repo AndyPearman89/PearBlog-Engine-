@@ -484,7 +484,7 @@ function pt24_output_seo_meta() {
     </script>
     <?php endif; ?>
 
-    // Breadcrumbs — adjust position for ranking pages.
+    <?php // Breadcrumbs — adjust position for ranking pages. ?>
     <?php if (!empty($service) || !empty($city)): ?>
     <script type="application/ld+json">
     {

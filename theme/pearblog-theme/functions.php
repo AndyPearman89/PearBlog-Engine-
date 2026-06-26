@@ -196,9 +196,26 @@ function pearblog_enqueue_assets() {
     // Host-guarded: load only on the PT24 install (home_url path contains 'pt24'),
     // so the shared theme on poradnik.pro / mucharski.pl is unaffected.
     if ( false !== stripos( (string) home_url( '/' ), 'pt24' ) ) {
-        wp_enqueue_style('pt24-icons', PEARBLOG_URI . '/assets/css/pt24-icons.css', array(), PEARBLOG_VERSION);
-        wp_enqueue_style('pt24-site', PEARBLOG_URI . '/assets/css/pt24-site.css', array('pearblog-components', 'pt24-icons'), PEARBLOG_VERSION);
-        wp_enqueue_script('pt24-ux', PEARBLOG_URI . '/assets/js/pt24-ux.js', array(), PEARBLOG_VERSION, true);
+        $pt24_icons_path = PEARBLOG_DIR . '/assets/css/pt24-icons.css';
+        $pt24_site_path = PEARBLOG_DIR . '/assets/css/pt24-site.css';
+        $pt24_site_min_path = PEARBLOG_DIR . '/assets/css/pt24-site.min.css';
+        $pt24_ux_path = PEARBLOG_DIR . '/assets/js/pt24-ux.js';
+
+        $pt24_icons_ver = file_exists( $pt24_icons_path ) ? (string) filemtime( $pt24_icons_path ) : PEARBLOG_VERSION;
+        $pt24_site_ver = file_exists( $pt24_site_path ) ? (string) filemtime( $pt24_site_path ) : PEARBLOG_VERSION;
+        $pt24_ux_ver = file_exists( $pt24_ux_path ) ? (string) filemtime( $pt24_ux_path ) : PEARBLOG_VERSION;
+
+        $pt24_site_uri = file_exists( $pt24_site_min_path )
+            ? PEARBLOG_URI . '/assets/css/pt24-site.min.css'
+            : PEARBLOG_URI . '/assets/css/pt24-site.css';
+
+        wp_enqueue_style('pt24-icons', PEARBLOG_URI . '/assets/css/pt24-icons.css', array(), $pt24_icons_ver);
+        wp_enqueue_style('pt24-site', $pt24_site_uri, array('pearblog-components', 'pt24-icons'), $pt24_site_ver);
+        wp_enqueue_script('pt24-ux', PEARBLOG_URI . '/assets/js/pt24-ux.js', array(), $pt24_ux_ver, true);
+
+        if ( function_exists( 'wp_script_add_data' ) ) {
+            wp_script_add_data( 'pt24-ux', 'strategy', 'defer' );
+        }
     }
 
     // Poradnik V4 HI-PRO Content Hub

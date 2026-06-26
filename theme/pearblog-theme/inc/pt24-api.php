@@ -42,6 +42,28 @@ function pt24_register_rest_routes() {
                 'default' => 1,
                 'type' => 'integer',
             ],
+            'min_rating' => [
+                'required' => false,
+                'type' => 'number',
+            ],
+            'mobile_service' => [
+                'required' => false,
+                'type' => 'boolean',
+            ],
+            'available_today' => [
+                'required' => false,
+                'type' => 'boolean',
+            ],
+            'sort_by' => [
+                'required' => false,
+                'type' => 'string',
+                'default' => 'rating',
+            ],
+            'sort_order' => [
+                'required' => false,
+                'type' => 'string',
+                'default' => 'desc',
+            ],
         ],
     ]);
 
@@ -97,14 +119,22 @@ add_action('rest_api_init', 'pt24_register_rest_routes');
 function pt24_api_get_businesses($request) {
     $service = $request->get_param('service');
     $city = $request->get_param('city');
-    $per_page = $request->get_param('per_page');
-    $page = $request->get_param('page');
+    $per_page = max(1, min(50, absint($request->get_param('per_page'))));
+    $page = max(1, absint($request->get_param('page')));
+    $min_rating = (float) $request->get_param('min_rating');
+    $mobile_service = $request->get_param('mobile_service');
+    $available_today = $request->get_param('available_today');
+    $sort_by = (string) $request->get_param('sort_by');
+    $sort_order = strtoupper((string) $request->get_param('sort_order'));
 
     $args = [
         'post_type' => 'pt24_business',
         'post_status' => 'publish',
         'posts_per_page' => $per_page,
         'paged' => $page,
+        'no_found_rows' => false,
+        'update_post_meta_cache' => true,
+        'update_post_term_cache' => true,
     ];
 
     // Add tax query if service or city specified
@@ -128,6 +158,69 @@ function pt24_api_get_businesses($request) {
         }
     }
 
+    $args['meta_query'] = ['relation' => 'AND'];
+
+    if ($min_rating > 0) {
+        $args['meta_query'][] = [
+            'key' => 'pt24_rating',
+            'value' => $min_rating,
+            'type' => 'NUMERIC',
+            'compare' => '>=',
+        ];
+    }
+
+    if (null !== $mobile_service && '' !== $mobile_service) {
+        $args['meta_query'][] = [
+            'key' => 'pt24_mobile_service',
+            'value' => $mobile_service ? '1' : '0',
+            'compare' => '=',
+        ];
+    }
+
+    if (null !== $available_today && '' !== $available_today) {
+        $args['meta_query'][] = [
+            'key' => 'pt24_available_today',
+            'value' => $available_today ? '1' : '0',
+            'compare' => '=',
+        ];
+    }
+
+    if (1 === count($args['meta_query'])) {
+        unset($args['meta_query']);
+    }
+
+    if ('ASC' !== $sort_order) {
+        $sort_order = 'DESC';
+    }
+
+    switch ($sort_by) {
+        case 'name':
+            $args['orderby'] = 'title';
+            $args['order'] = $sort_order;
+            break;
+        case 'reviews':
+            $args['meta_key'] = 'pt24_reviews_count';
+            $args['orderby'] = 'meta_value_num';
+            $args['order'] = $sort_order;
+            break;
+        case 'newest':
+            $args['orderby'] = 'date';
+            $args['order'] = $sort_order;
+            break;
+        case 'rating':
+        default:
+            $args['meta_key'] = 'pt24_rating';
+            $args['orderby'] = 'meta_value_num';
+            $args['order'] = $sort_order;
+            break;
+    }
+
+    $cache_key = 'pt24_api_biz_' . md5(wp_json_encode($args));
+    $cached_response = get_transient($cache_key);
+    if (is_array($cached_response)) {
+        return new WP_REST_Response($cached_response, 200);
+    }
+
     $query = new WP_Query($args);
     $businesses = [];
 
@@ -141,16 +234,34 @@ function pt24_api_get_businesses($request) {
             'service_area' => get_post_meta($post->ID, 'pt24_service_area', true),
             'rating' => floatval(get_post_meta($post->ID, 'pt24_rating', true) ?: 5),
             'reviews_count' => intval(get_post_meta($post->ID, 'pt24_reviews_count', true) ?: 0),
+            'mobile_service' => (bool) get_post_meta($post->ID, 'pt24_mobile_service', true),
+            'available_today' => (bool) get_post_meta($post->ID, 'pt24_available_today', true),
+            'lat' => (float) get_post_meta($post->ID, 'pt24_lat', true),
+            'lng' => (float) get_post_meta($post->ID, 'pt24_lng', true),
             'plan' => get_post_meta($post->ID, 'pt24_plan', true) ?: 'free',
         ];
     }
 
-    return new WP_REST_Response([
+    $response = [
         'businesses' => $businesses,
-        'total' => $query->found_posts,
-        'pages' => $query->max_num_pages,
+        'total' => (int) $query->found_posts,
+        'pages' => (int) $query->max_num_pages,
         'current_page' => $page,
-    ], 200);
+        'per_page' => $per_page,
+        'filters' => [
+            'service' => $service,
+            'city' => $city,
+            'min_rating' => $min_rating,
+            'mobile_service' => $mobile_service,
+            'available_today' => $available_today,
+            'sort_by' => $sort_by,
+            'sort_order' => strtolower($sort_order),
+        ],
+    ];
+
+    set_transient($cache_key, $response, 5 * MINUTE_IN_SECONDS);
+
+    return new WP_REST_Response($response, 200);
 }
 
 /**
@@ -201,16 +312,30 @@ function pt24_api_get_leads($request) {
     $table_name = $wpdb->prefix . 'pt24_leads';
 
     $status = $request->get_param('status');
-    $per_page = $request->get_param('per_page');
-    $page = $request->get_param('page');
+    $per_page = max(1, min(100, absint($request->get_param('per_page'))));
+    $page = max(1, absint($request->get_param('page')));
     $offset = ($page - 1) * $per_page;
 
-    $where = $status ? $wpdb->prepare("WHERE status = %s", $status) : "";
-    $leads = $wpdb->get_results(
-        "SELECT * FROM $table_name $where ORDER BY created_at DESC LIMIT $per_page OFFSET $offset"
-    );
+    $where_sql = '';
+    $where_values = [];
 
-    $total = $wpdb->get_var("SELECT COUNT(*) FROM $table_name $where");
+    if (!empty($status)) {
+        $where_sql = 'WHERE status = %s';
+        $where_values[] = sanitize_key($status);
+    }
+
+    $leads_query = "SELECT * FROM $table_name $where_sql ORDER BY created_at DESC LIMIT %d OFFSET %d";
+    $leads_values = array_merge($where_values, [$per_page, $offset]);
+    $prepared_leads_query = $wpdb->prepare($leads_query, $leads_values);
+    $leads = $wpdb->get_results($prepared_leads_query);
+
+    $count_query = "SELECT COUNT(*) FROM $table_name $where_sql";
+    if (!empty($where_values)) {
+        $prepared_count_query = $wpdb->prepare($count_query, $where_values);
+        $total = $wpdb->get_var($prepared_count_query);
+    } else {
+        $total = $wpdb->get_var($count_query);
+    }
 
     return new WP_REST_Response([
         'leads' => $leads,
@@ -281,6 +406,17 @@ function pt24_api_can_view_stats($request) {
  */
 function pt24_api_submit_lead($request) {
     $params = $request->get_json_params();
+    if (!is_array($params) || empty($params)) {
+        $params = $request->get_params();
+    }
+
+    $lead_rate_limit_window = defined('MINUTE_IN_SECONDS') ? MINUTE_IN_SECONDS : 60;
+    $client_ip = isset($_SERVER['REMOTE_ADDR']) ? sanitize_text_field((string) wp_unslash($_SERVER['REMOTE_ADDR'])) : 'unknown';
+    $rate_limit_key = 'pt24_api_lead_rl_' . md5($client_ip);
+
+    if (false !== get_transient($rate_limit_key)) {
+        return new WP_Error('rate_limited', 'Please wait before sending another lead request.', ['status' => 429]);
+    }
 
     // Validate required fields
     $required = ['name', 'email', 'phone', 'city', 'service'];
@@ -294,6 +430,7 @@ function pt24_api_submit_lead($request) {
     $name = sanitize_text_field($params['name']);
     $email = sanitize_email($params['email']);
     $phone = sanitize_text_field($params['phone']);
+    $phone = preg_replace('/[^0-9+\s()-]/', '', $phone);
     $city = sanitize_text_field($params['city']);
     $service = sanitize_text_field($params['service']);
     $message = sanitize_textarea_field($params['message'] ?? '');
@@ -301,6 +438,10 @@ function pt24_api_submit_lead($request) {
     // Validate email
     if (!is_email($email)) {
         return new WP_Error('invalid_email', 'Invalid email address', ['status' => 400]);
+    }
+
+    if (strlen((string) $phone) < 6) {
+        return new WP_Error('invalid_phone', 'Invalid phone number', ['status' => 400]);
     }
 
     // Store in database
@@ -326,6 +467,8 @@ function pt24_api_submit_lead($request) {
     if ($result === false) {
         return new WP_Error('insert_failed', 'Failed to save lead', ['status' => 500]);
     }
+
+    set_transient($rate_limit_key, 1, $lead_rate_limit_window);
 
     $lead_id = $wpdb->insert_id;
 

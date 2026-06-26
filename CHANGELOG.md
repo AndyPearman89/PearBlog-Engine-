@@ -4,6 +4,22 @@ All notable changes to PearBlog Engine are documented in this file.
 
 ## [Unreleased] — In Progress
 
+### Changed — PT24 API, Security, and Performance
+
+#### PT24 API hardening
+- **`pt24-api.php`** — Added bounded pagination (`per_page` clamp), advanced business filters (`min_rating`, `mobile_service`, `available_today`), and sortable listing (`rating`, `reviews`, `name`, `newest`).
+- **Caching** — Added transient response cache for business listing queries to reduce repeated DB load on identical requests.
+- **Leads endpoint security** — Reworked `/leads` SQL with prepared statements for list and count queries; sanitized status key.
+- **Lead submit protection** — Added simple IP rate limiting for `/leads/submit` plus stricter phone validation.
+
+#### PT24 front-end performance
+- **`functions.php`** — PT24 assets now use `filemtime()`-based versions for better cache invalidation.
+- **`functions.php`** — `pt24-site.min.css` is auto-used when present, with safe fallback to `pt24-site.css`.
+- **`functions.php`** — Added deferred loading strategy for `pt24-ux.js`.
+
+#### PT24 SEO head cleanup
+- **`pt24-seo-meta.php`** — Fixed a raw Breadcrumbs comment leak in `<head>` output by moving it to a PHP comment block.
+
 ### Added — PT24 CSS & Homepage Completion
 
 #### PT24 Comprehensive Styling (v3.3.0+)
