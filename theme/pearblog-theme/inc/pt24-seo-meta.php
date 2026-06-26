@@ -252,6 +252,12 @@ function pt24_output_seo_meta() {
         }
     }
 
+    // /szukaj/ — finder / search page
+    if ( rtrim( $request_path, '/' ) === '/szukaj' ) {
+        $meta['title']       = 'Znajdź sprawdzonego fachowca w swoim mieście | PT24.PRO';
+        $meta['description'] = 'Szukasz hydraulika, elektryka, mechanika lub innego fachowca? Wybierz usługę i miasto — PT24 połączy Cię z lokalnym specjalistą. Bezpłatna wycena.';
+    }
+
     // AI Blog article — override from stored meta
     $current_post = get_post();
     if ( $current_post instanceof WP_Post && is_singular( 'post' ) && '1' === (string) get_post_meta( $current_post->ID, '_pt24_blog_ai', true ) ) {

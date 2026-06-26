@@ -13,6 +13,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 /**
  * Inject the search/finder UI when the page content has the marker.
+ * Priority 9 = before wpautop (10) so the injected <div> isn't wrapped in <p>.
  */
 add_filter( 'the_content', static function( $content ) {
 	if ( false === strpos( $content, '<!-- pt24-search-finder -->' ) ) {
@@ -23,7 +24,7 @@ add_filter( 'the_content', static function( $content ) {
 		pt24_render_search_finder_html(),
 		$content
 	);
-} );
+}, 9 );
 
 /**
  * Build the full-page finder HTML with service grid + city autocomplete.
