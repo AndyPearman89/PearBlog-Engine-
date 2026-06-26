@@ -41,7 +41,7 @@ function pt24_render_full_footer(): void {
                         <?php echo pearblog_get_logo(); ?>
                     </a>
                     <p class="pp-footer-desc">
-                        PT24.PRO — Pomoc Techniczna 24h. Znajdź sprawdzonego fachowca w swojej okolicy.
+                        Łączymy klientów z najlepszymi fachowcami w Polsce. Szybko, bezpiecznie i bez zobowiązań.
                     </p>
                     <!-- Social icons -->
                     <div class="pt24-footer__social" aria-label="Media społecznościowe">
@@ -110,7 +110,7 @@ function pt24_render_full_footer(): void {
                 <p class="pp-footer-copyright">
                     &copy; <?php echo esc_html( $year ); ?>
                     <strong><a href="<?php echo esc_url( $home ); ?>">PT24.pro</a></strong>
-                    – Jedna platforma. Tysiące specjalistów. Szybki kontakt.
+                    – Portal firm i leadów. Wszelkie prawa zastrzeżone.
                 </p>
                 <p class="pp-footer-badges">
                     <span class="pt24-footer__badge"><span class="pt24-ico pt24-ico--lock" aria-hidden="true"></span> SSL Bezpieczne dane</span>
