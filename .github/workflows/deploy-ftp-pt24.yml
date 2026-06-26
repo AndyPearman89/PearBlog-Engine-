@@ -65,31 +65,13 @@ jobs:
           sudo apt-get install -y -qq lftp netcat-openbsd
 
       - name: Validate deployment connectivity
-        env:
-          FTP_PROTOCOL: ${{ steps.preflight.outputs.protocol }}
         run: |
           HOST="${{ secrets.FTP_HOST }}"
           PORT="${{ secrets.FTP_PORT }}"
-          TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
           echo "TCP check: $HOST:$PORT"
-          nc -z -w "$TIMEOUT" "$HOST" "$PORT" || { echo "::error::Endpoint unreachable"; exit 1; }
-          echo "TCP OK"
+          nc -z -w "${{ env.CONNECT_TIMEOUT_SECONDS }}" "$HOST" "$PORT" && echo "TCP OK" || { echo "::error::Endpoint unreachable at $HOST:$PORT"; exit 1; }
 
-      - name: Deploy mu-plugin to PT24
-        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: sftp
-          log-level: verbose
-          local-dir: ./mu-plugins/pearblog-engine/
-          server-dir: /pt24/wp-content/mu-plugins/pearblog-engine/
-          dangerous-clean-slate: false
-
-      - name: Deploy PT24 root mu-plugins (AI Factory, Blog Engine, Places Seeder)
+      - name: Deploy via lftp (mu-plugins + themes)
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
@@ -99,7 +81,28 @@ jobs:
           FTP_PROTO: ${{ steps.preflight.outputs.protocol }}
         run: |
           set -euo pipefail
-          REMOTE="/pt24/wp-content/mu-plugins"
+          echo "Deploying to $FTP_PROTO://$FTP_HOST:$FTP_PORT"
+
+          deploy() {
+            local local_dir="$1"
+            local remote_dir="$2"
+            echo "  mirror: $local_dir -> $remote_dir"
+            lftp -c "
+              set net:timeout 60
+              set net:max-retries 3
+              set net:reconnect-interval-base 5
+              set sftp:connect-program 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes'
+              open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'
+              mirror --reverse --delete --verbose=0 --no-perms --no-symlinks '$local_dir' '$remote_dir'
+              bye
+            "
+          }
+
+          # 1. pearblog-engine plugin directory
+          deploy "./mu-plugins/pearblog-engine/" "/pt24/wp-content/mu-plugins/pearblog-engine/"
+
+          # 2. Root PT24 mu-plugin PHP files (Blog Engine, AI Factory, Places Seeder, etc.)
+          REMOTE_MU="/pt24/wp-content/mu-plugins"
           for f in \
             mu-plugins/pearblog-engine-loader.php \
             mu-plugins/pt24-ai-factory.php \
@@ -111,35 +114,21 @@ jobs:
             mu-plugins/pt24-places-loader.php \
             mu-plugins/pt24-places-seeder.php \
             mu-plugins/pt24-scale-data.php; do
-            echo "Uploading $f ..."
-            lftp -c "set net:timeout 30; open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' 'sftp://$FTP_HOST'; put '$f' -o '$REMOTE/$(basename $f)'; bye"
+            [ -f "$f" ] || continue
+            echo "  upload: $f"
+            lftp -c "
+              set net:timeout 60
+              set sftp:connect-program 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes'
+              open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'
+              put '$f' -o '$REMOTE_MU/$(basename $f)'
+              bye
+            "
           done
-          echo "All root mu-plugins uploaded."
 
-      - name: Deploy PT24 theme
-        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: sftp
-          log-level: verbose
-          local-dir: ./theme/pt24/
-          server-dir: /pt24/wp-content/themes/pt24/
-          dangerous-clean-slate: false
+          # 3. PT24 theme
+          deploy "./theme/pt24/" "/pt24/wp-content/themes/pt24/"
 
-      - name: Deploy PearBlog theme to PT24
-        timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
-        uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-        with:
-          server: ${{ secrets.FTP_HOST }}
-          username: ${{ secrets.FTP_USERNAME }}
-          password: ${{ secrets.FTP_PASSWORD }}
-          port: ${{ secrets.FTP_PORT }}
-          protocol: sftp
-          log-level: verbose
-          local-dir: ./theme/pearblog-theme/
-          server-dir: /pt24/wp-content/themes/pearblog-theme/
-          dangerous-clean-slate: false
+          # 4. PearBlog theme (active theme on PT24)
+          deploy "./theme/pearblog-theme/" "/pt24/wp-content/themes/pearblog-theme/"
+
+          echo "Deploy complete."
