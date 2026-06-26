@@ -54,6 +54,7 @@ class AdminPageV8Enterprise {
 		'seo'              => '🔍 SEO Advanced',
 		'monetization'     => '💰 Revenue Center',
 		'leads'            => '👥 Leads & CRM',
+		'firms'            => '🏢 Firmy (weryfikacja)',
 		'automation'       => '⚙️ Automation Pro',
 		'analytics'        => '📈 Analytics Deep',
 		'multisite'        => '🌐 Multisite/SaaS',
@@ -83,6 +84,9 @@ class AdminPageV8Enterprise {
 		add_action( 'admin_post_pt24_update_lead_status', [ $this, 'handle_update_lead_status' ] );
 		add_action( 'admin_post_pt24_export_leads', [ $this, 'handle_export_leads' ] );
 		add_action( 'admin_post_pt24_save_settings',          [ $this, 'handle_save_settings' ] );
+		// PT24 firm moderation (approve / reject pending submissions).
+		add_action( 'admin_post_pt24_approve_firm', [ $this, 'handle_approve_firm' ] );
+		add_action( 'admin_post_pt24_reject_firm',  [ $this, 'handle_reject_firm' ] );
 		add_action( 'admin_post_pt24_save_automation_settings', [ $this, 'handle_save_automation_settings' ] );
 	}
 
@@ -469,6 +473,9 @@ class AdminPageV8Enterprise {
 				break;
 			case 'leads':
 				$this->render_leads_tab();
+				break;
+			case 'firms':
+				$this->render_firms_tab();
 				break;
 			case 'analytics':
 				$this->render_analytics_tab();
@@ -1219,6 +1226,181 @@ class AdminPageV8Enterprise {
 			'won'         => __( 'Won', 'pearblog-engine' ),
 			'lost'        => __( 'Lost', 'pearblog-engine' ),
 		];
+	}
+
+	// -----------------------------------------------------------------------
+	// Firms tab (moderation of pending /dodaj-firme/ submissions)
+	// -----------------------------------------------------------------------
+
+	/**
+	 * Render the "Firmy do weryfikacji" tab.
+	 */
+	private function render_firms_tab(): void {
+		// notice
+		$notice = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		if ( 'approved' === $notice ) {
+			echo '<div class="notice notice-success is-dismissible"><p>Firma zatwierdzona i opublikowana.</p></div>';
+		} elseif ( 'rejected' === $notice ) {
+			echo '<div class="notice notice-warning is-dismissible"><p>Firma odrzucona i przeniesiona do kosza.</p></div>';
+		}
+
+		// Count badges for header.
+		$pending_count = (int) wp_count_posts( 'pt24_firm' )->pending;
+		$pub_count     = (int) wp_count_posts( 'pt24_firm' )->publish;
+
+		echo '<h2 style="margin-top:1rem">Firmy do weryfikacji</h2>';
+		echo '<p style="color:#64748b">Zgłoszenia z formularza <a href="' . esc_url( home_url( '/dodaj-firme/' ) ) . '" target="_blank">/dodaj-firme/</a>. '
+			. 'Oczekujące: <strong>' . esc_html( $pending_count ) . '</strong> &nbsp;·&nbsp; '
+			. 'Opublikowane: <strong>' . esc_html( $pub_count ) . '</strong></p>';
+
+		// Pending firms.
+		$firms = get_posts( [
+			'post_type'      => 'pt24_firm',
+			'post_status'    => 'pending',
+			'numberposts'    => 50,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'suppress_filters' => true,
+		] );
+
+		if ( empty( $firms ) ) {
+			echo '<p style="padding:1.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">Brak zgłoszeń oczekujących na weryfikację.</p>';
+		} else {
+			echo '<table class="widefat striped" style="margin-top:1rem">';
+			echo '<thead><tr>'
+				. '<th>Nazwa firmy</th>'
+				. '<th>Miasto</th>'
+				. '<th>Usługa</th>'
+				. '<th>Telefon</th>'
+				. '<th>E-mail</th>'
+				. '<th>WWW</th>'
+				. '<th>Data zgłoszenia</th>'
+				. '<th>Akcje</th>'
+				. '</tr></thead><tbody>';
+
+			foreach ( $firms as $firm ) {
+				$fid     = (int) $firm->ID;
+				$city    = (string) get_post_meta( $fid, 'pt24_firm_city_name', true ) ?: (string) get_post_meta( $fid, 'pt24_firm_city', true );
+				$service = (string) get_post_meta( $fid, 'pt24_firm_services', true ) ?: (string) get_post_meta( $fid, 'pt24_firm_service', true );
+				$phone   = (string) get_post_meta( $fid, 'pt24_firm_phone', true );
+				$email   = (string) get_post_meta( $fid, 'pt24_firm_email', true );
+				$website = (string) get_post_meta( $fid, 'pt24_firm_website', true );
+				$date    = get_the_date( 'd.m.Y H:i', $firm );
+
+				$nonce_approve = wp_create_nonce( 'pt24_approve_firm_' . $fid );
+				$nonce_reject  = wp_create_nonce( 'pt24_reject_firm_' . $fid );
+				$base          = admin_url( 'admin-post.php' );
+
+				$approve_url = add_query_arg( [
+					'action'  => 'pt24_approve_firm',
+					'firm_id' => $fid,
+					'_wpnonce' => $nonce_approve,
+				], $base );
+				$reject_url  = add_query_arg( [
+					'action'  => 'pt24_reject_firm',
+					'firm_id' => $fid,
+					'_wpnonce' => $nonce_reject,
+				], $base );
+				$edit_url    = get_edit_post_link( $fid );
+
+				echo '<tr>';
+				echo '<td><strong>' . esc_html( get_the_title( $firm ) ) . '</strong>'
+					. ' <a href="' . esc_url( (string) $edit_url ) . '" style="font-size:.8rem">(edytuj)</a></td>';
+				echo '<td>' . esc_html( $city ) . '</td>';
+				echo '<td>' . esc_html( $service ) . '</td>';
+				echo '<td>' . esc_html( $phone ) . '</td>';
+				echo '<td>' . ( is_email( $email ) ? '<a href="mailto:' . esc_attr( $email ) . '">' . esc_html( $email ) . '</a>' : '—' ) . '</td>';
+				echo '<td>' . ( $website ? '<a href="' . esc_url( $website ) . '" target="_blank" rel="noopener">link</a>' : '—' ) . '</td>';
+				echo '<td>' . esc_html( $date ) . '</td>';
+				echo '<td style="white-space:nowrap">'
+					. '<a href="' . esc_url( $approve_url ) . '" class="button button-primary" style="margin-right:4px" onclick="return confirm(\'Opublikować tę firmę?\')">✅ Zatwierdź</a>'
+					. '<a href="' . esc_url( $reject_url ) . '" class="button" onclick="return confirm(\'Odrzucić i przenieść do kosza?\')">🗑 Odrzuć</a>'
+					. '</td>';
+				echo '</tr>';
+			}
+
+			echo '</tbody></table>';
+		}
+
+		// Published firms (last 10).
+		$published = get_posts( [
+			'post_type'      => 'pt24_firm',
+			'post_status'    => 'publish',
+			'numberposts'    => 10,
+			'orderby'        => 'date',
+			'order'          => 'DESC',
+			'suppress_filters' => true,
+		] );
+
+		if ( ! empty( $published ) ) {
+			echo '<h3 style="margin-top:2rem">Ostatnio opublikowane firmy</h3>';
+			echo '<table class="widefat striped">';
+			echo '<thead><tr><th>Nazwa</th><th>Miasto</th><th>Ocena</th><th>Zlecenia</th><th>Profil</th></tr></thead><tbody>';
+			foreach ( $published as $firm ) {
+				$fid    = (int) $firm->ID;
+				$city   = (string) get_post_meta( $fid, 'pt24_firm_city_name', true );
+				$rating = (string) get_post_meta( $fid, 'pt24_firm_rating', true );
+				$jobs   = (string) get_post_meta( $fid, 'pt24_firm_jobs', true );
+				echo '<tr>';
+				echo '<td>' . esc_html( get_the_title( $firm ) ) . '</td>';
+				echo '<td>' . esc_html( $city ) . '</td>';
+				echo '<td>★ ' . esc_html( $rating ?: '—' ) . '</td>';
+				echo '<td>' . esc_html( $jobs ?: '0' ) . '</td>';
+				echo '<td><a href="' . esc_url( home_url( '/firma/' . $firm->post_name . '/' ) ) . '" target="_blank">Profil →</a></td>';
+				echo '</tr>';
+			}
+			echo '</tbody></table>';
+		}
+	}
+
+	/**
+	 * admin-post: approve a pending firm (set status to publish).
+	 */
+	public function handle_approve_firm(): void {
+		if ( ! current_user_can( $this->get_required_capability() ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+		$fid = isset( $_GET['firm_id'] ) ? absint( $_GET['firm_id'] ) : 0;
+		check_admin_referer( 'pt24_approve_firm_' . $fid );
+
+		$notice = 'error';
+		if ( $fid > 0 && 'pt24_firm' === get_post_type( $fid ) ) {
+			$result = wp_update_post( [ 'ID' => $fid, 'post_status' => 'publish' ] );
+			if ( $result && ! is_wp_error( $result ) ) {
+				$notice = 'approved';
+			}
+		}
+
+		wp_safe_redirect( add_query_arg(
+			[ 'page' => self::MENU_SLUG, 'tab' => 'firms', 'pt24_notice' => $notice ],
+			admin_url( 'admin.php' )
+		) );
+		exit;
+	}
+
+	/**
+	 * admin-post: reject a pending firm (trash it).
+	 */
+	public function handle_reject_firm(): void {
+		if ( ! current_user_can( $this->get_required_capability() ) ) {
+			wp_die( esc_html__( 'Insufficient permissions.', 'pearblog-engine' ) );
+		}
+		$fid = isset( $_GET['firm_id'] ) ? absint( $_GET['firm_id'] ) : 0;
+		check_admin_referer( 'pt24_reject_firm_' . $fid );
+
+		$notice = 'error';
+		if ( $fid > 0 && 'pt24_firm' === get_post_type( $fid ) ) {
+			$result = wp_trash_post( $fid );
+			if ( $result ) {
+				$notice = 'rejected';
+			}
+		}
+
+		wp_safe_redirect( add_query_arg(
+			[ 'page' => self::MENU_SLUG, 'tab' => 'firms', 'pt24_notice' => $notice ],
+			admin_url( 'admin.php' )
+		) );
+		exit;
 	}
 
 	/**
