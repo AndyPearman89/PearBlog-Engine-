@@ -1877,14 +1877,20 @@ class AdminPageV8Enterprise {
 	 * @param array $leads Pre-fetched output of get_pt24_leads_data().
 	 */
 	private function render_pt24_dashboard( array $leads ): void {
-		$analytics  = $this->get_pt24_analytics_data();
-		$conversion = $analytics['total'] > 0 ? round( $analytics['won'] / $analytics['total'] * 100, 1 ) : 0.0;
-		$threshold  = (int) get_option( 'pt24_daily_alert_threshold', 0 );
-		$trend_max  = 1;
+		$analytics    = $this->get_pt24_analytics_data();
+		$conversion   = $analytics['total'] > 0 ? round( $analytics['won'] / $analytics['total'] * 100, 1 ) : 0.0;
+		$threshold    = (int) get_option( 'pt24_daily_alert_threshold', 0 );
+		$trend_max    = 1;
 		foreach ( $analytics['trend'] as $point ) {
 			$trend_max = max( $trend_max, (int) $point['count'] );
 		}
-		$leads_url = admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=leads' );
+		$leads_url    = admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=leads' );
+		$firms_url    = admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=firms' );
+
+		// Firm counts (CPT).
+		$firm_counts   = wp_count_posts( 'pt24_firm' );
+		$firms_pending = (int) ( $firm_counts->pending ?? 0 );
+		$firms_publish = (int) ( $firm_counts->publish ?? 0 );
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Dashboard — PT24', 'pearblog-engine' ); ?></h2>
@@ -1900,14 +1906,31 @@ class AdminPageV8Enterprise {
 				</div>
 			<?php endif; ?>
 
+			<?php if ( $firms_pending > 0 ) : ?>
+				<div class="pb-v8-alert pb-v8-alert-warning" style="margin-bottom:var(--pb-v8-space-lg);">
+					<strong>🏢
+						<?php
+						/* translators: number of pending firm submissions */
+						printf( esc_html__( '%d firma/-y czeka na weryfikację.', 'pearblog-engine' ), $firms_pending );
+						?>
+					</strong>
+					&nbsp;
+					<a href="<?php echo esc_url( $firms_url ); ?>" class="button button-small">
+						<?php esc_html_e( 'Przejdź do Firmy →', 'pearblog-engine' ); ?>
+					</a>
+				</div>
+			<?php endif; ?>
+
 			<?php $this->render_pt24_chart_styles(); ?>
 
 			<div class="pb-v8-metrics-grid">
 				<?php
-				$this->render_metric_card( [ 'label' => __( 'Total Leads', 'pearblog-engine' ), 'value' => number_format_i18n( $leads['total'] ), 'icon' => '👥' ] );
-				$this->render_metric_card( [ 'label' => __( 'New / Unhandled', 'pearblog-engine' ), 'value' => number_format_i18n( $leads['new'] ), 'icon' => '🆕' ] );
-				$this->render_metric_card( [ 'label' => __( 'Today', 'pearblog-engine' ), 'value' => number_format_i18n( $leads['today'] ), 'icon' => '📅' ] );
-				$this->render_metric_card( [ 'label' => __( 'Conversion', 'pearblog-engine' ), 'value' => $conversion . '%', 'icon' => '🎯' ] );
+				$this->render_metric_card( [ 'label' => __( 'Total Leads', 'pearblog-engine' ),        'value' => number_format_i18n( $leads['total'] ),  'icon' => '👥' ] );
+				$this->render_metric_card( [ 'label' => __( 'New / Unhandled', 'pearblog-engine' ),     'value' => number_format_i18n( $leads['new'] ),    'icon' => '🆕' ] );
+				$this->render_metric_card( [ 'label' => __( 'Today', 'pearblog-engine' ),               'value' => number_format_i18n( $leads['today'] ),  'icon' => '📅' ] );
+				$this->render_metric_card( [ 'label' => __( 'Conversion', 'pearblog-engine' ),          'value' => $conversion . '%',                      'icon' => '🎯' ] );
+				$this->render_metric_card( [ 'label' => 'Firm opublikowanych',                          'value' => number_format_i18n( $firms_publish ),   'icon' => '🏢', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'Firm do weryfikacji', 'value' => number_format_i18n( $firms_pending ), 'icon' => '⏳', 'color' => $firms_pending > 0 ? 'warning' : 'primary' ] );
 				?>
 			</div>
 
