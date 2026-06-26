@@ -644,7 +644,7 @@ html {
 .pt24-faq__question:focus-visible,
 .pt24-form__input:focus-visible,
 .pt24-form__textarea:focus-visible {
-    outline: 3px solid var(--pt24-primary);
+    outline: 3px solid var(--pt24-primary, #2563eb);
     outline-offset: 2px;
 }
 
