@@ -305,6 +305,8 @@ for ( $i = 0; $i < 3; $i++ ) {
 
 $ajax_url = admin_url( 'admin-ajax.php' );
 ?>
+<div class="pt24-scroll-progress" aria-hidden="true"></div>
+<noscript><style>.pt24-section{opacity:1;transform:none}.pt24-scroll-progress,.pt24-sticky-cta,.pt24-scroll-top{display:none}</style></noscript>
 <main id="main" class="pb-main pt24-landing" role="main">
 
     <section class="pt24-hero">
@@ -317,6 +319,10 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Otrzymaj bezpłatne wyceny</a>
                 <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost-light">Opisz zlecenie</a>
             </div>
+            <a href="tel:+48222222222" class="pt24-hero__phone" aria-label="Zadzwoń do nas">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Zadzwoń: 222-222-222
+            </a>
             <div class="pt24-hero__trust">
                 <span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
                 <span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
@@ -341,6 +347,14 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><div><strong>Opinie i oceny</strong><p>Wybierasz wykonawcę na podstawie doświadczeń innych klientów.</p></div></li>
                 </ul>
             </section>
+
+            <div class="pt24-guarantee">
+                <span class="pt24-guarantee__icon">✓</span>
+                <div class="pt24-guarantee__text">
+                    <p class="pt24-guarantee__title">Gwarancja jakości PT24</p>
+                    <p class="pt24-guarantee__desc">Każdy fachowiec na platformie przechodzi weryfikację. Jeśli usługa nie spełni Twoich oczekiwań — pomagamy znaleźć rozwiązanie.</p>
+                </div>
+            </div>
 
             <section class="pt24-section">
                 <h2>Zakres usług: <?php echo esc_html( $service_name ); ?> <?php echo esc_html( $city_loc ); ?></h2>
@@ -599,6 +613,16 @@ $ajax_url = admin_url( 'admin-ajax.php' );
     </section>
 
 </main>
+
+<div class="pt24-sticky-cta" aria-label="Szybki formularz">
+    <p class="pt24-sticky-cta__text">Bezpłatne wyceny od fachowców</p>
+    <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Zamów wycenę</a>
+</div>
+
+<button class="pt24-scroll-top" aria-label="Przewiń do góry" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
 <script>
 (function(){
     var form = document.querySelector('.pt24-leadform');
@@ -624,6 +648,55 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 btn.disabled = false; btn.textContent = 'Wyślij zapytanie';
             });
     });
+
+    /* Scroll Progress Bar */
+    var progressBar = document.querySelector('.pt24-scroll-progress');
+    var scrollTopBtn = document.querySelector('.pt24-scroll-top');
+    var ticking = false;
+
+    function onScroll() {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (progressBar) {
+            var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            progressBar.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+        }
+
+        if (scrollTopBtn) {
+            if (scrollTop > 600) {
+                scrollTopBtn.classList.add('is-visible');
+            } else {
+                scrollTopBtn.classList.remove('is-visible');
+            }
+        }
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+
+    if (scrollTopBtn) {
+        scrollTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    /* Section Reveal Animation */
+    var sections = document.querySelectorAll('.pt24-section');
+    if (sections.length && 'IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        sections.forEach(function(s) { observer.observe(s); });
+    } else {
+        sections.forEach(function(s) { s.classList.add('is-revealed'); });
+    }
 })();
 </script>
 <?php

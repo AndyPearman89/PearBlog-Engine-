@@ -635,3 +635,175 @@ html {
 .pt24-mb-2 {
     margin-bottom: 2rem;
 }
+
+/* ==========================================================================
+   Accessibility — focus states
+   ========================================================================== */
+
+.pt24-btn:focus-visible,
+.pt24-faq__question:focus-visible,
+.pt24-form__input:focus-visible,
+.pt24-form__textarea:focus-visible {
+    outline: 3px solid var(--pt24-primary, #2563eb);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Performance — content-visibility for below-the-fold
+   ========================================================================== */
+
+.pt24-cost-section,
+.pt24-ranking-section,
+.pt24-faq-section,
+.pt24-final-cta {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 350px;
+}
+
+/* ==========================================================================
+   Dark Mode — prefers-color-scheme (auto, no JS toggle needed)
+   ========================================================================== */
+
+@media (prefers-color-scheme: dark) {
+    .pt24-landing {
+        --pt24-primary: #3b82f6;
+        --pt24-primary-dark: #2563eb;
+        --pt24-secondary: #34d399;
+        --pt24-accent: #fbbf24;
+        --pt24-text: #e2e8f0;
+        --pt24-text-light: #94a3b8;
+        --pt24-border: #334155;
+        --pt24-bg: #0f172a;
+        --pt24-bg-light: #1e293b;
+        --pt24-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+        --pt24-shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.4);
+        color-scheme: dark;
+    }
+    .pt24-landing .pt24-hero { background: linear-gradient(135deg, #1e3a5f 0%, #0f172a 100%); }
+    .pt24-landing .pt24-leadbox { background: #1e293b; border-color: #334155; }
+    .pt24-landing .pt24-leadbox input,
+    .pt24-landing .pt24-leadbox select,
+    .pt24-landing .pt24-leadbox textarea { background: #0f172a; border-color: #475569; color: #e2e8f0; }
+    .pt24-landing .pt24-firm,
+    .pt24-landing .pt24-review,
+    .pt24-landing .pt24-faq__item { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+    .pt24-landing .pt24-faq__item summary { color: #f1f5f9; }
+    .pt24-landing .pt24-faq__item p { color: #94a3b8; }
+    .pt24-landing .pt24-prices { border-color: #334155; }
+    .pt24-landing .pt24-prices th { background: #1e293b; color: #e2e8f0; }
+    .pt24-landing .pt24-prices td { border-color: #334155; color: #cbd5e1; }
+    .pt24-landing .pt24-content { color: #e2e8f0; }
+    .pt24-landing .pt24-section > h2 { color: #f1f5f9; }
+    .pt24-landing .pt24-fromblog__card { background: #1e293b; border-color: #334155; color: #e2e8f0; }
+    .pt24-landing .pt24-sidebar { color: #e2e8f0; }
+    .pt24-landing .pt24-btn--ghost { border-color: #475569; color: #e2e8f0; }
+    .pt24-landing .pt24-btn--ghost:hover { background: #334155; }
+}
+
+/* ==========================================================================
+   Scroll Progress Bar
+   ========================================================================== */
+
+.pt24-scroll-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 0%;
+    height: 3px;
+    background: linear-gradient(90deg, var(--pt24-primary, #2563eb), var(--pt24-secondary, #10b981));
+    z-index: 9999;
+    transition: width 50ms linear;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   Sticky Mobile CTA Bar
+   ========================================================================== */
+
+.pt24-sticky-cta {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: var(--pt24-bg, #fff);
+    border-top: 1px solid var(--pt24-border, #e5e7eb);
+    padding: .6rem 1rem;
+    z-index: 9990;
+    box-shadow: 0 -4px 12px rgba(0,0,0,.1);
+    text-align: center;
+    gap: .5rem;
+}
+.pt24-sticky-cta .pt24-btn { font-size: .9rem; padding: .65rem 1.2rem; }
+.pt24-sticky-cta__text { font-size: .8rem; color: var(--pt24-text-light, #6b7280); margin: 0 0 .3rem; }
+
+@media (max-width: 768px) {
+    .pt24-sticky-cta { display: block; }
+    .pt24-landing { padding-bottom: 80px; }
+}
+
+@media (prefers-color-scheme: dark) {
+    .pt24-sticky-cta { background: #1e293b; border-color: #334155; box-shadow: 0 -4px 12px rgba(0,0,0,.4); }
+    .pt24-sticky-cta__text { color: #94a3b8; }
+}
+
+/* ==========================================================================
+   Scroll-to-Top Button
+   ========================================================================== */
+
+.pt24-scroll-top {
+    position: fixed;
+    bottom: 5rem;
+    right: 1.2rem;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: var(--pt24-primary, #2563eb);
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,.2);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: opacity .3s, visibility .3s, transform .3s;
+    z-index: 9980;
+}
+.pt24-scroll-top.is-visible {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+.pt24-scroll-top:hover { background: var(--pt24-primary-dark, #1e40af); }
+.pt24-scroll-top svg { width: 20px; height: 20px; }
+
+@media (max-width: 768px) {
+    .pt24-scroll-top { bottom: 6rem; }
+}
+
+/* ==========================================================================
+   Section Reveal Animation
+   ========================================================================== */
+
+.pt24-section {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity .6s ease-out, transform .6s ease-out;
+}
+.pt24-section.is-revealed {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Disable animations for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .pt24-section {
+        opacity: 1;
+        transform: none;
+        transition: none;
+    }
+    .pt24-scroll-progress { display: none; }
+}

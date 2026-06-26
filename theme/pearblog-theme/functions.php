@@ -196,7 +196,8 @@ function pearblog_enqueue_assets() {
     // Host-guarded: load only on the PT24 install (home_url path contains 'pt24'),
     // so the shared theme on poradnik.pro / mucharski.pl is unaffected.
     if ( false !== stripos( (string) home_url( '/' ), 'pt24' ) ) {
-        wp_enqueue_style('pt24-site', PEARBLOG_URI . '/assets/css/pt24-site.css', array('pearblog-components'), PEARBLOG_VERSION);
+        wp_enqueue_style('pt24-icons', PEARBLOG_URI . '/assets/css/pt24-icons.css', array(), PEARBLOG_VERSION);
+        wp_enqueue_style('pt24-site', PEARBLOG_URI . '/assets/css/pt24-site.css', array('pearblog-components', 'pt24-icons'), PEARBLOG_VERSION);
         wp_enqueue_script('pt24-ux', PEARBLOG_URI . '/assets/js/pt24-ux.js', array(), PEARBLOG_VERSION, true);
     }
 
