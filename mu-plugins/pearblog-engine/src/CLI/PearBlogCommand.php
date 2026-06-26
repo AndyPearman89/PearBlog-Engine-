@@ -933,7 +933,8 @@ class {$class_name} extends PromptBuilder {
 		\$prompt .= "- Include a compelling H1 title\\n";
 		\$prompt .= "- Add a meta description (max 160 chars) prefixed with META:\\n";
 		\$prompt .= "- Use H2/H3 subheadings for structure\\n";
-		// TODO: add {$industry_esc}-specific prompt requirements here.
+		\$prompt .= "- Include practical {$industry_esc} tips and common mistakes to avoid\\n";
+		\$prompt .= "- End with a short FAQ section (3-5 questions)\\n";
 		\$prompt .= \$this->monetisation_instructions();
 
 		/**
@@ -960,7 +961,9 @@ PHP;
 	 * @return string            PHP source code.
 	 */
 	private function generate_provider_stub( string $class_name ): string {
-		$provider_slug = strtolower( str_replace( 'Provider', '', $class_name ) );
+		$provider_slug  = strtolower( str_replace( 'Provider', '', $class_name ) );
+		$provider_label = ucwords( str_replace( [ '-', '_' ], ' ', $provider_slug ) );
+		$default_model  = $provider_slug . '-default';
 
 		return <<<PHP
 <?php
@@ -996,30 +999,29 @@ class {$class_name} implements AIProviderInterface {
 
 	/** @inheritdoc */
 	public static function get_provider_label(): string {
-		return '{$class_name}'; // TODO: update to a friendly display name.
+		return '{$provider_label}';
 	}
 
 	/** @inheritdoc */
 	public static function get_models(): array {
 		return [
-			// TODO: add supported model definitions, e.g.:
-			// 'model-slug' => [
-			// 	'label'                    => 'Model Label',
-			// 	'max_tokens'               => 4096,
-			// 	'cost_per_1k_input_cents'  => 0.01,
-			// 	'cost_per_1k_output_cents' => 0.03,
-			// ],
+			'{$default_model}' => [
+				'label'                    => 'Default model',
+				'max_tokens'               => 4096,
+				'cost_per_1k_input_cents'  => 0.00,
+				'cost_per_1k_output_cents' => 0.00,
+			],
 		];
 	}
 
 	/** @inheritdoc */
 	public static function get_default_model(): string {
-		return ''; // TODO: return the default model slug.
+		return '{$default_model}';
 	}
 
 	/** @inheritdoc */
 	public static function requires_option(): string {
-		return 'pearblog_{$provider_slug}_api_key'; // NOTE: {$provider_slug} is a PHP variable expanded by the outer <<<PHP heredoc when generating the file.
+		return 'pearblog_{$provider_slug}_api_key';
 	}
 
 	// -----------------------------------------------------------------------
@@ -1028,11 +1030,10 @@ class {$class_name} implements AIProviderInterface {
 
 	/** @inheritdoc */
 	public function complete( string \$prompt, int \$max_tokens ): array {
-		// TODO: implement HTTP call to the {$provider_slug} API.
 		// Must return:  [ 'content' => string, 'prompt_tokens' => int, 'completion_tokens' => int ]
 		// Throw RateLimitException on rate-limit responses.
 		// Throw \\RuntimeException on other errors.
-		throw new \\RuntimeException( '{$class_name}::complete() is not yet implemented.' );
+		throw new \\RuntimeException( '{$class_name}::complete() is not implemented. Configure ' . self::requires_option() . ' and add API call logic.' );
 	}
 }
 PHP;
