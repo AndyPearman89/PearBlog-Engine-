@@ -1399,6 +1399,599 @@
 }
 
 /* ===================================================================
+   HOMEPAGE V3.3+ — Hero, Categories, Stats, Testimonials, etc.
+   =================================================================== */
+
+/* Hero Section */
+.pt24-home__hero {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--pt24-blue-dark) 0%, var(--pt24-blue) 100%);
+    color: #fff;
+    padding: 60px 0 50px;
+}
+.pt24-home__hero-content {
+    position: relative;
+    z-index: 1;
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 20px;
+    text-align: center;
+}
+.pt24-home__hero h1 {
+    font-size: 2.8rem;
+    line-height: 1.15;
+    margin: 0 0 1rem;
+    color: #fff;
+    letter-spacing: -.01em;
+    font-weight: 800;
+}
+.pt24-home__hero-accent {
+    background: linear-gradient(135deg, #fbbf24, #f59e0b);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+.pt24-home__hero-sub {
+    font-size: 1.1rem;
+    opacity: .95;
+    max-width: 600px;
+    margin: 0.8rem auto;
+    line-height: 1.6;
+}
+
+/* Trust Badges */
+.pt24-home__trust-badges {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    padding: 2.5rem 0;
+    margin: 0;
+}
+.pt24-home__trust-badges li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    background: rgba(255, 255, 255, .08);
+    padding: 1.2rem;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, .12);
+}
+.pt24-home__trust-badges .pt24-ico {
+    width: 32px;
+    height: 32px;
+    margin-bottom: .8rem;
+}
+.pt24-home__trust-badges strong {
+    display: block;
+    font-size: .95rem;
+    font-weight: 700;
+    margin-bottom: .3rem;
+}
+.pt24-home__trust-badges span {
+    display: block;
+    font-size: .85rem;
+    opacity: .85;
+}
+
+/* Hero CTAs */
+.pt24-home__hero-ctas {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+    margin: 2rem 0 1rem;
+}
+.pt24-home__hero-ctas .pt24-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: .6rem;
+    padding: 1rem 1.8rem;
+    font-size: 1.05rem;
+}
+.pt24-home__hero-ctas .pt24-btn small {
+    display: block;
+    font-size: .75rem;
+    font-weight: 400;
+    opacity: .85;
+    margin-top: .2rem;
+}
+
+.pt24-home__hero-note {
+    font-size: .95rem;
+    opacity: .9;
+    margin-top: 1rem;
+}
+.pt24-home__hero-note .pt24-ico {
+    width: 18px;
+    height: 18px;
+    margin-right: .4rem;
+    vertical-align: middle;
+}
+
+/* Categories / Services */
+.pt24-home__categories {
+    padding: 3.5rem 20px;
+    background: #fff;
+    text-align: center;
+}
+.pt24-home__categories h2 {
+    font-size: 2rem;
+    margin: 0 0 .5rem;
+    color: var(--pt24-dark);
+}
+.pt24-home__categories > p {
+    color: var(--pt24-muted);
+    margin: 0 0 2.5rem;
+    font-size: 1.05rem;
+}
+
+.pt24-home__cat-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1.2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.pt24-home__cat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1.8rem 1rem;
+    background: var(--pt24-bg);
+    border-radius: 12px;
+    text-decoration: none;
+    color: inherit;
+    transition: all .2s ease;
+    border: 1px solid var(--pt24-border);
+}
+.pt24-home__cat-item:hover {
+    background: #fff;
+    border-color: var(--pt24-blue);
+    box-shadow: 0 4px 16px rgba(37, 99, 235, .12);
+    transform: translateY(-4px);
+}
+.pt24-home__cat-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    background: var(--pt24-blue);
+    color: #fff;
+    border-radius: 12px;
+    margin-bottom: 1rem;
+}
+.pt24-home__cat-icon .pt24-ico {
+    width: 28px;
+    height: 28px;
+}
+.pt24-home__cat-item strong {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--pt24-dark);
+    margin-bottom: .3rem;
+}
+.pt24-home__cat-sub {
+    font-size: .85rem;
+    color: var(--pt24-muted);
+}
+
+.pt24-home__cat-item--more {
+    background: linear-gradient(135deg, rgba(37, 99, 235, .08), rgba(245, 158, 11, .08));
+    border-color: var(--pt24-blue);
+}
+.pt24-home__cat-item--more:hover {
+    background: linear-gradient(135deg, var(--pt24-blue), var(--pt24-amber));
+}
+.pt24-home__cat-item--more strong,
+.pt24-home__cat-item--more .pt24-home__cat-sub {
+    color: var(--pt24-blue);
+}
+
+/* How It Works / Flow */
+.pt24-flow {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2rem;
+    padding: 0;
+    margin: 2rem 0 0;
+}
+.pt24-flow li {
+    position: relative;
+    padding-left: 60px;
+    min-height: 100px;
+}
+.pt24-flow__num {
+    position: absolute;
+    left: 0;
+    top: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--pt24-amber);
+    color: #fff;
+    border-radius: 12px;
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+.pt24-flow li strong {
+    display: block;
+    font-size: 1.15rem;
+    color: var(--pt24-dark);
+    margin-bottom: .5rem;
+}
+.pt24-flow li p {
+    margin: 0;
+    font-size: .95rem;
+    color: var(--pt24-muted);
+    line-height: 1.5;
+}
+
+/* Features/Benefits */
+.pt24-features {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+}
+.pt24-features li {
+    display: flex;
+    gap: 1rem;
+    margin: 1.2rem 0;
+    align-items: flex-start;
+}
+.pt24-feat-ico {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    background: rgba(37, 99, 235, .1);
+    border-radius: 10px;
+    color: var(--pt24-blue);
+}
+.pt24-feat-ico .pt24-ico {
+    width: 24px;
+    height: 24px;
+}
+.pt24-features strong {
+    display: block;
+    font-size: 1.05rem;
+    color: var(--pt24-dark);
+    margin-bottom: .2rem;
+}
+.pt24-features li > div,
+.pt24-features li > span {
+    font-size: .95rem;
+    color: var(--pt24-muted);
+    line-height: 1.5;
+}
+
+/* Band / Section Container */
+.pt24-band {
+    padding: 3rem 20px;
+    text-align: center;
+    background: #fff;
+}
+.pt24-band h2 {
+    font-size: 1.8rem;
+    color: var(--pt24-dark);
+    margin: 0 0 1rem;
+}
+.pt24-band > p {
+    max-width: 700px;
+    margin: 0 auto 0;
+    color: var(--pt24-muted);
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+/* Stats Bar */
+.pt24-home__stats-bar {
+    background: linear-gradient(135deg, var(--pt24-blue-dark) 0%, var(--pt24-blue) 100%);
+    padding: 3rem 20px;
+    color: #fff;
+}
+.pt24-home__stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.pt24-home__stat {
+    text-align: center;
+    padding: 1.5rem;
+}
+.pt24-home__stat strong {
+    display: block;
+    font-size: 2.2rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: .4rem;
+}
+.pt24-home__stat span {
+    display: block;
+    font-size: .95rem;
+    opacity: .9;
+}
+
+/* For Companies / Firms Section */
+.pt24-home__forfirms {
+    background: linear-gradient(135deg, rgba(37, 99, 235, .08), rgba(245, 158, 11, .08));
+    padding: 4rem 20px;
+    text-align: center;
+}
+.pt24-home__forfirms-content {
+    max-width: 600px;
+    margin: 0 auto;
+}
+.pt24-home__forfirms h2 {
+    font-size: 2rem;
+    color: var(--pt24-dark);
+    margin: 0 0 .5rem;
+}
+.pt24-home__forfirms > div > p {
+    color: var(--pt24-muted);
+    margin: 0 0 1.5rem;
+    font-size: 1.05rem;
+}
+.pt24-home__forfirms-note {
+    margin-top: 1rem;
+    font-size: .95rem;
+    color: var(--pt24-muted);
+}
+
+/* Testimonials / Reviews */
+.pt24-home__testimonials {
+    padding: 3.5rem 20px;
+    background: #fff;
+    text-align: center;
+}
+.pt24-home__testimonials h2 {
+    font-size: 1.8rem;
+    color: var(--pt24-dark);
+    margin: 0 0 1.5rem;
+}
+.pt24-home__testimonials-header {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 2.5rem;
+}
+.pt24-home__rating {
+    text-align: center;
+}
+.pt24-home__rating strong {
+    display: block;
+    font-size: 1.8rem;
+    color: var(--pt24-dark);
+}
+.pt24-home__rating small {
+    display: block;
+    font-size: .85rem;
+    color: var(--pt24-muted);
+    margin-top: .3rem;
+}
+.pt24-home__stars {
+    color: var(--pt24-amber);
+    font-size: 1.2rem;
+}
+
+.pt24-home__reviews {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+.pt24-home__review {
+    background: var(--pt24-bg);
+    border: 1px solid var(--pt24-border);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: left;
+}
+.pt24-home__review-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+.pt24-home__review-header strong {
+    font-size: 1rem;
+    color: var(--pt24-dark);
+}
+.pt24-home__review-header span {
+    font-size: .85rem;
+    color: var(--pt24-muted);
+}
+.pt24-home__review p {
+    margin: 0;
+    font-size: .95rem;
+    color: var(--pt24-dark);
+    line-height: 1.6;
+}
+
+/* CTA Band */
+.pt24-cta-band {
+    background: linear-gradient(135deg, var(--pt24-amber) 0%, var(--pt24-amber-dark) 100%);
+    color: #fff;
+    padding: 3rem 20px;
+    text-align: center;
+}
+.pt24-cta-band h2 {
+    font-size: 1.8rem;
+    margin: 0 0 .8rem;
+    color: #fff;
+}
+.pt24-cta-band > p {
+    font-size: 1.05rem;
+    margin: 0 0 1.5rem;
+    opacity: .95;
+    max-width: 600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+.pt24-cta-band .pt24-btn {
+    margin-top: 0.5rem;
+}
+
+/* Links List */
+.pt24-links {
+    list-style: none;
+    padding: 0;
+    margin: 1.5rem 0 0;
+}
+.pt24-links li {
+    margin: .6rem 0;
+}
+.pt24-links a {
+    display: inline-block;
+    color: var(--pt24-blue);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color .2s ease;
+}
+.pt24-links a:hover {
+    color: var(--pt24-blue-dark);
+    text-decoration: underline;
+}
+
+/* Page Container */
+.pt24-page {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 2rem 20px;
+    background: #fff;
+    color: var(--pt24-dark);
+}
+.pt24-page h2 {
+    font-size: 1.6rem;
+    margin: 2rem 0 1rem;
+    color: var(--pt24-dark);
+}
+.pt24-page h3 {
+    font-size: 1.25rem;
+    margin: 1.5rem 0 .8rem;
+    color: var(--pt24-dark);
+}
+.pt24-page p {
+    line-height: 1.7;
+    margin: 0 0 1rem;
+}
+
+.pt24-lead {
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: var(--pt24-blue);
+    margin: 1.5rem 0;
+}
+
+.pt24-note {
+    background: var(--pt24-bg);
+    border-left: 4px solid var(--pt24-blue);
+    padding: 1rem;
+    border-radius: 4px;
+    font-size: .95rem;
+    color: var(--pt24-muted);
+    margin: 1.5rem 0;
+}
+
+.pt24-contact {
+    list-style: none;
+    padding: 0;
+    margin: 2rem 0 0;
+}
+.pt24-contact li {
+    margin: 1rem 0;
+    font-size: 1rem;
+}
+.pt24-contact strong {
+    display: block;
+    margin-bottom: .3rem;
+}
+.pt24-contact a {
+    color: var(--pt24-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+.pt24-contact a:hover {
+    text-decoration: underline;
+}
+
+/* Responsive — Homepage */
+@media (max-width: 768px) {
+    .pt24-home__hero h1 {
+        font-size: 2rem;
+    }
+    .pt24-home__trust-badges {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+        padding: 1.5rem 0;
+    }
+    .pt24-home__hero-ctas {
+        flex-direction: column;
+        gap: .8rem;
+    }
+    .pt24-home__cat-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: .8rem;
+    }
+    .pt24-home__stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem;
+        padding: 2rem 0;
+    }
+    .pt24-home__stat strong {
+        font-size: 1.6rem;
+    }
+    .pt24-flow {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    .pt24-home__reviews {
+        grid-template-columns: 1fr;
+    }
+    .pt24-band, .pt24-home__forfirms, .pt24-cta-band {
+        padding: 2rem 15px;
+    }
+}
+
+@media (max-width: 640px) {
+    .pt24-home__hero {
+        padding: 40px 0 30px;
+    }
+    .pt24-home__hero h1 {
+        font-size: 1.5rem;
+    }
+    .pt24-home__hero-sub {
+        font-size: 1rem;
+    }
+    .pt24-home__trust-badges {
+        grid-template-columns: 1fr;
+        gap: .8rem;
+        padding: 1rem 0;
+    }
+    .pt24-home__cat-grid {
+        grid-template-columns: 1fr;
+    }
+    .pt24-home__stats-grid {
+        grid-template-columns: 1fr;
+    }
+    .pt24-page {
+        padding: 1.5rem 15px;
+    }
+}
+
+/* ===================================================================
    PRINT STYLES — clean landing pages for print
    =================================================================== */
 @media print {
