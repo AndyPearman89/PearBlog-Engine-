@@ -1206,3 +1206,111 @@
 .pt24-blog-cat-btn.is-active .pt24-blog-cat-count { background: rgba(255,255,255,.25); }
 .pb-dark-mode .pt24-blog-cat-btn { background: #1e293b; border-color: #334155; color: #e2e8f0; }
 .pb-dark-mode .pt24-blog-cat-btn:hover { background: var(--pt24-blue); border-color: var(--pt24-blue); color: #fff; }
+
+/* ===================================================================
+   AUTO DARK MODE — prefers-color-scheme (fallback when JS toggle absent)
+   =================================================================== */
+@media (prefers-color-scheme: dark) {
+    body:not(.pb-light-mode):not(.pb-dark-mode) {
+        --pt24-bg: #0f172a;
+        --pt24-bg-card: #1e293b;
+        --pt24-border: #334155;
+        --pt24-dark: #f1f5f9;
+        --pt24-text: #e2e8f0;
+        --pt24-text-muted: #94a3b8;
+        --pt24-muted: #94a3b8;
+    }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pb-nav { background: rgba(15,23,42,.95); border-color: rgba(51,65,85,.8); }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-home__card,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-benefit,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-review,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-firm,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-faq__item,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-blog-card,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-ranking__item,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-search-card {
+        background: #1e293b; border-color: #334155; color: #e2e8f0;
+    }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-leadbox { background: #1e293b; border-color: #334155; }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-leadbox input,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-leadbox select,
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-leadbox textarea { background: #0f172a; border-color: #334155; color: #e2e8f0; }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-content { color: #e2e8f0; }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-section > h2 { color: #f1f5f9; }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-faq__item summary { background: #1e293b; color: #f1f5f9; }
+    body:not(.pb-light-mode):not(.pb-dark-mode) .pt24-faq__item p { background: #1e293b; color: #94a3b8; }
+}
+
+/* ===================================================================
+   PERFORMANCE — content-visibility for below-the-fold sections
+   =================================================================== */
+.pt24-internal,
+.pt24-fromblog,
+.pt24-faq,
+.pt24-section:nth-child(n+4) {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 400px;
+}
+
+/* ===================================================================
+   GWARANCJA (quality guarantee badge) — landing pages
+   =================================================================== */
+.pt24-guarantee {
+    display: flex; align-items: center; gap: 1rem;
+    background: linear-gradient(135deg, #ecfdf5 0%, #f0fdf4 100%);
+    border: 1.5px solid #86efac;
+    border-radius: var(--pt24-radius, 14px);
+    padding: 1.2rem 1.5rem;
+    margin: 1.5rem 0;
+}
+.pt24-guarantee__icon {
+    flex: 0 0 auto; width: 48px; height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    background: #16a34a; border-radius: 50%; color: #fff; font-size: 1.4rem;
+}
+.pt24-guarantee__text { flex: 1; }
+.pt24-guarantee__title { font-weight: 800; font-size: 1.05rem; color: #065f46; margin: 0 0 .2rem; }
+.pt24-guarantee__desc { font-size: .92rem; color: #166534; margin: 0; line-height: 1.5; }
+.pb-dark-mode .pt24-guarantee { background: linear-gradient(135deg, #052e16 0%, #064e3b 100%); border-color: #166534; }
+.pb-dark-mode .pt24-guarantee__title { color: #86efac; }
+.pb-dark-mode .pt24-guarantee__desc { color: #6ee7b7; }
+
+/* ===================================================================
+   MOBILE CTA — phone link in hero
+   =================================================================== */
+.pt24-hero__phone {
+    display: none; align-items: center; gap: .5rem;
+    background: #fff; color: var(--pt24-blue-dark, #1e3a8a);
+    font-weight: 700; font-size: 1rem;
+    padding: .7rem 1.3rem; border-radius: 999px;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,.12);
+    margin-top: .8rem;
+}
+.pt24-hero__phone svg { flex-shrink: 0; }
+@media (max-width: 768px) {
+    .pt24-hero__phone { display: inline-flex; }
+}
+
+/* ===================================================================
+   PRINT STYLES — clean landing pages for print
+   =================================================================== */
+@media print {
+    .pb-nav, .pt24-sticky-cta, .pt24-scroll-progress,
+    .pt24-leadbox, .pt24-sidebar, .pt24-nav-cta,
+    .pt24-hero__cta, .pt24-cta-band, .pt24-internal,
+    .pb-hamburger, .pt24-footer__social { display: none !important; }
+
+    body, .pt24-landing, .pt24-content { color: #000 !important; background: #fff !important; }
+    .pt24-hero { background: #f0f4f8 !important; color: #000 !important; padding: 1.5rem 0 !important; }
+    .pt24-hero__title { color: #000 !important; font-size: 1.6rem !important; }
+    .pt24-hero__lead { color: #333 !important; }
+    .pt24-grid { grid-template-columns: 1fr !important; }
+    .pt24-section > h2 { border-left-color: #000 !important; }
+
+    a[href]::after { content: " (" attr(href) ")"; font-size: .8em; color: #666; }
+    .pt24-links a[href]::after { content: none; }
+
+    .pt24-firm, .pt24-review, .pt24-faq__item { break-inside: avoid; }
+    .pt24-prices { page-break-inside: avoid; }
+}

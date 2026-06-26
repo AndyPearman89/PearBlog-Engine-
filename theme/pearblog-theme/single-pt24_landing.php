@@ -317,6 +317,10 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Otrzymaj bezpłatne wyceny</a>
                 <a href="#pt24-lead" class="pt24-btn pt24-btn--ghost-light">Opisz zlecenie</a>
             </div>
+            <a href="tel:+48222222222" class="pt24-hero__phone" aria-label="Zadzwoń do nas">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                Zadzwoń: 222-222-222
+            </a>
             <div class="pt24-hero__trust">
                 <span class="pt24-hero__trust-item">✅ <strong>Zweryfikowani</strong> fachowcy</span>
                 <span class="pt24-hero__trust-item">⭐ <strong>4.8/5</strong> średnia ocena</span>
@@ -341,6 +345,14 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                     <li><span class="pt24-benefit-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><div><strong>Opinie i oceny</strong><p>Wybierasz wykonawcę na podstawie doświadczeń innych klientów.</p></div></li>
                 </ul>
             </section>
+
+            <div class="pt24-guarantee">
+                <span class="pt24-guarantee__icon">✓</span>
+                <div class="pt24-guarantee__text">
+                    <p class="pt24-guarantee__title">Gwarancja jakości PT24</p>
+                    <p class="pt24-guarantee__desc">Każdy fachowiec na platformie przechodzi weryfikację. Jeśli usługa nie spełni Twoich oczekiwań — pomagamy znaleźć rozwiązanie.</p>
+                </div>
+            </div>
 
             <section class="pt24-section">
                 <h2>Zakres usług: <?php echo esc_html( $service_name ); ?> <?php echo esc_html( $city_loc ); ?></h2>

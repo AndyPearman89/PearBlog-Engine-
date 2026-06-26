@@ -484,3 +484,25 @@
         font-size: 1.75rem;
     }
 }
+
+/* ================================================== */
+/* ACCESSIBILITY — focus states */
+/* ================================================== */
+.pt24-v5-btn:focus-visible,
+.pt24-v5-nav__link:focus-visible,
+.pt24-v5-service-card:focus-visible,
+.pt24-v5-city-link:focus-visible {
+    outline: 3px solid #7c3aed;
+    outline-offset: 2px;
+}
+
+/* ================================================== */
+/* PERFORMANCE — content-visibility */
+/* ================================================== */
+.pt24-v5-cities,
+.pt24-v5-why-us,
+.pt24-v5-for-business,
+.pt24-v5-footer {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 300px;
+}

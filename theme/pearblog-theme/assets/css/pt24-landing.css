@@ -635,3 +635,27 @@ html {
 .pt24-mb-2 {
     margin-bottom: 2rem;
 }
+
+/* ==========================================================================
+   Accessibility — focus states
+   ========================================================================== */
+
+.pt24-btn:focus-visible,
+.pt24-faq__question:focus-visible,
+.pt24-form__input:focus-visible,
+.pt24-form__textarea:focus-visible {
+    outline: 3px solid var(--pt24-primary);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   Performance — content-visibility for below-the-fold
+   ========================================================================== */
+
+.pt24-cost-section,
+.pt24-ranking-section,
+.pt24-faq-section,
+.pt24-final-cta {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 350px;
+}
