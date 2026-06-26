@@ -796,6 +796,7 @@
 }
 .pp-footer-city-links a:hover { background: var(--pt24-amber); color: #fff; border-color: var(--pt24-amber); }
 /* Footer grid */
+/* Footer grid — 5 cols: Brand (2fr) + Dla klientów + Dla firm + Informacje + Kontakt */
 .pp-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 2.5rem; }
 @media (max-width: 900px) { .pp-footer-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
 @media (max-width: 560px) { .pp-footer-grid { grid-template-columns: 1fr; gap: 1.2rem; } }
