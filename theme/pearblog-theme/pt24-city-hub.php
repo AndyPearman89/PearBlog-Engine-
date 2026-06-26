@@ -53,6 +53,16 @@ $city_loc = [
 ];
 $city_locative = isset( $city_loc[ $city_slug ] ) ? $city_loc[ $city_slug ] : $city_name;
 
+$city_genitive = [
+	'warszawa' => 'Warszawy',
+	'krakow'   => 'Krakowa',
+	'wroclaw'  => 'Wrocławia',
+	'poznan'   => 'Poznania',
+	'gdansk'   => 'Gdańska',
+	'katowice' => 'Katowic',
+];
+$city_geo_target = isset( $city_genitive[ $city_slug ] ) ? $city_genitive[ $city_slug ] : $city_name;
+
 // Count firms in this city.
 $firm_count = (int) ( new WP_Query( [
 	'post_type'      => 'pt24_firm',
@@ -68,6 +78,7 @@ pearblog_render_header();
 
 	<section class="pt24-hero">
 		<div class="pb-container">
+			<?php echo function_exists( 'pearblog_get_breadcrumbs' ) ? pearblog_get_breadcrumbs() : ''; ?>
 			<span class="pt24-hero__badge">Fachowcy</span>
 			<h1 class="pt24-hero__title">Sprawdzeni fachowcy w <?php echo esc_html( $city_locative ); ?></h1>
 			<p class="pt24-hero__lead">Hydraulicy, elektrycy, mechanicy i specjaliści od energii odnawialnej — porównaj oferty i zamów bezpłatną wycenę.</p>
@@ -207,6 +218,7 @@ pearblog_render_header();
 	if ( localStorage.getItem('pt24_geo_dismissed') === '1' ) return;
 	var cur = '<?php echo esc_js( $city_slug ); ?>';
 	var homeUrl = '<?php echo esc_js( home_url( '/miasto/' ) ); ?>';
+	var target = '<?php echo esc_js( $city_geo_target ); ?>';
 	var names = {warszawa:'Warszawie',krakow:'Krakowie',wroclaw:'Wrocławiu',poznan:'Poznaniu',gdansk:'Gdańsku',katowice:'Katowicach'};
 	var map = {warsaw:'warszawa',warszawa:'warszawa',krakow:'krakow',cracow:'krakow',wroclaw:'wroclaw',poznan:'poznan',gdansk:'gdansk',katowice:'katowice'};
 
@@ -220,7 +232,7 @@ pearblog_render_header();
 		bar.className = 'pt24-geo-bar';
 		bar.innerHTML =
 			'<span>\uD83D\uDCCD Twoja lokalizacja: <strong>' + loc + '</strong></span>' +
-			'<a href="' + homeUrl + slug + '/" class="pt24-btn pt24-btn--primary pt24-btn--sm">Przejdź do ' + loc + ' \u2192</a>' +
+			'<a href="' + homeUrl + slug + '/" class="pt24-btn pt24-btn--primary pt24-btn--sm">Zobacz stronę ' + target + ' \u2192</a>' +
 			'<button class="pt24-geo-bar__x" aria-label="Zamknij" type="button">\u2715</button>';
 		bar.querySelector('.pt24-geo-bar__x').addEventListener('click', function(){
 			bar.remove();

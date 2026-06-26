@@ -43,6 +43,7 @@ pearblog_render_header();
 
 	<section class="pt24-hero">
 		<div class="pb-container">
+			<?php echo function_exists( 'pearblog_get_breadcrumbs' ) ? pearblog_get_breadcrumbs() : ''; ?>
 			<span class="pt24-hero__badge">Usługi</span>
 			<h1 class="pt24-hero__title">Wszystkie usługi — znajdź fachowca w swoim mieście</h1>
 			<p class="pt24-hero__lead">Hydraulicy, elektrycy, mechanicy, serwis klimatyzacji, laweta i więcej — porównaj firmy, sprawdź opinie i zamów bezpłatną wycenę.</p>
