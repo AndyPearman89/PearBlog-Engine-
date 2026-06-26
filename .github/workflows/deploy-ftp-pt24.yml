@@ -81,25 +81,44 @@ jobs:
           FTP_PROTO: ${{ steps.preflight.outputs.protocol }}
         run: |
           set -euo pipefail
+
           printf '%s\n' \
             "set net:timeout 60" \
-            "set net:max-retries 2" \
+            "set net:max-retries 1" \
             "set ftp:passive-mode on" \
             "set ftp:use-mlsd false" \
+            "set ftp:use-feat false" \
+            "set ftp:sync-mode on" \
             "set ftp:ssl-allow yes" \
             "set ftp:ssl-force no" \
-            "set ssl:verify-certificate no" \
-            "set xfer:log yes" > ~/.lftprc
+            "set ssl:verify-certificate no" > ~/.lftprc
 
-          H="$FTP_HOST" P="$FTP_PORT" U="$FTP_USER" W="$FTP_PASS" PROTO="$FTP_PROTO"
-          echo "==> $PROTO://$H:$P"
+          H="$FTP_HOST" P="$FTP_PORT" U="$FTP_USER" W="$FTP_PASS"
+
+          # Try ftps first, then ftp
+          for PROTO in ftps ftp; do
+            echo "==> Trying $PROTO://$H:$P ..."
+            if lftp -c "open -u '$U','$W' -p '$P' '$PROTO://$H'; ls /pt24/wp-content/; bye" 2>&1; then
+              echo "Connected via $PROTO"
+              break
+            fi
+            echo "  $PROTO failed, trying next..."
+          done
 
           ldo() { lftp -c "open -u '$U','$W' -p '$P' '$PROTO://$H'; $1; bye"; }
 
-          mir() { echo "  mirror $1 -> $2"; ldo "mirror --reverse --delete --verbose=0 --no-perms '$1' '$2'"; }
-          put() { echo "  put $1"; ldo "put '$1' -o '/pt24/wp-content/mu-plugins/$(basename $1)'"; }
+          # Upload individual files (mput is simpler than mirror)
+          upload_dir() {
+            local src="$1" dst="$2"
+            echo "  mput $src -> $dst"
+            find "$src" -type f | while read f; do
+              rel="${f#$src}"
+              dir=$(dirname "$rel")
+              ldo "mkdir -p '$dst/$dir' 2>/dev/null; put '$f' -o '$dst/$rel'"
+            done
+          }
 
-          mir "./mu-plugins/pearblog-engine/" "/pt24/wp-content/mu-plugins/pearblog-engine/"
+          upload_dir "./mu-plugins/pearblog-engine/" "/pt24/wp-content/mu-plugins/pearblog-engine"
 
           for f in \
             mu-plugins/pearblog-engine-loader.php \
@@ -112,9 +131,12 @@ jobs:
             mu-plugins/pt24-places-loader.php \
             mu-plugins/pt24-places-seeder.php \
             mu-plugins/pt24-scale-data.php; do
-            [ -f "$f" ] && put "$f"
+            [ -f "$f" ] || continue
+            echo "  put $f"
+            ldo "put '$f' -o '/pt24/wp-content/mu-plugins/$(basename $f)'"
           done
 
-          mir "./theme/pt24/" "/pt24/wp-content/themes/pt24/"
-          mir "./theme/pearblog-theme/" "/pt24/wp-content/themes/pearblog-theme/"
+          upload_dir "./theme/pt24/" "/pt24/wp-content/themes/pt24"
+          upload_dir "./theme/pearblog-theme/" "/pt24/wp-content/themes/pearblog-theme"
+
           echo "==> Done"
