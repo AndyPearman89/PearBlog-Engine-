@@ -95,7 +95,7 @@ jobs:
           echo "ssh_user=$SSH_USER" >> "$GITHUB_OUTPUT"
           echo "wp_path=$WP_PATH" >> "$GITHUB_OUTPUT"
           echo "auth_mode=$AUTH_MODE" >> "$GITHUB_OUTPUT"
-          echo "ssh_port=${SSH_PORT:-22}" >> "$GITHUB_OUTPUT"
+          echo "ssh_port=${SSH_PORT:-222}" >> "$GITHUB_OUTPUT"
           echo "force=${FORCE:-false}" >> "$GITHUB_OUTPUT"
 
           echo "Deploy config ready. Auth mode: $AUTH_MODE"
@@ -115,7 +115,11 @@ jobs:
       - name: Add server to known hosts
         run: |
           mkdir -p ~/.ssh
-          ssh-keyscan -p "${{ steps.vars.outputs.ssh_port }}" -H "${{ steps.vars.outputs.ssh_host }}" >> ~/.ssh/known_hosts
+          ssh-keyscan -T 10 -p "${{ steps.vars.outputs.ssh_port }}" -H "${{ steps.vars.outputs.ssh_host }}" >> ~/.ssh/known_hosts 2>/dev/null
+          if [ ! -s ~/.ssh/known_hosts ]; then
+            echo "::warning::ssh-keyscan returned no keys; adding StrictHostKeyChecking=accept-new fallback"
+            echo "StrictHostKeyChecking accept-new" >> ~/.ssh/config
+          fi
 
       - name: Deploy mu-plugin (pearblog-engine) via key
         if: ${{ steps.vars.outputs.auth_mode == 'key' }}
@@ -134,7 +138,7 @@ jobs:
         run: |
           RSYNC_OPTS="-avz --delete"
           sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync $RSYNC_OPTS \
-            -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
+            -e "ssh -p ${{ steps.vars.outputs.ssh_port }} -o PreferredAuthentications=password -o PubkeyAuthentication=no" \
             mu-plugins/pearblog-engine/ \
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/mu-plugins/pearblog-engine/"
 
@@ -150,7 +154,7 @@ jobs:
         if: ${{ steps.vars.outputs.auth_mode == 'password' }}
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" rsync -avz --delete \
-            -e "ssh -p ${{ steps.vars.outputs.ssh_port }}" \
+            -e "ssh -p ${{ steps.vars.outputs.ssh_port }} -o PreferredAuthentications=password -o PubkeyAuthentication=no" \
             theme/pearblog-theme/ \
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}:${{ steps.vars.outputs.wp_path }}/wp-content/themes/pearblog-theme/"
 
@@ -168,6 +172,7 @@ jobs:
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" \
             ssh -p "${{ steps.vars.outputs.ssh_port }}" \
+            -o PreferredAuthentications=password -o PubkeyAuthentication=no \
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
             "cd '${{ steps.vars.outputs.wp_path }}' && wp cache flush --allow-root 2>/dev/null || true"
 
@@ -187,6 +192,7 @@ jobs:
         run: |
           sshpass -p "${{ secrets.SSH_PASSWORD }}" \
             ssh -p "${{ steps.vars.outputs.ssh_port }}" \
+            -o PreferredAuthentications=password -o PubkeyAuthentication=no \
             "${{ steps.vars.outputs.ssh_user }}@${{ steps.vars.outputs.ssh_host }}" \
             "cd '${{ steps.vars.outputs.wp_path }}' && wp eval 'echo class_exists(\"PearBlogEngine\\\\Admin\\\\AdminPageV8Enterprise\") ? \"CLASS_OK\\n\" : \"CLASS_MISSING\\n\"; global \$menu; do_action(\"admin_menu\"); \$found=false; foreach ((array) \$menu as \$item) { if (isset(\$item[2]) && \$item[2] === \"pearblog-enterprise-v8\") { \$found=true; break; } } echo \$found ? \"MENU_OK\\n\" : \"MENU_MISSING\\n\";' --allow-root" \
             | tee smoke-output.txt
