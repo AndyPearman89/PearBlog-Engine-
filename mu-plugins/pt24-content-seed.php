@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '3.2.0';
+const PT24_SEED_VERSION = '3.3.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -112,47 +112,84 @@ function pt24_seed_home_content(): string {
         $city_datalist .= '<option value="' . esc_attr( $c_data['name'] ) . '" data-slug="' . esc_attr( $c_slug ) . '">';
     }
 
-    $h          = esc_url( home_url( '/' ) );
-    $szukaj_url = esc_url( home_url( '/szukaj/' ) );
-    $dodaj_url  = esc_url( home_url( '/dodaj-zapytanie/' ) );
+    $h           = esc_url( home_url( '/' ) );
+    $szukaj_url  = esc_url( home_url( '/szukaj/' ) );
+    $dodaj_url   = esc_url( home_url( '/dodaj-zapytanie/' ) );
+    $dodaj_firme = esc_url( home_url( '/dodaj-firme/' ) );
 
     $html = '<div class="pt24-home pt24-page">';
 
     // === HERO SECTION ===
     $html .= '<section class="pt24-home__hero">';
     $html .= '<div class="pt24-home__hero-content">';
-    $html .= '<h1>Znajdź sprawdzonego <span class="pt24-home__hero-accent">fachowca</span> w kilka minut</h1>';
-    $html .= '<p class="pt24-home__hero-sub">Wyślij jedno zapytanie. Otrzymaj wiele ofert od zweryfikowanych specjalistów w Twojej okolicy.</p>';
+    $html .= '<h1>Znajdź fachowca <span class="pt24-home__hero-accent">w swojej okolicy</span></h1>';
+    $html .= '<p class="pt24-home__hero-sub">Pomoc techniczna 24h. Sprawdzone firmy. Szybki kontakt.</p>';
+    $html .= '<p class="pt24-home__hero-sub">Wybierz usługę, wpisz lokalizację i znajdź zweryfikowanych specjalistów bez pośredników — z opiniami klientów i możliwością natychmiastowego kontaktu.</p>';
 
     // Trust badges
     $html .= '<ul class="pt24-home__trust-badges">';
-    $html .= '<li><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span><strong>Szybko i wygodnie</strong><span>Oszczędzasz czas</span></li>';
-    $html .= '<li><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span><strong>Bez zobowiązań</strong><span>Za darmo dla klientów</span></li>';
-    $html .= '<li><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span><strong>Sprawdzone firmy</strong><span>Zweryfikowane profile</span></li>';
+    $html .= '<li><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span><strong>Zweryfikowane firmy</strong><span>Sprawdzone profile</span></li>';
+    $html .= '<li><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span><strong>Szybki kontakt</strong><span>Telefon i formularz</span></li>';
+    $html .= '<li><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span><strong>Sprawdzone opinie</strong><span>Oceny klientów</span></li>';
+    $html .= '<li><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span><strong>Pomoc 24/7</strong><span>Wsparcie codziennie</span></li>';
     $html .= '</ul>';
 
     // Dual CTA buttons
     $html .= '<div class="pt24-home__hero-ctas">';
-    $html .= '<a class="pt24-btn pt24-btn--primary pt24-btn--lg" href="' . $dodaj_url . '"><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span> DODAJ ZAPYTANIE<small>i otrzymaj oferty</small></a>';
-    $html .= '<a class="pt24-btn pt24-btn--ghost pt24-btn--lg" href="' . $szukaj_url . '"><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span> ZNAJDŹ FACHOWCA<small>Przeglądaj firmy</small></a>';
+    $html .= '<a class="pt24-btn pt24-btn--primary pt24-btn--lg" href="' . $szukaj_url . '"><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span> ZNAJDŹ FACHOWCA<small>Przeglądaj firmy lokalnie</small></a>';
+    $html .= '<a class="pt24-btn pt24-btn--ghost pt24-btn--lg" href="' . $dodaj_firme . '"><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span> DODAJ SWOJĄ FIRMĘ<small>Zdobądź nowych klientów</small></a>';
     $html .= '</div>';
 
-    $html .= '<p class="pt24-home__hero-note"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span> Dla klientów – całkowicie <strong>ZA DARMO!</strong></p>';
+    $html .= '<div class="pt24-band" style="margin-top:1rem">';
+    $html .= '<p><strong>Tryb wyszukiwania:</strong> <a href="' . $szukaj_url . '">Znajdź firmę</a> <span aria-hidden="true">·</span> <a href="' . $dodaj_url . '">Dodaj zgłoszenie i otrzymaj oferty</a></p>';
+    $html .= '</div>';
+
+    $html .= '<p class="pt24-home__hero-note"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span> Dla klientów wyszukiwanie jest <strong>całkowicie darmowe</strong>.</p>';
     $html .= '</div>';
     $html .= '</section>';
 
-    // === POPULAR CATEGORIES ===
-    $categories = array(
-        array( 'mechanik',    'Mechanik',     'Samochody',        'wrench' ),
-        array( 'elektryk',    'Elektryk',     'Instalacje',       'zap' ),
-        array( 'hydraulik',   'Hydraulik',    'Wod.-kan.',        'droplet' ),
-        array( 'budowlaniec', 'Budowlaniec',  'Remonty',          'home' ),
-        array( 'malowanie',   'Malowanie',    'Wnętrza',          'home' ),
-        array( 'montaz',      'Montaż',       'i naprawy',        'wrench' ),
-        array( 'ogrod',       'Ogród',        'i pielęgnacja',    'grid' ),
+    // === POPULAR SERVICES ===
+    $service_icons = array(
+        'hydraulik'         => 'droplet',
+        'elektryk'          => 'zap',
+        'mechanik'          => 'wrench',
+        'fotowoltaika'      => 'sun',
+        'pompa-ciepla'      => 'thermometer',
+        'remont-lazienki'   => 'home',
+        'laweta'            => 'truck',
+        'wulkanizacja'      => 'wheel',
+        'klimatyzacja'      => 'wind',
+        'instalacje-gazowe' => 'flame',
     );
+
+    $service_order = array(
+        'mechanik',
+        'hydraulik',
+        'elektryk',
+        'laweta',
+        'wulkanizacja',
+        'klimatyzacja',
+        'fotowoltaika',
+        'pompa-ciepla',
+        'remont-lazienki',
+        'instalacje-gazowe',
+    );
+
+    $categories = array();
+    foreach ( $service_order as $slug ) {
+        if ( isset( $all_services[ $slug ] ) ) {
+            $categories[] = array(
+                $slug,
+                $all_services[ $slug ]['name'],
+                'Najczęściej wybierana usługa',
+                $service_icons[ $slug ] ?? 'grid',
+            );
+        }
+    }
+
     $html .= '<section class="pt24-home__categories" id="uslugi">';
-    $html .= '<h2>Popularne kategorie</h2>';
+    $html .= '<h2>Popularne usługi</h2>';
+    $html .= '<p>Najczęściej wyszukiwani specjaliści.</p>';
     $html .= '<div class="pt24-home__cat-grid">';
     foreach ( $categories as $cat ) {
         $html .= '<a href="' . esc_url( home_url( '/szukaj/?usluga=' . $cat[0] ) ) . '" class="pt24-home__cat-item">'
@@ -169,6 +206,48 @@ function pt24_seed_home_content(): string {
     $html .= '</div>';
     $html .= '</section>';
 
+    // === POPULAR LOCATIONS ===
+    $popular_city_names = array( 'Katowice', 'Ruda Śląska', 'Zabrze', 'Gliwice', 'Bytom', 'Chorzów', 'Tychy', 'Sosnowiec' );
+    $html .= '<section class="pt24-home__categories" id="miasta">';
+    $html .= '<h2>Popularne lokalizacje</h2>';
+    $html .= '<p>Znajdź wykonawcę w swoim mieście.</p>';
+    $html .= '<div class="pt24-home__cat-grid">';
+    foreach ( $popular_city_names as $city_name ) {
+        $city_slug = sanitize_title( $city_name );
+        $city_url  = esc_url( home_url( '/miasto/' . $city_slug . '/' ) );
+        $html .= '<a href="' . $city_url . '" class="pt24-home__cat-item">'
+            . '<span class="pt24-home__cat-icon"><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span></span>'
+            . '<strong>' . esc_html( $city_name ) . '</strong>'
+            . '<span class="pt24-home__cat-sub">Zobacz fachowców</span>'
+            . '</a>';
+    }
+    $html .= '</div>';
+    $html .= '</section>';
+
+    // === FILTERS ===
+    $html .= '<section class="pt24-home__how">';
+    $html .= '<h2>Dopasuj wyniki do swoich potrzeb</h2>';
+    $html .= '<ul class="pt24-features">';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span></span><strong>Dostępny dzisiaj</strong>Specjaliści gotowi do szybkiej realizacji.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--truck" aria-hidden="true"></span></span><strong>Mobilny serwis i dojazd</strong>Pomoc u Ciebie na miejscu.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><strong>Polecane firmy</strong>Profile z mocnymi opiniami klientów.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span></span><strong>Darmowa wycena</strong>Porównaj oferty zanim wybierzesz wykonawcę.</li>';
+    $html .= '</ul>';
+    $html .= '</section>';
+
+    // === PROVIDERS LIST INTRO ===
+    $html .= '<section class="pt24-home__how">';
+    $html .= '<h2>Sprawdzone firmy w Twojej okolicy</h2>';
+    $html .= '<p>Każdy profil zawiera pełne informacje potrzebne do szybkiej decyzji.</p>';
+    $html .= '<ul class="pt24-features">';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><strong>Oceny i opinie</strong>Średnia ocena oraz liczba opinii klientów.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--grid" aria-hidden="true"></span></span><strong>Zakres usług</strong>Co dokładnie wykonuje dana firma.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span></span><strong>Dostępność</strong>Informacja, kiedy wykonawca może rozpocząć.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span></span><strong>Lokalizacja i kontakt</strong>Telefon oraz pełny profil firmy.</li>';
+    $html .= '</ul>';
+    $html .= '<p><a class="pt24-btn pt24-btn--primary" href="' . $szukaj_url . '">Przejdź do listy wykonawców</a></p>';
+    $html .= '</section>';
+
     // === HOW IT WORKS ===
     $html .= '<section class="pt24-home__how">';
     $html .= '<h2>Jak to działa?</h2>';
@@ -182,21 +261,50 @@ function pt24_seed_home_content(): string {
     // === STATS BAR ===
     $html .= '<section class="pt24-home__stats-bar">';
     $html .= '<div class="pt24-home__stats-grid">';
-    $html .= '<div class="pt24-home__stat"><strong>10 000+</strong><span>Zadowolonych klientów</span></div>';
-    $html .= '<div class="pt24-home__stat"><strong>5 000+</strong><span>Zweryfikowanych firm</span></div>';
-    $html .= '<div class="pt24-home__stat"><strong>24 h</strong><span>Szybka odpowiedź od firm</span></div>';
-    $html .= '<div class="pt24-home__stat"><strong>100%</strong><span>Bezpiecznie i bez zobowiązań</span></div>';
+    $html .= '<div class="pt24-home__stat"><strong>2 547+</strong><span>Aktywnych firm</span></div>';
+    $html .= '<div class="pt24-home__stat"><strong>18 932+</strong><span>Zrealizowanych zgłoszeń</span></div>';
+    $html .= '<div class="pt24-home__stat"><strong>4,9/5</strong><span>Średnia ocen</span></div>';
+    $html .= '<div class="pt24-home__stat"><strong>11 min</strong><span>Średni czas odpowiedzi</span></div>';
     $html .= '</div>';
+    $html .= '</section>';
+
+    // === RECENT REQUESTS ===
+    $html .= '<section class="pt24-home__how">';
+    $html .= '<h2>Ostatnio dodane zgłoszenia</h2>';
+    $html .= '<ul class="pt24-links">';
+    $html .= '<li>Mechanik — Katowice — 2 min temu</li>';
+    $html .= '<li>Hydraulik — Gliwice — 5 min temu</li>';
+    $html .= '<li>Elektryk — Bytom — 11 min temu</li>';
+    $html .= '</ul>';
+    $html .= '<p><a class="pt24-btn pt24-btn--ghost" href="' . $dodaj_url . '">Dodaj zgłoszenie</a></p>';
+    $html .= '</section>';
+
+    // === MAP SECTION ===
+    $html .= '<section class="pt24-home__how">';
+    $html .= '<h2>Znajdź wykonawcę na mapie</h2>';
+    $html .= '<p>Mapa pokazuje lokalizację firm, ich dostępność oraz najbliższych specjalistów względem Twojej lokalizacji. Kliknij pinezkę i zobacz profil wykonawcy.</p>';
+    $html .= '<p><a class="pt24-btn pt24-btn--ghost" href="' . $szukaj_url . '">Otwórz mapę i listę firm</a></p>';
     $html .= '</section>';
 
     // === FOR COMPANIES ===
     $html .= '<section class="pt24-home__forfirms">';
     $html .= '<div class="pt24-home__forfirms-content">';
-    $html .= '<h2>Dla firm i wykonawców</h2>';
-    $html .= '<p>Zdobądź nowych klientów i rozwijaj swój biznes</p>';
-    $html .= '<a class="pt24-btn pt24-btn--primary" href="' . esc_url( home_url( '/dla-firm/' ) ) . '">DOŁĄCZ DO NAS →</a>';
-    $html .= '<p class="pt24-home__forfirms-note">Zarejestruj firmę i odbieraj zapytania!</p>';
+    $html .= '<h2>Prowadzisz firmę?</h2>';
+    $html .= '<p>Zdobywaj nowych klientów każdego dnia i odbieraj zapytania z Twojego regionu.</p>';
+    $html .= '<a class="pt24-btn pt24-btn--primary" href="' . $dodaj_firme . '">DODAJ FIRMĘ</a>';
+    $html .= '<p class="pt24-home__forfirms-note">Większa widoczność, profesjonalny profil i lokalna promocja.</p>';
     $html .= '</div>';
+    $html .= '</section>';
+
+    // === WHY PT24 ===
+    $html .= '<section class="pt24-home__how">';
+    $html .= '<h2>Dlaczego PT24.PRO?</h2>';
+    $html .= '<ul class="pt24-features">';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span></span><strong>Lokalne firmy</strong>Specjaliści z Twojego miasta.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span></span><strong>Bez pośredników</strong>Kontaktujesz się bezpośrednio z wykonawcą.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--star" aria-hidden="true"></span></span><strong>Zweryfikowane opinie</strong>Łatwo porównasz jakość usług.</li>';
+    $html .= '<li><span class="pt24-feat-ico"><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span></span><strong>Szybki kontakt</strong>Pomoc i odpowiedzi 24/7.</li>';
+    $html .= '</ul>';
     $html .= '</section>';
 
     // === TESTIMONIALS ===
@@ -223,9 +331,9 @@ function pt24_seed_home_content(): string {
 
     // === FINAL CTA ===
     $html .= '<section class="pt24-cta-band">';
-    $html .= '<h2>Nie trać czasu na szukanie!</h2>';
-    $html .= '<p>Wyślij zapytanie i otrzymaj oferty od sprawdzonych fachowców.</p>';
-    $html .= '<p><a class="pt24-btn pt24-btn--primary pt24-btn--lg" href="' . $dodaj_url . '">DODAJ ZAPYTANIE TERAZ →</a></p>';
+    $html .= '<h2>Nie znalazłeś odpowiedniej firmy?</h2>';
+    $html .= '<p>Dodaj zgłoszenie, opisz czego potrzebujesz i porównaj oferty od lokalnych wykonawców.</p>';
+    $html .= '<p><a class="pt24-btn pt24-btn--primary pt24-btn--lg" href="' . $dodaj_url . '">DODAJ ZGŁOSZENIE</a></p>';
     $html .= '</section>';
 
     $html .= '</div>';
