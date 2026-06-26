@@ -92,7 +92,7 @@ function pt24_render_full_footer(): void {
                 <div class="pp-footer-col">
                     <h3 class="pp-footer-heading">Kontakt</h3>
                     <ul class="pp-footer-links pt24-footer__contact-list">
-                        <li><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span> <a href="tel:+48123456789">+48 123 456 789</a></li>
+                        <li><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span> <a href="tel:+48123456789">+48 123 456 789</a></li>
                         <li><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span> <a href="mailto:kontakt@pt24.pro">kontakt@pt24.pro</a></li>
                         <li><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span> Cała Polska</li>
                     </ul>
