@@ -560,7 +560,7 @@ Template auto-selected for topics matching:
 **Documentation:** `PORADNIK-ILE-KOSZTUJE-TEMPLATE.md`
 **Implementation:** `PoradnikCostTemplateBuilder.php`
 **Helper:** `ProgrammaticLocalSEO.php`
-**Tests:** `tests/php/Content/PoradnikCostTemplateBuilderTest.php` (TODO)
+**Tests:** `mu-plugins/pearblog-engine/tests/php/Unit/PoradnikCostTemplateBuilderTest.php`
 
 **Last Updated:** 2026-05-04
 **Maintained By:** PearBlog Engine Core Team
