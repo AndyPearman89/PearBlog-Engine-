@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '3.0.0';
+const PT24_SEED_VERSION = '3.1.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -755,7 +755,7 @@ function pt24_seed_firms(): void {
         'gdansk'   => 'Gdańsk',
         'katowice' => 'Katowice',
     );
-    $all_services = 'hydraulik,elektryk,mechanik,pompa-ciepla,remont-lazienki,fotowoltaika';
+    $all_services = 'hydraulik,elektryk,mechanik,pompa-ciepla,remont-lazienki,fotowoltaika,klimatyzacja,laweta,wulkanizacja,instalacje-gazowe';
     $brands = array(
         array( 'pre' => 'FachowcyPro',   'desc' => 'Wielobranżowa ekipa z wieloletnim doświadczeniem.' ),
         array( 'pre' => 'Serwis24',       'desc' => 'Lokalny serwis dostępny od ręki, także w nagłych awariach.' ),
@@ -763,6 +763,8 @@ function pt24_seed_firms(): void {
         array( 'pre' => 'ProTeam',        'desc' => 'Certyfikowana ekipa z uprawnieniami SEP, gazowymi i budowlanymi.' ),
         array( 'pre' => 'RapidService',   'desc' => 'Błyskawiczna reakcja na awarie — zazwyczaj na miejscu w ciągu godziny.' ),
         array( 'pre' => 'ExpertBud',      'desc' => 'Kompleksowe usługi budowlane i instalacyjne z pisemną gwarancją jakości.' ),
+        array( 'pre' => 'AutoSerwis24',   'desc' => 'Specjaliści od usług motoryzacyjnych: laweta, wulkanizacja i pomoc drogowa 24 h.' ),
+        array( 'pre' => 'KlimaGaz',       'desc' => 'Montaż i serwis klimatyzacji oraz instalacje gazowe z certyfikatem F-GAZ i SEP G3.' ),
     );
 
     foreach ( $cities as $cslug => $cname ) {
@@ -773,7 +775,7 @@ function pt24_seed_firms(): void {
             $rating  = number_format( 4.6 + ( $seed % 4 ) / 10, 1, ',', '' );
             $jobs    = 80 + ( $seed % 320 );
             $year    = 2008 + ( $seed % 14 );
-            $content = '<p>' . $brand['desc'] . ' Działamy na terenie miasta ' . $cname . ' i okolic, oferując kompleksowe usługi: hydraulika, elektryka, mechanika, montaż pomp ciepła, remonty łazienek oraz fotowoltaikę.</p>'
+            $content = '<p>' . $brand['desc'] . ' Działamy na terenie miasta ' . $cname . ' i okolic, oferując kompleksowe usługi: hydraulika, elektryka, mechanika, lawetę i pomoc drogową, wulkanizację, klimatyzację, instalacje gazowe, montaż pomp ciepła, remonty łazienek oraz fotowoltaikę.</p>'
                 . '<p>Stawiamy na terminowość, przejrzyste wyceny i jakość wykonania. Każde zlecenie traktujemy indywidualnie, a po realizacji zbieramy opinie klientów.</p>';
 
             $existing = get_posts( array( 'name' => $slug, 'post_type' => 'pt24_firm', 'post_status' => 'any', 'numberposts' => 1, 'suppress_filters' => true ) );

@@ -24,12 +24,16 @@ $cities = [
 ];
 
 $services = [
-	'hydraulik'       => 'Hydraulik',
-	'elektryk'        => 'Elektryk',
-	'mechanik'        => 'Mechanik samochodowy',
-	'pompa-ciepla'    => 'Pompa ciepła',
-	'remont-lazienki' => 'Remont łazienki',
-	'fotowoltaika'    => 'Fotowoltaika',
+	'hydraulik'          => 'Hydraulik',
+	'elektryk'           => 'Elektryk',
+	'mechanik'           => 'Mechanik samochodowy',
+	'pompa-ciepla'       => 'Pompa ciepła',
+	'remont-lazienki'    => 'Remont łazienki',
+	'fotowoltaika'       => 'Fotowoltaika',
+	'klimatyzacja'       => 'Klimatyzacja',
+	'laweta'             => 'Laweta',
+	'wulkanizacja'       => 'Wulkanizacja',
+	'instalacje-gazowe'  => 'Instalacje gazowe',
 ];
 
 if ( ! isset( $cities[ $city_slug ] ) ) {

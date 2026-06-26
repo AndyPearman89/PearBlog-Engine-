@@ -16,12 +16,16 @@ if ( ! defined( 'ABSPATH' ) ) {
 pearblog_render_header();
 
 $services = [
-	'hydraulik'       => [ 'label' => 'Hydraulik',            'icon' => 'droplet' ],
-	'elektryk'        => [ 'label' => 'Elektryk',             'icon' => 'zap' ],
-	'mechanik'        => [ 'label' => 'Mechanik samochodowy', 'icon' => 'wrench' ],
-	'fotowoltaika'    => [ 'label' => 'Fotowoltaika',         'icon' => 'grid' ],
-	'pompa-ciepla'    => [ 'label' => 'Pompa ciepła',         'icon' => 'thermometer' ],
-	'remont-lazienki' => [ 'label' => 'Remont łazienki',      'icon' => 'home' ],
+	'hydraulik'          => [ 'label' => 'Hydraulik',            'icon' => 'droplet' ],
+	'elektryk'           => [ 'label' => 'Elektryk',             'icon' => 'zap' ],
+	'mechanik'           => [ 'label' => 'Mechanik samochodowy', 'icon' => 'wrench' ],
+	'fotowoltaika'       => [ 'label' => 'Fotowoltaika',         'icon' => 'grid' ],
+	'pompa-ciepla'       => [ 'label' => 'Pompa ciepła',         'icon' => 'thermometer' ],
+	'remont-lazienki'    => [ 'label' => 'Remont łazienki',      'icon' => 'home' ],
+	'klimatyzacja'       => [ 'label' => 'Klimatyzacja',         'icon' => 'wind' ],
+	'laweta'             => [ 'label' => 'Laweta',               'icon' => 'truck' ],
+	'wulkanizacja'       => [ 'label' => 'Wulkanizacja',         'icon' => 'settings' ],
+	'instalacje-gazowe'  => [ 'label' => 'Instalacje gazowe',    'icon' => 'flame' ],
 ];
 
 $cities = [
