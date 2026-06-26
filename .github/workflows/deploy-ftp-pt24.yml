@@ -81,27 +81,48 @@ jobs:
           FTP_PROTO: ${{ steps.preflight.outputs.protocol }}
         run: |
           set -euo pipefail
-          echo "Deploying to $FTP_PROTO://$FTP_HOST:$FTP_PORT"
+          echo "Deploying via $FTP_PROTO to $FTP_HOST:$FTP_PORT"
 
-          deploy() {
-            local local_dir="$1"
-            local remote_dir="$2"
-            echo "  mirror: $local_dir -> $remote_dir"
+          # lftp settings block written to a temp file to avoid inline quoting issues
+          cat > /tmp/lftp_settings.txt << 'SETTINGS'
+          set net:timeout 60
+          set net:max-retries 2
+          set net:reconnect-interval-base 5
+          set ftp:passive-mode true
+          set ftp:ssl-allow true
+          set ftp:ssl-force false
+          set ssl:verify-certificate false
+          set sftp:connect-program "ssh -o StrictHostKeyChecking=no -o BatchMode=yes -o ConnectTimeout=30"
+          SETTINGS
+
+          open_cmd="open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'"
+
+          mirror_dir() {
+            local src="$1" dst="$2"
+            echo "  mirror: $src -> $dst"
             lftp -c "
-              set net:timeout 60
-              set net:max-retries 3
-              set net:reconnect-interval-base 5
-              set sftp:connect-program 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes'
-              open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'
-              mirror --reverse --delete --verbose=0 --no-perms --no-symlinks '$local_dir' '$remote_dir'
+              $(cat /tmp/lftp_settings.txt)
+              $open_cmd
+              mirror --reverse --delete --verbose=1 --no-perms --no-symlinks '$src' '$dst'
               bye
-            "
+            " 2>&1
+          }
+
+          upload_file() {
+            local f="$1" dst="$2"
+            echo "  put: $f -> $dst/$(basename $f)"
+            lftp -c "
+              $(cat /tmp/lftp_settings.txt)
+              $open_cmd
+              put '$f' -o '$dst/$(basename $f)'
+              bye
+            " 2>&1
           }
 
           # 1. pearblog-engine plugin directory
-          deploy "./mu-plugins/pearblog-engine/" "/pt24/wp-content/mu-plugins/pearblog-engine/"
+          mirror_dir "./mu-plugins/pearblog-engine/" "/pt24/wp-content/mu-plugins/pearblog-engine/"
 
-          # 2. Root PT24 mu-plugin PHP files (Blog Engine, AI Factory, Places Seeder, etc.)
+          # 2. Root PT24 mu-plugin PHP files
           REMOTE_MU="/pt24/wp-content/mu-plugins"
           for f in \
             mu-plugins/pearblog-engine-loader.php \
@@ -114,21 +135,13 @@ jobs:
             mu-plugins/pt24-places-loader.php \
             mu-plugins/pt24-places-seeder.php \
             mu-plugins/pt24-scale-data.php; do
-            [ -f "$f" ] || continue
-            echo "  upload: $f"
-            lftp -c "
-              set net:timeout 60
-              set sftp:connect-program 'ssh -o StrictHostKeyChecking=no -o BatchMode=yes'
-              open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' '$FTP_PROTO://$FTP_HOST'
-              put '$f' -o '$REMOTE_MU/$(basename $f)'
-              bye
-            "
+            [ -f "$f" ] && upload_file "$f" "$REMOTE_MU"
           done
 
           # 3. PT24 theme
-          deploy "./theme/pt24/" "/pt24/wp-content/themes/pt24/"
+          mirror_dir "./theme/pt24/" "/pt24/wp-content/themes/pt24/"
 
           # 4. PearBlog theme (active theme on PT24)
-          deploy "./theme/pearblog-theme/" "/pt24/wp-content/themes/pearblog-theme/"
+          mirror_dir "./theme/pearblog-theme/" "/pt24/wp-content/themes/pearblog-theme/"
 
           echo "Deploy complete."
