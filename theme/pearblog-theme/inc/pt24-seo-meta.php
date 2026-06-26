@@ -492,6 +492,61 @@ function pt24_output_seo_meta() {
     }
     </script>
     <?php endif; ?>
+
+    <?php if ( $is_ranking && ! empty( $service ) && ! empty( $city ) ) :
+        // Human-readable locative form of the city name (Polish grammar: "w Warszawie").
+        $city_loc_map = [
+            'warszawa'  => 'Warszawie',
+            'krakow'    => 'Krakowie',
+            'wroclaw'   => 'Wrocławiu',
+            'poznan'    => 'Poznaniu',
+            'gdansk'    => 'Gdańsku',
+            'katowice'  => 'Katowicach',
+        ];
+        $city_loc = isset( $city_loc_map[ $city ] )
+            ? $city_loc_map[ $city ]
+            : 'mieście ' . $city_name;
+
+        // Build service-specific FAQ questions for ranking pages.
+        $svc_lc = mb_strtolower( $service_name );
+        $ranking_faq = [
+            [
+                "Ile kosztuje {$svc_lc} w {$city_loc}?",
+                "Ceny zależą od zakresu zlecenia i konkretnej firmy. Aby porównać oferty i dowiedzieć się, ile zapłacisz za {$svc_lc} w {$city_loc}, złóż bezpłatne zapytanie przez PT24 — odpowiedź najczęściej w ciągu 24 h.",
+            ],
+            [
+                "Jak wybrać najlepszą firmę ({$svc_lc}) w {$city_loc}?",
+                "Sprawdź oceny klientów, liczbę zrealizowanych zleceń i zakres usług. Nasz ranking {$svc_lc} w {$city_loc} zestawia firmy od najwyżej ocenianych — możesz też zamówić bezpłatną wycenę od kilku jednocześnie.",
+            ],
+            [
+                "Jak szybko mogę umówić {$svc_lc} w {$city_loc}?",
+                "Większość firm działa lokalnie i może przyjąć zlecenie tego samego lub następnego dnia. Wyślij zapytanie przez PT24 — specjaliści z {$city_name} skontaktują się sami.",
+            ],
+            [
+                "Czy PT24 działa w {$city_loc}?",
+                "Tak. PT24.PRO łączy klientów z fachowcami w {$city_loc} i innych miastach Polski. Usługa dla zamawiających jest w 100% bezpłatna.",
+            ],
+            [
+                "Skąd wiem, że firmy w rankingu są sprawdzone?",
+                "Ranking {$svc_lc} w {$city_loc} opiera się na opiniach klientów i liczbie zrealizowanych zleceń. Przed zamówieniem możesz przejrzeć profile firm i ich historię realizacji.",
+            ],
+        ];
+        $ranking_faq_schema = [
+            '@context'   => 'https://schema.org',
+            '@type'      => 'FAQPage',
+            'mainEntity' => [],
+        ];
+        foreach ( $ranking_faq as $qa ) {
+            $ranking_faq_schema['mainEntity'][] = [
+                '@type'          => 'Question',
+                'name'           => $qa[0],
+                'acceptedAnswer' => [ '@type' => 'Answer', 'text' => $qa[1] ],
+            ];
+        }
+    ?>
+    <!-- FAQ Schema for ranking page -->
+    <script type="application/ld+json"><?php echo wp_json_encode( $ranking_faq_schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES ); ?></script>
+    <?php endif; ?>
     <?php
 }
 
