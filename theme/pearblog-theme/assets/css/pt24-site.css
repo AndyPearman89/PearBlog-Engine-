@@ -504,6 +504,14 @@
 .pt24-btn--sm { padding: .42rem .85rem; font-size: .83rem; }
 
 /* ===================================================================
+   Geo-location bar (city hub suggestion banner)
+   =================================================================== */
+.pt24-geo-bar { position: sticky; top: 0; z-index: 900; display: flex; align-items: center; gap: .9rem; flex-wrap: wrap; background: #EFF6FF; border-bottom: 1.5px solid #BFDBFE; padding: .6rem 1.25rem; font-size: .9rem; }
+.pt24-geo-bar strong { color: var(--pt24-blue); }
+.pt24-geo-bar__x { margin-left: auto; background: none; border: none; cursor: pointer; font-size: 1rem; color: var(--pt24-text-muted); padding: .2rem .45rem; border-radius: 4px; line-height: 1; }
+.pt24-geo-bar__x:hover { background: #DBEAFE; }
+
+/* ===================================================================
    Add firm form (/dodaj-firme/)
    =================================================================== */
 .pt24-add-firm__hero { background: linear-gradient(135deg, var(--pt24-blue) 0%, var(--pt24-blue-dark) 100%); color: #fff; padding: 3.5rem 1.5rem 3rem; text-align: center; }

@@ -113,6 +113,14 @@ class PearBlog_PT24_Landing_CPT {
             );
         }
 
+        // /miasto/ — auto-detect visitor city and redirect.
+        if ( 1 === count( $segments ) && 'miasto' === strtolower( $segments[0] ) ) {
+            return array(
+                'post_type'        => 'pt24_landing',
+                'pt24_miasto_auto' => '1',
+            );
+        }
+
         // /miasto/{city}/ — city hub page.
         if ( 2 === count( $segments ) && 'miasto' === strtolower( $segments[0] ) ) {
             $city = sanitize_title( $segments[1] );
@@ -215,6 +223,7 @@ class PearBlog_PT24_Landing_CPT {
             $vars[] = 'pt24_type';
             $vars[] = 'pt24_rankings_index';
             $vars[] = 'pt24_city_hub';
+            $vars[] = 'pt24_miasto_auto';
             return $vars;
         });
     }
@@ -252,6 +261,14 @@ class PearBlog_PT24_Landing_CPT {
         // /miasto/{city}/ hub page.
         if ( '' !== (string) get_query_var( 'pt24_city_hub' ) ) {
             $custom = locate_template( 'pt24-city-hub.php' );
+            if ( $custom ) {
+                return $custom;
+            }
+        }
+
+        // /miasto/ — auto-detect city.
+        if ( '1' === (string) get_query_var( 'pt24_miasto_auto' ) ) {
+            $custom = locate_template( 'pt24-city-detect.php' );
             if ( $custom ) {
                 return $custom;
             }

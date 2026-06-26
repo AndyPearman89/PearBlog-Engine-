@@ -53,6 +53,7 @@ function pt24_sitemap_entries() {
     $entries[] = array( 'loc' => pt24_sitemap_url( '/firmy/' ),    'priority' => '0.6' );
 
     // City hubs.
+    $entries[] = array( 'loc' => pt24_sitemap_url( '/miasto/' ), 'priority' => '0.8' );
     $city_slugs = array( 'warszawa', 'krakow', 'wroclaw', 'poznan', 'gdansk', 'katowice' );
     foreach ( $city_slugs as $cslug ) {
         $entries[] = array( 'loc' => pt24_sitemap_url( '/miasto/' . $cslug . '/' ), 'priority' => '0.7' );

@@ -258,6 +258,13 @@ function pt24_output_seo_meta() {
         $meta['description'] = 'Szukasz hydraulika, elektryka, mechanika lub innego fachowca? Wybierz usługę i miasto — PT24 połączy Cię z lokalnym specjalistą. Bezpłatna wycena.';
     }
 
+    // /miasto/ — auto-detect generic page
+    if ( '1' === (string) get_query_var( 'pt24_miasto_auto' ) ) {
+        $meta['title']       = 'Fachowcy w Twoim mieście — hydraulik, elektryk i inni | PT24.PRO';
+        $meta['description'] = 'Znajdź sprawdzonego fachowca w swoim mieście: hydraulik, elektryk, mechanik, pompa ciepła, remont łazienki, fotowoltaika. Wybierz miasto i zamów bezpłatną wycenę.';
+        $meta['canonical']   = pt24_public_home_url( '/miasto/' );
+    }
+
     // /miasto/{city}/ — city hub page
     $city_hub_slug = (string) get_query_var( 'pt24_city_hub' );
     if ( '' !== $city_hub_slug ) {
