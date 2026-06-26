@@ -423,9 +423,73 @@ function pt24_api_invalidate_cache_on_post_change($post_id, $post = null, $updat
         }
     }
 }
+
+/**
+ * Invalidate listing cache when key business/firm meta fields change.
+ *
+ * @param int    $meta_id    Meta row id.
+ * @param int    $object_id  Post id.
+ * @param string $meta_key   Changed meta key.
+ * @param mixed  $meta_value New value.
+ */
+function pt24_api_invalidate_cache_on_meta_change($meta_id, $object_id, $meta_key, $meta_value) {
+    unset($meta_id, $meta_value);
+
+    $tracked_keys = [
+        'pt24_rating',
+        'pt24_reviews_count',
+        'pt24_mobile_service',
+        'pt24_available_today',
+        'pt24_service_area',
+        'pt24_plan',
+        'pt24_firm_city',
+        'pt24_firm_services',
+        'pt24_firm_rating',
+    ];
+
+    if (!in_array((string) $meta_key, $tracked_keys, true)) {
+        return;
+    }
+
+    pt24_api_invalidate_cache_on_post_change((int) $object_id, null, true);
+}
+
+/**
+ * Invalidate listing cache when PT24 taxonomies are updated.
+ *
+ * @param int          $object_id  Post id.
+ * @param array|string $terms      Term ids/slugs.
+ * @param array        $tt_ids     Term taxonomy ids.
+ * @param string       $taxonomy   Taxonomy name.
+ * @param bool         $append     Append mode.
+ * @param array        $old_tt_ids Old term taxonomy ids.
+ */
+function pt24_api_invalidate_cache_on_term_change($object_id, $terms, $tt_ids, $taxonomy, $append, $old_tt_ids) {
+    unset($terms, $tt_ids, $append, $old_tt_ids);
+
+    if (!in_array((string) $taxonomy, ['pt24_service_cat', 'pt24_city'], true)) {
+        return;
+    }
+
+    $post = get_post((int) $object_id);
+    if (!($post instanceof WP_Post)) {
+        return;
+    }
+
+    if ('pt24_business' !== $post->post_type) {
+        return;
+    }
+
+    pt24_api_invalidate_cache_on_post_change((int) $object_id, $post, true);
+}
+
 add_action('save_post_pt24_business', 'pt24_api_invalidate_cache_on_post_change', 10, 3);
 add_action('save_post_pt24_firm', 'pt24_api_invalidate_cache_on_post_change', 10, 3);
 add_action('delete_post', 'pt24_api_invalidate_cache_on_post_change', 10, 1);
+add_action('added_post_meta', 'pt24_api_invalidate_cache_on_meta_change', 10, 4);
+add_action('updated_post_meta', 'pt24_api_invalidate_cache_on_meta_change', 10, 4);
+add_action('deleted_post_meta', 'pt24_api_invalidate_cache_on_meta_change', 10, 4);
+add_action('set_object_terms', 'pt24_api_invalidate_cache_on_term_change', 10, 6);
 
 /**
  * Get businesses
