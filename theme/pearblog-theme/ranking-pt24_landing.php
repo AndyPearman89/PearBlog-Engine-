@@ -192,7 +192,25 @@ pearblog_render_header();
 
 	<section class="pt24-section pt24-internal">
 		<div class="pb-container">
-			<h2>Ten ranking w innych miastach</h2>
+			<h2>Inne rankingi w <?php echo esc_html( $city_name ); ?></h2>
+			<div class="pt24-rankings-grid" style="margin-bottom:1.5rem">
+				<?php
+				if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+					foreach ( PearBlog_PT24_Landing_CPT::get_services() as $sslug => $sname ) {
+						if ( $sslug === $service_slug ) {
+							continue;
+						}
+						printf(
+							'<a href="%s" class="pt24-rankings-card"><span class="pt24-rankings-card__city">%s</span><span class="pt24-rankings-card__label">%s</span><span class="pt24-rankings-card__cta">Ranking →</span></a>',
+							esc_url( home_url( "/ranking/{$city_slug}/{$sslug}/" ) ),
+							esc_html( $city_name ),
+							esc_html( $sname )
+						);
+					}
+				}
+				?>
+			</div>
+			<h2><?php echo esc_html( $service_name ); ?> — ranking w innych miastach</h2>
 			<ul class="pt24-links">
 				<?php
 				if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
@@ -210,10 +228,20 @@ pearblog_render_header();
 				}
 				?>
 			</ul>
+			<p style="margin-top:1rem"><a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>">← Wszystkie rankingi fachowców</a> &nbsp;·&nbsp; <a href="<?php echo esc_url( home_url( '/miasto/' . $city_slug . '/' ) ); ?>">Fachowcy w <?php echo esc_html( $city_name ); ?> →</a></p>
 		</div>
 	</section>
 
 </main>
+
+<div class="pt24-sticky-cta" aria-label="Szybki formularz">
+	<p class="pt24-sticky-cta__text">Bezpłatne wyceny od fachowców</p>
+	<a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Zamów wycenę</a>
+</div>
+
+<button class="pt24-scroll-top" aria-label="Przewiń do góry" type="button">
+	<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
 <script>
 (function(){
 	var form = document.querySelector('.pt24-leadform');

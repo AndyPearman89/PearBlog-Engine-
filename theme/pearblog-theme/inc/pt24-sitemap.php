@@ -52,6 +52,12 @@ function pt24_sitemap_entries() {
     $entries[] = array( 'loc' => pt24_sitemap_url( '/rankingi/' ), 'priority' => '0.7' );
     $entries[] = array( 'loc' => pt24_sitemap_url( '/firmy/' ),    'priority' => '0.6' );
 
+    // City hubs.
+    $city_slugs = array( 'warszawa', 'krakow', 'wroclaw', 'poznan', 'gdansk', 'katowice' );
+    foreach ( $city_slugs as $cslug ) {
+        $entries[] = array( 'loc' => pt24_sitemap_url( '/miasto/' . $cslug . '/' ), 'priority' => '0.7' );
+    }
+
     // Blog index + published posts.
     $entries[]  = array( 'loc' => pt24_sitemap_url( '/blog/' ), 'priority' => '0.6' );
     $home_path  = untrailingslashit( (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH ) );

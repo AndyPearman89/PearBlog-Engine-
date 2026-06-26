@@ -495,6 +495,15 @@
 .pt24-rankings-card__cta { font-size: .8rem; font-weight: 700; color: var(--pt24-blue); margin-top: .3rem; }
 
 /* ===================================================================
+   City hub (/miasto/{city}/)
+   =================================================================== */
+.pt24-city-service-card { display: flex; flex-direction: column; gap: .7rem; background: var(--pt24-bg-card, #fff); border: 1.5px solid var(--pt24-border); border-radius: 14px; padding: 1.2rem 1.1rem; box-shadow: 0 1px 4px rgba(0,0,0,.04); transition: box-shadow .18s, border-color .18s; }
+.pt24-city-service-card:hover { box-shadow: 0 4px 18px rgba(37,99,235,.09); border-color: var(--pt24-blue); }
+.pt24-city-service-card__name { font-weight: 700; font-size: 1rem; color: var(--pt24-text); }
+.pt24-city-service-card__actions { display: flex; gap: .5rem; flex-wrap: wrap; }
+.pt24-btn--sm { padding: .42rem .85rem; font-size: .83rem; }
+
+/* ===================================================================
    Add firm form (/dodaj-firme/)
    =================================================================== */
 .pt24-add-firm__hero { background: linear-gradient(135deg, var(--pt24-blue) 0%, var(--pt24-blue-dark) 100%); color: #fff; padding: 3.5rem 1.5rem 3rem; text-align: center; }

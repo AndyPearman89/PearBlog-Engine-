@@ -258,6 +258,32 @@ function pt24_output_seo_meta() {
         $meta['description'] = 'Szukasz hydraulika, elektryka, mechanika lub innego fachowca? Wybierz usługę i miasto — PT24 połączy Cię z lokalnym specjalistą. Bezpłatna wycena.';
     }
 
+    // /miasto/{city}/ — city hub page
+    $city_hub_slug = (string) get_query_var( 'pt24_city_hub' );
+    if ( '' !== $city_hub_slug ) {
+        $city_hub_names = array(
+            'warszawa' => 'Warszawa',
+            'krakow'   => 'Kraków',
+            'wroclaw'  => 'Wrocław',
+            'poznan'   => 'Poznań',
+            'gdansk'   => 'Gdańsk',
+            'katowice' => 'Katowice',
+        );
+        $city_hub_loc = array(
+            'warszawa' => 'Warszawie',
+            'krakow'   => 'Krakowie',
+            'wroclaw'  => 'Wrocławiu',
+            'poznan'   => 'Poznaniu',
+            'gdansk'   => 'Gdańsku',
+            'katowice' => 'Katowicach',
+        );
+        $city_hub_name = isset( $city_hub_names[ $city_hub_slug ] ) ? $city_hub_names[ $city_hub_slug ] : ucfirst( $city_hub_slug );
+        $city_hub_locative = isset( $city_hub_loc[ $city_hub_slug ] ) ? $city_hub_loc[ $city_hub_slug ] : $city_hub_name;
+        $meta['title']       = 'Sprawdzeni fachowcy w ' . $city_hub_locative . ' — hydraulik, elektryk i inni | PT24.PRO';
+        $meta['description'] = 'Znajdź zweryfikowanego fachowca w ' . $city_hub_locative . ': hydraulik, elektryk, mechanik, pompa ciepła, remont łazienki, fotowoltaika. Bezpłatna wycena online.';
+        $meta['canonical']   = pt24_public_home_url( '/miasto/' . $city_hub_slug . '/' );
+    }
+
     // AI Blog article — override from stored meta
     $current_post = get_post();
     if ( $current_post instanceof WP_Post && is_singular( 'post' ) && '1' === (string) get_post_meta( $current_post->ID, '_pt24_blog_ai', true ) ) {

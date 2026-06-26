@@ -69,6 +69,7 @@ function pt24_render_full_footer(): void {
                     <h3 class="pp-footer-heading">Dla firm</h3>
                     <ul class="pp-footer-links">
                         <li><a href="<?php echo esc_url( $home . 'dodaj-firme/' ); ?>">Zarejestruj firmę</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'rankingi/' ); ?>">Rankingi fachowców</a></li>
                         <li><a href="<?php echo esc_url( $home . 'dla-firm/' ); ?>">Pakiety i cennik</a></li>
                         <li><a href="<?php echo esc_url( $home . 'jak-to-dziala-dla-firm/' ); ?>">Jak działa dla firm</a></li>
                         <li><a href="<?php echo esc_url( $home . 'regulamin-firm/' ); ?>">Regulamin firm</a></li>
