@@ -14,14 +14,22 @@ if ( ! defined( 'ABSPATH' ) ) {
 
 $city_slug = get_query_var( 'pt24_city_hub' );
 
-$cities = [
-	'warszawa' => 'Warszawa',
-	'krakow'   => 'Kraków',
-	'wroclaw'  => 'Wrocław',
-	'poznan'   => 'Poznań',
-	'gdansk'   => 'Gdańsk',
-	'katowice' => 'Katowice',
-];
+$cities = function_exists( 'pt24_cities_from_database' ) ? pt24_cities_from_database() : array();
+
+if ( empty( $cities ) && class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+	$cities = PearBlog_PT24_Landing_CPT::get_cities();
+}
+
+if ( empty( $cities ) ) {
+	$cities = array(
+		'warszawa' => 'Warszawa',
+		'krakow'   => 'Krakow',
+		'wroclaw'  => 'Wroclaw',
+		'poznan'   => 'Poznan',
+		'gdansk'   => 'Gdansk',
+		'katowice' => 'Katowice',
+	);
+}
 
 $services = [
 	'hydraulik'          => 'Hydraulik',
@@ -43,25 +51,21 @@ if ( ! isset( $cities[ $city_slug ] ) ) {
 
 $city_name = $cities[ $city_slug ];
 
-$city_loc = [
-	'warszawa' => 'Warszawie',
-	'krakow'   => 'Krakowie',
-	'wroclaw'  => 'Wrocławiu',
-	'poznan'   => 'Poznaniu',
-	'gdansk'   => 'Gdańsku',
-	'katowice' => 'Katowicach',
-];
-$city_locative = isset( $city_loc[ $city_slug ] ) ? $city_loc[ $city_slug ] : $city_name;
+$city_locative = function_exists( 'pt24_city_locative_label' )
+	? pt24_city_locative_label( $city_slug, $city_name )
+	: $city_name;
 
 $city_genitive = [
 	'warszawa' => 'Warszawy',
 	'krakow'   => 'Krakowa',
-	'wroclaw'  => 'Wrocławia',
+	'wroclaw'  => 'Wroclawia',
 	'poznan'   => 'Poznania',
-	'gdansk'   => 'Gdańska',
+	'gdansk'   => 'Gdanska',
 	'katowice' => 'Katowic',
 ];
-$city_geo_target = isset( $city_genitive[ $city_slug ] ) ? $city_genitive[ $city_slug ] : $city_name;
+$city_geo_target = isset( $city_genitive[ $city_slug ] )
+	? $city_genitive[ $city_slug ]
+	: ( $city_name ?: ucfirst( str_replace( '-', ' ', (string) $city_slug ) ) );
 
 // Count firms in this city.
 $firm_count = (int) ( new WP_Query( [

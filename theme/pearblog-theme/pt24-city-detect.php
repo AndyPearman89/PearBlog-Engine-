@@ -19,30 +19,52 @@ if ( ! defined( 'ABSPATH' ) ) {
 /* City data                                                            */
 /* ------------------------------------------------------------------ */
 
-$pt24_cities = [
-	'warszawa' => 'Warszawa',
-	'krakow'   => 'Kraków',
-	'wroclaw'  => 'Wrocław',
-	'poznan'   => 'Poznań',
-	'gdansk'   => 'Gdańsk',
-	'katowice' => 'Katowice',
-];
+$pt24_cities = function_exists( 'pt24_cities_from_database' ) ? pt24_cities_from_database() : array();
+
+if ( empty( $pt24_cities ) && class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+	$pt24_cities = PearBlog_PT24_Landing_CPT::get_cities();
+}
+
+if ( empty( $pt24_cities ) ) {
+	$pt24_cities = array(
+		'warszawa' => 'Warszawa',
+		'krakow'   => 'Krakow',
+		'wroclaw'  => 'Wroclaw',
+		'poznan'   => 'Poznan',
+		'gdansk'   => 'Gdansk',
+		'katowice' => 'Katowice',
+	);
+}
 
 // Keys: normalised (lowercase, no diacritics) city names returned by ipapi.co.
-$pt24_city_map = [
-	'warszawa'   => 'warszawa',
-	'warsaw'     => 'warszawa',
-	'krakow'     => 'krakow',
-	'cracow'     => 'krakow',
-	'wroclaw'    => 'wroclaw',
-	'breslau'    => 'wroclaw',
-	'poznan'     => 'poznan',
-	'posen'      => 'poznan',
-	'gdansk'     => 'gdansk',
-	'danzig'     => 'gdansk',
-	'katowice'   => 'katowice',
-	'kattowitz'  => 'katowice',
-];
+$pt24_city_map = array();
+
+foreach ( $pt24_cities as $slug => $name ) {
+	$slug = sanitize_title( (string) $slug );
+	$name = trim( (string) $name );
+
+	if ( '' === $slug || '' === $name ) {
+		continue;
+	}
+
+	$pt24_city_map[ strtolower( remove_accents( $slug ) ) ] = $slug;
+	$pt24_city_map[ strtolower( remove_accents( $name ) ) ] = $slug;
+}
+
+$pt24_city_aliases = array(
+	'warsaw'    => 'warszawa',
+	'cracow'    => 'krakow',
+	'breslau'   => 'wroclaw',
+	'posen'     => 'poznan',
+	'danzig'    => 'gdansk',
+	'kattowitz' => 'katowice',
+);
+
+foreach ( $pt24_city_aliases as $alias => $target_slug ) {
+	if ( isset( $pt24_cities[ $target_slug ] ) ) {
+		$pt24_city_map[ $alias ] = $target_slug;
+	}
+}
 
 /* ------------------------------------------------------------------ */
 /* IP detection                                                         */

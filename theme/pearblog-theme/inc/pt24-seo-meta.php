@@ -150,6 +150,131 @@ function pt24_display_names( $service, $city ) {
 }
 
 /**
+ * Resolve PT24 city map from DB-backed sources.
+ *
+ * Priority:
+ * 1) Canonical city map from Landing CPT (already merged with Scale_Data)
+ * 2) Existing landing post meta (pt24_city / pt24_city_display)
+ * 3) Existing firm post meta (pt24_firm_city / pt24_firm_city_name)
+ *
+ * @return array<string,string> slug => display name
+ */
+function pt24_cities_from_database() {
+    static $cities = null;
+
+    if ( is_array( $cities ) ) {
+        return $cities;
+    }
+
+    $cities = array();
+
+    if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+        $map = PearBlog_PT24_Landing_CPT::get_cities();
+        if ( is_array( $map ) ) {
+            foreach ( $map as $slug => $name ) {
+                $slug = sanitize_title( (string) $slug );
+                $name = trim( (string) $name );
+                if ( '' !== $slug && '' !== $name ) {
+                    $cities[ $slug ] = $name;
+                }
+            }
+        }
+    }
+
+    $landing_ids = get_posts( array(
+        'post_type'              => 'pt24_landing',
+        'post_status'            => array( 'publish', 'private' ),
+        'fields'                 => 'ids',
+        'numberposts'            => 800,
+        'suppress_filters'       => true,
+        'no_found_rows'          => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+    ) );
+
+    if ( is_array( $landing_ids ) ) {
+        foreach ( $landing_ids as $landing_id ) {
+            $slug = sanitize_title( (string) get_post_meta( (int) $landing_id, 'pt24_city', true ) );
+            if ( '' === $slug ) {
+                continue;
+            }
+
+            $name = trim( (string) get_post_meta( (int) $landing_id, 'pt24_city_display', true ) );
+            if ( '' === $name ) {
+                $name = $cities[ $slug ] ?? ucfirst( str_replace( '-', ' ', $slug ) );
+            }
+
+            $cities[ $slug ] = $name;
+        }
+    }
+
+    $firm_ids = get_posts( array(
+        'post_type'              => 'pt24_firm',
+        'post_status'            => array( 'publish', 'private' ),
+        'fields'                 => 'ids',
+        'numberposts'            => 1500,
+        'suppress_filters'       => true,
+        'no_found_rows'          => true,
+        'update_post_meta_cache' => false,
+        'update_post_term_cache' => false,
+    ) );
+
+    if ( is_array( $firm_ids ) ) {
+        foreach ( $firm_ids as $firm_id ) {
+            $slug = sanitize_title( (string) get_post_meta( (int) $firm_id, 'pt24_firm_city', true ) );
+            if ( '' === $slug ) {
+                continue;
+            }
+
+            $name = trim( (string) get_post_meta( (int) $firm_id, 'pt24_firm_city_name', true ) );
+            if ( '' === $name ) {
+                $name = $cities[ $slug ] ?? ucfirst( str_replace( '-', ' ', $slug ) );
+            }
+
+            $cities[ $slug ] = $name;
+        }
+    }
+
+    if ( empty( $cities ) ) {
+        $cities = array(
+            'warszawa' => 'Warszawa',
+            'krakow'   => 'Krakow',
+            'wroclaw'  => 'Wroclaw',
+            'poznan'   => 'Poznan',
+            'gdansk'   => 'Gdansk',
+            'katowice' => 'Katowice',
+        );
+    }
+
+    ksort( $cities );
+    return $cities;
+}
+
+/**
+ * Polish locative form helper for city slug.
+ *
+ * @param string $city_slug City slug.
+ * @param string $city_name Display city name.
+ * @return string Locative phrase, e.g. "Warszawie" or "mieście Bialystok".
+ */
+function pt24_city_locative_label( $city_slug, $city_name ) {
+    $loc_map = array(
+        'warszawa' => 'Warszawie',
+        'krakow'   => 'Krakowie',
+        'wroclaw'  => 'Wroclawiu',
+        'poznan'   => 'Poznaniu',
+        'gdansk'   => 'Gdansku',
+        'katowice' => 'Katowicach',
+    );
+
+    if ( isset( $loc_map[ $city_slug ] ) ) {
+        return $loc_map[ $city_slug ];
+    }
+
+    return 'miescie ' . ( $city_name ?: ucfirst( str_replace( '-', ' ', (string) $city_slug ) ) );
+}
+
+/**
  * Generate SEO meta tags for PT24 pages
  */
 function pt24_output_seo_meta() {
@@ -275,24 +400,9 @@ function pt24_output_seo_meta() {
     // /miasto/{city}/ — city hub page
     $city_hub_slug = (string) get_query_var( 'pt24_city_hub' );
     if ( '' !== $city_hub_slug ) {
-        $city_hub_names = array(
-            'warszawa' => 'Warszawa',
-            'krakow'   => 'Kraków',
-            'wroclaw'  => 'Wrocław',
-            'poznan'   => 'Poznań',
-            'gdansk'   => 'Gdańsk',
-            'katowice' => 'Katowice',
-        );
-        $city_hub_loc = array(
-            'warszawa' => 'Warszawie',
-            'krakow'   => 'Krakowie',
-            'wroclaw'  => 'Wrocławiu',
-            'poznan'   => 'Poznaniu',
-            'gdansk'   => 'Gdańsku',
-            'katowice' => 'Katowicach',
-        );
+        $city_hub_names = pt24_cities_from_database();
         $city_hub_name = isset( $city_hub_names[ $city_hub_slug ] ) ? $city_hub_names[ $city_hub_slug ] : ucfirst( $city_hub_slug );
-        $city_hub_locative = isset( $city_hub_loc[ $city_hub_slug ] ) ? $city_hub_loc[ $city_hub_slug ] : $city_hub_name;
+        $city_hub_locative = pt24_city_locative_label( $city_hub_slug, $city_hub_name );
         $meta['title']       = 'Sprawdzeni fachowcy w ' . $city_hub_locative . ' — hydraulik, elektryk i inni | PT24.PRO';
         $meta['description'] = 'Znajdź zweryfikowanego fachowca w ' . $city_hub_locative . ': hydraulik, elektryk, mechanik, pompa ciepła, remont łazienki, fotowoltaika. Bezpłatna wycena online.';
         $meta['canonical']   = pt24_public_home_url( '/miasto/' . $city_hub_slug . '/' );
@@ -535,17 +645,7 @@ function pt24_output_seo_meta() {
 
     <?php if ( $is_ranking && ! empty( $service ) && ! empty( $city ) ) :
         // Human-readable locative form of the city name (Polish grammar: "w Warszawie").
-        $city_loc_map = [
-            'warszawa'  => 'Warszawie',
-            'krakow'    => 'Krakowie',
-            'wroclaw'   => 'Wrocławiu',
-            'poznan'    => 'Poznaniu',
-            'gdansk'    => 'Gdańsku',
-            'katowice'  => 'Katowicach',
-        ];
-        $city_loc = isset( $city_loc_map[ $city ] )
-            ? $city_loc_map[ $city ]
-            : 'mieście ' . $city_name;
+        $city_loc = pt24_city_locative_label( $city, $city_name );
 
         // Build service-specific FAQ questions for ranking pages.
         $svc_lc = mb_strtolower( $service_name );
@@ -592,10 +692,7 @@ function pt24_output_seo_meta() {
     // BreadcrumbList for city hub /miasto/{city}/ pages.
     $bc_city_hub = (string) get_query_var( 'pt24_city_hub' );
     if ( '' !== $bc_city_hub ) :
-        $bc_city_names = [
-            'warszawa' => 'Warszawa', 'krakow' => 'Kraków', 'wroclaw' => 'Wrocław',
-            'poznan'   => 'Poznań',   'gdansk' => 'Gdańsk', 'katowice' => 'Katowice',
-        ];
+        $bc_city_names = pt24_cities_from_database();
         $bc_city_name = $bc_city_names[ $bc_city_hub ] ?? ucfirst( $bc_city_hub );
         $bc_schema = [
             '@context'        => 'https://schema.org',
