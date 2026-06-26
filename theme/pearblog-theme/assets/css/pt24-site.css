@@ -1992,6 +1992,332 @@
 }
 
 /* ===================================================================
+   BLOG & ARTICLE STYLES
+   =================================================================== */
+.pt24-blog-article {
+    color: var(--pt24-dark);
+    line-height: 1.8;
+}
+.pt24-blog-article p {
+    margin: 1.2rem 0;
+    font-size: 1rem;
+}
+.pt24-blog-article h2 {
+    font-size: 1.6rem;
+    margin: 2rem 0 1rem;
+    color: var(--pt24-dark);
+    border-left: 4px solid var(--pt24-blue);
+    padding-left: 1rem;
+}
+.pt24-blog-article h3 {
+    font-size: 1.25rem;
+    margin: 1.5rem 0 .8rem;
+    color: var(--pt24-dark);
+}
+.pt24-blog-article ul,
+.pt24-blog-article ol {
+    margin: 1rem 0;
+    padding-left: 1.8rem;
+    line-height: 1.8;
+}
+.pt24-blog-article li {
+    margin: .6rem 0;
+}
+.pt24-blog-article strong {
+    color: var(--pt24-blue);
+    font-weight: 700;
+}
+.pt24-blog-article em {
+    font-style: italic;
+}
+.pt24-blog-article blockquote {
+    border-left: 4px solid var(--pt24-amber);
+    margin: 1.5rem 0;
+    padding: 1rem 1.2rem;
+    background: rgba(245, 158, 11, .05);
+}
+.pt24-blog-article code {
+    background: var(--pt24-bg);
+    padding: .2rem .4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    font-size: .9rem;
+}
+.pt24-blog-meta {
+    display: flex;
+    align-items: center;
+    gap: .8rem;
+    margin: 1rem 0;
+    padding: 1rem;
+    background: var(--pt24-bg);
+    border-radius: 8px;
+    font-size: .95rem;
+    color: var(--pt24-muted);
+    flex-wrap: wrap;
+}
+.pt24-blog-meta__sep {
+    opacity: .5;
+}
+.pt24-blog-body {
+    margin: 2rem 0;
+}
+
+/* Article categories */
+.pt24-blog-cats {
+    list-style: none;
+    display: flex;
+    flex-wrap: wrap;
+    gap: .6rem;
+    padding: 0;
+    margin: 1rem 0;
+}
+.pt24-blog-cats li {
+    background: var(--pt24-bg);
+    border: 1px solid var(--pt24-border);
+    padding: .4rem .8rem;
+    border-radius: 20px;
+    font-size: .85rem;
+    color: var(--pt24-muted);
+}
+.pt24-blog-cats a {
+    color: var(--pt24-blue);
+    text-decoration: none;
+    font-weight: 500;
+}
+.pt24-blog-cats a:hover {
+    text-decoration: underline;
+}
+
+/* City Rankings */
+.pt24-city-rankings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+.pt24-city-rankings__item {
+    padding: 1.2rem;
+    background: var(--pt24-bg);
+    border: 1px solid var(--pt24-border);
+    border-radius: 8px;
+    text-align: center;
+    text-decoration: none;
+    color: inherit;
+    transition: all .2s ease;
+}
+.pt24-city-rankings__item:hover {
+    border-color: var(--pt24-blue);
+    background: #fff;
+    box-shadow: 0 2px 12px rgba(37, 99, 235, .1);
+    transform: translateY(-2px);
+}
+.pt24-city-rankings__item strong {
+    display: block;
+    font-size: 1.05rem;
+    color: var(--pt24-dark);
+    margin-bottom: .3rem;
+}
+.pt24-city-rankings__item span {
+    display: block;
+    font-size: .85rem;
+    color: var(--pt24-muted);
+}
+
+/* Button variants */
+.pt24-btn--cta {
+    background: linear-gradient(135deg, var(--pt24-amber), var(--pt24-amber-dark));
+    color: #fff;
+    border: 0;
+}
+.pt24-btn--cta:hover {
+    background: var(--pt24-amber-dark);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 158, 11, .3);
+}
+.pt24-btn--outline {
+    background: transparent;
+    border: 2px solid var(--pt24-blue);
+    color: var(--pt24-blue);
+}
+.pt24-btn--outline:hover {
+    background: var(--pt24-blue);
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+/* CTA Band Inner */
+.pt24-cta-band__inner {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* Scroll to top button */
+.pt24-scroll-top {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 44px;
+    height: 44px;
+    background: var(--pt24-blue);
+    color: #fff;
+    border: 0;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    opacity: 0;
+    visibility: hidden;
+    transition: all .3s ease;
+    z-index: 90;
+    padding: 0;
+    font-size: 1.2rem;
+}
+.pt24-scroll-top.visible {
+    opacity: 1;
+    visibility: visible;
+}
+.pt24-scroll-top:hover {
+    background: var(--pt24-blue-dark);
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, .4);
+}
+
+/* Sticky CTA */
+.pt24-sticky-cta__text {
+    flex: 1;
+}
+.pt24-sticky-cta {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(135deg, var(--pt24-blue-dark), var(--pt24-blue));
+    color: #fff;
+    padding: 1rem 20px;
+    display: none;
+    align-items: center;
+    gap: 1rem;
+    z-index: 85;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, .1);
+}
+.pt24-sticky-cta.show {
+    display: flex;
+}
+.pt24-sticky-cta .pt24-btn {
+    flex-shrink: 0;
+}
+
+/* Lead Form Styles */
+.pt24-leadform__ok {
+    background: var(--pt24-green);
+    color: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    display: none;
+}
+.pt24-leadform__ok.show {
+    display: block;
+    animation: slideUp .3s ease;
+}
+.pt24-leadform__err {
+    background: #dc2626;
+    color: #fff;
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    display: none;
+}
+.pt24-leadform__err.show {
+    display: block;
+    animation: slideUp .3s ease;
+}
+.pt24-leadform__gdpr {
+    font-size: .85rem;
+    color: var(--pt24-muted);
+    margin-top: .8rem;
+    line-height: 1.5;
+}
+.pt24-leadform__gdpr a {
+    color: var(--pt24-blue);
+    text-decoration: none;
+}
+.pt24-leadform__gdpr a:hover {
+    text-decoration: underline;
+}
+
+/* Icon variants */
+.pt24-ico--truck {
+    --ico: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='1' y='3' width='15' height='13'/%3E%3Cpolygon points='16 8 20 8 23 11 23 16 16 16 16 8'/%3E%3Ccircle cx='5.5' cy='18.5' r='2.5'/%3E%3Ccircle cx='18.5' cy='18.5' r='2.5'/%3E%3C/svg%3E");
+}
+
+/* Animations */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* Responsive blog & forms */
+@media (max-width: 768px) {
+    .pt24-blog-article h2 {
+        font-size: 1.4rem;
+    }
+    .pt24-blog-article h3 {
+        font-size: 1.1rem;
+    }
+    .pt24-blog-meta {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    .pt24-city-rankings {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .pt24-sticky-cta {
+        padding: .8rem 15px;
+        flex-wrap: wrap;
+    }
+    .pt24-scroll-top {
+        bottom: 20px;
+        right: 20px;
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 640px) {
+    .pt24-blog-article {
+        font-size: .95rem;
+    }
+    .pt24-city-rankings {
+        grid-template-columns: 1fr;
+    }
+    .pt24-sticky-cta {
+        padding: .6rem 10px;
+        gap: .6rem;
+    }
+    .pt24-sticky-cta .pt24-btn {
+        padding: .5rem .8rem;
+        font-size: .9rem;
+    }
+}
+
+/* ===================================================================
    PRINT STYLES — clean landing pages for print
    =================================================================== */
 @media print {
