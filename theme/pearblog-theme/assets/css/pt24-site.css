@@ -331,6 +331,73 @@
 .pt24-home__forfirms { text-align: center; }
 .pt24-home__faq summary { font-size: 1.02rem; }
 
+/* Homepage V3 — new "Portal Firm i Leadów" redesign */
+.pt24-btn--lg { padding: 1rem 2rem; font-size: 1.1rem; border-radius: 10px; }
+.pt24-btn--lg small { display: block; font-size: .78rem; font-weight: 400; opacity: .8; margin-top: .15rem; }
+
+.pt24-home__hero-content { max-width: 680px; margin: 0 auto; }
+.pt24-home__hero-accent { color: var(--pt24-amber); }
+.pt24-home__hero-sub { font-size: 1.15rem; color: rgba(255, 255, 255, .88); max-width: 520px; margin: 0 auto 1.4rem; }
+
+.pt24-home__trust-badges { list-style: none; display: flex; flex-wrap: wrap; justify-content: center; gap: 1.2rem 2rem; padding: 0; margin: 0 0 1.8rem; }
+.pt24-home__trust-badges li { display: flex; flex-direction: column; align-items: center; gap: .2rem; text-align: center; }
+.pt24-home__trust-badges li .pt24-ico { width: 30px; height: 30px; color: var(--pt24-amber); }
+.pt24-home__trust-badges strong { font-size: .95rem; color: #fff; }
+.pt24-home__trust-badges span { font-size: .82rem; color: rgba(255, 255, 255, .7); }
+
+.pt24-home__hero-ctas { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 1.8rem; }
+.pt24-home__hero-ctas .pt24-btn { display: inline-flex; align-items: center; gap: .5rem; }
+.pt24-home__hero-ctas .pt24-btn .pt24-ico { width: 20px; height: 20px; }
+
+.pt24-home__hero-note { margin-top: 1.2rem; font-size: .92rem; color: rgba(255, 255, 255, .85); display: flex; align-items: center; justify-content: center; gap: .4rem; }
+.pt24-home__hero-note .pt24-ico { width: 16px; height: 16px; color: var(--pt24-green); }
+
+/* Categories grid */
+.pt24-home__categories { text-align: center; padding: 3rem 0; }
+.pt24-home__categories h2 { margin-bottom: 1.5rem; }
+.pt24-home__cat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; max-width: 900px; margin: 0 auto; }
+.pt24-home__cat-item { display: flex; flex-direction: column; align-items: center; gap: .4rem; padding: 1.4rem 1rem; background: #fff; border: 1px solid var(--pt24-border); border-radius: 14px; text-decoration: none; color: var(--pt24-dark); transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease; }
+.pt24-home__cat-item:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(15, 23, 42, .1); border-color: var(--pt24-blue); }
+.pt24-home__cat-icon { display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: rgba(37, 99, 235, .08); color: var(--pt24-blue); }
+.pt24-home__cat-icon .pt24-ico { width: 24px; height: 24px; }
+.pt24-home__cat-item strong { font-size: 1rem; }
+.pt24-home__cat-sub { font-size: .82rem; color: var(--pt24-muted); }
+.pt24-home__cat-item--more { background: var(--pt24-bg); border-style: dashed; }
+
+/* How it works (new flow with numbered circles) */
+.pt24-home__how { text-align: center; padding: 2.5rem 0; }
+.pt24-home__how h2 { margin-bottom: 1.5rem; }
+.pt24-home__how .pt24-flow { list-style: none; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1.5rem; max-width: 800px; margin: 0 auto; counter-reset: none; }
+.pt24-home__how .pt24-flow li { text-align: center; padding: 0; }
+.pt24-home__how .pt24-flow li::before { display: none; }
+.pt24-flow__num { display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 50%; background: var(--pt24-blue); color: #fff; font-weight: 700; font-size: 1.2rem; margin-bottom: .6rem; }
+
+/* Stats bar */
+.pt24-home__stats-bar { background: var(--pt24-dark); border-radius: 16px; padding: 2rem 1.5rem; margin: 2rem 0; }
+.pt24-home__stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1rem; text-align: center; }
+.pt24-home__stat strong { display: block; font-size: 1.8rem; color: var(--pt24-amber); line-height: 1.1; margin-bottom: .2rem; }
+.pt24-home__stat span { font-size: .88rem; color: rgba(255, 255, 255, .8); }
+
+/* For firms section */
+.pt24-home__forfirms-content { max-width: 560px; margin: 0 auto; padding: 2.5rem 1.5rem; background: var(--pt24-bg); border-radius: 16px; border: 1px solid var(--pt24-border); }
+.pt24-home__forfirms-content h2 { margin-bottom: .5rem; }
+.pt24-home__forfirms-content p { color: var(--pt24-muted); margin-bottom: 1rem; }
+.pt24-home__forfirms-note { font-size: .88rem; color: var(--pt24-muted); margin-top: .8rem !important; }
+
+/* Testimonials */
+.pt24-home__testimonials { text-align: center; padding: 2.5rem 0; }
+.pt24-home__testimonials h2 { margin-bottom: 1rem; }
+.pt24-home__testimonials-header { margin-bottom: 1.5rem; }
+.pt24-home__rating { font-size: 1rem; color: var(--pt24-dark); }
+.pt24-home__stars { color: var(--pt24-amber); letter-spacing: 2px; font-size: 1.2rem; }
+.pt24-home__reviews { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 1rem; text-align: left; }
+.pt24-home__review { background: #fff; border: 1px solid var(--pt24-border); border-radius: 14px; padding: 1.3rem; box-shadow: 0 6px 18px rgba(15, 23, 42, .04); }
+.pt24-home__review-header { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; margin-bottom: .5rem; font-size: .92rem; }
+.pt24-home__review-header strong { color: var(--pt24-dark); }
+.pt24-home__review-header span { color: var(--pt24-muted); }
+.pt24-home__review-header .pt24-home__stars { font-size: .95rem; margin-left: auto; }
+.pt24-home__review p { margin: 0; color: #334155; font-size: .95rem; line-height: 1.5; }
+
 /* ===================================================================
    Blog archive (/blog/)
    =================================================================== */
@@ -397,10 +464,20 @@
     .pt24-home__stats { gap: 1rem 1.6rem; }
     .pt24-home__stats strong { font-size: 1.4rem; }
     .pt24-sticky-cta { display: flex; }
+    .pt24-home__cat-grid { grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); }
+    .pt24-home__trust-badges { gap: .8rem 1.2rem; }
+    .pt24-home__stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .pt24-home__reviews { grid-template-columns: 1fr; }
 }
 @media (max-width: 600px) {
     .pt24-logo-img { height: 38px; }
     .pt24-nav-cta { display: none; }
+    .pt24-home__hero-ctas { flex-direction: column; align-items: stretch; }
+    .pt24-home__trust-badges { flex-direction: column; gap: .8rem; }
+    .pt24-home__cat-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    .pt24-home__stats-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
+    .pt24-home__how .pt24-flow { grid-template-columns: 1fr; }
+    .pt24-btn--lg { padding: .85rem 1.4rem; font-size: 1rem; }
 }
 
 /* ===================================================================
@@ -689,6 +766,8 @@
 .pt24-footer__contact a { color: rgba(255,255,255,.8); text-decoration: none; }
 .pt24-footer__contact a:hover { color: var(--pt24-amber); }
 .pt24-footer__contact .pt24-ico { color: var(--pt24-amber); width: 16px; height: 16px; }
+.pt24-footer__contact-list li { display: flex; align-items: center; gap: .5rem; }
+.pt24-footer__contact-list .pt24-ico { color: var(--pt24-amber); width: 16px; height: 16px; flex-shrink: 0; }
 /* Footer social */
 .pt24-footer__social { display: flex; gap: .6rem; margin-top: 1rem; }
 .pt24-footer__social a {
@@ -717,7 +796,7 @@
 }
 .pp-footer-city-links a:hover { background: var(--pt24-amber); color: #fff; border-color: var(--pt24-amber); }
 /* Footer grid */
-.pp-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 2.5rem; }
+.pp-footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr 1fr 1fr; gap: 2.5rem; }
 @media (max-width: 900px) { .pp-footer-grid { grid-template-columns: 1fr 1fr; gap: 1.5rem; } }
 @media (max-width: 560px) { .pp-footer-grid { grid-template-columns: 1fr; gap: 1.2rem; } }
 /* Popular cities section */
