@@ -118,7 +118,9 @@ cd /var/www/pt24.pro
 ### Metoda 2: Test Lokalny (Docker - Opcjonalnie)
 
 ```bash
-# TODO: Create docker-compose.yml for local testing
+docker compose up -d
+# Otwórz http://localhost:8080 i dokończ standardową instalację WordPressa.
+# Theme: pearblog-theme, MU plugins: mu-plugins/
 ```
 
 ---
