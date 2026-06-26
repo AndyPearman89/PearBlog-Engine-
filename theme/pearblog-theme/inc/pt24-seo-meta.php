@@ -90,10 +90,37 @@ function pt24_current_service_city() {
             if ( '' === $service ) {
                 $service = sanitize_title( $segments[1] );
             }
+        } elseif ( 3 === count( $segments ) && 'ranking' === strtolower( $segments[0] ) ) {
+            // /ranking/{city}/{service}/
+            if ( '' === $city ) {
+                $city = sanitize_title( $segments[1] );
+            }
+            if ( '' === $service ) {
+                $service = sanitize_title( $segments[2] );
+            }
         }
     }
 
     return array( $service, $city );
+}
+
+/**
+ * Whether the current request is a ranking page (/ranking/{city}/{service}/).
+ *
+ * @return bool
+ */
+function pt24_is_ranking_page() {
+    $uri  = isset( $_SERVER['REQUEST_URI'] ) ? (string) wp_unslash( $_SERVER['REQUEST_URI'] ) : '';
+    $path = (string) wp_parse_url( $uri, PHP_URL_PATH );
+    $home = (string) wp_parse_url( home_url( '/' ), PHP_URL_PATH );
+    if ( $home && '/' !== $home ) {
+        $home = untrailingslashit( $home );
+        if ( 0 === strpos( $path, $home . '/' ) ) {
+            $path = substr( $path, strlen( $home ) );
+        }
+    }
+    $segs = array_values( array_filter( explode( '/', trim( $path, '/' ) ) ) );
+    return ( 3 === count( $segs ) && 'ranking' === strtolower( $segs[0] ) );
 }
 
 /**
@@ -135,6 +162,21 @@ function pt24_output_seo_meta() {
     // core's rel_canonical (which would emit the origin-host URL) to prevent
     // duplicate, conflicting canonical tags.
     remove_action( 'wp_head', 'rel_canonical' );
+
+    // Replace WordPress's own <title> tag with our PT24-branded one so the
+    // document title is always correct regardless of $wp_query state.
+    remove_action( 'wp_head', '_wp_render_title_tag', 1 );
+
+    // Suppress Yoast SEO head output on landing/ranking pages — it generates
+    // a second (wrong) <title> and canonical that point to /blog/. Our own
+    // tags are authoritative here.
+    if ( defined( 'WPSEO_VERSION' ) ) {
+        add_filter( 'wpseo_head',             '__return_false', 99 );
+        add_filter( 'wpseo_canonical',        '__return_false', 99 );
+        add_filter( 'wpseo_title',            '__return_empty_string', 99 );
+        add_filter( 'wpseo_opengraph_title',  '__return_false', 99 );
+        add_filter( 'wpseo_opengraph_url',    '__return_false', 99 );
+    }
 
     // Get current page info
     list( $service, $city ) = pt24_current_service_city();
@@ -178,6 +220,10 @@ function pt24_output_seo_meta() {
     // Resolve display names (with Polish diacritics) for service / city.
     list( $service_name, $city_name ) = pt24_display_names( $service, $city );
 
+    // Is this a ranking page (/ranking/{city}/{service}/)?
+    $is_ranking = pt24_is_ranking_page();
+    $year       = gmdate( 'Y' );
+
     // Branded PT24 social share image (1200x630 PNG) served from the public
     // domain so social platforms (which ignore SVG) render a proper card.
     $pt24_og_image = pt24_public_home_url( '/wp-content/themes/pearblog-theme/assets/brand/pt24-og.png' );
@@ -194,10 +240,16 @@ function pt24_output_seo_meta() {
         $meta['description'] = "Sprawdzeni fachowcy w mieście $city_name. Hydraulicy, mechanicy, elektrycy i inne usługi. Porównaj oferty i ceny.";
     }
 
-    // Service + City page
+    // Service + City page (landing or ranking)
     if (!empty($service) && !empty($city)) {
-        $meta['title'] = "$service_name $city_name — ceny i oferty | PT24.PRO";
-        $meta['description'] = "$service_name $city_name — sprawdź ceny, opinie i dostępne firmy. Otrzymaj dopasowane oferty bez dzwonienia.";
+        if ( $is_ranking ) {
+            $meta['title']       = "Ranking {$service_name} {$city_name} {$year} — najlepsze firmy | PT24.PRO";
+            $meta['description'] = "Ranking najlepszych firm: {$service_name} {$city_name} {$year}. Porównaj oceny i liczbę zrealizowanych zleceń. Zamów bezpłatną wycenę.";
+            $meta['canonical']   = pt24_public_home_url( "/ranking/{$city}/{$service}/" );
+        } else {
+            $meta['title']       = "{$service_name} {$city_name} — ceny i oferty | PT24.PRO";
+            $meta['description'] = "{$service_name} {$city_name} — sprawdź ceny, opinie i dostępne firmy. Otrzymaj dopasowane oferty bez dzwonienia.";
+        }
     }
 
     // AI Blog article — override from stored meta
@@ -249,6 +301,7 @@ function pt24_output_seo_meta() {
 
     // Output meta tags
     ?>
+    <title><?php echo esc_html( $meta['title'] ); ?></title>
     <!-- SEO Meta Tags -->
     <meta name="description" content="<?php echo esc_attr($meta['description']); ?>">
     <link rel="canonical" href="<?php echo esc_url($meta['canonical']); ?>">
@@ -313,19 +366,79 @@ function pt24_output_seo_meta() {
     <?php endif; ?>
 
     <?php if (!empty($service) && !empty($city)): ?>
-    <!-- Local Business Schema -->
+    <!-- ItemList Schema (ranking / landing) -->
     <script type="application/ld+json">
-    {
-        "@context": "https://schema.org",
-        "@type": "ItemList",
-        "name": "<?php echo esc_js($service_name); ?> w mieście <?php echo esc_js($city_name); ?>",
-        "description": "Ranking najlepszych <?php echo esc_js($service); ?>ów w mieście <?php echo esc_js($city_name); ?>",
-        "url": "<?php echo esc_url($meta['canonical']); ?>"
+    <?php
+    if ( $is_ranking ) {
+        // Full ItemList with ranked firms.
+        $ranking_firms = get_posts( [
+            'post_type'        => 'pt24_firm',
+            'post_status'      => 'publish',
+            'numberposts'      => 10,
+            'meta_key'         => 'pt24_firm_city',
+            'meta_value'       => $city,
+            'suppress_filters' => true,
+        ] );
+        usort( $ranking_firms, function ( $a, $b ) {
+            $ra = (float) str_replace( ',', '.', (string) get_post_meta( $a->ID, 'pt24_firm_rating', true ) );
+            $rb = (float) str_replace( ',', '.', (string) get_post_meta( $b->ID, 'pt24_firm_rating', true ) );
+            if ( $ra === $rb ) {
+                return (int) get_post_meta( $b->ID, 'pt24_firm_jobs', true ) <=> (int) get_post_meta( $a->ID, 'pt24_firm_jobs', true );
+            }
+            return $rb <=> $ra;
+        } );
+        $list_items = [];
+        foreach ( $ranking_firms as $pos => $rfirm ) {
+            $r_rating = (string) get_post_meta( $rfirm->ID, 'pt24_firm_rating', true );
+            $r_jobs   = (int)   get_post_meta( $rfirm->ID, 'pt24_firm_jobs',   true );
+            $item = [
+                '@type'    => 'ListItem',
+                'position' => $pos + 1,
+                'item'     => [
+                    '@type'       => 'LocalBusiness',
+                    'name'        => get_the_title( $rfirm ),
+                    'url'         => pt24_public_home_url( '/firma/' . $rfirm->post_name . '/' ),
+                    'areaServed'  => $city_name,
+                    'makesOffer'  => [ '@type' => 'Offer', 'itemOffered' => [ '@type' => 'Service', 'name' => $service_name ] ],
+                ],
+            ];
+            if ( $r_rating ) {
+                $item['item']['aggregateRating'] = [
+                    '@type'       => 'AggregateRating',
+                    'ratingValue' => str_replace( ',', '.', $r_rating ),
+                    'bestRating'  => '5',
+                    'worstRating' => '1',
+                    'reviewCount' => max( 1, $r_jobs ),
+                ];
+            }
+            $list_items[] = $item;
+        }
+        $schema = [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'ItemList',
+            'name'            => "Ranking {$service_name} {$city_name} {$year}",
+            'description'     => "Najwyżej oceniane firmy: {$service_name} w mieście {$city_name}",
+            'url'             => pt24_public_home_url( "/ranking/{$city}/{$service}/" ),
+            'numberOfItems'   => count( $list_items ),
+            'itemListElement' => $list_items,
+        ];
+        echo wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT );
+    } else {
+        // Minimal ItemList for standard landing.
+        $schema = [
+            '@context'    => 'https://schema.org',
+            '@type'       => 'ItemList',
+            'name'        => "{$service_name} w mieście {$city_name}",
+            'description' => "Ranking najlepszych {$service_name} w mieście {$city_name}",
+            'url'         => esc_url( $meta['canonical'] ),
+        ];
+        echo wp_json_encode( $schema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
     }
+    ?>
     </script>
     <?php endif; ?>
 
-    <!-- Breadcrumb Schema -->
+    // Breadcrumbs — adjust position for ranking pages.
     <?php if (!empty($service) || !empty($city)): ?>
     <script type="application/ld+json">
     {
@@ -338,6 +451,20 @@ function pt24_output_seo_meta() {
                 "name": "Home",
                 "item": "<?php echo esc_url(pt24_public_home_url('/')); ?>"
             }
+            <?php if ( $is_ranking ): ?>,
+            {
+                "@type": "ListItem",
+                "position": 2,
+                "name": "Rankingi",
+                "item": "<?php echo esc_url(pt24_public_home_url('/rankingi/')); ?>"
+            },
+            {
+                "@type": "ListItem",
+                "position": 3,
+                "name": "<?php echo esc_js($service_name . ' ' . $city_name); ?>",
+                "item": "<?php echo esc_url(pt24_public_home_url('/ranking/' . $city . '/' . $service . '/')); ?>"
+            }
+            <?php else: ?>
             <?php if (!empty($city)): ?>,
             {
                 "@type": "ListItem",
@@ -354,6 +481,7 @@ function pt24_output_seo_meta() {
                 "item": "<?php echo esc_url($meta['canonical']); ?>"
             }
             <?php endif; ?>
+            <?php endif; ?>
         ]
     }
     </script>
@@ -363,6 +491,29 @@ function pt24_output_seo_meta() {
 
 // Hook into wp_head
 add_action('wp_head', 'pt24_output_seo_meta', 1);
+
+/**
+ * Short-circuit WordPress document title for landing/ranking pages.
+ *
+ * The CPT load_template swaps $wp_query, which can leave is_home() truthy
+ * and cause WordPress to produce "<blog-page-title> - PT24.PRO". Using
+ * pre_get_document_title lets us intercept before that logic runs.
+ */
+add_filter( 'pre_get_document_title', function ( $title ) {
+    if ( ! pt24_is_pt24_site() ) {
+        return $title;
+    }
+    list( $service, $city ) = pt24_current_service_city();
+    if ( '' === $service || '' === $city ) {
+        return $title;
+    }
+    list( $service_name, $city_name ) = pt24_display_names( $service, $city );
+    if ( pt24_is_ranking_page() ) {
+        $year = gmdate( 'Y' );
+        return "Ranking {$service_name} {$city_name} {$year} \u2014 najlepsze firmy | PT24.PRO";
+    }
+    return "{$service_name} {$city_name} \u2014 ceny i oferty | PT24.PRO";
+}, 5 );
 
 /**
  * Filter document title
@@ -405,6 +556,10 @@ function pt24_document_title($title) {
     list( $service_name, $city_name ) = pt24_display_names( $service, $city );
 
     if (!empty($service) && !empty($city)) {
+        if ( function_exists( 'pt24_is_ranking_page' ) && pt24_is_ranking_page() ) {
+            $year = gmdate( 'Y' );
+            return "Ranking {$service_name} {$city_name} {$year} — najlepsze firmy | PT24.PRO";
+        }
         return "$service_name $city_name — ceny i oferty | PT24.PRO";
     }
 
