@@ -305,6 +305,7 @@ for ( $i = 0; $i < 3; $i++ ) {
 
 $ajax_url = admin_url( 'admin-ajax.php' );
 ?>
+<div class="pt24-scroll-progress" aria-hidden="true"></div>
 <main id="main" class="pb-main pt24-landing" role="main">
 
     <section class="pt24-hero">
@@ -611,6 +612,16 @@ $ajax_url = admin_url( 'admin-ajax.php' );
     </section>
 
 </main>
+
+<div class="pt24-sticky-cta" aria-label="Szybki formularz">
+    <p class="pt24-sticky-cta__text">Bezpłatne wyceny od fachowców</p>
+    <a href="#pt24-lead" class="pt24-btn pt24-btn--primary">Zamów wycenę</a>
+</div>
+
+<button class="pt24-scroll-top" aria-label="Przewiń do góry" type="button">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"/></svg>
+</button>
+
 <script>
 (function(){
     var form = document.querySelector('.pt24-leadform');
@@ -636,6 +647,48 @@ $ajax_url = admin_url( 'admin-ajax.php' );
                 btn.disabled = false; btn.textContent = 'Wyślij zapytanie';
             });
     });
+
+    /* Scroll Progress Bar */
+    var progressBar = document.querySelector('.pt24-scroll-progress');
+    if (progressBar) {
+        window.addEventListener('scroll', function() {
+            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+            progressBar.style.width = progress + '%';
+        }, { passive: true });
+    }
+
+    /* Scroll-to-Top Button */
+    var scrollTopBtn = document.querySelector('.pt24-scroll-top');
+    if (scrollTopBtn) {
+        window.addEventListener('scroll', function() {
+            if (window.pageYOffset > 600) {
+                scrollTopBtn.classList.add('is-visible');
+            } else {
+                scrollTopBtn.classList.remove('is-visible');
+            }
+        }, { passive: true });
+        scrollTopBtn.addEventListener('click', function() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        });
+    }
+
+    /* Section Reveal Animation */
+    var sections = document.querySelectorAll('.pt24-section');
+    if (sections.length && 'IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function(entries) {
+            entries.forEach(function(entry) {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('is-revealed');
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+        sections.forEach(function(s) { observer.observe(s); });
+    } else {
+        sections.forEach(function(s) { s.classList.add('is-revealed'); });
+    }
 })();
 </script>
 <?php
