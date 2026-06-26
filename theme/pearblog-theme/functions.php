@@ -202,12 +202,15 @@ function pearblog_enqueue_assets() {
         $pt24_ux_path = PEARBLOG_DIR . '/assets/js/pt24-ux.js';
 
         $pt24_icons_ver = file_exists( $pt24_icons_path ) ? (string) filemtime( $pt24_icons_path ) : PEARBLOG_VERSION;
-        $pt24_site_ver = file_exists( $pt24_site_path ) ? (string) filemtime( $pt24_site_path ) : PEARBLOG_VERSION;
         $pt24_ux_ver = file_exists( $pt24_ux_path ) ? (string) filemtime( $pt24_ux_path ) : PEARBLOG_VERSION;
 
-        $pt24_site_uri = file_exists( $pt24_site_min_path )
+        $pt24_site_use_min = file_exists( $pt24_site_min_path );
+        $pt24_site_uri = $pt24_site_use_min
             ? PEARBLOG_URI . '/assets/css/pt24-site.min.css'
             : PEARBLOG_URI . '/assets/css/pt24-site.css';
+        $pt24_site_ver = $pt24_site_use_min
+            ? (string) filemtime( $pt24_site_min_path )
+            : ( file_exists( $pt24_site_path ) ? (string) filemtime( $pt24_site_path ) : PEARBLOG_VERSION );
 
         wp_enqueue_style('pt24-icons', PEARBLOG_URI . '/assets/css/pt24-icons.css', array(), $pt24_icons_ver);
         wp_enqueue_style('pt24-site', $pt24_site_uri, array('pearblog-components', 'pt24-icons'), $pt24_site_ver);

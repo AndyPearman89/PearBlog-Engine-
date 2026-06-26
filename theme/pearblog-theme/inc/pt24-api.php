@@ -122,10 +122,37 @@ function pt24_api_get_businesses($request) {
     $per_page = max(1, min(50, absint($request->get_param('per_page'))));
     $page = max(1, absint($request->get_param('page')));
     $min_rating = (float) $request->get_param('min_rating');
-    $mobile_service = $request->get_param('mobile_service');
-    $available_today = $request->get_param('available_today');
+    $mobile_service_raw = $request->get_param('mobile_service');
+    $available_today_raw = $request->get_param('available_today');
     $sort_by = (string) $request->get_param('sort_by');
     $sort_order = strtoupper((string) $request->get_param('sort_order'));
+
+    $normalize_nullable_bool = static function ($value) {
+        if (null === $value || '' === $value) {
+            return null;
+        }
+
+        if (is_bool($value)) {
+            return $value;
+        }
+
+        if (is_numeric($value)) {
+            return ((int) $value) > 0;
+        }
+
+        $normalized = strtolower(trim((string) $value));
+        if (in_array($normalized, ['1', 'true', 'yes', 'on'], true)) {
+            return true;
+        }
+        if (in_array($normalized, ['0', 'false', 'no', 'off'], true)) {
+            return false;
+        }
+
+        return null;
+    };
+
+    $mobile_service = $normalize_nullable_bool($mobile_service_raw);
+    $available_today = $normalize_nullable_bool($available_today_raw);
 
     $args = [
         'post_type' => 'pt24_business',
@@ -169,7 +196,7 @@ function pt24_api_get_businesses($request) {
         ];
     }
 
-    if (null !== $mobile_service && '' !== $mobile_service) {
+    if (null !== $mobile_service) {
         $args['meta_query'][] = [
             'key' => 'pt24_mobile_service',
             'value' => $mobile_service ? '1' : '0',
@@ -177,7 +204,7 @@ function pt24_api_get_businesses($request) {
         ];
     }
 
-    if (null !== $available_today && '' !== $available_today) {
+    if (null !== $available_today) {
         $args['meta_query'][] = [
             'key' => 'pt24_available_today',
             'value' => $available_today ? '1' : '0',
