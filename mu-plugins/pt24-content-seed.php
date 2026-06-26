@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '1.9.0';
+const PT24_SEED_VERSION = '2.0.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -755,9 +755,12 @@ function pt24_seed_firms(): void {
     );
     $all_services = 'hydraulik,elektryk,mechanik,pompa-ciepla,remont-lazienki,fotowoltaika';
     $brands = array(
-        array( 'pre' => 'FachowcyPro', 'desc' => 'Wielobranżowa ekipa z wieloletnim doświadczeniem.' ),
-        array( 'pre' => 'Serwis24',    'desc' => 'Lokalny serwis dostępny od ręki, także w nagłych awariach.' ),
-        array( 'pre' => 'MasterFix',   'desc' => 'Specjaliści od remontów, instalacji i nowoczesnych systemów grzewczych.' ),
+        array( 'pre' => 'FachowcyPro',   'desc' => 'Wielobranżowa ekipa z wieloletnim doświadczeniem.' ),
+        array( 'pre' => 'Serwis24',       'desc' => 'Lokalny serwis dostępny od ręki, także w nagłych awariach.' ),
+        array( 'pre' => 'MasterFix',      'desc' => 'Specjaliści od remontów, instalacji i nowoczesnych systemów grzewczych.' ),
+        array( 'pre' => 'ProTeam',        'desc' => 'Certyfikowana ekipa z uprawnieniami SEP, gazowymi i budowlanymi.' ),
+        array( 'pre' => 'RapidService',   'desc' => 'Błyskawiczna reakcja na awarie — zazwyczaj na miejscu w ciągu godziny.' ),
+        array( 'pre' => 'ExpertBud',      'desc' => 'Kompleksowe usługi budowlane i instalacyjne z pisemną gwarancją jakości.' ),
     );
 
     foreach ( $cities as $cslug => $cname ) {
