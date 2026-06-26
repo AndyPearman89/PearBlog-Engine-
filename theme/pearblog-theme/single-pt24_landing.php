@@ -306,6 +306,7 @@ for ( $i = 0; $i < 3; $i++ ) {
 $ajax_url = admin_url( 'admin-ajax.php' );
 ?>
 <div class="pt24-scroll-progress" aria-hidden="true"></div>
+<noscript><style>.pt24-section{opacity:1;transform:none}.pt24-scroll-progress,.pt24-sticky-cta,.pt24-scroll-top{display:none}</style></noscript>
 <main id="main" class="pb-main pt24-landing" role="main">
 
     <section class="pt24-hero">
@@ -650,25 +651,32 @@ $ajax_url = admin_url( 'admin-ajax.php' );
 
     /* Scroll Progress Bar */
     var progressBar = document.querySelector('.pt24-scroll-progress');
-    if (progressBar) {
-        window.addEventListener('scroll', function() {
-            var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
-            var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
-            var progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
-            progressBar.style.width = progress + '%';
-        }, { passive: true });
-    }
-
-    /* Scroll-to-Top Button */
     var scrollTopBtn = document.querySelector('.pt24-scroll-top');
-    if (scrollTopBtn) {
-        window.addEventListener('scroll', function() {
-            if (window.pageYOffset > 600) {
+    var ticking = false;
+
+    function onScroll() {
+        var scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+
+        if (progressBar) {
+            var docHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            progressBar.style.width = (docHeight > 0 ? (scrollTop / docHeight) * 100 : 0) + '%';
+        }
+
+        if (scrollTopBtn) {
+            if (scrollTop > 600) {
                 scrollTopBtn.classList.add('is-visible');
             } else {
                 scrollTopBtn.classList.remove('is-visible');
             }
-        }, { passive: true });
+        }
+        ticking = false;
+    }
+
+    window.addEventListener('scroll', function() {
+        if (!ticking) { ticking = true; requestAnimationFrame(onScroll); }
+    }, { passive: true });
+
+    if (scrollTopBtn) {
         scrollTopBtn.addEventListener('click', function() {
             window.scrollTo({ top: 0, behavior: 'smooth' });
         });
