@@ -16,7 +16,7 @@ if ( ! defined( 'ABSPATH' ) ) {
     exit;
 }
 
-const PT24_SEED_VERSION = '3.1.0';
+const PT24_SEED_VERSION = '3.2.0';
 
 /**
  * Whether the current site is the PT24 install.
@@ -519,6 +519,38 @@ function pt24_add_menu_item_once( string $menu_name, string $title, int $page_id
 }
 
 /**
+ * Add a custom URL menu item only if it doesn't already exist.
+ */
+function pt24_add_custom_menu_item_once( string $menu_name, string $title, string $url ): void {
+    $url = esc_url_raw( $url );
+    if ( '' === $url ) {
+        return;
+    }
+    $menu = wp_get_nav_menu_object( $menu_name );
+    if ( ! $menu ) {
+        return;
+    }
+    $items = wp_get_nav_menu_items( $menu->term_id );
+    if ( is_array( $items ) ) {
+        foreach ( $items as $item ) {
+            if ( strtolower( trim( (string) $item->title ) ) === strtolower( $title ) || untrailingslashit( (string) $item->url ) === untrailingslashit( $url ) ) {
+                return;
+            }
+        }
+    }
+    wp_update_nav_menu_item(
+        $menu->term_id,
+        0,
+        array(
+            'menu-item-title'  => $title,
+            'menu-item-url'    => $url,
+            'menu-item-type'   => 'custom',
+            'menu-item-status' => 'publish',
+        )
+    );
+}
+
+/**
  * Insert or refresh a single seeded blog post.
  */
 function pt24_seed_post( string $slug, string $title, string $content, int $cat_id ): void {
@@ -734,7 +766,16 @@ function pt24_seed_blog(): void {
     }
 
     // 4) Navigation links to the blog (idempotent on the existing primary menu).
+    // 4) Navigation links to the blog and PT24 hubs (idempotent on the existing primary menu).
     pt24_add_menu_item_once( 'PT24 Menu główne', 'Blog', $blog_id );
+    pt24_add_custom_menu_item_once( 'PT24 Menu główne', 'Rankingi', home_url( '/rankingi/' ) );
+    pt24_add_custom_menu_item_once( 'PT24 Menu główne', 'Wszystkie usługi', home_url( '/uslugi/' ) );
+    pt24_add_custom_menu_item_once( 'PT24 Menu główne', 'Miasta', home_url( '/miasto/' ) );
+
+    // PT24 footer menu mirrors the public hubs for editors who use the seeded menu location.
+    pt24_add_custom_menu_item_once( 'PT24 Stopka', 'Rankingi fachowców', home_url( '/rankingi/' ) );
+    pt24_add_custom_menu_item_once( 'PT24 Stopka', 'Wszystkie usługi', home_url( '/uslugi/' ) );
+    pt24_add_custom_menu_item_once( 'PT24 Stopka', 'Miasta', home_url( '/miasto/' ) );
 
     // 5) Tidy up the default WordPress sample post.
     $hello = get_posts( array( 'name' => 'hello-world', 'post_type' => 'post', 'post_status' => 'any', 'numberposts' => 1, 'suppress_filters' => true ) );

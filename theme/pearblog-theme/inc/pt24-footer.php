@@ -59,6 +59,7 @@ function pt24_render_full_footer(): void {
                         <li><a href="<?php echo esc_url( $home . 'jak-to-dziala/' ); ?>">Jak to działa</a></li>
                         <li><a href="<?php echo esc_url( $home . 'dodaj-zapytanie/' ); ?>">Dodaj zapytanie</a></li>
                         <li><a href="<?php echo esc_url( $home . 'szukaj/' ); ?>">Znajdź fachowca</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'miasto/' ); ?>">Miasta</a></li>
                         <li><a href="<?php echo esc_url( $home . 'faq/' ); ?>">Najczęstsze pytania</a></li>
                         <li><a href="<?php echo esc_url( $home . 'kontakt/' ); ?>">Kontakt</a></li>
                     </ul>
@@ -83,6 +84,8 @@ function pt24_render_full_footer(): void {
                     <h3 class="pp-footer-heading">Informacje</h3>
                     <ul class="pp-footer-links">
                         <li><a href="<?php echo esc_url( $home . 'o-nas/' ); ?>">O nas</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'rankingi/' ); ?>">Rankingi</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'uslugi/' ); ?>">Usługi</a></li>
                         <li><a href="<?php echo esc_url( $home . 'regulamin/' ); ?>">Regulamin</a></li>
                         <li><a href="<?php echo esc_url( $home . 'polityka-prywatnosci/' ); ?>">Polityka prywatności</a></li>
                         <li><a href="<?php echo esc_url( $home . 'rodo/' ); ?>">RODO</a></li>

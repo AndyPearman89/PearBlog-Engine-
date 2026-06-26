@@ -457,6 +457,27 @@ $ajax_url = admin_url( 'admin-ajax.php' );
             </section>
             <?php endif; ?>
 
+            <section class="pt24-section pt24-internal" style="margin-top:2rem">
+                <h2>Szybkie skróty</h2>
+                <div class="pt24-rankings-grid" style="margin-bottom:1rem">
+                    <a href="<?php echo esc_url( home_url( '/rankingi/' ) ); ?>" class="pt24-rankings-card">
+                        <span class="pt24-rankings-card__city">Rankingi</span>
+                        <span class="pt24-rankings-card__label">Wszystkie miasta i usługi</span>
+                        <span class="pt24-rankings-card__cta">Przejdź →</span>
+                    </a>
+                    <a href="<?php echo esc_url( home_url( '/uslugi/' ) ); ?>" class="pt24-rankings-card">
+                        <span class="pt24-rankings-card__city">Usługi</span>
+                        <span class="pt24-rankings-card__label">Pełna lista kategorii</span>
+                        <span class="pt24-rankings-card__cta">Przejdź →</span>
+                    </a>
+                    <a href="<?php echo esc_url( home_url( '/miasto/' . $city_slug . '/' ) ); ?>" class="pt24-rankings-card">
+                        <span class="pt24-rankings-card__city"><?php echo esc_html( $city_name ); ?></span>
+                        <span class="pt24-rankings-card__label">Wszystkie usługi w tym mieście</span>
+                        <span class="pt24-rankings-card__cta">Przejdź →</span>
+                    </a>
+                </div>
+            </section>
+
             <?php
             // AI-generated FAQ has priority; fall back to service-library FAQ.
             $faq_to_render = [];
