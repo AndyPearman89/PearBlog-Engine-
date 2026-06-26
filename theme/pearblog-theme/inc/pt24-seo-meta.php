@@ -213,8 +213,8 @@ function pt24_output_seo_meta() {
 
     // Homepage
     if (is_front_page()) {
-        $meta['title'] = 'PT24.PRO - Znajdź sprawdzonego fachowca w swojej okolicy';
-        $meta['description'] = 'Porównaj oferty, sprawdź opinie i otrzymaj wycenę nawet w 15 minut. Mechanik, hydraulik, elektryk i inne usługi w Twoim mieście.';
+        $meta['title'] = 'PT24.PRO - Znajdź sprawdzonego fachowca w kilka minut | Portal firm i leadów';
+        $meta['description'] = 'Wyślij jedno zapytanie i otrzymaj wiele ofert od zweryfikowanych specjalistów w Twojej okolicy. Mechanik, elektryk, hydraulik i wiele więcej. Bezpłatnie i bez zobowiązań.';
     }
 
     // Resolve display names (with Polish diacritics) for service / city.

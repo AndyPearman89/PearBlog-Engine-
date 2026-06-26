@@ -22,143 +22,99 @@ if ( ! defined( 'ABSPATH' ) ) {
 }
 
 if ( ! function_exists( 'pt24_render_full_footer' ) ) :
-    /**
-     * Render the PT24.PRO footer (services, cities, info, contact).
-     */
-    function pt24_render_full_footer(): void {
-        $home      = home_url( '/' );
-        $site_name = get_bloginfo( 'name' );
-        $site_desc = get_bloginfo( 'description' );
-        $year      = gmdate( 'Y' );
+/**
+ * Render the PT24.PRO footer (Dla klientów, Dla firm, Informacje, Kontakt).
+ */
+function pt24_render_full_footer(): void {
+    $home      = home_url( '/' );
+    $site_name = get_bloginfo( 'name' );
+    $year      = gmdate( 'Y' );
+    ?>
+    <footer class="pp-footer pt24-footer" role="contentinfo">
+        <div class="pb-container">
 
-        // Full 10-service list (used in footer + schema)
-        $services = array(
-            'hydraulik'          => 'Hydraulik',
-            'elektryk'           => 'Elektryk',
-            'mechanik'           => 'Mechanik',
-            'fotowoltaika'       => 'Fotowoltaika',
-            'pompa-ciepla'       => 'Pompa ciepła',
-            'remont-lazienki'    => 'Remont łazienki',
-            'laweta'             => 'Laweta',
-            'wulkanizacja'       => 'Wulkanizacja',
-            'klimatyzacja'       => 'Klimatyzacja',
-            'instalacje-gazowe'  => 'Instalacje gazowe',
-        );
-        $cities = array(
-            'warszawa' => 'Warszawa',
-            'krakow'   => 'Kraków',
-            'wroclaw'  => 'Wrocław',
-            'poznan'   => 'Poznań',
-            'gdansk'   => 'Gdańsk',
-            'katowice' => 'Katowice',
-        );
-        ?>
-        <footer class="pp-footer pt24-footer" role="contentinfo">
-            <div class="pb-container">
+            <div class="pp-footer-grid">
 
-                <div class="pp-footer-grid">
-
-                    <!-- Brand -->
-                    <div class="pp-footer-col pp-footer-brand">
-                        <a href="<?php echo esc_url( $home ); ?>" class="pp-footer-logo" rel="home">
-                            <?php echo pearblog_get_logo(); ?>
-                        </a>
-                        <p class="pp-footer-desc">
-                            PT24.PRO łączy Cię ze sprawdzonymi, lokalnymi fachowcami. Opisz zlecenie raz i odbieraj oferty od specjalistów z Twojej okolicy.
-                        </p>
-                        <p class="pt24-footer__contact">
-                            <span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span>
-                            <a href="mailto:kontakt@pt24.pro">kontakt@pt24.pro</a>
-                        </p>
-                        <!-- Social icons placeholder -->
-                        <div class="pt24-footer__social" aria-label="Media społecznościowe">
-                            <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="PT24.PRO na Facebook">f</a>
-                            <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="PT24.PRO na Instagram">in</a>
-                            <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="PT24.PRO na LinkedIn">li</a>
-                        </div>
-                    </div>
-
-                    <!-- Usługi -->
-                    <div class="pp-footer-col">
-                        <h3 class="pp-footer-heading">Usługi</h3>
-                        <ul class="pp-footer-links">
-                            <?php foreach ( $services as $slug => $label ) : ?>
-                                <li><a href="<?php echo esc_url( $home . 'warszawa/' . $slug . '/' ); ?>"><?php echo esc_html( $label ); ?></a></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-
-                    <!-- Miasta -->
-                    <div class="pp-footer-col">
-                        <h3 class="pp-footer-heading">Miasta</h3>
-                        <ul class="pp-footer-links">
-                            <?php foreach ( $cities as $slug => $label ) : ?>
-                                <li><a href="<?php echo esc_url( $home . $slug . '/hydraulik/' ); ?>"><?php echo esc_html( $label ); ?></a></li>
-                            <?php endforeach; ?>
-                        </ul>
-                    </div>
-
-                    <!-- Informacje -->
-                    <div class="pp-footer-col">
-                        <h3 class="pp-footer-heading">Informacje</h3>
-                        <ul class="pp-footer-links">
-                            <li><a href="<?php echo esc_url( $home . 'jak-to-dziala/' ); ?>">Jak to działa</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'dla-firm/' ); ?>">Dla firm</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'o-nas/' ); ?>">O nas</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'blog/' ); ?>">Blog</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'firmy/' ); ?>">Katalog firm</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'rankingi/' ); ?>">Rankingi</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'dodaj-firme/' ); ?>">Dodaj firmę</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'kontakt/' ); ?>">Kontakt</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'polityka-prywatnosci/' ); ?>">Polityka prywatności</a></li>
-                            <li><a href="<?php echo esc_url( $home . 'regulamin/' ); ?>">Regulamin</a></li>
-                        </ul>
-                    </div>
-
-                </div>
-
-                <!-- Popularne kombinacje (SEO + internal linking) -->
-                <div class="pp-footer-cities">
-                    <h3 class="pp-footer-heading">Popularne usługi w miastach</h3>
-                    <div class="pp-footer-city-links">
-                        <?php
-                        $popular_pairs = array(
-                            array( 'warszawa', 'hydraulik', 'Hydraulik Warszawa' ),
-                            array( 'krakow', 'elektryk', 'Elektryk Kraków' ),
-                            array( 'wroclaw', 'mechanik', 'Mechanik Wrocław' ),
-                            array( 'poznan', 'pompa-ciepla', 'Pompa ciepła Poznań' ),
-                            array( 'gdansk', 'fotowoltaika', 'Fotowoltaika Gdańsk' ),
-                            array( 'katowice', 'remont-lazienki', 'Remont łazienki Katowice' ),
-                            array( 'lodz', 'klimatyzacja', 'Klimatyzacja Łódź' ),
-                            array( 'bydgoszcz', 'instalacje-gazowe', 'Instalacje gazowe Bydgoszcz' ),
-                            array( 'gdynia', 'hydraulik', 'Hydraulik Gdynia' ),
-                            array( 'szczecin', 'elektryk', 'Elektryk Szczecin' ),
-                            array( 'lublin', 'mechanik', 'Mechanik Lublin' ),
-                            array( 'rzeszow', 'fotowoltaika', 'Fotowoltaika Rzeszów' ),
-                        );
-                        foreach ( $popular_pairs as $pair ) :
-                        ?>
-                            <a href="<?php echo esc_url( $home . $pair[0] . '/' . $pair[1] . '/' ); ?>"><?php echo esc_html( $pair[2] ); ?></a>
-                        <?php endforeach; ?>
+                <!-- Brand -->
+                <div class="pp-footer-col pp-footer-brand">
+                    <a href="<?php echo esc_url( $home ); ?>" class="pp-footer-logo" rel="home">
+                        <?php echo pearblog_get_logo(); ?>
+                    </a>
+                    <p class="pp-footer-desc">
+                        Łączymy klientów z najlepszymi fachowcami w Polsce. Szybko, bezpiecznie i bez zobowiązań.
+                    </p>
+                    <!-- Social icons -->
+                    <div class="pt24-footer__social" aria-label="Media społecznościowe">
+                        <a href="https://facebook.com/" target="_blank" rel="noopener noreferrer" aria-label="Facebook" title="PT24.PRO na Facebook">f</a>
+                        <a href="https://instagram.com/" target="_blank" rel="noopener noreferrer" aria-label="Instagram" title="PT24.PRO na Instagram">in</a>
+                        <a href="https://youtube.com/" target="_blank" rel="noopener noreferrer" aria-label="YouTube" title="PT24.PRO na YouTube">yt</a>
+                        <a href="https://linkedin.com/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn" title="PT24.PRO na LinkedIn">li</a>
                     </div>
                 </div>
 
-                <!-- Bottom -->
-                <div class="pp-footer-bottom">
-                    <p class="pp-footer-copyright">
-                        &copy; <?php echo esc_html( $year ); ?>
-                        <a href="<?php echo esc_url( $home ); ?>"><?php echo esc_html( $site_name ?: 'PT24.PRO' ); ?></a>
-                        — Wszelkie prawa zastrzeżone.
-                        <a href="<?php echo esc_url( $home . 'polityka-prywatnosci/' ); ?>">Prywatność</a> ·
-                        <a href="<?php echo esc_url( $home . 'regulamin/' ); ?>">Regulamin</a>
-                    </p>
-                    <p class="pp-footer-powered">
-                        Powered by <a href="https://pearblog.pro" target="_blank" rel="noopener">PearBlog Engine</a>
-                    </p>
+                <!-- Dla klientów -->
+                <div class="pp-footer-col">
+                    <h3 class="pp-footer-heading">Dla klientów</h3>
+                    <ul class="pp-footer-links">
+                        <li><a href="<?php echo esc_url( $home . 'jak-to-dziala/' ); ?>">Jak to działa</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'dodaj-zapytanie/' ); ?>">Dodaj zapytanie</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'szukaj/' ); ?>">Znajdź fachowca</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'faq/' ); ?>">Najczęstsze pytania</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'kontakt/' ); ?>">Kontakt</a></li>
+                    </ul>
+                </div>
+
+                <!-- Dla firm -->
+                <div class="pp-footer-col">
+                    <h3 class="pp-footer-heading">Dla firm</h3>
+                    <ul class="pp-footer-links">
+                        <li><a href="<?php echo esc_url( $home . 'dodaj-firme/' ); ?>">Zarejestruj firmę</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'dla-firm/' ); ?>">Pakiety i cennik</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'jak-to-dziala-dla-firm/' ); ?>">Jak działa dla firm</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'regulamin-firm/' ); ?>">Regulamin firm</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'blog/' ); ?>">Baza wiedzy</a></li>
+                    </ul>
+                </div>
+
+                <!-- Informacje -->
+                <div class="pp-footer-col">
+                    <h3 class="pp-footer-heading">Informacje</h3>
+                    <ul class="pp-footer-links">
+                        <li><a href="<?php echo esc_url( $home . 'o-nas/' ); ?>">O nas</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'regulamin/' ); ?>">Regulamin</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'polityka-prywatnosci/' ); ?>">Polityka prywatności</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'rodo/' ); ?>">RODO</a></li>
+                        <li><a href="<?php echo esc_url( $home . 'blog/' ); ?>">Blog</a></li>
+                    </ul>
+                </div>
+
+                <!-- Kontakt -->
+                <div class="pp-footer-col">
+                    <h3 class="pp-footer-heading">Kontakt</h3>
+                    <ul class="pp-footer-links pt24-footer__contact-list">
+                        <li><span class="pt24-ico pt24-ico--clock" aria-hidden="true"></span> <a href="tel:+48123456789">+48 123 456 789</a></li>
+                        <li><span class="pt24-ico pt24-ico--tag" aria-hidden="true"></span> <a href="mailto:kontakt@pt24.pro">kontakt@pt24.pro</a></li>
+                        <li><span class="pt24-ico pt24-ico--pin" aria-hidden="true"></span> Cała Polska</li>
+                    </ul>
                 </div>
 
             </div>
-        </footer>
+
+            <!-- Bottom -->
+            <div class="pp-footer-bottom">
+                <p class="pp-footer-copyright">
+                    &copy; <?php echo esc_html( $year ); ?>
+                    <strong><a href="<?php echo esc_url( $home ); ?>">PT24.pro</a></strong>
+                    – Portal firm i leadów. Wszelkie prawa zastrzeżone.
+                </p>
+                <p class="pp-footer-badges">
+                    <span class="pt24-footer__badge"><span class="pt24-ico pt24-ico--lock" aria-hidden="true"></span> SSL Bezpieczne dane</span>
+                    <span class="pt24-footer__badge"><span class="pt24-ico pt24-ico--shield" aria-hidden="true"></span> Bezpieczne płatności</span>
+                </p>
+            </div>
+
+        </div>
+    </footer>
 
         <!-- Schema.org Organization markup -->
         <script type="application/ld+json">
