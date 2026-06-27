@@ -168,6 +168,7 @@ get_header();
                 <input type="hidden" name="action" value="pt24_marketing_lead">
                 <input type="hidden" name="page_slug" value="<?php echo esc_attr($slug); ?>">
                 <input type="hidden" name="service_slug" value="<?php echo esc_attr($service_slug_prefill); ?>">
+                <input type="hidden" name="redirect_to" value="<?php echo esc_url(home_url('/' . $slug . '/')); ?>">
                 <?php wp_nonce_field('pt24_marketing_lead', 'pt24_marketing_lead_nonce'); ?>
 
                 <label>

@@ -1341,10 +1341,14 @@ function pt24_insert_marketing_lead($payload) {
  * Handle marketing lead form from static segment pages.
  */
 function pt24_handle_marketing_lead_form() {
-    $redirect = wp_get_referer();
+    $redirect = isset($_POST['redirect_to']) ? esc_url_raw((string) wp_unslash($_POST['redirect_to'])) : '';
+    if ($redirect === '') {
+        $redirect = wp_get_referer();
+    }
     if (! is_string($redirect) || $redirect === '') {
         $redirect = home_url('/kontakt/');
     }
+    $redirect = wp_validate_redirect($redirect, home_url('/kontakt/'));
     $redirect = remove_query_arg('form', $redirect);
 
     $nonce = isset($_POST['pt24_marketing_lead_nonce']) ? sanitize_text_field((string) $_POST['pt24_marketing_lead_nonce']) : '';
@@ -1411,6 +1415,19 @@ function pt24_handle_marketing_lead_form() {
 }
 add_action('admin_post_pt24_marketing_lead', 'pt24_handle_marketing_lead_form');
 add_action('admin_post_nopriv_pt24_marketing_lead', 'pt24_handle_marketing_lead_form');
+
+/**
+ * Allow public PT24 host in wp_safe_redirect targets.
+ *
+ * @param string[] $hosts Allowed hosts.
+ * @return string[]
+ */
+function pt24_allow_public_redirect_hosts($hosts) {
+    $hosts = is_array($hosts) ? $hosts : [];
+    $hosts[] = 'pt24.pro';
+    return array_values(array_unique(array_filter($hosts)));
+}
+add_filter('allowed_redirect_hosts', 'pt24_allow_public_redirect_hosts');
 
 /**
  * Lead pricing matrix for core PT24 service categories.
