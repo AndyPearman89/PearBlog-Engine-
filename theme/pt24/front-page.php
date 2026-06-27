@@ -25,8 +25,8 @@ get_header();
     <div class="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:px-8 lg:py-20">
         <!-- Left column -->
         <div class="space-y-7">
-            <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#D6E3F5] backdrop-blur-xl">
-                <span class="h-2 w-2 rounded-full bg-[#2ED3C6] pt24-dot-pulse"></span>
+            <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#D6E3F5] backdrop-blur-xl">
+                <img src="<?php echo esc_url( get_template_directory_uri() . '/assets/images/pt24-logo.png' ); ?>" alt="" aria-hidden="true" class="h-6 w-6 rounded-md object-cover">
                 PT24.PRO
             </div>
 
