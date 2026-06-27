@@ -12,6 +12,15 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
+// Hero search fallback: redirect homepage query params to the canonical
+// service/city route used by PT24 custom templates.
+$pt24_city_query = isset($_GET['lokalizacja']) ? sanitize_title((string) wp_unslash($_GET['lokalizacja'])) : '';
+$pt24_service_query = isset($_GET['kategoria']) ? sanitize_title((string) wp_unslash($_GET['kategoria'])) : '';
+if ($pt24_city_query !== '' && $pt24_service_query !== '') {
+    wp_safe_redirect(home_url('/' . $pt24_service_query . '/' . $pt24_city_query . '/'));
+    exit;
+}
+
 get_header();
 ?>
 
