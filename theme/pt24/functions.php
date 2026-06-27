@@ -939,6 +939,14 @@ function pt24_panel_template_include($template) {
     } elseif ($panel === 'company') {
         $candidate = PT24_DIR . '/panel-company.php';
     } elseif ($panel === 'admin') {
+        if (! current_user_can('manage_options')) {
+            if (is_user_logged_in()) {
+                wp_safe_redirect(home_url('/'));
+            } else {
+                wp_safe_redirect(wp_login_url(home_url('/admin/')));
+            }
+            exit;
+        }
         $candidate = PT24_DIR . '/panel-admin.php';
     } else {
         $candidate = '';
