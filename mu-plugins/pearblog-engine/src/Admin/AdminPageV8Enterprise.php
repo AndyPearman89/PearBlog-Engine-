@@ -2486,7 +2486,7 @@ class AdminPageV8Enterprise {
 							<tbody>
 								<?php
 								$checks = [
-									[ 'SEO Meta (pt24-seo-meta.php)',  $sitemap_active,           'canonical, og:title, og:image, FAQPage schema' ],
+									[ 'SEO Meta (pt24-seo-meta.php)',  $seo_meta_active,          'canonical, og:title, og:image, FAQPage schema' ],
 									[ 'Sitemap XML (/sitemap.xml)',     $sitemap_active,           $total_urls . ' URL — ' . $sitemap_url ],
 									[ 'Canonical host',                 true,                      'pt24.pro (bez origin wordpress2614653)' ],
 									[ 'og:image brandowany',           file_exists( get_template_directory() . '/assets/brand/pt24-og.png' ), 'assets/brand/pt24-og.png (1200×630)' ],
@@ -2688,7 +2688,7 @@ class AdminPageV8Enterprise {
 				<div class="pb-v8-card-body">
 					<div style="display:flex;gap:10px;flex-wrap:wrap;">
 						<?php foreach ( $services as $slug => $svc ) : ?>
-							<a href="<?php echo esc_url( home_url( '/' . $slug . '/' ) ); ?>" target="_blank"
+							<a href="<?php echo esc_url( home_url( '/uslugi/' . $slug . '/' ) ); ?>" target="_blank"
 							   style="background:var(--pb-v8-primary);color:#fff;padding:6px 14px;border-radius:20px;text-decoration:none;font-size:13px;font-weight:600;">
 								<?php echo esc_html( $svc['name'] ); ?>
 							</a>
