@@ -274,10 +274,21 @@ get_header();
         </div>
         <div class="pt24-map-live-stage">
             <div class="pt24-map-live-shape"></div>
+            <div class="pt24-map-live-line l1"></div>
+            <div class="pt24-map-live-line l2"></div>
+            <div class="pt24-map-live-line l3"></div>
             <div class="pt24-map-live-marker m1">Katowice · Nowe zapytanie · Hydraulik</div>
             <div class="pt24-map-live-marker m2">Warszawa · 4 nowe oferty</div>
             <div class="pt24-map-live-marker m3">Kraków · Zweryfikowana firma</div>
             <div class="pt24-map-live-marker m4">Poznań · Nowy specjalista</div>
+            <div class="pt24-map-live-chip c1">Lead #84321 · Klimatyzacja</div>
+            <div class="pt24-map-live-chip c2">AI matching · 94% dopasowania</div>
+            <div class="pt24-map-live-chip c3">Nowa oferta · Elektryk</div>
+        </div>
+        <div class="mt-4 grid gap-3 md:grid-cols-3">
+            <div class="pt24-live-feed-item">Katowice · Nowe zapytanie · Hydraulik</div>
+            <div class="pt24-live-feed-item">Warszawa · 4 nowe oferty</div>
+            <div class="pt24-live-feed-item">Kraków · Zweryfikowana firma</div>
         </div>
     </div>
 </section>
@@ -371,6 +382,10 @@ get_header();
 <!-- SECTION 10 — FINAL CTA -->
 <section class="pt24-final-cta relative overflow-hidden">
     <div class="pt24-final-bg absolute inset-0"></div>
+    <div class="pt24-final-particle p1"></div>
+    <div class="pt24-final-particle p2"></div>
+    <div class="pt24-final-particle p3"></div>
+    <div class="pt24-final-map-glow"></div>
     <div class="relative mx-auto max-w-5xl px-4 py-16 text-center sm:px-6 lg:px-8 lg:py-24">
         <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Dodaj zapytanie i otrzymaj pierwsze oferty jeszcze dziś.</h2>
         <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
