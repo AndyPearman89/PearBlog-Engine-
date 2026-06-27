@@ -142,14 +142,39 @@ $guides = new WP_Query([
 ]);
 
 $notice = isset($_GET['inquiry']) ? sanitize_key((string) $_GET['inquiry']) : '';
+$companies_count = (int) $companies->found_posts;
+$guides_count = (int) $guides->found_posts;
 ?>
 
 <section class="pt24-service-page">
     <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8 lg:py-16">
         <header class="pt24-service-hero">
-            <a class="pt24-service-back" href="<?php echo esc_url(home_url('/uslugi/')); ?>">← Wszystkie usługi</a>
+            <div class="pt24-service-hero-top">
+                <a class="pt24-service-back" href="<?php echo esc_url(home_url('/uslugi/')); ?>">← Wszystkie usługi</a>
+                <span class="pt24-service-pill"><?php echo $service_term_valid ? 'Zweryfikowana kategoria' : 'Kategoria dynamiczna'; ?></span>
+            </div>
             <h1><?php echo esc_html($service_name); ?></h1>
             <p><?php echo esc_html(wp_strip_all_tags($service_description)); ?></p>
+
+            <div class="pt24-service-hero-actions">
+                <a class="pt24-service-cta" href="#pt24-service-form">Wyślij zapytanie</a>
+                <a class="pt24-service-cta-secondary" href="<?php echo esc_url(home_url('/uslugi/')); ?>">Porównaj inne usługi</a>
+            </div>
+
+            <div class="pt24-service-stats">
+                <div class="pt24-service-stat">
+                    <strong><?php echo esc_html((string) $companies_count); ?></strong>
+                    <span>aktywnych firm</span>
+                </div>
+                <div class="pt24-service-stat">
+                    <strong>~15 min</strong>
+                    <span>pierwsza odpowiedz</span>
+                </div>
+                <div class="pt24-service-stat">
+                    <strong><?php echo esc_html((string) $guides_count); ?></strong>
+                    <span>poradnikow w temacie</span>
+                </div>
+            </div>
         </header>
 
         <div class="pt24-service-layout">
@@ -225,8 +250,16 @@ $notice = isset($_GET['inquiry']) ? sanitize_key((string) $_GET['inquiry']) : ''
             </main>
 
             <aside class="pt24-service-side">
-                <section class="pt24-service-card">
+                <section id="pt24-service-form" class="pt24-service-card pt24-service-card--inquiry">
                     <h3>Formularz zapytania</h3>
+                    <p class="pt24-service-side-lead">Opisz problem raz. Otrzymasz odpowiedzi od firm z Twojej okolicy.</p>
+
+                    <ul class="pt24-service-steps">
+                        <li><strong>1</strong><span>Dodajesz zapytanie online.</span></li>
+                        <li><strong>2</strong><span>Firmy odpowiadaja z wycena.</span></li>
+                        <li><strong>3</strong><span>Wybierasz najlepsza oferte.</span></li>
+                    </ul>
+
                     <?php if ($notice === 'sent') : ?>
                         <p class="pt24-company-success">Zapytanie zostało wysłane.</p>
                     <?php elseif ($notice === 'error') : ?>

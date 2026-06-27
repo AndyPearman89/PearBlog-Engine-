@@ -1104,15 +1104,36 @@ input:focus-visible {
 .pt24-service-hero {
     border-radius: 20px;
     border: 1px solid #dbeafe;
-    background: #fff;
+    background:
+        radial-gradient(circle at 86% 12%, rgba(37, 99, 235, 0.12), transparent 44%),
+        radial-gradient(circle at 12% 78%, rgba(20, 184, 166, 0.12), transparent 40%),
+        #fff;
     padding: 20px;
     box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.35);
+}
+
+.pt24-service-hero-top {
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
 }
 
 .pt24-service-back {
     color: #2563eb;
     font-size: 0.9rem;
     font-weight: 600;
+}
+
+.pt24-service-pill {
+    border-radius: 999px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 5px 10px;
 }
 
 .pt24-service-hero h1 {
@@ -1126,6 +1147,43 @@ input:focus-visible {
     margin-top: 10px;
     color: #475569;
     max-width: 840px;
+}
+
+.pt24-service-hero-actions {
+    margin-top: 14px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.pt24-service-cta,
+.pt24-service-cta-secondary {
+    border-radius: 12px;
+    padding: 10px 14px;
+    font-weight: 700;
+    font-size: 0.9rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.pt24-service-cta {
+    background: linear-gradient(135deg, #2ed3c6, #00e6b8);
+    color: #062624;
+    box-shadow: 0 14px 30px -20px rgba(15, 118, 110, 0.55);
+}
+
+.pt24-service-cta:hover {
+    transform: translateY(-1px);
+}
+
+.pt24-service-cta-secondary {
+    border: 1px solid #cbd5e1;
+    color: #0f172a;
+    background: #ffffff;
+}
+
+.pt24-service-cta-secondary:hover {
+    transform: translateY(-1px);
+    border-color: #93c5fd;
 }
 
 .pt24-service-layout {
@@ -1152,6 +1210,11 @@ input:focus-visible {
     background: #fff;
     padding: 18px;
     box-shadow: 0 14px 30px -26px rgba(15, 23, 42, 0.35);
+}
+
+.pt24-service-card--inquiry {
+    position: sticky;
+    top: 90px;
 }
 
 .pt24-service-card h2,
@@ -1192,6 +1255,13 @@ input:focus-visible {
     padding: 11px 12px;
     display: grid;
     gap: 3px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.pt24-service-company:hover,
+.pt24-service-guide:hover {
+    border-color: #93c5fd;
+    transform: translateY(-1px);
 }
 
 .pt24-service-company strong,
@@ -1210,6 +1280,46 @@ input:focus-visible {
 .pt24-service-empty {
     color: #64748b;
     margin-top: 10px;
+}
+
+.pt24-service-side-lead {
+    margin-top: 8px;
+    color: #475569;
+    font-size: 0.9rem;
+}
+
+.pt24-service-steps {
+    margin-top: 12px;
+    display: grid;
+    gap: 8px;
+}
+
+.pt24-service-steps li {
+    border-radius: 10px;
+    border: 1px solid #dbeafe;
+    background: #f8fbff;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.pt24-service-steps strong {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    background: #dbeafe;
+    color: #1e3a8a;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+}
+
+.pt24-service-steps span {
+    color: #334155;
+    font-size: 0.86rem;
 }
 
 .pt24-service-stats {
@@ -1238,4 +1348,10 @@ input:focus-visible {
     display: block;
     color: #64748b;
     font-size: 0.82rem;
+}
+
+@media (max-width: 1023px) {
+    .pt24-service-card--inquiry {
+        position: static;
+    }
 }
