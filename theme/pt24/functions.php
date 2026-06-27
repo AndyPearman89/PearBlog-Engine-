@@ -10,7 +10,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('PT24_VERSION', '1.0.0');
+define('PT24_VERSION', '1.0.1');
 define('PT24_DIR', get_template_directory());
 define('PT24_URI', get_template_directory_uri());
 
@@ -395,6 +395,17 @@ function pt24_get_static_frontend_pages() {
                 ['title' => 'Godziny wsparcia', 'text' => 'Poniedzialek-Piatek, 8:00-17:00, odpowiedz zwykle tego samego dnia'],
             ],
         ],
+        'dodaj-zlecenie' => [
+            'title' => 'Dodaj Zlecenie',
+            'eyebrow' => 'Konwersja',
+            'lead' => 'Wypelnij krotki formularz i otrzymaj oferty od lokalnych wykonawcow dopasowanych do zakresu prac i miasta.',
+            'highlights' => ['Formularz online', 'Dopasowanie lokalne', 'Szybka odpowiedz firm'],
+            'sections' => [
+                ['title' => 'Jak dodac zlecenie', 'text' => 'Podaj miasto, zakres prac i preferowany termin realizacji. Im bardziej konkretny opis, tym trafniejsze odpowiedzi.'],
+                ['title' => 'Co dzieje sie po wysylce', 'text' => 'Zapytanie trafia do panelu firm z odpowiedniej kategorii i lokalizacji, a wykonawcy moga szybko odeslac oferty.'],
+                ['title' => 'Jak porownac oferty', 'text' => 'Zwroc uwage na termin, zakres i koszt realizacji. Wybierz wykonawce, ktory najlepiej odpowiada Twoim potrzebom.'],
+            ],
+        ],
         'cennik' => [
             'title' => 'Cennik',
             'eyebrow' => 'Monetyzacja',
@@ -453,6 +464,13 @@ function pt24_get_segment_service_titles() {
         'elektryk' => 'Elektryk',
         'mechanik' => 'Mechanik',
         'remonty' => 'Remonty',
+        'dekarz' => 'Dekarz',
+        'klimatyzacja' => 'Klimatyzacja',
+        'brukarz' => 'Brukarz',
+        'instalacje' => 'Instalacje',
+        'pompy-ciepla' => 'Pompy Ciepla',
+        'fotowoltaika' => 'Fotowoltaika',
+        'prawo' => 'Prawo',
     ];
 }
 

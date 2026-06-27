@@ -79,8 +79,9 @@ get_header();
             </form>
 
             <div class="flex flex-wrap gap-2.5">
-                <?php foreach ( [ 'Hydraulik', 'Elektryk', 'Mechanik', 'Dekarz', 'Pompy Ciepła', 'Fotowoltaika', 'Prawo', 'Remonty' ] as $popular_cat ) : ?>
-                    <a href="<?php echo esc_url( home_url( '/' . sanitize_title( $popular_cat ) . '/' ) ); ?>" class="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#D6E3F5] transition hover:border-[#2ED3C6]/70 hover:bg-white/10">
+                <?php foreach ( [ 'Hydraulik', 'Elektryk', 'Mechanik', 'Dekarz', 'Pompy Ciepla', 'Fotowoltaika', 'Prawo', 'Remonty' ] as $popular_cat ) : ?>
+                    <?php $popular_slug = sanitize_title( $popular_cat ); ?>
+                    <a href="<?php echo esc_url( home_url( '/uslugi/' . $popular_slug . '/' ) ); ?>" class="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#D6E3F5] transition hover:border-[#2ED3C6]/70 hover:bg-white/10">
                         <?php echo esc_html( $popular_cat ); ?>
                     </a>
                 <?php endforeach; ?>
@@ -482,12 +483,25 @@ get_header();
             ],
         ];
         $pt24_default_region = $pt24_map_regions[7];
+        $pt24_map_service_slug = [
+            'Hydraulik' => 'hydraulik',
+            'Elektryk' => 'elektryk',
+            'Mechanik' => 'mechanik',
+            'Remonty' => 'remonty',
+            'Dekarz' => 'dekarz',
+            'Klimatyzacja' => 'klimatyzacja',
+            'Brukarz' => 'brukarz',
+            'Instalacje' => 'instalacje',
+        ];
         ?>
         <div class="pt24-map-live-stage">
             <div class="pt24-map-live-canvas" role="application" aria-label="Interaktywna mapa wojewodztw Polski">
                 <svg class="pt24-map-poland-svg" viewBox="0 0 1040 840" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
                     <?php foreach ($pt24_map_regions as $region_index => $region_item) : ?>
-                        <?php $region_url = home_url('/hydraulik-dla-firm-' . $region_item['city_slug'] . '/'); ?>
+                        <?php
+                        $region_service_slug = $pt24_map_service_slug[ $region_item['service'] ] ?? 'hydraulik';
+                        $region_url = home_url('/' . $region_service_slug . '-dla-firm-' . $region_item['city_slug'] . '/');
+                        ?>
                         <path
                             class="pt24-map-region<?php echo $region_item['slug'] === $pt24_default_region['slug'] ? ' is-active' : ''; ?>"
                             d="<?php echo esc_attr((string) $region_item['d']); ?>"
@@ -519,14 +533,20 @@ get_header();
                 <a
                     class="pt24-map-live-panel-link"
                     data-map-selected-link
-                    href="<?php echo esc_url(home_url('/hydraulik-dla-firm-' . $pt24_default_region['city_slug'] . '/')); ?>"
+                    href="<?php
+                    $pt24_default_service_slug = $pt24_map_service_slug[ $pt24_default_region['service'] ] ?? 'hydraulik';
+                    echo esc_url(home_url('/' . $pt24_default_service_slug . '-dla-firm-' . $pt24_default_region['city_slug'] . '/'));
+                    ?>"
                 >
                     Zobacz oferty w regionie <?php echo esc_html((string) $pt24_default_region['name']); ?>
                 </a>
 
                 <div class="pt24-map-live-city-grid">
                     <?php foreach ($pt24_map_regions as $region_item) : ?>
-                        <?php $region_url = home_url('/hydraulik-dla-firm-' . $region_item['city_slug'] . '/'); ?>
+                        <?php
+                        $region_service_slug = $pt24_map_service_slug[ $region_item['service'] ] ?? 'hydraulik';
+                        $region_url = home_url('/' . $region_service_slug . '-dla-firm-' . $region_item['city_slug'] . '/');
+                        ?>
                         <button
                             type="button"
                             class="pt24-map-city-chip<?php echo $region_item['slug'] === $pt24_default_region['slug'] ? ' is-active' : ''; ?>"
