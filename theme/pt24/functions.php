@@ -1157,6 +1157,29 @@ function pt24_redirect_legacy_service_slugs() {
 add_action('template_redirect', 'pt24_redirect_legacy_service_slugs', 0);
 
 /**
+ * Redirect legacy registration landing to company panel.
+ */
+function pt24_redirect_legacy_registration_slug() {
+    if (is_admin() || wp_doing_ajax()) {
+        return;
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $segments = array_values(array_filter(explode('/', trim($request_path, '/'))));
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'pt24') {
+        array_shift($segments);
+    }
+
+    if (count($segments) === 1 && strtolower((string) $segments[0]) === 'rejestracja-fachowiec') {
+        wp_safe_redirect(home_url('/panel-firmy/'), 301);
+        exit;
+    }
+}
+add_action('template_redirect', 'pt24_redirect_legacy_registration_slug', 0);
+
+/**
  * Force 404 status for legacy archive paths not used on PT24.
  */
 function pt24_force_404_for_legacy_archives() {

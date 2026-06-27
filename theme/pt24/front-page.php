@@ -608,7 +608,7 @@ get_header();
             <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Pozyskuj nowych klientów każdego dnia.</h2>
             <p class="mt-4 text-[#D6E3F5]">Dashboard leadów, przychodów i konwersji w jednym miejscu. Skup się na realizacji zleceń, a PT24 zadba o dopływ klientów.</p>
             <div class="mt-7 flex flex-wrap gap-3">
-                <a href="/rejestracja-fachowiec/" class="pt24-hero-btn rounded-2xl px-6 py-3 text-sm font-semibold text-[#081426]">Dołącz jako firma</a>
+                <a href="/panel-firmy/" class="pt24-hero-btn rounded-2xl px-6 py-3 text-sm font-semibold text-[#081426]">Dołącz jako firma</a>
                 <a href="/dla-fachowcow/" class="rounded-2xl border border-white/25 bg-white/5 px-6 py-3 text-sm font-semibold text-white">Dowiedz się więcej</a>
             </div>
         </div>
