@@ -42,7 +42,6 @@ if (! defined('ABSPATH')) {
 
             <!-- CTA -->
             <div class="flex items-center gap-3">
-                <a href="/logowanie/" class="hidden rounded-xl px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 sm:inline-flex">Logowanie</a>
                 <a href="/dodaj-zlecenie/" class="rounded-xl bg-gradient-to-r from-brand-start to-brand-end px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:shadow-glow">Dodaj zlecenie</a>
             </div>
         </div>
