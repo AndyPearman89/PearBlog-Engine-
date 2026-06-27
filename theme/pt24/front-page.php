@@ -318,23 +318,235 @@ get_header();
         <div class="mb-8 text-center">
             <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Interaktywna mapa Polski</h2>
         </div>
+        <?php
+        $pt24_map_regions = [
+            [
+                'slug' => 'zachodniopomorskie',
+                'name' => 'Zachodniopomorskie',
+                'd' => 'M 32,38 L 68,34 L 92,42 L 124,38 L 138,52 L 148,68 L 134,84 L 116,96 L 98,108 L 68,102 L 48,94 L 38,78 L 32,58 Z',
+                'city_slug' => 'poznan',
+                'city_name' => 'Poznan',
+                'service' => 'Elektryk',
+                'time' => '15 min',
+                'offers' => '7 firm online',
+            ],
+            [
+                'slug' => 'pomorskie',
+                'name' => 'Pomorskie',
+                'd' => 'M 142,32 L 184,28 L 228,26 L 256,34 L 278,52 L 268,68 L 246,78 L 218,88 L 192,98 L 162,104 L 148,86 L 142,56 Z',
+                'city_slug' => 'gdansk',
+                'city_name' => 'Gdansk',
+                'service' => 'Dekarz',
+                'time' => '13 min',
+                'offers' => '10 firm online',
+            ],
+            [
+                'slug' => 'warminsko-mazurskie',
+                'name' => 'Warminsko-Mazurskie',
+                'd' => 'M 258,36 L 308,34 L 356,38 L 398,42 L 418,62 L 406,82 L 388,98 L 362,108 L 328,112 L 302,108 L 284,92 L 268,68 Z',
+                'city_slug' => 'warszawa',
+                'city_name' => 'Warszawa',
+                'service' => 'Hydraulik',
+                'time' => '14 min',
+                'offers' => '6 firm online',
+            ],
+            [
+                'slug' => 'podlaskie',
+                'name' => 'Podlaskie',
+                'd' => 'M 396,52 L 442,64 L 468,82 L 488,112 L 492,138 L 468,158 L 442,168 L 406,162 L 388,128 L 384,92 Z',
+                'city_slug' => 'warszawa',
+                'city_name' => 'Warszawa',
+                'service' => 'Remonty',
+                'time' => '16 min',
+                'offers' => '5 firm online',
+            ],
+            [
+                'slug' => 'lubuskie',
+                'name' => 'Lubuskie',
+                'd' => 'M 32,114 L 68,118 L 98,122 L 118,138 L 128,168 L 116,188 L 88,202 L 58,212 L 32,198 L 22,168 Z',
+                'city_slug' => 'wroclaw',
+                'city_name' => 'Wroclaw',
+                'service' => 'Brukarz',
+                'time' => '12 min',
+                'offers' => '6 firm online',
+            ],
+            [
+                'slug' => 'wielkopolskie',
+                'name' => 'Wielkopolskie',
+                'd' => 'M 108,112 L 168,114 L 198,122 L 218,138 L 228,162 L 218,188 L 188,202 L 152,208 L 118,198 L 102,168 Z',
+                'city_slug' => 'poznan',
+                'city_name' => 'Poznan',
+                'service' => 'Klimatyzacja',
+                'time' => '10 min',
+                'offers' => '12 firm online',
+            ],
+            [
+                'slug' => 'kujawsko-pomorskie',
+                'name' => 'Kujawsko-Pomorskie',
+                'd' => 'M 174,108 L 238,112 L 268,118 L 288,138 L 298,162 L 278,188 L 238,198 L 208,192 L 188,168 Z',
+                'city_slug' => 'poznan',
+                'city_name' => 'Poznan',
+                'service' => 'Elektryk',
+                'time' => '11 min',
+                'offers' => '8 firm online',
+            ],
+            [
+                'slug' => 'mazowieckie',
+                'name' => 'Mazowieckie',
+                'd' => 'M 298,112 L 358,114 L 408,118 L 438,142 L 448,168 L 428,192 L 388,198 L 348,188 L 318,168 Z',
+                'city_slug' => 'warszawa',
+                'city_name' => 'Warszawa',
+                'service' => 'Elektryk',
+                'time' => '8 min',
+                'offers' => '14 firm online',
+            ],
+            [
+                'slug' => 'dolnoslaskie',
+                'name' => 'Dolnoslaskie',
+                'd' => 'M 48,214 L 98,218 L 142,228 L 158,258 L 168,288 L 148,308 L 108,318 L 62,308 L 38,268 Z',
+                'city_slug' => 'wroclaw',
+                'city_name' => 'Wroclaw',
+                'service' => 'Remonty',
+                'time' => '12 min',
+                'offers' => '11 firm online',
+            ],
+            [
+                'slug' => 'opolskie',
+                'name' => 'Opolskie',
+                'd' => 'M 148,212 L 188,208 L 228,214 L 248,238 L 248,268 L 228,288 L 188,298 L 158,288 L 148,248 Z',
+                'city_slug' => 'katowice',
+                'city_name' => 'Katowice',
+                'service' => 'Hydraulik',
+                'time' => '9 min',
+                'offers' => '7 firm online',
+            ],
+            [
+                'slug' => 'lodzkie',
+                'name' => 'Lodzkie',
+                'd' => 'M 228,188 L 288,188 L 328,198 L 348,228 L 348,258 L 318,278 L 278,288 L 238,268 Z',
+                'city_slug' => 'warszawa',
+                'city_name' => 'Warszawa',
+                'service' => 'Remonty',
+                'time' => '10 min',
+                'offers' => '9 firm online',
+            ],
+            [
+                'slug' => 'lubelskie',
+                'name' => 'Lubelskie',
+                'd' => 'M 388,198 L 438,202 L 478,218 L 498,248 L 502,288 L 468,318 L 428,328 L 398,298 L 388,258 Z',
+                'city_slug' => 'warszawa',
+                'city_name' => 'Warszawa',
+                'service' => 'Instalacje',
+                'time' => '13 min',
+                'offers' => '6 firm online',
+            ],
+            [
+                'slug' => 'slaskie',
+                'name' => 'Slaskie',
+                'd' => 'M 144,288 L 188,284 L 228,292 L 248,318 L 238,352 L 198,368 L 158,362 L 138,328 Z',
+                'city_slug' => 'katowice',
+                'city_name' => 'Katowice',
+                'service' => 'Mechanik',
+                'time' => '8 min',
+                'offers' => '13 firm online',
+            ],
+            [
+                'slug' => 'malopolskie',
+                'name' => 'Malopolskie',
+                'd' => 'M 232,298 L 288,302 L 338,318 L 358,348 L 338,378 L 288,388 L 248,378 L 238,338 Z',
+                'city_slug' => 'krakow',
+                'city_name' => 'Krakow',
+                'service' => 'Hydraulik',
+                'time' => '9 min',
+                'offers' => '12 firm online',
+            ],
+            [
+                'slug' => 'swietokrzyskie',
+                'name' => 'Swietokrzyskie',
+                'd' => 'M 318,268 L 368,268 L 398,288 L 408,318 L 378,348 L 338,342 L 318,308 Z',
+                'city_slug' => 'krakow',
+                'city_name' => 'Krakow',
+                'service' => 'Elektryk',
+                'time' => '11 min',
+                'offers' => '7 firm online',
+            ],
+            [
+                'slug' => 'podkarpackie',
+                'name' => 'Podkarpackie',
+                'd' => 'M 398,298 L 448,308 L 488,328 L 502,358 L 478,388 L 428,398 L 388,378 L 388,338 Z',
+                'city_slug' => 'krakow',
+                'city_name' => 'Krakow',
+                'service' => 'Remonty',
+                'time' => '12 min',
+                'offers' => '8 firm online',
+            ],
+        ];
+        $pt24_default_region = $pt24_map_regions[7];
+        ?>
         <div class="pt24-map-live-stage">
-            <div class="pt24-map-live-shape"></div>
-            <div class="pt24-map-live-line l1"></div>
-            <div class="pt24-map-live-line l2"></div>
-            <div class="pt24-map-live-line l3"></div>
-            <div class="pt24-map-live-marker m1">Katowice · Nowe zapytanie · Hydraulik</div>
-            <div class="pt24-map-live-marker m2">Warszawa · 4 nowe oferty</div>
-            <div class="pt24-map-live-marker m3">Kraków · Zweryfikowana firma</div>
-            <div class="pt24-map-live-marker m4">Poznań · Nowy specjalista</div>
-            <div class="pt24-map-live-chip c1">Lead #84321 · Klimatyzacja</div>
-            <div class="pt24-map-live-chip c2">AI matching · 94% dopasowania</div>
-            <div class="pt24-map-live-chip c3">Nowa oferta · Elektryk</div>
+            <div class="pt24-map-live-canvas" role="application" aria-label="Interaktywna mapa wojewodztw Polski">
+                <svg class="pt24-map-poland-svg" viewBox="0 0 520 420" aria-hidden="true" focusable="false">
+                    <?php foreach ($pt24_map_regions as $region_index => $region_item) : ?>
+                        <?php $region_url = home_url('/hydraulik-dla-firm-' . $region_item['city_slug'] . '/'); ?>
+                        <path
+                            class="pt24-map-region<?php echo $region_item['slug'] === $pt24_default_region['slug'] ? ' is-active' : ''; ?>"
+                            d="<?php echo esc_attr((string) $region_item['d']); ?>"
+                            data-map-city-slug="<?php echo esc_attr((string) $region_item['slug']); ?>"
+                            data-map-city="<?php echo esc_attr((string) $region_item['name']); ?>"
+                            data-map-service="<?php echo esc_attr((string) $region_item['service']); ?>"
+                            data-map-time="<?php echo esc_attr((string) $region_item['time']); ?>"
+                            data-map-offers="<?php echo esc_attr((string) $region_item['offers']); ?>"
+                            data-map-url="<?php echo esc_url($region_url); ?>"
+                            tabindex="0"
+                            role="button"
+                        >
+                            <title><?php echo esc_html((string) $region_item['name']); ?></title>
+                        </path>
+                    <?php endforeach; ?>
+                </svg>
+            </div>
+
+            <aside class="pt24-map-live-panel" aria-live="polite">
+                <p class="pt24-map-live-panel-label">Wybrane wojewodztwo</p>
+                <h3 data-map-selected-city><?php echo esc_html((string) $pt24_default_region['name']); ?></h3>
+                <p class="pt24-map-live-panel-copy">
+                    Najszybciej odpowiadajaca kategoria: <strong data-map-selected-service><?php echo esc_html((string) $pt24_default_region['service']); ?></strong>
+                </p>
+                <div class="pt24-map-live-panel-stats">
+                    <span><strong data-map-selected-time><?php echo esc_html((string) $pt24_default_region['time']); ?></strong> sredni czas odpowiedzi</span>
+                    <span><strong data-map-selected-offers><?php echo esc_html((string) $pt24_default_region['offers']); ?></strong> w tej chwili</span>
+                </div>
+                <a
+                    class="pt24-map-live-panel-link"
+                    data-map-selected-link
+                    href="<?php echo esc_url(home_url('/hydraulik-dla-firm-' . $pt24_default_region['city_slug'] . '/')); ?>"
+                >
+                    Zobacz oferty w regionie <?php echo esc_html((string) $pt24_default_region['name']); ?>
+                </a>
+
+                <div class="pt24-map-live-city-grid">
+                    <?php foreach ($pt24_map_regions as $region_item) : ?>
+                        <?php $region_url = home_url('/hydraulik-dla-firm-' . $region_item['city_slug'] . '/'); ?>
+                        <button
+                            type="button"
+                            class="pt24-map-city-chip<?php echo $region_item['slug'] === $pt24_default_region['slug'] ? ' is-active' : ''; ?>"
+                            data-map-city-slug="<?php echo esc_attr((string) $region_item['slug']); ?>"
+                            data-map-city="<?php echo esc_attr((string) $region_item['name']); ?>"
+                            data-map-service="<?php echo esc_attr((string) $region_item['service']); ?>"
+                            data-map-time="<?php echo esc_attr((string) $region_item['time']); ?>"
+                            data-map-offers="<?php echo esc_attr((string) $region_item['offers']); ?>"
+                            data-map-url="<?php echo esc_url($region_url); ?>"
+                        >
+                            <?php echo esc_html((string) $region_item['name']); ?>
+                        </button>
+                    <?php endforeach; ?>
+                </div>
+            </aside>
         </div>
         <div class="mt-4 grid gap-3 md:grid-cols-3">
-            <div class="pt24-live-feed-item">Katowice · Nowe zapytanie · Hydraulik</div>
-            <div class="pt24-live-feed-item">Warszawa · 4 nowe oferty</div>
-            <div class="pt24-live-feed-item">Kraków · Zweryfikowana firma</div>
+            <div class="pt24-live-feed-item">Mazowieckie · 4 nowe zapytania · Elektryk</div>
+            <div class="pt24-live-feed-item">Slaskie · 3 nowe oferty · Mechanik</div>
+            <div class="pt24-live-feed-item">Pomorskie · Zweryfikowana firma · Dekarz</div>
         </div>
     </div>
 </section>

@@ -112,4 +112,108 @@
             counterObserver.observe(counterEl);
         });
     }
+
+    /**
+     * Interactive Poland map on homepage
+     */
+    var mapSection = document.querySelector('.pt24-map-live');
+    if (mapSection) {
+        var mapControls = mapSection.querySelectorAll('[data-map-city-slug]');
+        var selectedCityEl = mapSection.querySelector('[data-map-selected-city]');
+        var selectedServiceEl = mapSection.querySelector('[data-map-selected-service]');
+        var selectedTimeEl = mapSection.querySelector('[data-map-selected-time]');
+        var selectedOffersEl = mapSection.querySelector('[data-map-selected-offers]');
+        var selectedLinkEl = mapSection.querySelector('[data-map-selected-link]');
+        var panelEl = mapSection.querySelector('[aria-live="polite"]');
+
+        function setActiveCity(control, animate) {
+            if (!control) {
+                return;
+            }
+
+            var citySlug = control.getAttribute('data-map-city-slug') || '';
+            var cityName = control.getAttribute('data-map-city') || '';
+            var cityService = control.getAttribute('data-map-service') || '';
+            var cityTime = control.getAttribute('data-map-time') || '';
+            var cityOffers = control.getAttribute('data-map-offers') || '';
+            var cityUrl = control.getAttribute('data-map-url') || '';
+
+            mapControls.forEach(function (item) {
+                var itemSlug = item.getAttribute('data-map-city-slug') || '';
+                item.classList.toggle('is-active', itemSlug === citySlug);
+            });
+
+            // Add pulse animation to panel on update
+            if (animate !== false && panelEl) {
+                panelEl.style.animation = 'none';
+                setTimeout(function () {
+                    panelEl.style.animation = '';
+                }, 10);
+            }
+
+            // Update panel content with fade effect
+            if (selectedCityEl) {
+                selectedCityEl.style.opacity = '0.5';
+                setTimeout(function () {
+                    selectedCityEl.textContent = cityName;
+                    selectedCityEl.style.transition = 'opacity 0.3s ease';
+                    selectedCityEl.style.opacity = '1';
+                }, 100);
+            }
+            
+            if (selectedServiceEl) {
+                selectedServiceEl.textContent = cityService;
+            }
+            if (selectedTimeEl) {
+                selectedTimeEl.textContent = cityTime;
+            }
+            if (selectedOffersEl) {
+                selectedOffersEl.textContent = cityOffers;
+            }
+            if (selectedLinkEl) {
+                selectedLinkEl.setAttribute('href', cityUrl);
+                selectedLinkEl.textContent = 'Zobacz oferty w regionie ' + cityName;
+            }
+        }
+
+        mapControls.forEach(function (control) {
+            control.addEventListener('click', function () {
+                setActiveCity(control, true);
+            });
+
+            control.addEventListener('keydown', function (event) {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    setActiveCity(control, true);
+                }
+            });
+
+            // Add visual feedback on mouse enter for SVG paths
+            control.addEventListener('mouseenter', function () {
+                if (control.tagName.toLowerCase() === 'path' || control.tagName.toLowerCase() === 'polygon') {
+                    control.style.filter = 'drop-shadow(0 0 4px rgba(46, 211, 198, 0.6))';
+                }
+            });
+
+            control.addEventListener('mouseleave', function () {
+                if (control.classList.contains('is-active')) {
+                    control.style.filter = 'drop-shadow(0 0 0 rgba(46, 211, 198, 0.5))';
+                } else {
+                    control.style.filter = 'none';
+                }
+            });
+        });
+
+        // Initialize with animation disabled
+        setActiveCity(mapSection.querySelector('[data-map-city-slug].is-active'), false);
+
+        // Add scroll animation to region chips
+        var chipGrid = mapSection.querySelector('.pt24-map-live-city-grid');
+        if (chipGrid) {
+            var scrollLeft = 0;
+            chipGrid.addEventListener('scroll', function () {
+                scrollLeft = chipGrid.scrollLeft;
+            });
+        }
+    }
 })();
