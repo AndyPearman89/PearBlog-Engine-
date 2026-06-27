@@ -815,6 +815,12 @@ input:focus-visible {
     }
 }
 
+@media (min-width: 1024px) {
+    .pt24-panel-grid--2 {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
 .pt24-panel-mini {
     border-radius: 16px;
     border: 1px solid rgba(255, 255, 255, 0.16);
@@ -971,6 +977,7 @@ input:focus-visible {
 }
 
 .pt24-company-form input,
+.pt24-company-form select,
 .pt24-company-form textarea {
     border-radius: 10px;
     border: 1px solid #cbd5e1;

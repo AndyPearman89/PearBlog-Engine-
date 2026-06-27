@@ -202,6 +202,10 @@ function pt24_filter_wpseo_public_url($url) {
         return pt24_public_base_url() . '/miasta/';
     }
 
+    if (!empty($segments) && in_array(strtolower((string) $segments[0]), ['panel', 'panel-firmy', 'admin'], true)) {
+        return pt24_public_base_url() . '/' . sanitize_title((string) $segments[0]) . '/';
+    }
+
     return pt24_filter_public_frontend_url($url);
 }
 add_filter('wpseo_canonical', 'pt24_filter_wpseo_public_url', 20);
@@ -232,6 +236,18 @@ function pt24_pre_get_document_title($title) {
 
     if (!empty($segments) && strtolower((string) $segments[0]) === 'miasta') {
         return 'Miasta - PT24.PRO';
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'panel') {
+        return 'Panel użytkownika - PT24.PRO';
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'panel-firmy') {
+        return 'Panel firmy - PT24.PRO';
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'admin') {
+        return 'Panel administratora - PT24.PRO';
     }
 
     return $title;
@@ -875,6 +891,149 @@ function pt24_get_premium_listing_packages() {
 }
 
 /**
+ * Lead credit packages for one-off purchases.
+ *
+ * @return array<string, array{label:string,credits:int,price:int,currency:string}>
+ */
+function pt24_get_lead_credit_packages() {
+    return [
+        'pack_25' => ['label' => 'Pakiet 25 leadow', 'credits' => 25, 'price' => 399, 'currency' => 'PLN'],
+        'pack_60' => ['label' => 'Pakiet 60 leadow', 'credits' => 60, 'price' => 899, 'currency' => 'PLN'],
+        'pack_150' => ['label' => 'Pakiet 150 leadow', 'credits' => 150, 'price' => 1999, 'currency' => 'PLN'],
+    ];
+}
+
+/**
+ * Included monthly lead credits by subscription plan.
+ *
+ * @return array<string, int>
+ */
+function pt24_get_plan_lead_allowances() {
+    return [
+        'free' => 0,
+        'starter' => 10,
+        'pro' => 40,
+        'enterprise' => 160,
+    ];
+}
+
+/**
+ * Get monetization state for a company user.
+ *
+ * @param int $user_id User ID.
+ * @return array{plan:string,credits:int,included:int}
+ */
+function pt24_get_company_monetization_state($user_id) {
+    $user_id = (int) $user_id;
+    $plans = pt24_get_subscription_plans();
+    $allowances = pt24_get_plan_lead_allowances();
+
+    $plan = sanitize_key((string) get_user_meta($user_id, 'pt24_company_plan', true));
+    if ($plan === '' || ! isset($plans[$plan])) {
+        $plan = 'free';
+    }
+
+    $included = (int) get_user_meta($user_id, 'pt24_company_plan_included_leads', true);
+    if ($included <= 0 && isset($allowances[$plan])) {
+        $included = (int) $allowances[$plan];
+    }
+
+    $credits = (int) get_user_meta($user_id, 'pt24_company_lead_credits', true);
+    if ($credits < 0) {
+        $credits = 0;
+    }
+
+    return [
+        'plan' => $plan,
+        'credits' => $credits,
+        'included' => $included,
+    ];
+}
+
+/**
+ * Persist monetization state for company user.
+ *
+ * @param int    $user_id  User ID.
+ * @param string $plan     Plan slug.
+ * @param int    $credits  Lead credits.
+ * @param int    $included Included monthly leads.
+ */
+function pt24_set_company_monetization_state($user_id, $plan, $credits, $included) {
+    $user_id = (int) $user_id;
+    update_user_meta($user_id, 'pt24_company_plan', sanitize_key((string) $plan));
+    update_user_meta($user_id, 'pt24_company_lead_credits', max(0, (int) $credits));
+    update_user_meta($user_id, 'pt24_company_plan_included_leads', max(0, (int) $included));
+}
+
+/**
+ * Handle company plan change from panel.
+ */
+function pt24_handle_company_plan_change() {
+    if (! is_user_logged_in()) {
+        wp_safe_redirect(wp_login_url(home_url('/panel-firmy/')));
+        exit;
+    }
+
+    $user_id = get_current_user_id();
+    $nonce = isset($_POST['pt24_company_plan_nonce']) ? sanitize_text_field((string) $_POST['pt24_company_plan_nonce']) : '';
+    if (! wp_verify_nonce($nonce, 'pt24_company_plan_' . $user_id)) {
+        wp_safe_redirect(home_url('/panel-firmy/?billing=error'));
+        exit;
+    }
+
+    $plans = pt24_get_subscription_plans();
+    $allowances = pt24_get_plan_lead_allowances();
+    $next_plan = isset($_POST['plan']) ? sanitize_key((string) $_POST['plan']) : 'free';
+
+    if (! isset($plans[$next_plan])) {
+        wp_safe_redirect(home_url('/panel-firmy/?billing=invalid-plan'));
+        exit;
+    }
+
+    $state = pt24_get_company_monetization_state($user_id);
+    $included = isset($allowances[$next_plan]) ? (int) $allowances[$next_plan] : 0;
+    $credits = max((int) $state['credits'], $included);
+
+    pt24_set_company_monetization_state($user_id, $next_plan, $credits, $included);
+    wp_safe_redirect(home_url('/panel-firmy/?billing=plan-updated'));
+    exit;
+}
+add_action('admin_post_pt24_company_change_plan', 'pt24_handle_company_plan_change');
+
+/**
+ * Handle lead credit package purchase from panel.
+ */
+function pt24_handle_company_buy_lead_pack() {
+    if (! is_user_logged_in()) {
+        wp_safe_redirect(wp_login_url(home_url('/panel-firmy/')));
+        exit;
+    }
+
+    $user_id = get_current_user_id();
+    $nonce = isset($_POST['pt24_company_pack_nonce']) ? sanitize_text_field((string) $_POST['pt24_company_pack_nonce']) : '';
+    if (! wp_verify_nonce($nonce, 'pt24_company_pack_' . $user_id)) {
+        wp_safe_redirect(home_url('/panel-firmy/?billing=error'));
+        exit;
+    }
+
+    $packages = pt24_get_lead_credit_packages();
+    $pack_key = isset($_POST['pack']) ? sanitize_key((string) $_POST['pack']) : '';
+
+    if (! isset($packages[$pack_key])) {
+        wp_safe_redirect(home_url('/panel-firmy/?billing=invalid-pack'));
+        exit;
+    }
+
+    $state = pt24_get_company_monetization_state($user_id);
+    $credits = (int) $state['credits'] + (int) $packages[$pack_key]['credits'];
+
+    pt24_set_company_monetization_state($user_id, (string) $state['plan'], $credits, (int) $state['included']);
+    wp_safe_redirect(home_url('/panel-firmy/?billing=credits-added'));
+    exit;
+}
+add_action('admin_post_pt24_company_buy_lead_pack', 'pt24_handle_company_buy_lead_pack');
+
+/**
  * Calculate dynamic lead price for a service slug.
  *
  * @param string $service_slug Service slug.
@@ -928,6 +1087,7 @@ function pt24_register_monetization_rest_routes() {
                 'leadPricing' => pt24_get_lead_pricing_matrix(),
                 'plans' => pt24_get_subscription_plans(),
                 'premiumListings' => pt24_get_premium_listing_packages(),
+                'leadCreditPackages' => pt24_get_lead_credit_packages(),
                 'dynamicLeadPrice' => pt24_calculate_lead_price($service, $quality),
                 'revenueMixTarget' => [
                     'leadEngine' => 40,
