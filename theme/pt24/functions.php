@@ -87,6 +87,90 @@ function pt24_scripts() {
 add_action('wp_enqueue_scripts', 'pt24_scripts');
 
 /**
+ * Public PT24 base URL used in frontend SEO/link output.
+ */
+function pt24_public_base_url() {
+    return 'https://pt24.pro';
+}
+
+/**
+ * Whether URL rewriting should run for the current request.
+ *
+ * Keep wp-admin/AJAX/REST internals untouched.
+ */
+function pt24_should_rewrite_public_urls() {
+    if (is_admin() || wp_doing_ajax()) {
+        return false;
+    }
+
+    if (defined('REST_REQUEST') && REST_REQUEST) {
+        return false;
+    }
+
+    if (defined('WP_CLI') && WP_CLI) {
+        return false;
+    }
+
+    return true;
+}
+
+/**
+ * Rewrite origin host URLs to the public PT24 domain.
+ *
+ * @param string $url URL to normalize.
+ * @return string
+ */
+function pt24_rewrite_to_public_url($url) {
+    if (! is_string($url) || $url === '') {
+        return $url;
+    }
+
+    return str_replace(
+        [
+            'https://wordpress2614653.home.pl/pt24',
+            'http://wordpress2614653.home.pl/pt24',
+            '//wordpress2614653.home.pl/pt24',
+            'wordpress2614653.home.pl%2Fpt24',
+            'wordpress2614653.home.pl%2fpt24',
+            'wordpress2614653.home.pl',
+        ],
+        [
+            pt24_public_base_url(),
+            pt24_public_base_url(),
+            str_replace('https:', '', pt24_public_base_url()),
+            'pt24.pro',
+            'pt24.pro',
+            'pt24.pro',
+        ],
+        $url
+    );
+}
+
+/**
+ * Frontend-only URL normalization for core-generated links.
+ */
+function pt24_filter_public_frontend_url($url) {
+    if (! pt24_should_rewrite_public_urls()) {
+        return $url;
+    }
+
+    return pt24_rewrite_to_public_url($url);
+}
+add_filter('home_url', 'pt24_filter_public_frontend_url', 20);
+add_filter('site_url', 'pt24_filter_public_frontend_url', 20);
+add_filter('rest_url', 'pt24_filter_public_frontend_url', 20);
+add_filter('get_shortlink', 'pt24_filter_public_frontend_url', 20);
+
+/**
+ * Keep Yoast canonical and OG URL on the public PT24 domain.
+ */
+function pt24_filter_wpseo_public_url($url) {
+    return pt24_filter_public_frontend_url($url);
+}
+add_filter('wpseo_canonical', 'pt24_filter_wpseo_public_url', 20);
+add_filter('wpseo_opengraph_url', 'pt24_filter_wpseo_public_url', 20);
+
+/**
  * Prevent WordPress from deferring the Tailwind CDN script.
  * Tailwind CDN must execute synchronously before the page renders.
  */
