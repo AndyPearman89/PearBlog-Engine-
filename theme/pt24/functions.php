@@ -130,17 +130,31 @@ function pt24_rewrite_to_public_url($url) {
             'https://wordpress2614653.home.pl/pt24',
             'http://wordpress2614653.home.pl/pt24',
             '//wordpress2614653.home.pl/pt24',
+            'https:\\/\\/wordpress2614653.home.pl\\/pt24',
+            'http:\\/\\/wordpress2614653.home.pl\\/pt24',
             'wordpress2614653.home.pl%2Fpt24',
             'wordpress2614653.home.pl%2fpt24',
             'wordpress2614653.home.pl',
+            'https://pt24.pro/pt24',
+            'http://pt24.pro/pt24',
+            '//pt24.pro/pt24',
+            'https:\\/\\/pt24.pro\\/pt24',
+            'http:\\/\\/pt24.pro\\/pt24',
         ],
         [
             pt24_public_base_url(),
             pt24_public_base_url(),
             str_replace('https:', '', pt24_public_base_url()),
+            'https:\\/\\/pt24.pro',
+            'https:\\/\\/pt24.pro',
             'pt24.pro',
             'pt24.pro',
             'pt24.pro',
+            pt24_public_base_url(),
+            pt24_public_base_url(),
+            str_replace('https:', '', pt24_public_base_url()),
+            'https:\\/\\/pt24.pro',
+            'https:\\/\\/pt24.pro',
         ],
         $url
     );
@@ -169,6 +183,34 @@ function pt24_filter_wpseo_public_url($url) {
 }
 add_filter('wpseo_canonical', 'pt24_filter_wpseo_public_url', 20);
 add_filter('wpseo_opengraph_url', 'pt24_filter_wpseo_public_url', 20);
+
+/**
+ * Rewrite any remaining origin-host URLs in final frontend HTML.
+ *
+ * This catches Yoast JSON-LD fields that may bypass URL filters.
+ */
+function pt24_buffer_public_host() {
+    if (! pt24_should_rewrite_public_urls()) {
+        return;
+    }
+
+    ob_start('pt24_rewrite_public_host_html');
+}
+
+/**
+ * Output-buffer callback for host normalization.
+ *
+ * @param string $html Rendered HTML.
+ * @return string
+ */
+function pt24_rewrite_public_host_html($html) {
+    if (! is_string($html) || $html === '') {
+        return $html;
+    }
+
+    return pt24_rewrite_to_public_url($html);
+}
+add_action('template_redirect', 'pt24_buffer_public_host', 1);
 
 /**
  * Prevent WordPress from deferring the Tailwind CDN script.
