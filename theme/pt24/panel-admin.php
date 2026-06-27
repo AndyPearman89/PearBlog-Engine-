@@ -10,7 +10,11 @@ if (! defined('ABSPATH')) {
 }
 
 if (! current_user_can('manage_options')) {
-    wp_safe_redirect(wp_login_url(home_url('/admin/')));
+    if (is_user_logged_in()) {
+        wp_safe_redirect(home_url('/'));
+    } else {
+        wp_safe_redirect(wp_login_url(home_url('/admin/')));
+    }
     exit;
 }
 
