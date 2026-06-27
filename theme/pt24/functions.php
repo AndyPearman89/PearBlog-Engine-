@@ -703,19 +703,34 @@ function pt24_get_popular_searches() {
 function pt24_get_testimonials() {
     return [
         [
-            'text'     => '„Zgłosiłem awarię hydrauliki wieczorem — w 30 minut miałem kontakt do fachowca. Profesjonalna obsługa!"',
-            'author'   => 'Anna K.',
+            'text'     => '„Pękła rura w kuchni o 21:30. Przez PT24 dostałam kontakt do hydraulika z mojej dzielnicy i następnego dnia rano problem był rozwiązany.”',
+            'author'   => 'Anna Kaczmarek',
             'location' => 'Warszawa',
         ],
         [
-            'text'     => '„Świetna jakość i szybkie porównanie ofert. Bardzo intuicyjna platforma, polecam każdemu."',
-            'author'   => 'Michał W.',
+            'text'     => '„Szukaliśmy elektryka do modernizacji instalacji w mieszkaniu. Porównaliśmy 3 oferty, wybraliśmy najlepszą i wszystko było zrobione terminowo.”',
+            'author'   => 'Michał Wójcik',
             'location' => 'Kraków',
         ],
         [
-            'text'     => '„Dodałem zlecenie i od razu dostałem kilka odpowiedzi od lokalnych specjalistów. Super system."',
-            'author'   => 'Karolina M.',
+            'text'     => '„Auto nie odpalało po weekendzie. Zgłoszenie dodałem rano, a po godzinie miałem umówioną diagnostykę u mechanika 10 minut od domu.”',
+            'author'   => 'Karolina Maj',
             'location' => 'Katowice',
+        ],
+        [
+            'text'     => '„Montaż klimatyzacji przebiegł sprawnie, a wykonawca od razu wyjaśnił jak serwisować urządzenie. Ceny i terminy były jasne od początku.”',
+            'author'   => 'Paweł Duda',
+            'location' => 'Poznań',
+        ],
+        [
+            'text'     => '„Potrzebowałam pilnie malowania mieszkania przed wynajmem. Dzięki PT24 szybko znalazłam ekipę, która weszła w dogodnym terminie.”',
+            'author'   => 'Ewa Grabowska',
+            'location' => 'Łódź',
+        ],
+        [
+            'text'     => '„Przy remoncie łazienki najważniejsza była dla mnie weryfikacja opinii. Wybrany fachowiec dotrzymał wyceny i zakończył pracę zgodnie z planem.”',
+            'author'   => 'Tomasz Lewandowski',
+            'location' => 'Gdańsk',
         ],
     ];
 }
