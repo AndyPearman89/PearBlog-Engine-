@@ -145,13 +145,27 @@ get_header();
     </div>
 
     <div class="relative mx-auto mt-2 max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+        <?php
+        // Reuse stats from Section 3 if already queried, otherwise query fresh.
+        if ( ! isset( $pt24_firms_count ) ) {
+            global $wpdb;
+            $pt24_firms_count = (int) $wpdb->get_var( $wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s",
+                'pt24_firm', 'publish'
+            ) );
+            $pt24_leads_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}pt24_leads" );
+            $pt24_cities_count = class_exists( 'PearBlog_PT24_Landing_CPT' )
+                ? count( PearBlog_PT24_Landing_CPT::get_cities() )
+                : 12;
+        }
+        ?>
         <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
-                <div class="text-3xl font-bold text-white" data-counter-target="12000">12 000+</div>
+                <div class="text-3xl font-bold text-white" data-counter-target="<?php echo (int) $pt24_firms_count; ?>"><?php echo esc_html( number_format( $pt24_firms_count, 0, ',', ' ' ) ); ?>+</div>
                 <div class="mt-1 text-sm text-[#D6E3F5]">Specjalistów</div>
             </div>
             <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
-                <div class="text-3xl font-bold text-white" data-counter-target="150000">150 000+</div>
+                <div class="text-3xl font-bold text-white" data-counter-target="<?php echo (int) $pt24_leads_count; ?>"><?php echo esc_html( number_format( $pt24_leads_count, 0, ',', ' ' ) ); ?>+</div>
                 <div class="mt-1 text-sm text-[#D6E3F5]">Zapytania</div>
             </div>
             <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
@@ -159,7 +173,7 @@ get_header();
                 <div class="mt-1 text-sm text-[#D6E3F5]">Pozytywnych opinii</div>
             </div>
             <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
-                <div class="text-3xl font-bold text-white" data-counter-target="500">500+</div>
+                <div class="text-3xl font-bold text-white" data-counter-target="<?php echo (int) $pt24_cities_count; ?>"><?php echo (int) $pt24_cities_count; ?>+</div>
                 <div class="mt-1 text-sm text-[#D6E3F5]">Miast</div>
             </div>
         </div>
@@ -200,20 +214,31 @@ get_header();
     </div>
 </section>
 
-<!-- SECTION 3 — MARKETPLACE STATISTICS -->
+<!-- SECTION 3 — MARKETPLACE STATISTICS (dynamic from DB) -->
 <section class="bg-slate-950">
     <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        <?php
+        global $wpdb;
+        $pt24_firms_count = (int) $wpdb->get_var( $wpdb->prepare(
+            "SELECT COUNT(*) FROM {$wpdb->posts} WHERE post_type = %s AND post_status = %s",
+            'pt24_firm', 'publish'
+        ) );
+        $pt24_leads_count = (int) $wpdb->get_var( "SELECT COUNT(*) FROM {$wpdb->prefix}pt24_leads" );
+        $pt24_cities_count = class_exists( 'PearBlog_PT24_Landing_CPT' )
+            ? count( PearBlog_PT24_Landing_CPT::get_cities() )
+            : ( class_exists( 'PearBlog_PT24_Pro_Routing' ) ? count( PearBlog_PT24_Pro_Routing::get_cities() ) : 12 );
+        ?>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <div class="pt24-kpi-card">
-                <div class="pt24-kpi-number" data-counter-target="12000">12 000+</div>
+                <div class="pt24-kpi-number" data-counter-target="<?php echo (int) $pt24_firms_count; ?>"><?php echo esc_html( number_format( $pt24_firms_count, 0, ',', ' ' ) ); ?>+</div>
                 <div class="pt24-kpi-label">Zweryfikowanych firm</div>
             </div>
             <div class="pt24-kpi-card">
-                <div class="pt24-kpi-number" data-counter-target="150000">150 000+</div>
+                <div class="pt24-kpi-number" data-counter-target="<?php echo (int) $pt24_leads_count; ?>"><?php echo esc_html( number_format( $pt24_leads_count, 0, ',', ' ' ) ); ?>+</div>
                 <div class="pt24-kpi-label">Wysłanych zapytań</div>
             </div>
             <div class="pt24-kpi-card">
-                <div class="pt24-kpi-number" data-counter-target="500">500+</div>
+                <div class="pt24-kpi-number" data-counter-target="<?php echo (int) $pt24_cities_count; ?>"><?php echo (int) $pt24_cities_count; ?>+</div>
                 <div class="pt24-kpi-label">Miast</div>
             </div>
             <div class="pt24-kpi-card">
@@ -224,7 +249,7 @@ get_header();
     </div>
 </section>
 
-<!-- SECTION 4 — CATEGORIES -->
+<!-- SECTION 4 — CATEGORIES (dynamic from DB) -->
 <section id="uslugi" class="bg-white">
     <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div class="mb-10 text-center">
@@ -232,34 +257,49 @@ get_header();
         </div>
         <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             <?php
-            $categories_grid = [
-                [ 'Hydraulik', '🔧', '1 220 firm' ],
-                [ 'Elektryk', '⚡', '980 firm' ],
-                [ 'Mechanik', '🚗', '1 050 firm' ],
-                [ 'Dekarz', '🏠', '460 firm' ],
-                [ 'Pompy Ciepła', '♨️', '520 firm' ],
-                [ 'Fotowoltaika', '☀️', '690 firm' ],
-                [ 'Klimatyzacja', '❄️', '610 firm' ],
-                [ 'Brukarz', '🧱', '330 firm' ],
-                [ 'Remonty', '🛠️', '1 480 firm' ],
-                [ 'Ogrodnik', '🌿', '390 firm' ],
-                [ 'Malarz', '🎨', '420 firm' ],
-                [ 'Geodeta', '📐', '210 firm' ],
-                [ 'Kominiarz', '🏭', '190 firm' ],
-                [ 'Stolarz', '🪚', '350 firm' ],
-                [ 'Szklarz', '🪟', '240 firm' ],
-                [ 'Alarmy', '🔐', '280 firm' ],
-                [ 'Monitoring', '📹', '300 firm' ],
-                [ 'Rolety', '🪟', '270 firm' ],
-                [ 'Instalacje Gazowe', '🔥', '260 firm' ],
-                [ 'Serwis AGD', '🧰', '540 firm' ],
+            $pt24_icon_map = [
+                'hydraulik' => '💧', 'elektryk' => '⚡', 'mechanik' => '🚗',
+                'dekarz' => '🏠', 'pompy-ciepla' => '♨️', 'fotowoltaika' => '☀️',
+                'klimatyzacja' => '❄️', 'brukarz' => '🧱', 'remonty' => '🛠️',
+                'remont' => '🛠️', 'ogrodnik' => '🌿', 'malarz' => '🎨',
+                'geodeta' => '📐', 'kominiarz' => '🏭', 'stolarz' => '🪚',
+                'szklarz' => '🪟', 'alarmy' => '🔐', 'monitoring' => '📹',
+                'rolety' => '🪟', 'instalacje-gazowe' => '🔥', 'serwis-agd' => '🧰',
+                'glazurnik' => '🔲', 'murarz' => '🧱', 'instalator' => '🔌',
+                'sprzatanie' => '🧹', 'przeprowadzki' => '📦',
+                'pompa-ciepla' => '♨️', 'remont-lazienki' => '🚿',
             ];
-            foreach ( $categories_grid as $cat_item ) :
+            $pt24_all_services = function_exists( 'pt24_get_categories' )
+                ? pt24_get_categories()
+                : [];
+
+            // Use CPT services if available, else theme helper.
+            if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
+                $pt24_svc_map = PearBlog_PT24_Landing_CPT::get_services();
+            } elseif ( class_exists( 'PearBlog_PT24_Pro_Routing' ) ) {
+                $pt24_svc_map = PearBlog_PT24_Pro_Routing::get_all_services();
+            } else {
+                $pt24_svc_map = [ 'hydraulik' => 'Hydraulik', 'elektryk' => 'Elektryk', 'mechanik' => 'Mechanik' ];
+            }
+
+            foreach ( $pt24_svc_map as $pt24_cat_slug => $pt24_cat_name ) :
+                // Count firms with this service in meta.
+                $pt24_cat_count = (int) ( new WP_Query( [
+                    'post_type'      => 'pt24_firm',
+                    'post_status'    => 'publish',
+                    'meta_key'       => 'pt24_firm_services',
+                    'meta_value'     => $pt24_cat_slug,
+                    'meta_compare'   => 'LIKE',
+                    'posts_per_page' => 1,
+                    'fields'         => 'ids',
+                    'no_found_rows'  => false,
+                ] ) )->found_posts;
+                $pt24_cat_icon = $pt24_icon_map[ $pt24_cat_slug ] ?? '🔹';
             ?>
-            <a href="<?php echo esc_url( home_url( '/' . sanitize_title( $cat_item[0] ) . '/' ) ); ?>" class="pt24-category-card">
-                <span class="pt24-category-icon"><?php echo esc_html( $cat_item[1] ); ?></span>
-                <span class="pt24-category-title"><?php echo esc_html( $cat_item[0] ); ?></span>
-                <span class="pt24-category-meta"><?php echo esc_html( $cat_item[2] ); ?></span>
+            <a href="<?php echo esc_url( home_url( '/' . $pt24_cat_slug . '/' ) ); ?>" class="pt24-category-card">
+                <span class="pt24-category-icon"><?php echo esc_html( $pt24_cat_icon ); ?></span>
+                <span class="pt24-category-title"><?php echo esc_html( $pt24_cat_name ); ?></span>
+                <span class="pt24-category-meta"><?php echo (int) $pt24_cat_count; ?> firm</span>
             </a>
             <?php endforeach; ?>
         </div>
@@ -297,10 +337,10 @@ get_header();
 <section class="bg-white">
     <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
-            <article class="pt24-benefit-card"><h3>Save Time</h3><p>One request reaches many companies.</p></article>
-            <article class="pt24-benefit-card"><h3>Verified Companies</h3><p>Reviews and verification system.</p></article>
-            <article class="pt24-benefit-card"><h3>Competitive Prices</h3><p>Compare multiple offers.</p></article>
-            <article class="pt24-benefit-card"><h3>Fast Contact</h3><p>Receive offers within minutes.</p></article>
+            <article class="pt24-benefit-card"><h3>Oszczędź czas</h3><p>Jedno zapytanie trafia do wielu firm — nie musisz dzwonić do każdej osobno.</p></article>
+            <article class="pt24-benefit-card"><h3>Zweryfikowane firmy</h3><p>System opinii i weryfikacji gwarantuje jakość usług.</p></article>
+            <article class="pt24-benefit-card"><h3>Konkurencyjne ceny</h3><p>Porównaj kilka ofert i wybierz najkorzystniejszą wycenę.</p></article>
+            <article class="pt24-benefit-card"><h3>Szybki kontakt</h3><p>Otrzymujesz oferty nawet w kilkanaście minut.</p></article>
         </div>
     </div>
 </section>
@@ -324,7 +364,7 @@ get_header();
     </div>
 </section>
 
-<!-- SECTION 8 — REVIEWS -->
+<!-- SECTION 8 — REVIEWS (dynamic from theme helper) -->
 <section id="opinie" class="bg-white">
     <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div class="mb-10 text-center">
@@ -332,20 +372,20 @@ get_header();
         </div>
         <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
             <?php
-            $reviews = [
-                [ 'Świetny kontakt. W 10 minut miałem 3 konkretne oferty.', 'Katowice' ],
-                [ 'Bardzo szybkie dopasowanie fachowca i transparentna wycena.', 'Warszawa' ],
-                [ 'Najwygodniejszy sposób na znalezienie wykonawcy bez stresu.', 'Kraków' ],
+            $pt24_reviews = function_exists( 'pt24_get_testimonials' ) ? pt24_get_testimonials() : [
+                [ 'text' => '„Świetny kontakt. W 10 minut miałem 3 konkretne oferty."', 'author' => 'Klient', 'location' => 'Katowice' ],
+                [ 'text' => '„Bardzo szybkie dopasowanie fachowca i transparentna wycena."', 'author' => 'Klient', 'location' => 'Warszawa' ],
+                [ 'text' => '„Najwygodniejszy sposób na znalezienie wykonawcy bez stresu."', 'author' => 'Klient', 'location' => 'Kraków' ],
             ];
-            foreach ( $reviews as $review_item ) :
+            foreach ( $pt24_reviews as $review_item ) :
             ?>
             <article class="pt24-review-card">
                 <div class="pt24-review-head">
                     <span class="pt24-review-avatar"></span>
                     <span class="text-amber-400">★★★★★</span>
                 </div>
-                <p class="mt-4 text-slate-700"><?php echo esc_html( $review_item[0] ); ?></p>
-                <p class="mt-3 text-sm font-semibold text-slate-900"><?php echo esc_html( $review_item[1] ); ?></p>
+                <p class="mt-4 text-slate-700"><?php echo esc_html( $review_item['text'] ); ?></p>
+                <p class="mt-3 text-sm font-semibold text-slate-900"><?php echo esc_html( $review_item['author'] ?? '' ); ?> · <?php echo esc_html( $review_item['location'] ); ?></p>
             </article>
             <?php endforeach; ?>
         </div>
