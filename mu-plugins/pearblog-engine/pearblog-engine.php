@@ -30,9 +30,10 @@ if ( ! defined( 'PEARBLOG_PLUGIN_DIR' ) ) {
 	define( 'PEARBLOG_PLUGIN_DIR', PEARBLOG_ENGINE_DIR );
 }
 
-// Enable full Enterprise V8 admin dashboard
+// Use the stable admin panel by default.
+// V8 can still be explicitly enabled via wp-config.php if needed.
 if ( ! defined( 'PEARBLOG_ADMIN_VERSION' ) ) {
-	define( 'PEARBLOG_ADMIN_VERSION', 'v8-enterprise' );
+	define( 'PEARBLOG_ADMIN_VERSION', 'v7' );
 }
 
 // PSR-4 autoloader for src/ classes. Handles both the canonical
@@ -58,5 +59,16 @@ spl_autoload_register( function ( string $class ): void {
 
 // Bootstrap.
 add_action( 'plugins_loaded', function (): void {
-	\PearBlogEngine\Core\Plugin::get_instance()->boot();
+	try {
+		\PearBlogEngine\Core\Plugin::get_instance()->boot();
+	} catch ( \Throwable $e ) {
+		error_log(
+			sprintf(
+				'[PearBlog] Bootstrap failed: %s in %s:%d',
+				$e->getMessage(),
+				$e->getFile(),
+				$e->getLine()
+			)
+		);
+	}
 } );
