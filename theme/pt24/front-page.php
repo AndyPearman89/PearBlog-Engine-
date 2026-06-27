@@ -208,6 +208,72 @@ get_header();
 </section>
 
 <!-- ═══════════════════════════════════════════════════════════════
+     PREMIUM PLANS
+═══════════════════════════════════════════════════════════════ -->
+<section id="premium" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+    <div class="mb-10 text-center">
+        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-start">Pakiety Premium</p>
+        <h2 class="mt-2 font-display text-3xl font-bold text-slate-900 sm:text-4xl">Wybierz plan dla siebie</h2>
+        <p class="mt-2 text-sm text-slate-500">Więcej widoczności = więcej zleceń. Anuluj w dowolnym momencie.</p>
+    </div>
+    <div class="grid gap-6 md:grid-cols-3">
+        <!-- Free -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
+            <h3 class="text-lg font-bold text-slate-900">Start</h3>
+            <p class="mt-1 text-sm text-slate-500">Dla początkujących fachowców</p>
+            <div class="mt-5">
+                <span class="text-3xl font-bold text-slate-900">0 zł</span>
+                <span class="text-sm text-slate-400">/mies.</span>
+            </div>
+            <ul class="mt-6 space-y-3 text-sm text-slate-600">
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Podstawowy profil firmy</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Do 3 kategorii usług</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Widoczność w wynikach</li>
+                <li class="flex items-center gap-2"><span class="text-slate-300">✗</span> Bez wyróżnienia</li>
+            </ul>
+            <a href="/rejestracja-fachowiec/" class="mt-8 block rounded-xl border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Załóż konto</a>
+        </div>
+
+        <!-- Premium -->
+        <div class="relative rounded-2xl border-2 border-brand-start bg-white p-6 shadow-soft ring-1 ring-brand-start/20">
+            <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-start to-brand-end px-4 py-1 text-xs font-semibold text-white">Najpopularniejszy</span>
+            <h3 class="text-lg font-bold text-slate-900">Premium</h3>
+            <p class="mt-1 text-sm text-slate-500">Dla aktywnych specjalistów</p>
+            <div class="mt-5">
+                <span class="text-3xl font-bold text-slate-900">49 zł</span>
+                <span class="text-sm text-slate-400">/mies.</span>
+            </div>
+            <ul class="mt-6 space-y-3 text-sm text-slate-600">
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Rozszerzony profil + galeria</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Nielimitowane kategorie</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Wyróżnienie w wynikach</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Odznaka „Zweryfikowany"</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Priorytetowe powiadomienia o zleceniach</li>
+            </ul>
+            <a href="/premium/" class="mt-8 block rounded-xl bg-gradient-to-r from-brand-start to-brand-end py-3 text-center text-sm font-semibold text-white shadow-soft transition hover:shadow-glow">Wybierz Premium</a>
+        </div>
+
+        <!-- Business -->
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
+            <h3 class="text-lg font-bold text-slate-900">Business</h3>
+            <p class="mt-1 text-sm text-slate-500">Dla firm i zespołów</p>
+            <div class="mt-5">
+                <span class="text-3xl font-bold text-slate-900">149 zł</span>
+                <span class="text-sm text-slate-400">/mies.</span>
+            </div>
+            <ul class="mt-6 space-y-3 text-sm text-slate-600">
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Wszystko z Premium</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Top pozycja w mieście</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Dedykowana strona firmowa</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Panel analityczny</li>
+                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Wsparcie priorytetowe</li>
+            </ul>
+            <a href="/business/" class="mt-8 block rounded-xl border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Wybierz Business</a>
+        </div>
+    </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════════════════
      FINAL CTA
 ═══════════════════════════════════════════════════════════════ -->
 <section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
