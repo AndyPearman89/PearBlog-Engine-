@@ -1020,3 +1020,194 @@ input:focus-visible {
     font-size: 0.9rem;
     margin-top: 10px;
 }
+
+/* ================================================== */
+/* SERVICES (/uslugi, /uslugi/{slug})                 */
+/* ================================================== */
+.pt24-services-page {
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.pt24-services-hero h1 {
+    color: #0f172a;
+    font-size: 2.25rem;
+    font-weight: 800;
+}
+
+.pt24-services-hero p {
+    margin-top: 10px;
+    color: #475569;
+    max-width: 720px;
+}
+
+.pt24-services-grid {
+    margin-top: 24px;
+    display: grid;
+    gap: 14px;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+}
+
+.pt24-services-card {
+    border-radius: 18px;
+    border: 1px solid #dbeafe;
+    background: #fff;
+    padding: 16px;
+    box-shadow: 0 16px 32px -28px rgba(15, 23, 42, 0.4);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.pt24-services-card:hover {
+    transform: translateY(-2px);
+    border-color: #93c5fd;
+    box-shadow: 0 24px 42px -30px rgba(29, 78, 216, 0.45);
+}
+
+.pt24-services-card-icon {
+    display: inline-flex;
+    font-size: 1.5rem;
+}
+
+.pt24-services-card h2 {
+    margin-top: 9px;
+    color: #0f172a;
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+.pt24-services-card p {
+    margin-top: 8px;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.pt24-services-card-meta {
+    margin-top: 12px;
+    display: block;
+    color: #2563eb;
+    font-size: 0.82rem;
+    font-weight: 600;
+}
+
+.pt24-services-empty {
+    margin-top: 20px;
+    border-radius: 14px;
+    border: 1px dashed #cbd5e1;
+    background: #fff;
+    color: #64748b;
+    padding: 14px;
+}
+
+.pt24-service-page {
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.pt24-service-hero {
+    border-radius: 20px;
+    border: 1px solid #dbeafe;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.35);
+}
+
+.pt24-service-back {
+    color: #2563eb;
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.pt24-service-hero h1 {
+    margin-top: 10px;
+    color: #0f172a;
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.pt24-service-hero p {
+    margin-top: 10px;
+    color: #475569;
+    max-width: 840px;
+}
+
+.pt24-service-layout {
+    margin-top: 14px;
+    display: grid;
+    gap: 14px;
+}
+
+@media (min-width: 1024px) {
+    .pt24-service-layout {
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    }
+}
+
+.pt24-service-main,
+.pt24-service-side {
+    display: grid;
+    gap: 12px;
+}
+
+.pt24-service-card {
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 18px;
+    box-shadow: 0 14px 30px -26px rgba(15, 23, 42, 0.35);
+}
+
+.pt24-service-card h2,
+.pt24-service-card h3 {
+    color: #0f172a;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.pt24-service-card h3 {
+    font-size: 1.05rem;
+}
+
+.pt24-service-card p {
+    margin-top: 10px;
+    color: #334155;
+}
+
+.pt24-service-list {
+    margin-top: 10px;
+    display: grid;
+    gap: 7px;
+    color: #334155;
+}
+
+.pt24-service-companies,
+.pt24-service-guides {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+}
+
+.pt24-service-company,
+.pt24-service-guide {
+    border-radius: 12px;
+    border: 1px solid #dbeafe;
+    background: #f8fbff;
+    padding: 11px 12px;
+    display: grid;
+    gap: 3px;
+}
+
+.pt24-service-company strong,
+.pt24-service-guide strong {
+    color: #0f172a;
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.pt24-service-company span,
+.pt24-service-guide span {
+    color: #64748b;
+    font-size: 0.82rem;
+}
+
+.pt24-service-empty {
+    color: #64748b;
+    margin-top: 10px;
+}

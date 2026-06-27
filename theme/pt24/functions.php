@@ -235,6 +235,8 @@ function pt24_register_panel_routes() {
     add_rewrite_rule('^panel/?$', 'index.php?pt24_panel=user', 'top');
     add_rewrite_rule('^panel-firmy/?$', 'index.php?pt24_panel=company', 'top');
     add_rewrite_rule('^admin/?$', 'index.php?pt24_panel=admin', 'top');
+    add_rewrite_rule('^uslugi/?$', 'index.php?pt24_service_hub=index', 'top');
+    add_rewrite_rule('^uslugi/([^/]+)/?$', 'index.php?pt24_service_hub=$matches[1]', 'top');
 }
 add_action('init', 'pt24_register_panel_routes');
 
@@ -243,6 +245,7 @@ add_action('init', 'pt24_register_panel_routes');
  */
 function pt24_add_panel_query_var($vars) {
     $vars[] = 'pt24_panel';
+    $vars[] = 'pt24_service_hub';
     return $vars;
 }
 add_filter('query_vars', 'pt24_add_panel_query_var');
@@ -251,6 +254,21 @@ add_filter('query_vars', 'pt24_add_panel_query_var');
  * Route custom panel slugs to dedicated templates.
  */
 function pt24_panel_template_include($template) {
+    $service_hub = get_query_var('pt24_service_hub');
+    if (is_string($service_hub) && $service_hub !== '') {
+        if ($service_hub === 'index') {
+            $service_template = PT24_DIR . '/services-archive.php';
+        } else {
+            $service_template = PT24_DIR . '/services-single.php';
+        }
+
+        if (file_exists($service_template)) {
+            status_header(200);
+            nocache_headers();
+            return $service_template;
+        }
+    }
+
     $panel = get_query_var('pt24_panel');
     if (! is_string($panel) || $panel === '') {
         return $template;
@@ -280,7 +298,7 @@ add_filter('template_include', 'pt24_panel_template_include');
  * Flush rewrite rules after route changes.
  */
 function pt24_maybe_flush_panel_rewrites() {
-    $version = 'panel-routes-v1';
+    $version = 'panel-routes-v2';
     if (get_option('pt24_panel_routes_version') !== $version) {
         pt24_register_panel_routes();
         flush_rewrite_rules(false);
@@ -338,3 +356,49 @@ function pt24_handle_business_contact_form() {
 }
 add_action('admin_post_pt24_business_contact', 'pt24_handle_business_contact_form');
 add_action('admin_post_nopriv_pt24_business_contact', 'pt24_handle_business_contact_form');
+
+/**
+ * Handle service inquiry form submissions.
+ */
+function pt24_handle_service_inquiry_form() {
+    $service_slug = isset($_POST['service_slug']) ? sanitize_title((string) $_POST['service_slug']) : '';
+    if ($service_slug === '') {
+        wp_safe_redirect(home_url('/uslugi/?inquiry=error'));
+        exit;
+    }
+
+    $nonce = isset($_POST['pt24_service_inquiry_nonce']) ? sanitize_text_field((string) $_POST['pt24_service_inquiry_nonce']) : '';
+    if (! wp_verify_nonce($nonce, 'pt24_service_inquiry_' . $service_slug)) {
+        wp_safe_redirect(home_url('/uslugi/' . $service_slug . '/?inquiry=error'));
+        exit;
+    }
+
+    $name = isset($_POST['name']) ? sanitize_text_field((string) $_POST['name']) : '';
+    $email = isset($_POST['email']) ? sanitize_email((string) $_POST['email']) : '';
+    $city = isset($_POST['city']) ? sanitize_text_field((string) $_POST['city']) : '';
+    $message = isset($_POST['message']) ? sanitize_textarea_field((string) $_POST['message']) : '';
+
+    if ($name === '' || $email === '' || $message === '' || ! is_email($email)) {
+        wp_safe_redirect(home_url('/uslugi/' . $service_slug . '/?inquiry=error'));
+        exit;
+    }
+
+    $service_term = get_term_by('slug', $service_slug, 'pt24_service_cat');
+    $service_name = is_object($service_term) && isset($service_term->name)
+        ? (string) $service_term->name
+        : ucfirst(str_replace('-', ' ', $service_slug));
+
+    $subject = sprintf('Nowe zapytanie o usługę: %s', $service_name);
+    $body = "Imię i nazwisko: {$name}\n";
+    $body .= "Email: {$email}\n";
+    $body .= "Miasto: {$city}\n\n";
+    $body .= "Wiadomość:\n{$message}\n";
+    $headers = ['Reply-To: ' . $name . ' <' . $email . '>'];
+
+    $sent = wp_mail((string) get_option('admin_email'), $subject, $body, $headers);
+
+    wp_safe_redirect(home_url('/uslugi/' . $service_slug . '/?inquiry=' . ($sent ? 'sent' : 'error')));
+    exit;
+}
+add_action('admin_post_pt24_service_inquiry', 'pt24_handle_service_inquiry_form');
+add_action('admin_post_nopriv_pt24_service_inquiry', 'pt24_handle_service_inquiry_form');

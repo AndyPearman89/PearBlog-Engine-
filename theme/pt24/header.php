@@ -34,7 +34,7 @@ if (! defined('ABSPATH')) {
             <!-- Desktop Nav -->
             <nav class="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
                 <a href="#jak-to-dziala" class="transition hover:text-brand-start">Jak to działa</a>
-                <a href="#uslugi" class="transition hover:text-brand-start">Usługi</a>
+                <a href="/uslugi/" class="transition hover:text-brand-start">Usługi</a>
                 <a href="#dla-fachowcow" class="transition hover:text-brand-start">Dla fachowców</a>
                 <a href="#opinie" class="transition hover:text-brand-start">Opinie</a>
                 <a href="#kontakt" class="transition hover:text-brand-start">Kontakt</a>
@@ -53,7 +53,7 @@ if (! defined('ABSPATH')) {
         <nav class="border-t border-slate-100 px-4 py-2.5 lg:hidden">
             <div class="flex gap-2 overflow-x-auto whitespace-nowrap text-xs font-semibold text-slate-700">
                 <a href="#jak-to-dziala" class="rounded-lg bg-slate-100 px-3 py-1.5">Jak to działa</a>
-                <a href="#uslugi" class="rounded-lg bg-slate-100 px-3 py-1.5">Usługi</a>
+                <a href="/uslugi/" class="rounded-lg bg-slate-100 px-3 py-1.5">Usługi</a>
                 <a href="#dla-fachowcow" class="rounded-lg bg-slate-100 px-3 py-1.5">Dla fachowców</a>
                 <a href="#opinie" class="rounded-lg bg-slate-100 px-3 py-1.5">Opinie</a>
                 <a href="#kontakt" class="rounded-lg bg-slate-100 px-3 py-1.5">Kontakt</a>
