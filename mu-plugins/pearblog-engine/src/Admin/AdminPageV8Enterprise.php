@@ -2100,15 +2100,18 @@ class AdminPageV8Enterprise {
 		}
 		check_admin_referer( 'pt24_save_automation_settings' );
 
+		$existing_token = (string) get_option( 'pt24_webhook_token', '' );
 		$token = isset( $_POST['pt24_webhook_token'] )
 			? sanitize_text_field( wp_unslash( $_POST['pt24_webhook_token'] ) )
-			: '';
-		update_option( 'pt24_webhook_token', $token );
+			: $existing_token;
+		if ( '' !== $token ) {
+			update_option( 'pt24_webhook_token', $token );
+		}
 
 		$api_key = isset( $_POST['pt24_openai_api_key'] )
 			? sanitize_text_field( wp_unslash( $_POST['pt24_openai_api_key'] ) )
 			: '';
-		// Only update if not empty (keep existing key if field blank)
+		// Keep existing secrets when the form field is left blank.
 		if ( '' !== $api_key ) {
 			update_option( 'pt24_openai_api_key', $api_key );
 		}
@@ -3216,9 +3219,12 @@ class AdminPageV8Enterprise {
 	 */
 	private function render_automation_tab(): void {
 		$factory_ok = class_exists( 'PT24_AI_Factory' );
-		$token     = (string) get_option( 'pt24_webhook_token', '' );
-		$rest_base = rest_url( 'pt24/v2' );
-		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		$token      = (string) get_option( 'pt24_webhook_token', '' );
+		$openai_key = (string) get_option( 'pt24_openai_api_key', '' );
+		$rest_base  = rest_url( 'pt24/v2' );
+		$notice     = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		$token_hint = '' !== $token ? substr( $token, 0, 8 ) . '...' . substr( $token, -4 ) : '';
+		$key_hint   = '' !== $openai_key ? substr( $openai_key, 0, 10 ) . '...' . substr( $openai_key, -4 ) : '';
 		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
@@ -3253,13 +3259,13 @@ class AdminPageV8Enterprise {
 						<?php wp_nonce_field( 'pt24_save_automation_settings' ); ?>
 						<div class="pt24-admin-field">
 							<label for="pt24WebhookToken">Nagłówek: <code>X-PT24-Token: [token]</code></label>
-							<input id="pt24WebhookToken" type="text" name="pt24_webhook_token" value="<?php echo esc_attr( $token ); ?>" placeholder="pt24_live_...">
-							<span class="pt24-admin-help">Wymagany przy wszystkich wywołaniach REST z zewnątrz (n8n, Postman, skrypty).</span>
+							<input id="pt24WebhookToken" type="password" name="pt24_webhook_token" value="" placeholder="<?php echo esc_attr( '' !== $token_hint ? $token_hint : 'pt24_live_...' ); ?>" autocomplete="new-password">
+							<span class="pt24-admin-help">Wymagany przy wszystkich wywołaniach REST z zewnątrz (n8n, Postman, skrypty). Zostaw puste, aby zachować obecny token.</span>
 						</div>
 						<div class="pt24-admin-field">
 							<label for="pt24OpenAiKey">OpenAI API Key</label>
-							<input id="pt24OpenAiKey" type="password" name="pt24_openai_api_key" value="<?php echo esc_attr( (string) get_option( 'pt24_openai_api_key', '' ) ); ?>" placeholder="sk-proj-...">
-							<span class="pt24-admin-help">Wymagany do generowania treści przez AI (gpt-4o-mini). Bez klucza działa tryb szablonowy.</span>
+							<input id="pt24OpenAiKey" type="password" name="pt24_openai_api_key" value="" placeholder="<?php echo esc_attr( '' !== $key_hint ? $key_hint : 'sk-proj-...' ); ?>" autocomplete="new-password">
+							<span class="pt24-admin-help">Wymagany do generowania treści przez AI (gpt-4o-mini). Zostaw puste, aby zachować obecny klucz.</span>
 						</div>
 						<button type="submit" class="button button-primary">💾 Zapisz</button>
 					</form>
@@ -3276,7 +3282,7 @@ class AdminPageV8Enterprise {
 							<tbody>
 								<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/generate' ); ?></code></td><td><code>{"service":"mechanik","city":"ruda-slaska","use_ai":false}</code></td></tr>
 								<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/batch' ); ?></code></td><td><code>{"csv":"mechanik,ruda-slaska\nhydraulik,katowice"}</code> lub <code>{"pairs":[...]}</code></td></tr>
-								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/stats' ); ?></code></td><td>Statystyki factory (opublikowane, kolejka, postęp)</td></tr>
+								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/stats' ); ?></code></td><td>Statystyki factory (opublikowane, kolejka, postęp) — wymaga tokena lub sesji admina</td></tr>
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/services' ); ?></code></td><td>Lista 10 usług (slug, nazwa, long-tail)</td></tr>
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/cities' ); ?></code></td><td>Lista 80 miast (slug, nazwa, województwo)</td></tr>
 																<tr class="pt24-admin-endpoint-row"><td colspan="3" class="pt24-admin-endpoint-label">BLOG ENGINE</td></tr>
@@ -3291,7 +3297,7 @@ class AdminPageV8Enterprise {
 						</table>
 					</div>
 					<p style="margin-top:12px;font-size:12px;color:var(--pb-v8-text-secondary);">
-						Autoryzacja: nagłówek <code>X-PT24-Token: [token]</code> lub sesja WordPress (admini zalogowani).<br>
+						Autoryzacja: endpointy mutujące oraz <code>/stats</code> wymagają nagłówka <code>X-PT24-Token: [token]</code> lub sesji WordPress (admini zalogowani). Publiczne odczyty to <code>/services</code>, <code>/cities</code>, <code>/blog-stats</code> i <code>/places-stats</code>.<br>
 						Przykład n8n: węzeł <strong>HTTP Request</strong> → metoda POST → URL → Body JSON → Header <code>X-PT24-Token</code>.
 					</p>
 				</div>
