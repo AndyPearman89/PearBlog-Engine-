@@ -237,6 +237,10 @@ function pt24_register_panel_routes() {
     add_rewrite_rule('^admin/?$', 'index.php?pt24_panel=admin', 'top');
     add_rewrite_rule('^uslugi/?$', 'index.php?pt24_service_hub=index', 'top');
     add_rewrite_rule('^uslugi/([^/]+)/?$', 'index.php?pt24_service_hub=$matches[1]', 'top');
+    add_rewrite_rule('^miasta/?$', 'index.php?pt24_geo=city-index', 'top');
+    add_rewrite_rule('^(katowice|gliwice|zabrze|bytom|krakow|warszawa)/?$', 'index.php?pt24_city_landing=$matches[1]', 'top');
+    add_rewrite_rule('^(montaz-klimatyzacji|udraznianie-kanalizacji|awaria-pradu|wymiana-dachu)/?$', 'index.php?pt24_specific_service=$matches[1]', 'top');
+    add_rewrite_rule('^(montaz-klimatyzacji|udraznianie-kanalizacji|awaria-pradu|wymiana-dachu)/(katowice|gliwice|zabrze|bytom|krakow|warszawa)/?$', 'index.php?pt24_specific_service=$matches[1]&pt24_city_landing=$matches[2]', 'top');
 }
 add_action('init', 'pt24_register_panel_routes');
 
@@ -246,6 +250,9 @@ add_action('init', 'pt24_register_panel_routes');
 function pt24_add_panel_query_var($vars) {
     $vars[] = 'pt24_panel';
     $vars[] = 'pt24_service_hub';
+    $vars[] = 'pt24_geo';
+    $vars[] = 'pt24_city_landing';
+    $vars[] = 'pt24_specific_service';
     return $vars;
 }
 add_filter('query_vars', 'pt24_add_panel_query_var');
@@ -254,6 +261,57 @@ add_filter('query_vars', 'pt24_add_panel_query_var');
  * Route custom panel slugs to dedicated templates.
  */
 function pt24_panel_template_include($template) {
+    $specific_service = get_query_var('pt24_specific_service');
+    $city_landing = get_query_var('pt24_city_landing');
+    $service_category = get_query_var('pt24_category');
+    $service_city = get_query_var('pt24_city');
+
+    if (is_string($specific_service) && $specific_service !== '' && is_string($city_landing) && $city_landing !== '') {
+        $specific_city_template = PT24_DIR . '/specific-service-city.php';
+        if (file_exists($specific_city_template)) {
+            status_header(200);
+            nocache_headers();
+            return $specific_city_template;
+        }
+    }
+
+    if (is_string($service_category) && $service_category !== '' && is_string($service_city) && $service_city !== '') {
+        $local_template = PT24_DIR . '/local-service-city.php';
+        if (file_exists($local_template)) {
+            status_header(200);
+            nocache_headers();
+            return $local_template;
+        }
+    }
+
+    $geo = get_query_var('pt24_geo');
+    if ($geo === 'city-index') {
+        $cities_template = PT24_DIR . '/cities-archive.php';
+        if (file_exists($cities_template)) {
+            status_header(200);
+            nocache_headers();
+            return $cities_template;
+        }
+    }
+
+    if (is_string($city_landing) && $city_landing !== '') {
+        $city_template = PT24_DIR . '/city-landing.php';
+        if (file_exists($city_template)) {
+            status_header(200);
+            nocache_headers();
+            return $city_template;
+        }
+    }
+
+    if (is_string($specific_service) && $specific_service !== '') {
+        $specific_template = PT24_DIR . '/specific-service.php';
+        if (file_exists($specific_template)) {
+            status_header(200);
+            nocache_headers();
+            return $specific_template;
+        }
+    }
+
     $service_hub = get_query_var('pt24_service_hub');
     if (is_string($service_hub) && $service_hub !== '') {
         if ($service_hub === 'index') {
@@ -298,7 +356,7 @@ add_filter('template_include', 'pt24_panel_template_include');
  * Flush rewrite rules after route changes.
  */
 function pt24_maybe_flush_panel_rewrites() {
-    $version = 'panel-routes-v2';
+    $version = 'panel-routes-v3';
     if (get_option('pt24_panel_routes_version') !== $version) {
         pt24_register_panel_routes();
         flush_rewrite_rules(false);
