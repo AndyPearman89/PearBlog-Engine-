@@ -441,6 +441,35 @@ function pt24_add_panel_query_var($vars) {
 add_filter('query_vars', 'pt24_add_panel_query_var');
 
 /**
+ * Reserved first URL segments that must stay under core WordPress routing.
+ *
+ * @param string $segment First path segment.
+ * @return bool
+ */
+function pt24_is_reserved_route_segment($segment) {
+    if (! is_string($segment) || $segment === '') {
+        return false;
+    }
+
+    $segment = strtolower(sanitize_title($segment));
+    $reserved = [
+        'author',
+        'category',
+        'tag',
+        'search',
+        'feed',
+        'blog',
+        'wp-json',
+        'wp-admin',
+        'wp-content',
+        'wp-includes',
+        'index-php',
+    ];
+
+    return in_array($segment, $reserved, true);
+}
+
+/**
  * Route custom panel slugs to dedicated templates.
  */
 function pt24_panel_template_include($template) {
@@ -467,6 +496,10 @@ function pt24_panel_template_include($template) {
                 $segments = array_values(array_filter(explode('/', $normalized_home_path)));
             }
         }
+    }
+
+    if (isset($segments[0]) && pt24_is_reserved_route_segment((string) $segments[0])) {
+        return $template;
     }
 
     if (isset($segments[0]) && strtolower((string) $segments[0]) === 'uslugi') {
@@ -586,7 +619,7 @@ add_filter('template_include', 'pt24_panel_template_include', 999);
  * Flush rewrite rules after route changes.
  */
 function pt24_maybe_flush_panel_rewrites() {
-    $version = 'panel-routes-v4';
+    $version = 'panel-routes-v5';
     if (get_option('pt24_panel_routes_version') !== $version) {
         pt24_register_panel_routes();
         flush_rewrite_rules(false);
@@ -594,6 +627,36 @@ function pt24_maybe_flush_panel_rewrites() {
     }
 }
 add_action('init', 'pt24_maybe_flush_panel_rewrites', 99);
+
+/**
+ * Remove author archives from native WP sitemap on PT24.
+ *
+ * Author URLs are not used publicly on this installation.
+ */
+function pt24_filter_sitemaps_add_provider($provider, $name) {
+    if ($name === 'users') {
+        return false;
+    }
+
+    return $provider;
+}
+add_filter('wp_sitemaps_add_provider', 'pt24_filter_sitemaps_add_provider', 10, 2);
+
+/**
+ * Remove default blog taxonomies from sitemap to avoid soft-404 category URLs.
+ */
+function pt24_filter_sitemaps_taxonomies($taxonomies) {
+    if (isset($taxonomies['category'])) {
+        unset($taxonomies['category']);
+    }
+
+    if (isset($taxonomies['post_tag'])) {
+        unset($taxonomies['post_tag']);
+    }
+
+    return $taxonomies;
+}
+add_filter('wp_sitemaps_taxonomies', 'pt24_filter_sitemaps_taxonomies');
 
 /**
  * Handle company profile contact form submissions.
