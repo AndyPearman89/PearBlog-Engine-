@@ -42,6 +42,7 @@ class AdminPageV8Enterprise {
 	private const VERSION    = '8.0.0';
 	private ?PerformanceDashboard $performance_dashboard = null;
 	private bool $pt24_styles_done = false;
+	private bool $pt24_admin_styles_done = false;
 
 	/**
 	 * All 15 tabs in Enterprise v8.0
@@ -840,6 +841,7 @@ class AdminPageV8Enterprise {
 		$places_stats = $places_ok ? \PT24_Places_Seeder::get_stats() : [];
 		$nonce = wp_create_nonce( 'pt24_places_nonce' );
 		$pt24_ads_on = '' !== (string) get_option( 'pt24_adsense_pub_id', '' ) && '1' === (string) get_option( 'pt24_adsense_enabled', '0' );
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-integrations">
 			<h2 class="pb-v8-section-title">🔗 Integrations & API</h2>
@@ -874,9 +876,13 @@ class AdminPageV8Enterprise {
 			</div>
 
 			<!-- Google Places seeder -->
-			<div class="pb-v8-card" style="margin-top:20px;">
+			<div class="pb-v8-card pt24-admin-card" style="margin-top:20px;">
 				<div class="pb-v8-card-header">
-					<h3 class="pb-v8-card-title">🗺️ Google Places — Import realnych firm</h3>
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO integrations</span>
+						<h3 class="pb-v8-card-title">🗺️ Google Places — Import realnych firm</h3>
+						<p class="pt24-admin-subtitle">Zasilaj katalog PT24 firmami z Google Maps lub własnym plikiem CSV.</p>
+					</div>
 				</div>
 				<div class="pb-v8-card-body">
 					<?php if ( ! $places_ok ) : ?>
@@ -900,39 +906,38 @@ class AdminPageV8Enterprise {
 							?>
 						</div>
 
-						<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:12px;">
+						<div class="pt24-admin-form">
+						<div class="pt24-admin-grid">
 							<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
 								$services = PT24_Scale_Data::services();
 								$cities   = PT24_Scale_Data::cities();
 							?>
-							<div>
-								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Usługa</label>
-								<select id="ptPlacesService" style="padding:6px;font-size:13px;">
-									<option value="all">— Wszystkie usługi (<?php echo count($services); ?>) —</option>
+							<div class="pt24-admin-field">
+								<label for="ptPlacesService">Usługa</label>
+								<select id="ptPlacesService">
+									<option value="all">Wszystkie usługi (<?php echo count( $services ); ?>)</option>
 									<?php foreach ( $services as $s_slug => $s_data ) : ?>
 										<option value="<?php echo esc_attr( $s_slug ); ?>"><?php echo esc_html( $s_data['name'] ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
-							<div>
-								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Miasto</label>
-								<select id="ptPlacesCity" style="padding:6px;font-size:13px;">
-									<option value="">— Wszystkie miasta (<?php echo count($cities); ?>) —</option>
+							<div class="pt24-admin-field">
+								<label for="ptPlacesCity">Miasto</label>
+								<select id="ptPlacesCity">
+									<option value="">Wszystkie miasta (<?php echo count( $cities ); ?>)</option>
 									<?php foreach ( $cities as $c_slug => $c_data ) : ?>
 										<option value="<?php echo esc_attr( $c_slug ); ?>"><?php echo esc_html( $c_data['name'] ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
 							<?php endif; ?>
-							<div style="align-self:flex-end;">
-								<label style="font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;cursor:pointer;">
-									<input type="checkbox" id="ptPlacesAI" style="width:16px;height:16px;">
-									🤖 AI enrichment
-								</label>
-							</div>
 						</div>
+						<label class="pt24-admin-check">
+							<input type="checkbox" id="ptPlacesAI">
+							🤖 AI enrichment
+						</label>
 
-						<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+						<div class="pt24-admin-actions">
 							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptPlaces.seed('<?php echo esc_js( $nonce ); ?>')">
 								🔍 Importuj firmy (wybrana para)
 							</button>
@@ -948,20 +953,24 @@ class AdminPageV8Enterprise {
 						</div>
 
 						<!-- CSV import (places_seed format) -->
-						<details style="margin-top:12px;">
-							<summary style="cursor:pointer;font-size:13px;font-weight:600;color:var(--pb-v8-text-secondary);">📥 Import CSV (places_seed)</summary>
+						<details class="pt24-admin-details">
+							<summary>📥 Import CSV (places_seed)</summary>
 							<div style="margin-top:10px;">
-								<p style="font-size:12px;color:var(--pb-v8-text-secondary);margin-bottom:6px;">
-									Format: <code>place_id,company_name,service,city,address,phone,website,rating,reviews,status</code>
-								</p>
-								<textarea id="ptPlacesCsv" rows="5" placeholder="ChIJxxx,Auto Serwis Kowalski,mechanik,ruda-slaska,ul. Przykładowa 1,+48500111222,https://firma.pl,4.7,213,new" style="width:100%;padding:8px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;box-sizing:border-box;"></textarea>
-								<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.importCsv('<?php echo esc_js( $nonce ); ?>')" style="margin-top:6px;">
-									📥 Importuj CSV
-								</button>
+								<div class="pt24-admin-field">
+									<label for="ptPlacesCsv">Firmy do importu</label>
+									<textarea id="ptPlacesCsv" rows="5" placeholder="place_id,company_name,service,city,address,phone,website,rating,reviews,status&#10;ChIJexample123,Auto Serwis Kowalski,mechanik,ruda-slaska,ul. Przykładowa 1,+48500111222,https://firma.pl,4.7,213,new&#10;ChIJexample456,Hydro Express,hydraulik,katowice,ul. Wodna 8,+48500666777,,4.5,89,new"></textarea>
+									<span class="pt24-admin-help">Format: <code>place_id,company_name,service,city,address,phone,website,rating,reviews,status</code></span>
+								</div>
+								<div class="pt24-admin-actions">
+									<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptPlaces.importCsv('<?php echo esc_js( $nonce ); ?>')">
+										📥 Importuj CSV
+									</button>
+								</div>
 							</div>
 						</details>
 
-						<div id="ptPlacesMsg" style="margin-top:10px;font-size:13px;"></div>
+						<div id="ptPlacesMsg" class="pt24-admin-message"></div>
+						</div>
 					<?php endif; ?>
 				</div>
 			</div>
@@ -1068,6 +1077,7 @@ class AdminPageV8Enterprise {
 	private function render_leads_tab(): void {
 		$data  = $this->get_pt24_leads_data();
 		$leads = $data['rows'];
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Leads & CRM', 'pearblog-engine' ); ?></h2>
@@ -1100,8 +1110,8 @@ class AdminPageV8Enterprise {
 					?>
 				</div>
 
-				<div style="display:flex; align-items:center; justify-content:space-between; gap:12px; margin-top:32px; flex-wrap:wrap;">
-					<h3 class="pb-v8-section-title" style="margin:0;"><?php esc_html_e( 'Recent leads', 'pearblog-engine' ); ?></h3>
+				<div class="pt24-admin-toolbar">
+					<h3><?php esc_html_e( 'Recent leads', 'pearblog-engine' ); ?></h3>
 					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="margin:0;">
 						<input type="hidden" name="action" value="pt24_export_leads">
 						<?php wp_nonce_field( 'pt24_export_leads' ); ?>
@@ -1110,59 +1120,63 @@ class AdminPageV8Enterprise {
 				</div>
 
 				<?php if ( empty( $leads ) ) : ?>
-					<p style="color: var(--pb-v8-text-secondary);"><?php esc_html_e( 'No leads yet. New enquiries from the site will appear here.', 'pearblog-engine' ); ?></p>
+					<div class="pt24-admin-empty"><?php esc_html_e( 'No leads yet. New enquiries from the site will appear here.', 'pearblog-engine' ); ?></div>
 				<?php else : ?>
-					<div class="pb-v8-table-wrapper">
-						<table class="pb-v8-table">
-							<thead>
-								<tr>
-									<th><?php esc_html_e( 'Date', 'pearblog-engine' ); ?></th>
-									<th><?php esc_html_e( 'Name', 'pearblog-engine' ); ?></th>
-									<th><?php esc_html_e( 'Contact', 'pearblog-engine' ); ?></th>
-									<th><?php esc_html_e( 'Service', 'pearblog-engine' ); ?></th>
-									<th><?php esc_html_e( 'City', 'pearblog-engine' ); ?></th>
-									<th><?php esc_html_e( 'Status', 'pearblog-engine' ); ?></th>
-								</tr>
-							</thead>
-							<tbody>
-								<?php
-								foreach ( $leads as $lead ) :
-									$status = (string) ( $lead->status ?? 'new' );
-									$badge  = $this->lead_status_badge( $status );
-									$phone  = (string) ( $lead->phone ?? '' );
-									$email  = (string) ( $lead->email ?? '' );
-									?>
-									<tr>
-										<td><?php echo esc_html( mysql2date( 'Y-m-d H:i', (string) $lead->created_at ) ); ?></td>
-										<td><strong><?php echo esc_html( (string) $lead->name ); ?></strong></td>
-										<td>
-											<?php if ( '' !== $phone ) : ?>
-												<a href="<?php echo esc_url( 'tel:' . preg_replace( '/[^0-9+]/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a>
-											<?php endif; ?>
-											<?php if ( '' !== $email ) : ?>
-												<br><a href="<?php echo esc_url( 'mailto:' . $email ); ?>"><?php echo esc_html( $email ); ?></a>
-											<?php endif; ?>
-										</td>
-										<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', (string) $lead->service ) ) ); ?></td>
-										<td><?php echo esc_html( ucfirst( (string) $lead->city ) ); ?></td>
-										<td>
-											<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" style="display:flex; align-items:center; gap:8px; margin:0;">
-												<input type="hidden" name="action" value="pt24_update_lead_status">
-												<input type="hidden" name="lead_id" value="<?php echo (int) $lead->id; ?>">
-												<?php wp_nonce_field( 'pt24_update_lead_status' ); ?>
-												<span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $badge ); ?>"><?php echo esc_html( $status ); ?></span>
-												<select name="status" onchange="this.form.submit()" style="max-width:140px;">
-													<?php foreach ( $this->pt24_lead_statuses() as $st_key => $st_label ) : ?>
-														<option value="<?php echo esc_attr( $st_key ); ?>" <?php selected( $status, $st_key ); ?>><?php echo esc_html( $st_label ); ?></option>
-													<?php endforeach; ?>
-												</select>
-												<noscript><button type="submit" class="button button-small">OK</button></noscript>
-											</form>
-										</td>
-									</tr>
-								<?php endforeach; ?>
-							</tbody>
-						</table>
+					<div class="pb-v8-card pt24-admin-table-card">
+						<div class="pb-v8-card-body">
+							<div class="pb-v8-table-wrapper">
+								<table class="pb-v8-table">
+									<thead>
+										<tr>
+											<th><?php esc_html_e( 'Date', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Name', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Contact', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Service', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'City', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Status', 'pearblog-engine' ); ?></th>
+										</tr>
+									</thead>
+									<tbody>
+										<?php
+										foreach ( $leads as $lead ) :
+											$status = (string) ( $lead->status ?? 'new' );
+											$badge  = $this->lead_status_badge( $status );
+											$phone  = (string) ( $lead->phone ?? '' );
+											$email  = (string) ( $lead->email ?? '' );
+											?>
+											<tr>
+												<td><?php echo esc_html( mysql2date( 'Y-m-d H:i', (string) $lead->created_at ) ); ?></td>
+												<td><strong><?php echo esc_html( (string) $lead->name ); ?></strong></td>
+												<td>
+													<?php if ( '' !== $phone ) : ?>
+														<a href="<?php echo esc_url( 'tel:' . preg_replace( '/[^0-9+]/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a>
+													<?php endif; ?>
+													<?php if ( '' !== $email ) : ?>
+														<br><a href="<?php echo esc_url( 'mailto:' . $email ); ?>"><?php echo esc_html( $email ); ?></a>
+													<?php endif; ?>
+												</td>
+												<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', (string) $lead->service ) ) ); ?></td>
+												<td><?php echo esc_html( ucfirst( (string) $lead->city ) ); ?></td>
+												<td>
+													<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="pt24-admin-inline-form">
+														<input type="hidden" name="action" value="pt24_update_lead_status">
+														<input type="hidden" name="lead_id" value="<?php echo (int) $lead->id; ?>">
+														<?php wp_nonce_field( 'pt24_update_lead_status' ); ?>
+														<span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $badge ); ?>"><?php echo esc_html( $status ); ?></span>
+														<select name="status" onchange="this.form.submit()">
+															<?php foreach ( $this->pt24_lead_statuses() as $st_key => $st_label ) : ?>
+																<option value="<?php echo esc_attr( $st_key ); ?>" <?php selected( $status, $st_key ); ?>><?php echo esc_html( $st_label ); ?></option>
+															<?php endforeach; ?>
+														</select>
+														<noscript><button type="submit" class="button button-small">OK</button></noscript>
+													</form>
+												</td>
+											</tr>
+										<?php endforeach; ?>
+									</tbody>
+								</table>
+							</div>
+						</div>
 					</div>
 				<?php endif; ?>
 
@@ -1236,121 +1250,154 @@ class AdminPageV8Enterprise {
 	 * Render the "Firmy do weryfikacji" tab.
 	 */
 	private function render_firms_tab(): void {
-		// notice
 		$notice = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
-		if ( 'approved' === $notice ) {
-			echo '<div class="notice notice-success is-dismissible"><p>Firma zatwierdzona i opublikowana.</p></div>';
-		} elseif ( 'rejected' === $notice ) {
-			echo '<div class="notice notice-warning is-dismissible"><p>Firma odrzucona i przeniesiona do kosza.</p></div>';
-		}
-
-		// Count badges for header.
 		$pending_count = (int) wp_count_posts( 'pt24_firm' )->pending;
 		$pub_count     = (int) wp_count_posts( 'pt24_firm' )->publish;
 
-		echo '<h2 style="margin-top:1rem">Firmy do weryfikacji</h2>';
-		echo '<p style="color:#64748b">Zgłoszenia z formularza <a href="' . esc_url( home_url( '/dodaj-firme/' ) ) . '" target="_blank">/dodaj-firme/</a>. '
-			. 'Oczekujące: <strong>' . esc_html( $pending_count ) . '</strong> &nbsp;·&nbsp; '
-			. 'Opublikowane: <strong>' . esc_html( $pub_count ) . '</strong></p>';
-
-		// Pending firms.
 		$firms = get_posts( [
-			'post_type'      => 'pt24_firm',
-			'post_status'    => 'pending',
-			'numberposts'    => 50,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'post_type'        => 'pt24_firm',
+			'post_status'      => 'pending',
+			'numberposts'      => 50,
+			'orderby'          => 'date',
+			'order'            => 'DESC',
 			'suppress_filters' => true,
 		] );
 
-		if ( empty( $firms ) ) {
-			echo '<p style="padding:1.5rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px">Brak zgłoszeń oczekujących na weryfikację.</p>';
-		} else {
-			echo '<table class="widefat striped" style="margin-top:1rem">';
-			echo '<thead><tr>'
-				. '<th>Nazwa firmy</th>'
-				. '<th>Miasto</th>'
-				. '<th>Usługa</th>'
-				. '<th>Telefon</th>'
-				. '<th>E-mail</th>'
-				. '<th>WWW</th>'
-				. '<th>Data zgłoszenia</th>'
-				. '<th>Akcje</th>'
-				. '</tr></thead><tbody>';
-
-			foreach ( $firms as $firm ) {
-				$fid     = (int) $firm->ID;
-				$city    = (string) get_post_meta( $fid, 'pt24_firm_city_name', true ) ?: (string) get_post_meta( $fid, 'pt24_firm_city', true );
-				$service = (string) get_post_meta( $fid, 'pt24_firm_services', true ) ?: (string) get_post_meta( $fid, 'pt24_firm_service', true );
-				$phone   = (string) get_post_meta( $fid, 'pt24_firm_phone', true );
-				$email   = (string) get_post_meta( $fid, 'pt24_firm_email', true );
-				$website = (string) get_post_meta( $fid, 'pt24_firm_website', true );
-				$date    = get_the_date( 'd.m.Y H:i', $firm );
-
-				$nonce_approve = wp_create_nonce( 'pt24_approve_firm_' . $fid );
-				$nonce_reject  = wp_create_nonce( 'pt24_reject_firm_' . $fid );
-				$base          = admin_url( 'admin-post.php' );
-
-				$approve_url = add_query_arg( [
-					'action'  => 'pt24_approve_firm',
-					'firm_id' => $fid,
-					'_wpnonce' => $nonce_approve,
-				], $base );
-				$reject_url  = add_query_arg( [
-					'action'  => 'pt24_reject_firm',
-					'firm_id' => $fid,
-					'_wpnonce' => $nonce_reject,
-				], $base );
-				$edit_url    = get_edit_post_link( $fid );
-
-				echo '<tr>';
-				echo '<td><strong>' . esc_html( get_the_title( $firm ) ) . '</strong>'
-					. ' <a href="' . esc_url( (string) $edit_url ) . '" style="font-size:.8rem">(edytuj)</a></td>';
-				echo '<td>' . esc_html( $city ) . '</td>';
-				echo '<td>' . esc_html( $service ) . '</td>';
-				echo '<td>' . esc_html( $phone ) . '</td>';
-				echo '<td>' . ( is_email( $email ) ? '<a href="mailto:' . esc_attr( $email ) . '">' . esc_html( $email ) . '</a>' : '—' ) . '</td>';
-				echo '<td>' . ( $website ? '<a href="' . esc_url( $website ) . '" target="_blank" rel="noopener">link</a>' : '—' ) . '</td>';
-				echo '<td>' . esc_html( $date ) . '</td>';
-				echo '<td style="white-space:nowrap">'
-					. '<a href="' . esc_url( $approve_url ) . '" class="button button-primary" style="margin-right:4px" onclick="return confirm(\'Opublikować tę firmę?\')">✅ Zatwierdź</a>'
-					. '<a href="' . esc_url( $reject_url ) . '" class="button" onclick="return confirm(\'Odrzucić i przenieść do kosza?\')">🗑 Odrzuć</a>'
-					. '</td>';
-				echo '</tr>';
-			}
-
-			echo '</tbody></table>';
-		}
-
-		// Published firms (last 10).
 		$published = get_posts( [
-			'post_type'      => 'pt24_firm',
-			'post_status'    => 'publish',
-			'numberposts'    => 10,
-			'orderby'        => 'date',
-			'order'          => 'DESC',
+			'post_type'        => 'pt24_firm',
+			'post_status'      => 'publish',
+			'numberposts'      => 10,
+			'orderby'          => 'date',
+			'order'            => 'DESC',
 			'suppress_filters' => true,
 		] );
 
-		if ( ! empty( $published ) ) {
-			echo '<h3 style="margin-top:2rem">Ostatnio opublikowane firmy</h3>';
-			echo '<table class="widefat striped">';
-			echo '<thead><tr><th>Nazwa</th><th>Miasto</th><th>Ocena</th><th>Zlecenia</th><th>Profil</th></tr></thead><tbody>';
-			foreach ( $published as $firm ) {
-				$fid    = (int) $firm->ID;
-				$city   = (string) get_post_meta( $fid, 'pt24_firm_city_name', true );
-				$rating = (string) get_post_meta( $fid, 'pt24_firm_rating', true );
-				$jobs   = (string) get_post_meta( $fid, 'pt24_firm_jobs', true );
-				echo '<tr>';
-				echo '<td>' . esc_html( get_the_title( $firm ) ) . '</td>';
-				echo '<td>' . esc_html( $city ) . '</td>';
-				echo '<td>★ ' . esc_html( $rating ?: '—' ) . '</td>';
-				echo '<td>' . esc_html( $jobs ?: '0' ) . '</td>';
-				echo '<td><a href="' . esc_url( home_url( '/firma/' . $firm->post_name . '/' ) ) . '" target="_blank">Profil →</a></td>';
-				echo '</tr>';
-			}
-			echo '</tbody></table>';
-		}
+		$this->render_pt24_admin_styles();
+		?>
+		<div class="pb-v8-dashboard">
+			<h2 class="pb-v8-section-title">🏢 Firmy do weryfikacji</h2>
+
+			<?php if ( 'approved' === $notice ) : ?>
+				<div class="notice notice-success is-dismissible"><p>Firma zatwierdzona i opublikowana.</p></div>
+			<?php elseif ( 'rejected' === $notice ) : ?>
+				<div class="notice notice-warning is-dismissible"><p>Firma odrzucona i przeniesiona do kosza.</p></div>
+			<?php endif; ?>
+
+			<div class="pb-v8-metrics-grid">
+				<?php
+				$this->render_metric_card( [ 'label' => 'Oczekujące', 'value' => number_format_i18n( $pending_count ), 'icon' => '⏳', 'color' => $pending_count > 0 ? 'warning' : 'primary' ] );
+				$this->render_metric_card( [ 'label' => 'Opublikowane', 'value' => number_format_i18n( $pub_count ), 'icon' => '🏢', 'color' => 'success' ] );
+				$this->render_metric_card( [ 'label' => 'Źródło zgłoszeń', 'value' => '/dodaj-firme/', 'icon' => '📋', 'color' => 'primary' ] );
+				?>
+			</div>
+
+			<div class="pb-v8-card pt24-admin-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header">
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO moderation</span>
+						<h3 class="pb-v8-card-title">Zgłoszenia firm</h3>
+						<p class="pt24-admin-subtitle">
+							Zgłoszenia z formularza <a href="<?php echo esc_url( home_url( '/dodaj-firme/' ) ); ?>" target="_blank" rel="noopener">/dodaj-firme/</a>.
+						</p>
+					</div>
+				</div>
+				<div class="pb-v8-card-body">
+					<?php if ( empty( $firms ) ) : ?>
+						<div class="pt24-admin-empty">Brak zgłoszeń oczekujących na weryfikację.</div>
+					<?php else : ?>
+						<div class="pb-v8-table-wrapper">
+							<table class="pb-v8-table">
+								<thead>
+									<tr>
+										<th>Nazwa firmy</th>
+										<th>Miasto</th>
+										<th>Usługa</th>
+										<th>Telefon</th>
+										<th>E-mail</th>
+										<th>WWW</th>
+										<th>Data zgłoszenia</th>
+										<th>Akcje</th>
+									</tr>
+								</thead>
+								<tbody>
+									<?php foreach ( $firms as $firm ) :
+										$fid     = (int) $firm->ID;
+										$city    = (string) get_post_meta( $fid, 'pt24_firm_city_name', true ) ?: (string) get_post_meta( $fid, 'pt24_firm_city', true );
+										$service = (string) get_post_meta( $fid, 'pt24_firm_services', true ) ?: (string) get_post_meta( $fid, 'pt24_firm_service', true );
+										$phone   = (string) get_post_meta( $fid, 'pt24_firm_phone', true );
+										$email   = (string) get_post_meta( $fid, 'pt24_firm_email', true );
+										$website = (string) get_post_meta( $fid, 'pt24_firm_website', true );
+										$date    = get_the_date( 'd.m.Y H:i', $firm );
+										$base    = admin_url( 'admin-post.php' );
+
+										$approve_url = add_query_arg( [
+											'action'   => 'pt24_approve_firm',
+											'firm_id'  => $fid,
+											'_wpnonce' => wp_create_nonce( 'pt24_approve_firm_' . $fid ),
+										], $base );
+										$reject_url = add_query_arg( [
+											'action'   => 'pt24_reject_firm',
+											'firm_id'  => $fid,
+											'_wpnonce' => wp_create_nonce( 'pt24_reject_firm_' . $fid ),
+										], $base );
+										$edit_url = get_edit_post_link( $fid );
+										?>
+										<tr>
+											<td>
+												<strong><?php echo esc_html( get_the_title( $firm ) ); ?></strong>
+												<?php if ( $edit_url ) : ?>
+													<br><a href="<?php echo esc_url( (string) $edit_url ); ?>" style="font-size:12px;">Edytuj wpis</a>
+												<?php endif; ?>
+											</td>
+											<td><?php echo esc_html( $city ?: '—' ); ?></td>
+											<td><?php echo esc_html( $service ?: '—' ); ?></td>
+											<td><?php echo esc_html( $phone ?: '—' ); ?></td>
+											<td><?php echo is_email( $email ) ? '<a href="mailto:' . esc_attr( $email ) . '">' . esc_html( $email ) . '</a>' : '—'; ?></td>
+											<td><?php echo $website ? '<a href="' . esc_url( $website ) . '" target="_blank" rel="noopener">Link</a>' : '—'; ?></td>
+											<td><?php echo esc_html( $date ); ?></td>
+											<td style="white-space:nowrap;">
+												<a href="<?php echo esc_url( $approve_url ); ?>" class="button button-primary" onclick="return confirm('Opublikować tę firmę?')">✅ Zatwierdź</a>
+												<a href="<?php echo esc_url( $reject_url ); ?>" class="button" onclick="return confirm('Odrzucić i przenieść do kosza?')">🗑 Odrzuć</a>
+											</td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+						</div>
+					<?php endif; ?>
+				</div>
+			</div>
+
+			<?php if ( ! empty( $published ) ) : ?>
+				<div class="pb-v8-card pt24-admin-table-card">
+					<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">Ostatnio opublikowane firmy</h3></div>
+					<div class="pb-v8-card-body">
+						<div class="pb-v8-table-wrapper">
+							<table class="pb-v8-table">
+								<thead><tr><th>Nazwa</th><th>Miasto</th><th>Ocena</th><th>Zlecenia</th><th>Profil</th></tr></thead>
+								<tbody>
+									<?php foreach ( $published as $firm ) :
+										$fid    = (int) $firm->ID;
+										$city   = (string) get_post_meta( $fid, 'pt24_firm_city_name', true );
+										$rating = (string) get_post_meta( $fid, 'pt24_firm_rating', true );
+										$jobs   = (string) get_post_meta( $fid, 'pt24_firm_jobs', true );
+										?>
+										<tr>
+											<td><?php echo esc_html( get_the_title( $firm ) ); ?></td>
+											<td><?php echo esc_html( $city ?: '—' ); ?></td>
+											<td>★ <?php echo esc_html( $rating ?: '—' ); ?></td>
+											<td><?php echo esc_html( $jobs ?: '0' ); ?></td>
+											<td><a href="<?php echo esc_url( home_url( '/firma/' . $firm->post_name . '/' ) ); ?>" target="_blank" rel="noopener">Profil →</a></td>
+										</tr>
+									<?php endforeach; ?>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+			<?php endif; ?>
+		</div>
+		<?php
 	}
 
 	/**
@@ -1477,6 +1524,7 @@ class AdminPageV8Enterprise {
 	 */
 	private function render_analytics_tab(): void {
 		$a = $this->get_pt24_analytics_data();
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Analytics Deep — PT24', 'pearblog-engine' ); ?></h2>
@@ -1631,13 +1679,64 @@ class AdminPageV8Enterprise {
 			.pt24-bar-track{flex:1;height:14px;background:rgba(125,125,125,.15);border-radius:7px;overflow:hidden}
 			.pt24-bar-fill{display:block;height:100%;background:linear-gradient(90deg,#2563eb,#1e3a8a)}
 			.pt24-bar-val{flex:0 0 46px;font-weight:700;font-size:13px}
-			.pt24-trend{display:flex;align-items:flex-end;gap:6px;height:160px;margin-top:8px;padding:10px;background:rgba(125,125,125,.06);border-radius:10px}
+			.pt24-trend{display:flex;align-items:flex-end;gap:6px;height:160px;margin-top:8px;padding:10px;background:rgba(125,125,125,.06);border-radius:8px}
 			.pt24-trend-col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:6px;height:100%}
 			.pt24-trend-bar{width:72%;min-height:2px;background:linear-gradient(180deg,#f59e0b,#d97706);border-radius:4px 4px 0 0}
 			.pt24-trend-day{font-size:10px;color:var(--pb-v8-text-secondary)}
 			.pt24-analytics-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px;margin-top:24px}
-			.pt24-card{background:var(--pb-v8-bg-card,rgba(125,125,125,.04));border:1px solid rgba(125,125,125,.18);border-radius:14px;padding:20px}
+			.pt24-card{background:var(--pb-v8-bg-card,rgba(125,125,125,.04));border:1px solid rgba(125,125,125,.18);border-radius:8px;padding:20px}
 			.pt24-card h3{margin:0 0 12px;font-size:15px}
+		</style>
+		<?php
+	}
+
+	/**
+	 * Shared inline styles for PT24 admin forms and operational cards.
+	 */
+	private function render_pt24_admin_styles(): void {
+		if ( $this->pt24_admin_styles_done ) {
+			return;
+		}
+		$this->pt24_admin_styles_done = true;
+		?>
+		<style>
+			.pt24-admin-card{border:1px solid rgba(37,99,235,.18);box-shadow:0 18px 50px rgba(15,23,42,.08);overflow:hidden}
+			.pt24-admin-card .pb-v8-card-header{align-items:flex-start;background:linear-gradient(135deg,rgba(37,99,235,.10),rgba(16,185,129,.10));border-bottom:1px solid rgba(37,99,235,.16)}
+			.pt24-admin-kicker,.pt24-blog-kicker{display:block;margin-bottom:4px;color:#2563eb;font-size:11px;font-weight:800;letter-spacing:0;text-transform:uppercase}
+			.pt24-admin-subtitle,.pt24-blog-subtitle{margin:4px 0 0;color:var(--pb-v8-text-secondary);font-size:13px;font-weight:400}
+			.pt24-admin-layout,.pt24-blog-layout{display:grid;grid-template-columns:minmax(280px,1fr) minmax(280px,1fr);gap:24px}
+			.pt24-admin-panel,.pt24-blog-panel{padding:0}
+			.pt24-admin-panel + .pt24-admin-panel,.pt24-blog-panel + .pt24-blog-panel{border-left:1px solid rgba(148,163,184,.28);padding-left:24px}
+			.pt24-admin-panel h4,.pt24-blog-panel h4{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:14px}
+			.pt24-admin-form{display:flex;flex-direction:column;gap:12px}
+			.pt24-admin-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+			.pt24-admin-field,.pt24-blog-field{display:flex;flex-direction:column;gap:5px}
+			.pt24-admin-field label,.pt24-blog-field label{font-size:12px;font-weight:700;color:var(--pb-v8-text-primary)}
+			.pt24-admin-field input:not([type="checkbox"]),.pt24-admin-field select,.pt24-admin-field textarea,.pt24-blog-field input,.pt24-blog-field select,.pt24-blog-field textarea{width:100%;box-sizing:border-box;border:1px solid rgba(148,163,184,.55);border-radius:8px;background:#fff;color:var(--pb-v8-text-primary);font-size:13px;line-height:1.4;transition:border-color .15s,box-shadow .15s}
+			.pt24-admin-field input:not([type="checkbox"]),.pt24-admin-field select,.pt24-blog-field input,.pt24-blog-field select{min-height:38px;padding:8px 10px}
+			.pt24-admin-field textarea,.pt24-blog-field textarea{min-height:126px;padding:10px;font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;font-size:12px;resize:vertical}
+			.pt24-admin-field input:focus,.pt24-admin-field select:focus,.pt24-admin-field textarea:focus,.pt24-blog-field input:focus,.pt24-blog-field select:focus,.pt24-blog-field textarea:focus{border-color:#2563eb;box-shadow:0 0 0 3px rgba(37,99,235,.14);outline:none}
+			.pt24-admin-field input::placeholder,.pt24-admin-field textarea::placeholder,.pt24-blog-field input::placeholder,.pt24-blog-field textarea::placeholder{color:#94a3b8}
+			.pt24-admin-help,.pt24-blog-help{color:var(--pb-v8-text-secondary);font-size:12px}
+			.pt24-admin-check{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:600}
+			.pt24-admin-check input{width:16px;height:16px}
+			.pt24-admin-actions,.pt24-blog-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:4px}
+			.pt24-admin-separator,.pt24-blog-separator{border:none;border-top:1px solid rgba(148,163,184,.28);margin:8px 0}
+			.pt24-admin-message,.pt24-blog-message{font-size:13px;margin-top:6px;min-height:18px}
+			.pt24-admin-details{margin-top:12px;border-top:1px solid rgba(148,163,184,.28);padding-top:12px}
+			.pt24-admin-details summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--pb-v8-text-secondary)}
+			.pt24-admin-endpoint-row{background:rgba(37,99,235,.05)}
+			.pt24-admin-endpoint-label{padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:0;color:#64748b;text-transform:uppercase}
+			.pt24-admin-toolbar{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:24px 0 12px;flex-wrap:wrap}
+			.pt24-admin-toolbar h3{margin:0;font-size:18px}
+			.pt24-admin-empty{padding:24px;background:rgba(148,163,184,.08);border:1px solid rgba(148,163,184,.26);border-radius:8px;color:var(--pb-v8-text-secondary)}
+			.pt24-card{background:var(--pb-v8-bg-card,rgba(125,125,125,.04));border:1px solid rgba(125,125,125,.18);border-radius:8px;padding:20px}
+			.pt24-card h3{margin:0 0 12px;font-size:15px}
+			.pt24-admin-table-card{margin-top:12px}
+			.pt24-admin-table-card .pb-v8-card-body{padding:0}
+			.pt24-admin-inline-form{display:flex;align-items:center;gap:8px;margin:0;flex-wrap:wrap}
+			.pt24-admin-inline-form select{min-height:34px;border:1px solid rgba(148,163,184,.55);border-radius:7px;background:#fff;font-size:12px}
+			@media (max-width:960px){.pt24-admin-layout,.pt24-blog-layout,.pt24-admin-grid{grid-template-columns:1fr}.pt24-admin-panel + .pt24-admin-panel,.pt24-blog-panel + .pt24-blog-panel{border-left:0;border-top:1px solid rgba(148,163,184,.28);padding-left:0;padding-top:18px}}
 		</style>
 		<?php
 	}
@@ -1654,6 +1753,7 @@ class AdminPageV8Enterprise {
 		$ads_auto    = '1' === (string) get_option( 'pt24_adsense_auto_ads', '1' );
 		$places_key  = (string) get_option( 'pt24_google_places_api_key', '' );
 		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Settings Enterprise — PT24', 'pearblog-engine' ); ?></h2>
@@ -1662,62 +1762,64 @@ class AdminPageV8Enterprise {
 				<div class="notice notice-success" style="margin:0 0 16px;"><p><?php esc_html_e( 'Settings saved.', 'pearblog-engine' ); ?></p></div>
 			<?php endif; ?>
 
-			<div class="pb-v8-card" style="max-width:680px;">
+			<div class="pb-v8-card pt24-admin-card" style="max-width:760px;">
+				<div class="pb-v8-card-header">
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO settings</span>
+						<h3 class="pb-v8-card-title">Powiadomienia, AdSense i Google Places</h3>
+						<p class="pt24-admin-subtitle">Ustaw dane operacyjne platformy bez przeklikiwania kilku osobnych ekranów.</p>
+					</div>
+				</div>
 				<div class="pb-v8-card-body">
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<form class="pt24-admin-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="pt24_save_settings">
 						<?php wp_nonce_field( 'pt24_save_settings' ); ?>
 
-						<p>
-							<label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e( 'Lead notification e-mail', 'pearblog-engine' ); ?></label>
-							<input type="email" name="pt24_notify_email" value="<?php echo esc_attr( $email ); ?>" style="width:100%;max-width:420px;padding:8px;">
-							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( 'New enquiries from the site are e-mailed here.', 'pearblog-engine' ); ?></span>
-						</p>
+						<div class="pt24-admin-grid">
+							<div class="pt24-admin-field">
+								<label for="pt24NotifyEmail"><?php esc_html_e( 'Lead notification e-mail', 'pearblog-engine' ); ?></label>
+								<input id="pt24NotifyEmail" type="email" name="pt24_notify_email" value="<?php echo esc_attr( $email ); ?>" placeholder="kontakt@pt24.pro">
+								<span class="pt24-admin-help"><?php esc_html_e( 'New enquiries from the site are e-mailed here.', 'pearblog-engine' ); ?></span>
+							</div>
+							<div class="pt24-admin-field">
+								<label for="pt24LeadThreshold"><?php esc_html_e( 'Daily lead alert threshold', 'pearblog-engine' ); ?></label>
+								<input id="pt24LeadThreshold" type="number" name="pt24_daily_alert_threshold" value="<?php echo esc_attr( (string) $threshold ); ?>" min="0" step="1" placeholder="0">
+								<span class="pt24-admin-help"><?php esc_html_e( '0 = disabled. Highlights the dashboard when daily leads exceed this number.', 'pearblog-engine' ); ?></span>
+							</div>
+						</div>
 
-						<p style="margin-top:18px;">
-							<label><input type="checkbox" name="pt24_notify_enabled" value="1" <?php checked( $enabled ); ?>> <?php esc_html_e( 'Send an e-mail when a new lead arrives', 'pearblog-engine' ); ?></label>
-						</p>
+						<label class="pt24-admin-check"><input type="checkbox" name="pt24_notify_enabled" value="1" <?php checked( $enabled ); ?>> <?php esc_html_e( 'Send an e-mail when a new lead arrives', 'pearblog-engine' ); ?></label>
 
-						<p style="margin-top:18px;">
-							<label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e( 'Daily lead alert threshold', 'pearblog-engine' ); ?></label>
-							<input type="number" name="pt24_daily_alert_threshold" value="<?php echo esc_attr( (string) $threshold ); ?>" min="0" step="1" style="width:120px;padding:8px;">
-							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( '0 = disabled. Highlights the dashboard when daily leads exceed this number.', 'pearblog-engine' ); ?></span>
-						</p>
-
-						<hr style="margin:24px 0;border:0;border-top:1px solid rgba(125,125,125,.2);">
+						<hr class="pt24-admin-separator">
 						<h3 style="margin:0 0 12px;font-size:16px;"><?php esc_html_e( 'Monetization — Google AdSense', 'pearblog-engine' ); ?></h3>
 
-						<p>
-							<label style="display:block;font-weight:600;margin-bottom:6px;"><?php esc_html_e( 'AdSense Publisher ID', 'pearblog-engine' ); ?></label>
-							<input type="text" name="pt24_adsense_pub_id" value="<?php echo esc_attr( $ads_pub ); ?>" placeholder="ca-pub-XXXXXXXXXXXXXXXX" style="width:100%;max-width:420px;padding:8px;">
-							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;"><?php esc_html_e( 'From your AdSense account. Powers the head loader and /ads.txt.', 'pearblog-engine' ); ?></span>
-						</p>
+						<div class="pt24-admin-field">
+							<label for="pt24AdsensePub"><?php esc_html_e( 'AdSense Publisher ID', 'pearblog-engine' ); ?></label>
+							<input id="pt24AdsensePub" type="text" name="pt24_adsense_pub_id" value="<?php echo esc_attr( $ads_pub ); ?>" placeholder="ca-pub-1234567890123456">
+							<span class="pt24-admin-help"><?php esc_html_e( 'From your AdSense account. Powers the head loader and /ads.txt.', 'pearblog-engine' ); ?></span>
+						</div>
 
-						<p style="margin-top:18px;">
-							<label><input type="checkbox" name="pt24_adsense_enabled" value="1" <?php checked( $ads_enabled ); ?>> <?php esc_html_e( 'Enable AdSense on the site', 'pearblog-engine' ); ?></label>
-						</p>
-						<p style="margin-top:10px;">
-							<label><input type="checkbox" name="pt24_adsense_auto_ads" value="1" <?php checked( $ads_auto ); ?>> <?php esc_html_e( 'Enable Auto Ads (page-level)', 'pearblog-engine' ); ?></label>
-						</p>
+						<label class="pt24-admin-check"><input type="checkbox" name="pt24_adsense_enabled" value="1" <?php checked( $ads_enabled ); ?>> <?php esc_html_e( 'Enable AdSense on the site', 'pearblog-engine' ); ?></label>
+						<label class="pt24-admin-check"><input type="checkbox" name="pt24_adsense_auto_ads" value="1" <?php checked( $ads_auto ); ?>> <?php esc_html_e( 'Enable Auto Ads (page-level)', 'pearblog-engine' ); ?></label>
 
-						<hr style="margin:24px 0;border:0;border-top:1px solid rgba(125,125,125,.2);">
+						<hr class="pt24-admin-separator">
 						<h3 style="margin:0 0 12px;font-size:16px;">🗺️ <?php esc_html_e( 'Google Places API', 'pearblog-engine' ); ?></h3>
 
-						<p>
-							<label style="display:block;font-weight:600;margin-bottom:6px;">Google Places API Key</label>
-							<input type="password" name="pt24_google_places_api_key" value="<?php echo esc_attr( $places_key ); ?>" placeholder="AIza..." style="width:100%;max-width:420px;padding:8px;" autocomplete="off">
-							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:13px;margin-top:4px;">
+						<div class="pt24-admin-field">
+							<label for="pt24PlacesKey">Google Places API Key</label>
+							<input id="pt24PlacesKey" type="password" name="pt24_google_places_api_key" value="<?php echo esc_attr( $places_key ); ?>" placeholder="AIzaSy..." autocomplete="off">
+							<span class="pt24-admin-help">
 								Wymagane do importu realnych firm z Google Maps. Włącz <em>Places API</em> w 
 								<a href="https://console.cloud.google.com/apis/library/places-backend.googleapis.com" target="_blank" rel="noopener">Google Cloud Console</a>.
 								<?php if ( '' !== $places_key ) : ?>
 									<strong style="color:var(--pb-v8-success);">✅ Klucz ustawiony.</strong>
 								<?php endif; ?>
 							</span>
-						</p>
+						</div>
 
-						<p style="margin-top:24px;">
+						<div class="pt24-admin-actions" style="margin-top:12px;">
 							<button type="submit" class="button button-primary"><?php esc_html_e( 'Save settings', 'pearblog-engine' ); ?></button>
-						</p>
+						</div>
 					</form>
 				</div>
 			</div>
@@ -1826,13 +1928,18 @@ class AdminPageV8Enterprise {
 			return;
 		}
 		$this->render_pt24_chart_styles();
+		$this->render_pt24_admin_styles();
 		$conversion = $r['total'] > 0 ? round( $r['won'] / $r['total'] * 100, 1 ) : 0.0;
 		$avg        = $days > 0 ? round( $r['total'] / $days, 1 ) : 0.0;
 		$base       = admin_url( 'admin.php?page=' . self::MENU_SLUG . '&tab=reporting' );
 		?>
-		<div class="pb-v8-card" style="margin-bottom: var(--pb-v8-space-lg);">
+		<div class="pb-v8-card pt24-admin-card" style="margin-bottom: var(--pb-v8-space-lg);">
 			<div class="pb-v8-card-header" style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;">
-				<h3 class="pb-v8-card-title"><?php esc_html_e( 'PT24 Leads Report', 'pearblog-engine' ); ?></h3>
+				<div>
+					<span class="pt24-admin-kicker">PT24.PRO reporting</span>
+					<h3 class="pb-v8-card-title"><?php esc_html_e( 'PT24 Leads Report', 'pearblog-engine' ); ?></h3>
+					<p class="pt24-admin-subtitle">Lead performance by period, service and city.</p>
+				</div>
 				<div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
 					<?php foreach ( [ 7, 30, 90 ] as $option_days ) : ?>
 						<a class="button <?php echo $days === $option_days ? 'button-primary' : ''; ?>" href="<?php echo esc_url( $base . '&report_days=' . $option_days ); ?>">
@@ -1891,6 +1998,7 @@ class AdminPageV8Enterprise {
 		$firm_counts   = wp_count_posts( 'pt24_firm' );
 		$firms_pending = (int) ( $firm_counts->pending ?? 0 );
 		$firms_publish = (int) ( $firm_counts->publish ?? 0 );
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Dashboard — PT24', 'pearblog-engine' ); ?></h2>
@@ -2091,6 +2199,7 @@ class AdminPageV8Enterprise {
 		$seo_meta_active   = class_exists( 'PT24_SEO_Meta' ) || function_exists( 'pt24_output_seo_meta' );
 		$sitemap_active    = function_exists( 'pt24_sitemap_entries' );
 		$ads_pub           = (string) get_option( 'pt24_adsense_pub_id', '' );
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title">🔍 SEO Advanced — Metryki PT24</h2>
@@ -2105,8 +2214,14 @@ class AdminPageV8Enterprise {
 			</div>
 
 			<!-- Status SEO -->
-			<div class="pb-v8-card" style="margin-top:20px;">
-				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">✅ Status komponentów SEO</h3></div>
+			<div class="pb-v8-card pt24-admin-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header">
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO SEO</span>
+						<h3 class="pb-v8-card-title">✅ Status komponentów SEO</h3>
+						<p class="pt24-admin-subtitle">Sitemap, canonicale, schema i metadane dla landingu oraz profili firm.</p>
+					</div>
+				</div>
 				<div class="pb-v8-card-body">
 					<div class="pb-v8-table-wrapper">
 						<table class="pb-v8-table">
@@ -2138,7 +2253,7 @@ class AdminPageV8Enterprise {
 			</div>
 
 			<!-- Quick links -->
-			<div class="pb-v8-card" style="margin-top:16px;">
+			<div class="pb-v8-card pt24-admin-table-card" style="margin-top:16px;">
 				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🔗 Szybkie linki SEO</h3></div>
 				<div class="pb-v8-card-body" style="display:flex;gap:12px;flex-wrap:wrap;">
 					<a href="<?php echo esc_url( $sitemap_url ); ?>" target="_blank" class="pb-v8-btn pb-v8-btn-outline">🗺️ Sitemap.xml</a>
@@ -2169,6 +2284,7 @@ class AdminPageV8Enterprise {
 		// Rough estimated value: avg 50 zł per lead (broker fee model)
 		$avg_lead_value = (float) apply_filters( 'pt24_avg_lead_value', 50.0 );
 		$est_monthly    = round( $this_month * $avg_lead_value, 0 );
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title">💰 Revenue Center — Monetyzacja PT24</h2>
@@ -2183,57 +2299,55 @@ class AdminPageV8Enterprise {
 			</div>
 
 			<!-- Monetization channels -->
-			<div class="pb-v8-card" style="margin-top:20px;">
-				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">Kanały monetyzacji</h3></div>
+			<div class="pb-v8-card pt24-admin-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header">
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO revenue</span>
+						<h3 class="pb-v8-card-title">Kanały monetyzacji</h3>
+						<p class="pt24-admin-subtitle">Lead generation, AdSense i płatne profile firm w jednym widoku.</p>
+					</div>
+				</div>
 				<div class="pb-v8-card-body">
 					<div class="pb-v8-metrics-grid">
-						<div class="pb-v8-card">
-							<div class="pb-v8-card-body">
-								<h3>🎯 Lead Generation</h3>
-								<p>Formularze na landingach i profilach firm</p>
-								<span class="pb-v8-badge pb-v8-badge-success">Aktywny</span>
-								<p style="margin-top:12px;font-size:13px;color:var(--pb-v8-text-secondary);">
-									<?php echo esc_html( number_format_i18n( $total_leads ) ); ?> leadów łącznie · konwersja <?php echo $total_leads > 0 ? esc_html( round( $won_leads / $total_leads * 100, 1 ) ) : 0; ?>%
-								</p>
-							</div>
+						<div class="pt24-card">
+							<h3>🎯 Lead Generation</h3>
+							<p>Formularze na landingach i profilach firm</p>
+							<span class="pb-v8-badge pb-v8-badge-success">Aktywny</span>
+							<p style="margin-top:12px;font-size:13px;color:var(--pb-v8-text-secondary);">
+								<?php echo esc_html( number_format_i18n( $total_leads ) ); ?> leadów łącznie · konwersja <?php echo $total_leads > 0 ? esc_html( round( $won_leads / $total_leads * 100, 1 ) ) : 0; ?>%
+							</p>
 						</div>
-						<div class="pb-v8-card">
-							<div class="pb-v8-card-body">
-								<h3>💰 Google AdSense</h3>
-								<p>Reklamy kontekstowe — Auto Ads</p>
-								<span class="pb-v8-badge pb-v8-badge-<?php echo $ads_on ? 'success' : 'warning'; ?>">
-									<?php echo $ads_on ? 'Aktywny — ' . esc_html( $ads_pub ) : 'Nieaktywny'; ?>
-								</span>
-								<?php if ( ! $ads_on ) : ?>
-									<p style="margin-top:12px;font-size:13px;">
-										<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . 'pearblog-enterprise-v8' . '&tab=settings' ) ); ?>">
-											→ Skonfiguruj AdSense w Settings
-										</a>
-									</p>
-								<?php endif; ?>
-							</div>
-						</div>
-						<div class="pb-v8-card">
-							<div class="pb-v8-card-body">
-								<h3>🏢 Wyróżnione profile</h3>
-								<p>PRO/Premium/VIP pozycja dla firm</p>
-								<span class="pb-v8-badge pb-v8-badge-warning">Wkrótce</span>
-								<p style="margin-top:12px;font-size:13px;color:var(--pb-v8-text-secondary);">
-									Planowane: FREE / PRO 49 zł / Premium 99 zł / VIP 199 zł
-								</p>
-							</div>
-						</div>
-						<div class="pb-v8-card">
-							<div class="pb-v8-card-body">
-								<h3>📋 Formularz „Dodaj firmę"</h3>
-								<p>Zgłoszenia firm do katalogu</p>
-								<span class="pb-v8-badge pb-v8-badge-success">Aktywny</span>
+						<div class="pt24-card">
+							<h3>💰 Google AdSense</h3>
+							<p>Reklamy kontekstowe — Auto Ads</p>
+							<span class="pb-v8-badge pb-v8-badge-<?php echo $ads_on ? 'success' : 'warning'; ?>">
+								<?php echo $ads_on ? 'Aktywny — ' . esc_html( $ads_pub ) : 'Nieaktywny'; ?>
+							</span>
+							<?php if ( ! $ads_on ) : ?>
 								<p style="margin-top:12px;font-size:13px;">
-									<a href="<?php echo esc_url( home_url( '/dodaj-firme/' ) ); ?>" target="_blank">
-										→ /dodaj-firme/
+									<a href="<?php echo esc_url( admin_url( 'admin.php?page=' . 'pearblog-enterprise-v8' . '&tab=settings' ) ); ?>">
+										→ Skonfiguruj AdSense w Settings
 									</a>
 								</p>
-							</div>
+							<?php endif; ?>
+						</div>
+						<div class="pt24-card">
+							<h3>🏢 Wyróżnione profile</h3>
+							<p>PRO/Premium/VIP pozycja dla firm</p>
+							<span class="pb-v8-badge pb-v8-badge-warning">Wkrótce</span>
+							<p style="margin-top:12px;font-size:13px;color:var(--pb-v8-text-secondary);">
+								Planowane: FREE / PRO 49 zł / Premium 99 zł / VIP 199 zł
+							</p>
+						</div>
+						<div class="pt24-card">
+							<h3>📋 Formularz „Dodaj firmę"</h3>
+							<p>Zgłoszenia firm do katalogu</p>
+							<span class="pb-v8-badge pb-v8-badge-success">Aktywny</span>
+							<p style="margin-top:12px;font-size:13px;">
+								<a href="<?php echo esc_url( home_url( '/dodaj-firme/' ) ); ?>" target="_blank">
+									→ /dodaj-firme/
+								</a>
+							</p>
 						</div>
 					</div>
 				</div>
@@ -2299,7 +2413,7 @@ class AdminPageV8Enterprise {
 					<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px;">
 						<?php foreach ( $by_prov as $prov => $prov_cities ) : ?>
 						<div style="background:rgba(125,125,125,.06);border:1px solid rgba(125,125,125,.15);border-radius:8px;padding:10px 14px;">
-							<strong style="font-size:12px;text-transform:uppercase;letter-spacing:.05em;color:var(--pb-v8-text-secondary);">
+							<strong style="font-size:12px;text-transform:uppercase;letter-spacing:0;color:var(--pb-v8-text-secondary);">
 								<?php echo esc_html( $prov ); ?>
 							</strong>
 							<p style="margin:4px 0 0;font-size:13px;">
@@ -2342,6 +2456,7 @@ class AdminPageV8Enterprise {
 		$nonce             = wp_create_nonce( 'pt24_factory_nonce' );
 		$services          = class_exists( 'PT24_Scale_Data' ) ? PT24_Scale_Data::services() : [];
 		$cities            = class_exists( 'PT24_Scale_Data' ) ? PT24_Scale_Data::cities() : [];
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title">🏭 AI Factory — Generator stron PT24</h2>
@@ -2383,48 +2498,60 @@ class AdminPageV8Enterprise {
 			</div>
 
 			<!-- Generator controls -->
-			<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-top:20px;">
+			<div class="pb-v8-card pt24-admin-card" style="margin-top:20px;">
+				<div class="pb-v8-card-header">
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO factory</span>
+						<h3 class="pb-v8-card-title">Generator stron usługowych</h3>
+						<p class="pt24-admin-subtitle">Twórz pojedyncze landingi albo kolejkuj większe paczki z CSV.</p>
+					</div>
+				</div>
+				<div class="pb-v8-card-body">
+			<div class="pt24-admin-layout">
 
 				<!-- Quick generate single -->
-				<div class="pb-v8-card">
-					<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">⚡ Generuj jedną stronę</h3></div>
-					<div class="pb-v8-card-body">
-						<div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px;">
-							<div>
-								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Usługa</label>
-								<select id="ptfService" style="width:100%;padding:6px;font-size:13px;">
+				<div class="pt24-admin-panel">
+					<h4>⚡ Generuj jedną stronę</h4>
+					<div class="pt24-admin-form">
+						<div class="pt24-admin-grid">
+							<div class="pt24-admin-field">
+								<label for="ptfService">Usługa</label>
+								<select id="ptfService">
 									<?php foreach ( $services as $slug => $svc ) : ?>
 										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $svc['name'] ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
-							<div>
-								<label style="font-size:12px;font-weight:600;display:block;margin-bottom:4px;">Miasto</label>
-								<select id="ptfCity" style="width:100%;padding:6px;font-size:13px;">
+							<div class="pt24-admin-field">
+								<label for="ptfCity">Miasto</label>
+								<select id="ptfCity">
 									<?php foreach ( $cities as $slug => $city ) : ?>
 										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $city['name'] ); ?></option>
 									<?php endforeach; ?>
 								</select>
 							</div>
 						</div>
-						<label style="font-size:12px;display:flex;align-items:center;gap:6px;margin-bottom:12px;">
+						<label class="pt24-admin-check">
 							<input type="checkbox" id="ptfUseAi" <?php echo $stats['has_api_key'] ? '' : 'disabled'; ?>>
 							Użyj OpenAI (gpt-4o-mini) <?php if ( ! $stats['has_api_key'] ) echo '<span style="color:var(--pb-v8-danger);font-size:11px;">— brak klucza API</span>'; ?>
 						</label>
 						<button class="pb-v8-btn pb-v8-btn-primary" id="ptfGenerateBtn" onclick="ptFactory.generateSingle('<?php echo esc_js( $nonce ); ?>')">
 							▶ Generuj stronę
 						</button>
-						<div id="ptfSingleMsg" style="margin-top:10px;font-size:13px;"></div>
+						<div id="ptfSingleMsg" class="pt24-admin-message"></div>
 					</div>
 				</div>
 
 				<!-- Batch via CSV -->
-				<div class="pb-v8-card">
-					<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">📋 Import CSV / Kolejkuj wszystko</h3></div>
-					<div class="pb-v8-card-body">
-						<p style="font-size:12px;color:var(--pb-v8-text-secondary);margin-bottom:8px;">Format: <code>usluga,miasto</code> — jedno zlecenie per wiersz. Puste = kolejkuje WSZYSTKIE <?php echo esc_html( number_format_i18n( $stats['remaining'] ?? 0 ) ); ?> brakujących.</p>
-						<textarea id="ptfCsvInput" rows="5" style="width:100%;box-sizing:border-box;font-family:monospace;font-size:12px;padding:8px;" placeholder="usluga,miasto<?php echo "\n"; ?>mechanik,ruda-slaska<?php echo "\n"; ?>hydraulik,katowice"></textarea>
-						<div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap;">
+				<div class="pt24-admin-panel">
+					<h4>📋 Import CSV / Kolejkuj wszystko</h4>
+					<div class="pt24-admin-form">
+						<div class="pt24-admin-field">
+							<label for="ptfCsvInput">Lista stron do wygenerowania</label>
+							<textarea id="ptfCsvInput" rows="5" placeholder="usluga,miasto<?php echo "\n"; ?>mechanik,ruda-slaska<?php echo "\n"; ?>hydraulik,katowice<?php echo "\n"; ?>elektryk,gliwice"></textarea>
+							<span class="pt24-admin-help">Format: <code>usluga,miasto</code> — jedno zlecenie per wiersz. Puste pole kolejkuje wszystkie <?php echo esc_html( number_format_i18n( $stats['remaining'] ?? 0 ) ); ?> brakujących stron.</span>
+						</div>
+						<div class="pt24-admin-actions">
 							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptFactory.batchCSV('<?php echo esc_js( $nonce ); ?>')">
 								📥 Kolejkuj z CSV
 							</button>
@@ -2435,8 +2562,10 @@ class AdminPageV8Enterprise {
 								▶ Uruchom kolejkę (5 stron)
 							</button>
 						</div>
-						<div id="ptfBatchMsg" style="margin-top:10px;font-size:13px;"></div>
+						<div id="ptfBatchMsg" class="pt24-admin-message"></div>
 					</div>
+				</div>
+			</div>
 				</div>
 			</div>
 
@@ -2648,10 +2777,15 @@ class AdminPageV8Enterprise {
 		$blog_ok    = class_exists( 'PT24_Blog_Engine' );
 		$blog_nonce = wp_create_nonce( 'pt24_blog_nonce' );
 		$blog_stats = $blog_ok ? \PT24_Blog_Engine::get_stats() : [];
+		$this->render_pt24_admin_styles();
 		?>
-		<div class="pb-v8-card" style="margin-top:28px;">
+		<div class="pb-v8-card pt24-admin-card" style="margin-top:28px;">
 			<div class="pb-v8-card-header">
-				<h3 class="pb-v8-card-title">📝 Blog Engine — SEO Content Factory</h3>
+				<div>
+					<span class="pt24-blog-kicker">PT24.PRO admin</span>
+					<h3 class="pb-v8-card-title">📝 Blog Engine — SEO Content Factory</h3>
+					<p class="pt24-blog-subtitle">Generuj poradniki SEO pod lokalne usługi, kolejkuj paczki tematów i importuj własne listy CSV.</p>
+				</div>
 			</div>
 			<div class="pb-v8-card-body">
 				<?php if ( ! $blog_ok ) : ?>
@@ -2682,47 +2816,67 @@ class AdminPageV8Enterprise {
 				</div>
 				<?php endif; ?>
 
-				<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+				<div class="pt24-blog-layout">
 
 					<!-- Generate single article -->
-					<div>
-						<h4 style="margin:0 0 10px;font-size:14px;">🖊 Generuj jeden artykuł (AI)</h4>
+					<div class="pt24-blog-panel">
+						<h4>🖊 Generuj jeden artykuł (AI)</h4>
 						<div style="display:flex;flex-direction:column;gap:8px;">
-							<input type="text" id="ptBlogTopic" placeholder="Temat: np. Pękła rura - co robić?" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
-							<select id="ptBlogService" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
-								<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
-									foreach ( PT24_Scale_Data::services() as $slug => $name ) : ?>
-									<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
-								<?php endforeach; endif; ?>
-							</select>
-							<select id="ptBlogCity" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
-								<option value="">— Bez miasta (generyczny) —</option>
-								<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
-									foreach ( PT24_Scale_Data::cities() as $slug => $name ) : ?>
-									<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
-								<?php endforeach; endif; ?>
-							</select>
+							<div class="pt24-blog-field">
+								<label for="ptBlogTopic">Temat artykułu</label>
+								<input type="text" id="ptBlogTopic" placeholder="Np. Pękła rura w mieszkaniu - co zrobić przed przyjazdem hydraulika?">
+								<span class="pt24-blog-help">Najlepiej wpisz konkretny problem klienta, nie ogólne hasło SEO.</span>
+							</div>
+							<div class="pt24-blog-field">
+								<label for="ptBlogService">Usługa</label>
+								<select id="ptBlogService">
+									<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+										foreach ( PT24_Scale_Data::services() as $slug => $name ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+									<?php endforeach; endif; ?>
+								</select>
+							</div>
+							<div class="pt24-blog-field">
+								<label for="ptBlogCity">Miasto</label>
+								<select id="ptBlogCity">
+									<option value="">Bez miasta - artykuł ogólnopolski</option>
+									<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+										foreach ( PT24_Scale_Data::cities() as $slug => $name ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+									<?php endforeach; endif; ?>
+								</select>
+							</div>
 							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptBlog.generate('<?php echo esc_js( $blog_nonce ); ?>')">🤖 Generuj artykuł</button>
-							<div id="ptBlogGenMsg" style="font-size:13px;margin-top:4px;"></div>
+							<div id="ptBlogGenMsg" class="pt24-blog-message"></div>
 						</div>
 					</div>
 
 					<!-- Batch: starters + CSV -->
-					<div>
-						<h4 style="margin:0 0 10px;font-size:14px;">🚀 Kolejkuj tematy</h4>
+					<div class="pt24-blog-panel">
+						<h4>🚀 Kolejkuj tematy</h4>
 						<div style="display:flex;flex-direction:column;gap:8px;">
-							<select id="ptBlogStarterCity" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:13px;">
-								<option value="">— Bez miasta (generyczne) —</option>
-								<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
-									foreach ( PT24_Scale_Data::cities() as $slug => $name ) : ?>
-									<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
-								<?php endforeach; endif; ?>
-							</select>
+							<div class="pt24-blog-field">
+								<label for="ptBlogStarterCity">Miasto dla tematów startowych</label>
+								<select id="ptBlogStarterCity">
+									<option value="">Bez miasta - tematy ogólne</option>
+									<?php if ( class_exists( 'PT24_Scale_Data' ) ) :
+										foreach ( PT24_Scale_Data::cities() as $slug => $name ) : ?>
+										<option value="<?php echo esc_attr( $slug ); ?>"><?php echo esc_html( $name ); ?></option>
+									<?php endforeach; endif; ?>
+								</select>
+								<span class="pt24-blog-help">Jeśli wybierzesz miasto, tematy bez własnego miasta dostaną lokalny kontekst.</span>
+							</div>
 							<button class="pb-v8-btn pb-v8-btn-primary" onclick="ptBlog.queueStarters('<?php echo esc_js( $blog_nonce ); ?>')">📋 Kolejkuj 100 tematów startowych</button>
-							<hr style="border:none;border-top:1px solid #eee;margin:4px 0;">
-							<textarea id="ptBlogCsv" rows="4" placeholder="CSV: temat,usluga,miasto&#10;Pękła rura,hydraulik,katowice&#10;Auto nie odpala,mechanik,ruda-slaska" style="padding:8px;border:1px solid #ddd;border-radius:6px;font-size:12px;font-family:monospace;resize:vertical;"></textarea>
-							<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptBlog.importCsv('<?php echo esc_js( $blog_nonce ); ?>')">📥 Importuj CSV</button>
-							<div id="ptBlogBatchMsg" style="font-size:13px;margin-top:4px;"></div>
+							<hr class="pt24-blog-separator">
+							<div class="pt24-blog-field">
+								<label for="ptBlogCsv">Import CSV</label>
+								<textarea id="ptBlogCsv" rows="5" placeholder="temat,usluga,miasto,kategoria&#10;Pękła rura w łazience - co robić?,hydraulik,katowice,awarie&#10;Auto nie odpala po nocy,mechanik,ruda-slaska,awarie&#10;Ile kosztuje wymiana rozdzielnicy?,elektryk,gliwice,koszty"></textarea>
+								<span class="pt24-blog-help">Kolumny: temat, usluga, miasto opcjonalnie, kategoria opcjonalnie.</span>
+							</div>
+							<div class="pt24-blog-actions">
+								<button class="pb-v8-btn pb-v8-btn-outline" onclick="ptBlog.importCsv('<?php echo esc_js( $blog_nonce ); ?>')">📥 Importuj CSV</button>
+							</div>
+							<div id="ptBlogBatchMsg" class="pt24-blog-message"></div>
 						</div>
 					</div>
 
@@ -2802,6 +2956,7 @@ class AdminPageV8Enterprise {
 		$token     = (string) get_option( 'pt24_webhook_token', '' );
 		$rest_base = rest_url( 'pt24/v2' );
 		$notice    = isset( $_GET['pt24_notice'] ) ? sanitize_key( wp_unslash( $_GET['pt24_notice'] ) ) : '';
+		$this->render_pt24_admin_styles();
 		?>
 		<div class="pb-v8-dashboard">
 			<h2 class="pb-v8-section-title">⚙️ Automation Pro — n8n / REST API</h2>
@@ -2821,22 +2976,28 @@ class AdminPageV8Enterprise {
 			</div>
 
 			<!-- Token settings -->
-			<div class="pb-v8-card" style="margin-top:20px;max-width:680px;">
-				<div class="pb-v8-card-header"><h3 class="pb-v8-card-title">🔑 Token autoryzacji (n8n)</h3></div>
+			<div class="pb-v8-card pt24-admin-card" style="margin-top:20px;max-width:760px;">
+				<div class="pb-v8-card-header">
+					<div>
+						<span class="pt24-admin-kicker">PT24.PRO automation</span>
+						<h3 class="pb-v8-card-title">🔑 Token autoryzacji (n8n)</h3>
+						<p class="pt24-admin-subtitle">Dane potrzebne do generowania stron, artykułów i importów przez REST API.</p>
+					</div>
+				</div>
 				<div class="pb-v8-card-body">
-					<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+					<form class="pt24-admin-form" method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
 						<input type="hidden" name="action" value="pt24_save_automation_settings">
 						<?php wp_nonce_field( 'pt24_save_automation_settings' ); ?>
-						<p>
-							<label style="font-weight:600;display:block;margin-bottom:6px;">Nagłówek: <code>X-PT24-Token: [token]</code></label>
-							<input type="text" name="pt24_webhook_token" value="<?php echo esc_attr( $token ); ?>" style="width:100%;max-width:420px;padding:8px;font-family:monospace;" placeholder="Wpisz własny token lub wygeneruj">
-							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:12px;margin-top:4px;">Wymagany przy wszystkich wywołaniach REST z zewnątrz (n8n, Postman, skrypty).</span>
-						</p>
-						<p>
-							<label style="font-weight:600;display:block;margin-bottom:6px;">OpenAI API Key</label>
-							<input type="password" name="pt24_openai_api_key" value="<?php echo esc_attr( (string) get_option( 'pt24_openai_api_key', '' ) ); ?>" style="width:100%;max-width:420px;padding:8px;" placeholder="sk-...">
-							<span style="display:block;color:var(--pb-v8-text-secondary);font-size:12px;margin-top:4px;">Wymagany do generowania treści przez AI (gpt-4o-mini). Bez klucza działa tryb szablonowy.</span>
-						</p>
+						<div class="pt24-admin-field">
+							<label for="pt24WebhookToken">Nagłówek: <code>X-PT24-Token: [token]</code></label>
+							<input id="pt24WebhookToken" type="text" name="pt24_webhook_token" value="<?php echo esc_attr( $token ); ?>" placeholder="pt24_live_...">
+							<span class="pt24-admin-help">Wymagany przy wszystkich wywołaniach REST z zewnątrz (n8n, Postman, skrypty).</span>
+						</div>
+						<div class="pt24-admin-field">
+							<label for="pt24OpenAiKey">OpenAI API Key</label>
+							<input id="pt24OpenAiKey" type="password" name="pt24_openai_api_key" value="<?php echo esc_attr( (string) get_option( 'pt24_openai_api_key', '' ) ); ?>" placeholder="sk-proj-...">
+							<span class="pt24-admin-help">Wymagany do generowania treści przez AI (gpt-4o-mini). Bez klucza działa tryb szablonowy.</span>
+						</div>
 						<button type="submit" class="button button-primary">💾 Zapisz</button>
 					</form>
 				</div>
@@ -2855,11 +3016,11 @@ class AdminPageV8Enterprise {
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/stats' ); ?></code></td><td>Statystyki factory (opublikowane, kolejka, postęp)</td></tr>
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/services' ); ?></code></td><td>Lista 10 usług (slug, nazwa, long-tail)</td></tr>
 								<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/cities' ); ?></code></td><td>Lista 80 miast (slug, nazwa, województwo)</td></tr>
-																<tr style="background:rgba(37,99,235,.05);"><td colspan="3" style="padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;color:#64748b;">BLOG ENGINE</td></tr>
+																<tr class="pt24-admin-endpoint-row"><td colspan="3" class="pt24-admin-endpoint-label">BLOG ENGINE</td></tr>
 																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/blog-generate' ); ?></code></td><td><code>{"topic":"Pękła rura","service":"hydraulik","city":"katowice","use_queue":false}</code></td></tr>
 																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/blog-csv' ); ?></code></td><td><code>{"csv":"temat,usluga,miasto\n..."}</code> lub <code>{"starters":true,"city":"katowice"}</code></td></tr>
 																<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/blog-stats' ); ?></code></td><td>Artykuły, kolejka, klucze API</td></tr>
-																<tr style="background:rgba(37,99,235,.05);"><td colspan="3" style="padding:6px 8px;font-size:11px;font-weight:700;letter-spacing:.05em;color:#64748b;">GOOGLE PLACES</td></tr>
+																<tr class="pt24-admin-endpoint-row"><td colspan="3" class="pt24-admin-endpoint-label">GOOGLE PLACES</td></tr>
 																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/places-seed' ); ?></code></td><td><code>{"service":"mechanik","city":"katowice","use_ai":true}</code></td></tr>
 																<tr><td><code>POST</code></td><td><code><?php echo esc_html( $rest_base . '/places-import-csv' ); ?></code></td><td><code>{"csv":"place_id,company_name,service,city,..."}</code></td></tr>
 																<tr><td><code>GET</code></td><td><code><?php echo esc_html( $rest_base . '/places-stats' ); ?></code></td><td>Firmy, AI-enriched, kolejka</td></tr>
