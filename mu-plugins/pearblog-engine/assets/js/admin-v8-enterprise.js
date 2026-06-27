@@ -552,24 +552,35 @@
 		 * Generate report
 		 */
 		generateReport(type) {
-			alert('Generating ' + type + ' report...');
-			// Implement actual report generation
+			this.exportData('json', type);
 		},
 
 		/**
 		 * Export data
 		 */
-		exportData(format) {
+		exportData(format, reportType = 'overview') {
 			$.ajax({
 				url: pbV8Data.ajaxUrl,
 				type: 'POST',
 				data: {
 					action: 'pb_v8_export_report',
 					nonce: pbV8Data.nonce,
-					format: format
+					format: format,
+					report_type: reportType
 				},
 				success: (response) => {
-					if (response.success) {
+					if (response.success && response.data && response.data.content) {
+						const binary = atob(response.data.content);
+						const bytes = Uint8Array.from(binary, (char) => char.charCodeAt(0));
+						const blob = new Blob([bytes], { type: response.data.mime || 'application/octet-stream' });
+						const link = document.createElement('a');
+						link.href = URL.createObjectURL(blob);
+						link.download = response.data.filename || `report.${format}`;
+						document.body.appendChild(link);
+						link.click();
+						link.remove();
+						URL.revokeObjectURL(link.href);
+					} else if (response && response.data && response.data.message) {
 						alert(response.data.message);
 					}
 				}
@@ -580,7 +591,7 @@
 		 * Export audit log
 		 */
 		exportAuditLog() {
-			this.exportData('csv');
+			this.exportData('csv', 'security');
 		}
 	};
 

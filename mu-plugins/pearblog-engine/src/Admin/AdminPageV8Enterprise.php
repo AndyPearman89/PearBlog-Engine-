@@ -23,10 +23,12 @@ declare(strict_types=1);
 
 namespace PearBlogEngine\Admin;
 
+use PearBlogEngine\API\PermissionManager;
 use PearBlogEngine\AI\AIClient;
 use PearBlogEngine\AI\AIProviderFactory;
 use PearBlogEngine\Content\TopicQueue;
 use PearBlogEngine\Monitoring\PerformanceDashboard;
+use PearBlogEngine\Security\ComplianceExporter;
 use PearBlogEngine\Tenant\TenantContext;
 // Global (non-namespaced) PT24 factory classes.
 use PT24_AI_Factory;
@@ -731,6 +733,9 @@ class AdminPageV8Enterprise {
 	 * Render Security & Audit Tab
 	 */
 	private function render_security_tab(): void {
+		$security = $this->get_security_overview();
+		$score    = (int) $security['score'];
+		$status   = $score >= 90 ? __( 'Excellent security posture', 'pearblog-engine' ) : ( $score >= 75 ? __( 'Good security posture', 'pearblog-engine' ) : __( 'Security review recommended', 'pearblog-engine' ) );
 		?>
 		<div class="pb-v8-security">
 			<h2 class="pb-v8-section-title"><?php esc_html_e( 'Security & Audit Log', 'pearblog-engine' ); ?></h2>
@@ -740,13 +745,13 @@ class AdminPageV8Enterprise {
 				<div class="pb-v8-card-body">
 					<div style="text-align: center;">
 						<div style="font-size: 72px; font-weight: 800; color: var(--pb-v8-success); margin-bottom: 16px;">
-							98<span style="font-size: 48px;">/100</span>
+							<?php echo esc_html( (string) $score ); ?><span style="font-size: 48px;">/100</span>
 						</div>
 						<h3><?php esc_html_e( 'Overall Security Score', 'pearblog-engine' ); ?></h3>
-						<p style="color: var(--pb-v8-text-secondary);"><?php esc_html_e( 'Excellent security posture', 'pearblog-engine' ); ?></p>
+						<p style="color: var(--pb-v8-text-secondary);"><?php echo esc_html( $status ); ?></p>
 
 						<div class="pb-v8-progress" style="margin-top: 24px;">
-							<div class="pb-v8-progress-bar" style="width: 98%;"></div>
+							<div class="pb-v8-progress-bar" style="width: <?php echo esc_attr( (string) max( 0, min( 100, $score ) ) ); ?>%;"></div>
 						</div>
 					</div>
 				</div>
@@ -756,28 +761,28 @@ class AdminPageV8Enterprise {
 			<div class="pb-v8-metrics-grid">
 				<?php $this->render_metric_card( [
 					'label'  => __( 'Failed Login Attempts', 'pearblog-engine' ),
-					'value'  => '3',
+					'value'  => number_format_i18n( (int) $security['failed_logins'] ),
 					'icon'   => '🔒',
 					'color'  => 'warning',
 				] ); ?>
 
 				<?php $this->render_metric_card( [
 					'label'  => __( 'Blocked IP Addresses', 'pearblog-engine' ),
-					'value'  => '12',
+					'value'  => number_format_i18n( (int) $security['blocked_ips'] ),
 					'icon'   => '🚫',
 					'color'  => 'danger',
 				] ); ?>
 
 				<?php $this->render_metric_card( [
 					'label'  => __( 'Audit Logs (24h)', 'pearblog-engine' ),
-					'value'  => '1,234',
+					'value'  => number_format_i18n( (int) $security['audit_logs_24h'] ),
 					'icon'   => '📋',
 					'color'  => 'primary',
 				] ); ?>
 
 				<?php $this->render_metric_card( [
 					'label'  => __( 'Active Sessions', 'pearblog-engine' ),
-					'value'  => '5',
+					'value'  => number_format_i18n( (int) $security['active_sessions'] ),
 					'icon'   => '👤',
 					'color'  => 'success',
 				] ); ?>
@@ -792,7 +797,7 @@ class AdminPageV8Enterprise {
 					</button>
 				</div>
 				<div class="pb-v8-card-body">
-					<?php $this->render_audit_log_table(); ?>
+					<?php $this->render_audit_log_table( $security['audit_entries'] ); ?>
 				</div>
 			</div>
 		</div>
@@ -862,8 +867,8 @@ class AdminPageV8Enterprise {
 						<button class="pb-v8-btn pb-v8-btn-outline" onclick="pbV8Export('csv')">
 							📄 CSV
 						</button>
-						<button class="pb-v8-btn pb-v8-btn-outline" onclick="pbV8Export('pdf')">
-							📑 PDF
+						<button class="pb-v8-btn pb-v8-btn-outline" onclick="pbV8Export('html')">
+							🌐 HTML
 						</button>
 						<button class="pb-v8-btn pb-v8-btn-outline" onclick="pbV8Export('json')">
 							🔧 JSON
@@ -3399,7 +3404,8 @@ class AdminPageV8Enterprise {
 	/**
 	 * Render audit log table
 	 */
-	private function render_audit_log_table(): void {
+	private function render_audit_log_table( ?array $logs = null ): void {
+		$logs = is_array( $logs ) ? $logs : $this->get_security_overview()['audit_entries'];
 		?>
 		<div class="pb-v8-table-wrapper">
 			<table class="pb-v8-table">
@@ -3414,39 +3420,23 @@ class AdminPageV8Enterprise {
 				</thead>
 				<tbody>
 					<?php
-					$logs = [
-						[
-							'time'   => '2026-05-03 16:15:32',
-							'user'   => 'admin',
-							'action' => 'Settings Updated',
-							'ip'     => '192.168.1.1',
-							'status' => 'success',
-						],
-						[
-							'time'   => '2026-05-03 16:10:15',
-							'user'   => 'admin',
-							'action' => 'Content Generated',
-							'ip'     => '192.168.1.1',
-							'status' => 'success',
-						],
-						[
-							'time'   => '2026-05-03 16:05:42',
-							'user'   => 'editor',
-							'action' => 'Login Attempt',
-							'ip'     => '10.0.0.5',
-							'status' => 'failed',
-						],
-					];
+					if ( empty( $logs ) ) :
+						?>
+						<tr>
+							<td colspan="5"><?php esc_html_e( 'No audit entries available yet.', 'pearblog-engine' ); ?></td>
+						</tr>
+						<?php
+					endif;
 					foreach ( $logs as $log ) :
 						?>
 						<tr>
-							<td><?php echo esc_html( $log['time'] ); ?></td>
-							<td><?php echo esc_html( $log['user'] ); ?></td>
-							<td><?php echo esc_html( $log['action'] ); ?></td>
-							<td><code><?php echo esc_html( $log['ip'] ); ?></code></td>
+							<td><?php echo esc_html( (string) ( $log['time'] ?? '' ) ); ?></td>
+							<td><?php echo esc_html( (string) ( $log['user'] ?? '' ) ); ?></td>
+							<td><?php echo esc_html( (string) ( $log['action'] ?? '' ) ); ?></td>
+							<td><code><?php echo esc_html( (string) ( $log['ip'] ?? '—' ) ); ?></code></td>
 							<td>
-								<span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $log['status'] ); ?>">
-									<?php echo esc_html( $log['status'] ); ?>
+								<span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( (string) ( $log['status'] ?? 'warning' ) ); ?>">
+									<?php echo esc_html( (string) ( $log['status'] ?? 'warning' ) ); ?>
 								</span>
 							</td>
 						</tr>
@@ -3492,19 +3482,194 @@ class AdminPageV8Enterprise {
 				'cost_change'        => 0.0,
 			];
 		} catch ( \Throwable $e ) {
-			// Fall back to static seed values if KPI tables are not yet provisioned.
+			// Fall through to a live, table-free approximation.
 		}
 
+		$realtime = $this->get_realtime_stats();
+		$post_counts = wp_count_posts( 'post' );
+		$landing_counts = post_type_exists( 'pt24_landing' ) ? wp_count_posts( 'pt24_landing' ) : null;
+		$content_generated = (int) ( $post_counts->publish ?? 0 ) + (int) ( $landing_counts->publish ?? 0 );
+		$today_revenue = $this->get_revenue_today_total();
+
 		return [
-			'revenue_today'      => 1247.50,
-			'revenue_change'     => 12.5,
-			'active_users'       => 342,
-			'users_change'       => 8.2,
-			'content_generated'  => 45,
-			'content_change'     => -3.1,
-			'ai_cost'            => 87.32,
-			'cost_change'        => 15.7,
+			'revenue_today'      => $today_revenue,
+			'revenue_change'     => 0.0,
+			'active_users'       => (int) $realtime['visitors'],
+			'users_change'       => 0.0,
+			'content_generated'  => $content_generated,
+			'content_change'     => 0.0,
+			'ai_cost'            => (float) get_option( 'pearblog_ai_cost_monthly_estimate', 0.0 ),
+			'cost_change'        => 0.0,
 		];
+	}
+
+	/**
+	 * Get security overview backed by the audit log and recent events.
+	 *
+	 * @return array{score:int,failed_logins:int,blocked_ips:int,audit_logs_24h:int,active_sessions:int,audit_entries:array<int,array<string,string>>}
+	 */
+	private function get_security_overview(): array {
+		global $wpdb;
+
+		$permission_manager = new PermissionManager();
+		$raw_entries = array_reverse( $permission_manager->get_audit_log( 50 ) );
+		$cutoff = time() - DAY_IN_SECONDS;
+		$failed_logins = 0;
+		$blocked_ips = [];
+		$audit_logs_24h = 0;
+		$audit_entries = [];
+
+		foreach ( $raw_entries as $entry ) {
+			$timestamp = isset( $entry['ts'] ) ? strtotime( (string) $entry['ts'] ) : false;
+			$action    = (string) ( $entry['action'] ?? '' );
+			$context   = (string) ( $entry['context'] ?? '' );
+			$success   = ! empty( $entry['success'] );
+			$ip        = preg_match( '/((?:\d{1,3}\.){3}\d{1,3})/', $context, $matches ) ? $matches[1] : '—';
+
+			if ( false !== $timestamp && $timestamp >= $cutoff ) {
+				++$audit_logs_24h;
+				if ( false !== stripos( $action, 'login' ) && ! $success ) {
+					++$failed_logins;
+					if ( '—' !== $ip ) {
+						$blocked_ips[ $ip ] = true;
+					}
+				}
+			}
+
+			$audit_entries[] = [
+				'time'   => (string) ( $entry['ts'] ?? '' ),
+				'user'   => (string) ( $entry['actor'] ?? 'system' ),
+				'action' => trim( $action . ( '' !== $context ? ' — ' . $context : '' ) ),
+				'ip'     => $ip,
+				'status' => $success ? 'success' : 'failed',
+			];
+		}
+
+		$active_sessions = 0;
+		$event_table = $wpdb->prefix . 'pearblog_events';
+		$session_since = wp_date( 'Y-m-d H:i:s', time() - DAY_IN_SECONDS );
+		$events_table_exists = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $event_table ) ) === $event_table;
+		if ( $events_table_exists ) {
+			$session_count = $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(DISTINCT session_id) FROM `{$event_table}` WHERE created_at >= %s AND session_id IS NOT NULL AND session_id <> ''", $session_since ) );
+			$active_sessions = null !== $session_count ? (int) $session_count : 0;
+		}
+
+		$score = 100;
+		$score -= min( 30, $failed_logins * 5 );
+		$score -= min( 15, count( $blocked_ips ) * 3 );
+		$score -= 10 * ( empty( $audit_entries ) ? 1 : 0 );
+		$score = max( 0, min( 100, $score ) );
+
+		return [
+			'score'           => $score,
+			'failed_logins'   => $failed_logins,
+			'blocked_ips'     => count( $blocked_ips ),
+			'audit_logs_24h'  => $audit_logs_24h,
+			'active_sessions' => $active_sessions,
+			'audit_entries'   => $audit_entries,
+		];
+	}
+
+	/**
+	 * Compute today's tracked revenue from the event stream.
+	 */
+	private function get_revenue_today_total(): float {
+		global $wpdb;
+		$event_table = $wpdb->prefix . 'pearblog_events';
+		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $event_table ) ) !== $event_table ) {
+			return 0.0;
+		}
+
+		$today = current_time( 'Y-m-d' ) . ' 00:00:00';
+		$rows = $wpdb->get_col( $wpdb->prepare( "SELECT event_data FROM `{$event_table}` WHERE event_type = %s AND created_at >= %s", 'revenue', $today ) );
+		$total = 0.0;
+		foreach ( (array) $rows as $event_data ) {
+			$decoded = json_decode( (string) $event_data, true );
+			if ( is_array( $decoded ) && isset( $decoded['amount'] ) ) {
+				$total += (float) $decoded['amount'];
+			}
+		}
+
+		return round( $total, 2 );
+	}
+
+	/**
+	 * Build a concrete report payload for AJAX export.
+	 *
+	 * @return array<string,mixed>
+	 */
+	private function build_enterprise_report_payload( string $type ): array {
+		$type = sanitize_key( $type );
+		$dashboard = $this->get_dashboard_stats();
+		$security = $this->get_security_overview();
+		$pt24_stats = class_exists( 'PT24_AI_Factory' ) ? PT24_AI_Factory::get_stats() : [];
+		$seo_payload = [
+			'total_urls'    => 1 + (int) wp_count_posts( 'page' )->publish + (int) wp_count_posts( 'post' )->publish + ( post_type_exists( 'pt24_landing' ) ? (int) wp_count_posts( 'pt24_landing' )->publish : 0 ),
+			'landings'      => post_type_exists( 'pt24_landing' ) ? (int) wp_count_posts( 'pt24_landing' )->publish : 0,
+			'posts'         => (int) wp_count_posts( 'post' )->publish,
+			'pages'         => (int) wp_count_posts( 'page' )->publish,
+			'sitemap_url'   => home_url( '/sitemap.xml' ),
+		];
+
+		$payloads = [
+			'overview' => [
+				'title' => 'Enterprise Overview',
+				'data'  => [
+					'dashboard' => $dashboard,
+					'factory'   => $pt24_stats,
+					'security'  => $security,
+				],
+			],
+			'revenue' => [
+				'title' => 'Revenue Report',
+				'data'  => $dashboard,
+			],
+			'content' => [
+				'title' => 'Content Performance Report',
+				'data'  => [
+					'published'    => (int) ( $pt24_stats['published'] ?? 0 ),
+					'queue_size'   => (int) ( $pt24_stats['queue_size'] ?? 0 ),
+					'ai_generated' => (int) ( $pt24_stats['ai_generated'] ?? 0 ),
+					'factory_gen'  => (int) ( $pt24_stats['factory_gen'] ?? 0 ),
+				],
+			],
+			'seo' => [
+				'title' => 'SEO Report',
+				'data'  => $seo_payload,
+			],
+			'ai-cost' => [
+				'title' => 'AI Cost Report',
+				'data'  => [
+					'monthly_estimate' => (float) get_option( 'pearblog_ai_cost_monthly_estimate', 0.0 ),
+					'openai_configured' => '' !== (string) get_option( 'pt24_openai_api_key', '' ),
+					'factory_ai_generated' => (int) ( $pt24_stats['ai_generated'] ?? 0 ),
+				],
+			],
+			'security' => [
+				'title' => 'Security & Audit Report',
+				'data'  => $security,
+			],
+		];
+
+		return $payloads[ $type ] ?? $payloads['overview'];
+	}
+
+	/**
+	 * Convert nested report payload to flat rows for export.
+	 *
+	 * @return array<int,array{metric:string,value:string}>
+	 */
+	private function flatten_report_payload( array $payload, string $prefix = '' ): array {
+		$rows = [];
+		foreach ( $payload as $key => $value ) {
+			$metric = '' === $prefix ? (string) $key : $prefix . '.' . $key;
+			if ( is_array( $value ) ) {
+				$rows = array_merge( $rows, $this->flatten_report_payload( $value, $metric ) );
+				continue;
+			}
+			$rows[] = [ 'metric' => $metric, 'value' => is_bool( $value ) ? ( $value ? 'true' : 'false' ) : (string) $value ];
+		}
+		return $rows;
 	}
 
 	/**
@@ -3718,12 +3883,51 @@ class AdminPageV8Enterprise {
 	public function ajax_export_report(): void {
 		check_ajax_referer( 'pb_v8_nonce', 'nonce' );
 
-		$format = $_POST['format'] ?? 'csv';
+		$format = sanitize_key( (string) ( $_POST['format'] ?? 'csv' ) );
+		$type   = sanitize_key( (string) ( $_POST['report_type'] ?? 'overview' ) );
+		$report = $this->build_enterprise_report_payload( $type );
+		$rows   = $this->flatten_report_payload( (array) $report['data'] );
+		$slug   = sanitize_title( (string) $report['title'] );
 
-		// Mock export
+		switch ( $format ) {
+			case 'json':
+				$filename = $slug . '.json';
+				$mime     = 'application/json';
+				$content  = wp_json_encode( $report, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES );
+				break;
+			case 'excel':
+				$filename = $slug . '.xls';
+				$mime     = 'application/vnd.ms-excel';
+				$content  = "metric\tvalue\n";
+				foreach ( $rows as $row ) {
+					$content .= $row['metric'] . "\t" . $row['value'] . "\n";
+				}
+				break;
+			case 'html':
+				$filename = $slug . '.html';
+				$mime     = 'text/html';
+				$content  = '<html><head><meta charset="utf-8"><title>' . esc_html( (string) $report['title'] ) . '</title></head><body><h1>' . esc_html( (string) $report['title'] ) . '</h1><table border="1" cellspacing="0" cellpadding="6"><thead><tr><th>Metric</th><th>Value</th></tr></thead><tbody>';
+				foreach ( $rows as $row ) {
+					$content .= '<tr><td>' . esc_html( $row['metric'] ) . '</td><td>' . esc_html( $row['value'] ) . '</td></tr>';
+				}
+				$content .= '</tbody></table></body></html>';
+				break;
+			case 'csv':
+			default:
+				$filename = $slug . '.csv';
+				$mime     = 'text/csv';
+				$content  = "metric,value\n";
+				foreach ( $rows as $row ) {
+					$content .= '"' . str_replace( '"', '""', $row['metric'] ) . '","' . str_replace( '"', '""', $row['value'] ) . '"' . "\n";
+				}
+				break;
+		}
+
 		wp_send_json_success( [
-			'message' => sprintf( __( 'Report exported as %s', 'pearblog-engine' ), strtoupper( $format ) ),
-			'url'     => '#',
+			'message'  => sprintf( __( 'Report exported as %s', 'pearblog-engine' ), strtoupper( $format ) ),
+			'filename' => $filename,
+			'mime'     => $mime,
+			'content'  => base64_encode( (string) $content ),
 		] );
 	}
 }
