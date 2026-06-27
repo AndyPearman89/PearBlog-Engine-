@@ -59,6 +59,7 @@
 |----------|----------|----------|---------|
 | [PROGRESS-VISUALIZATION.md](PROGRESS-VISUALIZATION.md) | **PL / EN** | Everyone | Bilingual progress visualization: milestones, timeline, metrics |
 | [ROADMAP-VISUAL.md](ROADMAP-VISUAL.md) | EN | Everyone | Visual roadmap, milestones, timeline v6.0→v7.0 |
+| [ENTERPRISE-CENTER-ROLLOUT-PLAN.md](ENTERPRISE-CENTER-ROLLOUT-PLAN.md) | PL/EN | Product / Ops / Dev | 4-wave Center rollout plan mapped to Enterprise v8 tabs, shared KPI/data model, and phase gates |
 | [ENTERPRISE-AUTOPILOT-TASKLIST.md](ENTERPRISE-AUTOPILOT-TASKLIST.md) | EN | Dev / Ops | 26-task autonomous execution plan (Phase 1-7) |
 | [LAUNCH-DAY-PLAN.md](LAUNCH-DAY-PLAN.md) | EN | Ops | Hour-by-hour launch day plan, T-7 timeline, rollback procedure |
 | [PRODUCTION-CHECKLIST.md](PRODUCTION-CHECKLIST.md) | EN | Ops | Standalone pre-launch & weekly/monthly/quarterly operations checklists |

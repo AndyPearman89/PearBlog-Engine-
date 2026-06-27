@@ -78,6 +78,42 @@ After merging PR #70:
 
 ---
 
+## 🧭 Enterprise Center Rollout — Active Execution Plan
+
+### Wave 1 (MVP — Current Priority)
+- SEO Opportunity Center
+- Local Market Center
+- Content Quality Center
+- Revenue Intelligence
+- Realtime Dashboard
+- Outcome: shared KPI + unified scoring + one operational view.
+
+### Wave 2
+- AI Automation Center
+- Notification Center
+- Marketing Center
+
+### Wave 3
+- CRM + Customer Support
+- Document + Media Center
+- Security + System + Developer Center
+
+### Wave 4
+- Global Search + Command Palette + Mobile Admin + Executive Dashboard
+- Multi-tenant expansion + governance (RBAC, audit, SLA)
+
+### Wave Gate (Go/No-Go)
+Before moving to next wave:
+- KPI are ready and reliable
+- alerting is active
+- permissions and audit are implemented
+- executive views are available
+- confirmed business impact exists (lead quality, revenue, operational time)
+
+Reference: See [ENTERPRISE-CENTER-ROLLOUT-PLAN.md](ENTERPRISE-CENTER-ROLLOUT-PLAN.md) for the detailed implementation blueprint, v8 module/tab mapping, and phase gate criteria.
+
+---
+
 ## 🗺️ v8.1 Feature Roadmap (2026-06-01)
 
 These are the next-generation features planned for the first post-launch release:
