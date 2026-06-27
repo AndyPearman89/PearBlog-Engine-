@@ -85,6 +85,19 @@ get_header();
                     </a>
                 <?php endforeach; ?>
             </div>
+
+            <div class="pt24-mobile-map lg:hidden">
+                <div class="pt24-mobile-map-inner">
+                    <div class="pt24-mobile-glow"></div>
+                    <div class="pt24-mobile-marker m1">Warszawa</div>
+                    <div class="pt24-mobile-marker m2">Kraków</div>
+                    <div class="pt24-mobile-marker m3">Wrocław</div>
+                </div>
+                <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                    <div class="rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-xs text-[#D6E3F5] backdrop-blur-xl">Hydraulik · ⭐ 4.9 · 8 min</div>
+                    <div class="rounded-2xl border border-white/15 bg-white/5 px-3 py-2 text-xs text-[#D6E3F5] backdrop-blur-xl">Nowe oferty · 5 wykonawców</div>
+                </div>
+            </div>
         </div>
 
         <!-- Right column -->
