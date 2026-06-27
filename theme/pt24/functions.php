@@ -1121,6 +1121,40 @@ function pt24_filter_sitemaps_taxonomies($taxonomies) {
     return $taxonomies;
 }
 add_filter('wp_sitemaps_taxonomies', 'pt24_filter_sitemaps_taxonomies');
+/**
+ * Redirect legacy top-level service slugs to canonical /uslugi/{slug}/ URLs.
+ */
+function pt24_redirect_legacy_service_slugs() {
+    if (is_admin() || wp_doing_ajax()) {
+        return;
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $segments = array_values(array_filter(explode('/', trim($request_path, '/'))));
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'pt24') {
+        array_shift($segments);
+    }
+
+    if (count($segments) !== 1) {
+        return;
+    }
+
+    $legacy_slug = sanitize_title((string) $segments[0]);
+    if ($legacy_slug === '') {
+        return;
+    }
+
+    $service_slugs = array_keys(pt24_get_segment_service_titles());
+    if (! in_array($legacy_slug, $service_slugs, true)) {
+        return;
+    }
+
+    wp_safe_redirect(home_url('/uslugi/' . $legacy_slug . '/'), 301);
+    exit;
+}
+add_action('template_redirect', 'pt24_redirect_legacy_service_slugs', 0);
 
 /**
  * Force 404 status for legacy archive paths not used on PT24.
