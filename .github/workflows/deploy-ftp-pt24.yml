@@ -12,6 +12,10 @@ on:
 permissions:
   contents: read
 
+concurrency:
+  group: deploy-ftp-pt24-main
+  cancel-in-progress: true
+
 jobs:
   deploy-ftp-pt24:
     name: Deploy plugin & theme via FTP to PT24
@@ -65,7 +69,7 @@ jobs:
 
           # Use lftp with plain FTP
           LFTP_OPEN="open ftp://$FTP_USER:$FTP_PASS@$FTP_HOST:$FTP_PORT"
-          LFTP_SETTINGS="set net:timeout 30; set ftp:passive-mode yes; set ssl:verify-certificate no"
+          LFTP_SETTINGS="set cmd:fail-exit yes; set net:timeout 30; set net:max-retries 1; set net:reconnect-interval-base 5; set net:persist-retries 1; set ftp:passive-mode yes; set ssl:verify-certificate no"
           MIRROR_EXCLUDES="--exclude-glob .git* --exclude-glob .github/** --exclude-glob node_modules/** --exclude-glob vendor/** --exclude-glob tests/** --exclude-glob docs/** --exclude-glob *.md"
 
           echo "=== Deploying mu-plugins/pearblog-engine/ ==="
