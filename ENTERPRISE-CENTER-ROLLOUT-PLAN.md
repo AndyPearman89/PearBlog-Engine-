@@ -41,7 +41,7 @@
 
 ## 2) Dopasowanie do obecnej architektury (v8 Enterprise)
 
-Rozwój jest oparty na istniejącym panelu `AdminPageV8Enterprise` i jego tabach:
+Rozwój jest oparty na istniejącym panelu `AdminPageV8Enterprise` i jego zakładkach:
 - `realtime`, `seo`, `monetization`, `leads`, `automation`, `analytics`, `multisite`, `performance`, `security`, `reporting`, `integrations`.
 
 ### Mapowanie nowych Center do istniejących tabów i modułów

@@ -1,8 +1,50 @@
 # 🗺️ PEARBLOG ENGINE - VISUAL ROADMAP
 # Enterprise Path to Production v6.0.0 → v7.0.0
 
-**Last Updated:** 2026-04-12
-**Status:** v6.0 COMPLETE — v7.0 PLANNED
+**Last Updated:** 2026-06-27
+**Status:** v8-aligned center rollout active (4 waves)
+
+---
+
+## 🧭 CENTER ROLLOUT WAVES (v8-aligned)
+
+This roadmap now follows a 4-wave delivery model aligned with the existing Enterprise v8 panel and modules.
+
+### Wave 1 — MVP (Now)
+- SEO Opportunity Center
+- Local Market Center
+- Content Quality Center
+- Revenue Intelligence
+- Realtime Dashboard
+- Goal: launch shared KPI + scoring and one operational executive view.
+
+### Wave 2 — Automation & Growth
+- AI Automation Center
+- Notification Center
+- Marketing Center
+- Goal: improve effectiveness and reduce operational response time.
+
+### Wave 3 — End-to-End Operations
+- CRM + Customer Support
+- Document + Media Center
+- Security + System + Developer Center
+- Goal: close the full operations loop across sales, support, security, and platform reliability.
+
+### Wave 4 — Enterprise UX & Scale
+- Global Search
+- Command Palette
+- Mobile Admin
+- Executive Dashboard
+- Multi-tenant expansion + governance (RBAC/audit/SLA)
+- Goal: scale multi-portal operations with centralized control.
+
+### Go/No-Go Gate Between Waves
+Each next wave starts only when all are true:
+- KPI are defined, measurable, and trusted
+- alerting is active
+- permissions and audit logging are in place
+- executive views are available
+- business impact is confirmed (lead quality, revenue, operational time)
 
 ---
 
