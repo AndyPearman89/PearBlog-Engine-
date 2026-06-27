@@ -40,12 +40,12 @@ $link_contact = $section_base . '#kontakt';
 
             <!-- Desktop Nav -->
             <nav class="hidden items-center gap-8 text-sm font-medium text-slate-600 lg:flex">
-                <a href="<?php echo esc_url($link_how_it_works); ?>" class="transition hover:text-brand-start">Jak to działa</a>
+                 <a href="/jak-to-dziala/" class="transition hover:text-brand-start">Jak to działa</a>
                 <a href="/uslugi/" class="transition hover:text-brand-start">Usługi</a>
                 <a href="/miasta/" class="transition hover:text-brand-start">Miasta</a>
-                <a href="<?php echo esc_url($link_for_companies); ?>" class="transition hover:text-brand-start">Dla fachowców</a>
-                <a href="<?php echo esc_url($link_reviews); ?>" class="transition hover:text-brand-start">Opinie</a>
-                <a href="<?php echo esc_url($link_contact); ?>" class="transition hover:text-brand-start">Kontakt</a>
+                 <a href="/dla-fachowcow/" class="transition hover:text-brand-start">Dla fachowców</a>
+                 <a href="/o-nas/" class="transition hover:text-brand-start">O nas</a>
+                 <a href="/kontakt/" class="transition hover:text-brand-start">Kontakt</a>
             </nav>
 
             <!-- CTA -->
@@ -60,12 +60,12 @@ $link_contact = $section_base . '#kontakt';
         <!-- Mobile nav -->
         <nav class="border-t border-slate-100 px-4 py-2.5 lg:hidden">
             <div class="flex gap-2 overflow-x-auto whitespace-nowrap text-xs font-semibold text-slate-700">
-                <a href="<?php echo esc_url($link_how_it_works); ?>" class="rounded-lg bg-slate-100 px-3 py-1.5">Jak to działa</a>
+                    <a href="/jak-to-dziala/" class="rounded-lg bg-slate-100 px-3 py-1.5">Jak to działa</a>
                 <a href="/uslugi/" class="rounded-lg bg-slate-100 px-3 py-1.5">Usługi</a>
                 <a href="/miasta/" class="rounded-lg bg-slate-100 px-3 py-1.5">Miasta</a>
-                <a href="<?php echo esc_url($link_for_companies); ?>" class="rounded-lg bg-slate-100 px-3 py-1.5">Dla fachowców</a>
-                <a href="<?php echo esc_url($link_reviews); ?>" class="rounded-lg bg-slate-100 px-3 py-1.5">Opinie</a>
-                <a href="<?php echo esc_url($link_contact); ?>" class="rounded-lg bg-slate-100 px-3 py-1.5">Kontakt</a>
+                    <a href="/dla-fachowcow/" class="rounded-lg bg-slate-100 px-3 py-1.5">Dla fachowców</a>
+                    <a href="/o-nas/" class="rounded-lg bg-slate-100 px-3 py-1.5">O nas</a>
+                    <a href="/kontakt/" class="rounded-lg bg-slate-100 px-3 py-1.5">Kontakt</a>
                 <a href="/panel/" class="rounded-lg bg-slate-100 px-3 py-1.5">Panel</a>
                 <a href="/panel-firmy/" class="rounded-lg bg-slate-100 px-3 py-1.5">Firma</a>
                 <a href="/admin/" class="rounded-lg bg-slate-100 px-3 py-1.5">Admin</a>

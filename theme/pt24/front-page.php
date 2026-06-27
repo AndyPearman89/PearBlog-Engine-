@@ -323,7 +323,7 @@ get_header();
             [
                 'slug' => 'zachodniopomorskie',
                 'name' => 'Zachodniopomorskie',
-                'd' => 'M 32,38 L 68,34 L 92,42 L 124,38 L 138,52 L 148,68 L 134,84 L 116,96 L 98,108 L 68,102 L 48,94 L 38,78 L 32,58 Z',
+                'd' => 'M 64,76 L 136,68 L 184,84 L 248,76 L 276,104 L 296,136 L 268,168 L 232,192 L 196,216 L 136,204 L 96,188 L 76,156 L 64,116 Z',
                 'city_slug' => 'poznan',
                 'city_name' => 'Poznan',
                 'service' => 'Elektryk',
@@ -333,7 +333,7 @@ get_header();
             [
                 'slug' => 'pomorskie',
                 'name' => 'Pomorskie',
-                'd' => 'M 142,32 L 184,28 L 228,26 L 256,34 L 278,52 L 268,68 L 246,78 L 218,88 L 192,98 L 162,104 L 148,86 L 142,56 Z',
+                'd' => 'M 284,64 L 368,56 L 456,52 L 512,68 L 556,104 L 536,136 L 492,156 L 436,176 L 384,196 L 324,172 L 284,112 Z',
                 'city_slug' => 'gdansk',
                 'city_name' => 'Gdansk',
                 'service' => 'Dekarz',
@@ -343,7 +343,7 @@ get_header();
             [
                 'slug' => 'warminsko-mazurskie',
                 'name' => 'Warminsko-Mazurskie',
-                'd' => 'M 258,36 L 308,34 L 356,38 L 398,42 L 418,62 L 406,82 L 388,98 L 362,108 L 328,112 L 302,108 L 284,92 L 268,68 Z',
+                'd' => 'M 516,72 L 616,68 L 712,76 L 796,84 L 836,124 L 812,164 L 776,196 L 724,216 L 604,224 L 568,216 L 536,184 Z',
                 'city_slug' => 'warszawa',
                 'city_name' => 'Warszawa',
                 'service' => 'Hydraulik',
@@ -353,7 +353,7 @@ get_header();
             [
                 'slug' => 'podlaskie',
                 'name' => 'Podlaskie',
-                'd' => 'M 396,52 L 442,64 L 468,82 L 488,112 L 492,138 L 468,158 L 442,168 L 406,162 L 388,128 L 384,92 Z',
+                'd' => 'M 792,104 L 884,128 L 936,156 L 976,224 L 984,276 L 936,316 L 856,336 L 796,276 L 776,184 Z',
                 'city_slug' => 'warszawa',
                 'city_name' => 'Warszawa',
                 'service' => 'Remonty',
@@ -363,7 +363,7 @@ get_header();
             [
                 'slug' => 'lubuskie',
                 'name' => 'Lubuskie',
-                'd' => 'M 32,114 L 68,118 L 98,122 L 118,138 L 128,168 L 116,188 L 88,202 L 58,212 L 32,198 L 22,168 Z',
+                'd' => 'M 64,228 L 136,236 L 196,244 L 236,276 L 256,336 L 232,376 L 176,404 L 116,424 L 64,356 Z',
                 'city_slug' => 'wroclaw',
                 'city_name' => 'Wroclaw',
                 'service' => 'Brukarz',
@@ -373,7 +373,7 @@ get_header();
             [
                 'slug' => 'wielkopolskie',
                 'name' => 'Wielkopolskie',
-                'd' => 'M 108,112 L 168,114 L 198,122 L 218,138 L 228,162 L 218,188 L 188,202 L 152,208 L 118,198 L 102,168 Z',
+                'd' => 'M 216,224 L 336,232 L 396,244 L 436,276 L 456,324 L 436,376 L 376,404 L 304,416 L 236,396 Z',
                 'city_slug' => 'poznan',
                 'city_name' => 'Poznan',
                 'service' => 'Klimatyzacja',
@@ -383,7 +383,7 @@ get_header();
             [
                 'slug' => 'kujawsko-pomorskie',
                 'name' => 'Kujawsko-Pomorskie',
-                'd' => 'M 174,108 L 238,112 L 268,118 L 288,138 L 298,162 L 278,188 L 238,198 L 208,192 L 188,168 Z',
+                'd' => 'M 348,216 L 476,220 L 536,236 L 576,276 L 596,324 L 556,376 L 476,396 L 416,384 L 376,336 Z',
                 'city_slug' => 'poznan',
                 'city_name' => 'Poznan',
                 'service' => 'Elektryk',
@@ -393,7 +393,7 @@ get_header();
             [
                 'slug' => 'mazowieckie',
                 'name' => 'Mazowieckie',
-                'd' => 'M 298,112 L 358,114 L 408,118 L 438,142 L 448,168 L 428,192 L 388,198 L 348,188 L 318,168 Z',
+                'd' => 'M 596,224 L 716,228 L 816,236 L 876,284 L 896,356 L 856,384 L 776,396 L 696,376 L 636,336 Z',
                 'city_slug' => 'warszawa',
                 'city_name' => 'Warszawa',
                 'service' => 'Elektryk',
@@ -403,7 +403,7 @@ get_header();
             [
                 'slug' => 'dolnoslaskie',
                 'name' => 'Dolnoslaskie',
-                'd' => 'M 48,214 L 98,218 L 142,228 L 158,258 L 168,288 L 148,308 L 108,318 L 62,308 L 38,268 Z',
+                'd' => 'M 96,428 L 196,436 L 284,456 L 316,516 L 336,576 L 296,616 L 216,636 L 124,616 L 76,556 Z',
                 'city_slug' => 'wroclaw',
                 'city_name' => 'Wroclaw',
                 'service' => 'Remonty',
@@ -413,7 +413,7 @@ get_header();
             [
                 'slug' => 'opolskie',
                 'name' => 'Opolskie',
-                'd' => 'M 148,212 L 188,208 L 228,214 L 248,238 L 248,268 L 228,288 L 188,298 L 158,288 L 148,248 Z',
+                'd' => 'M 296,424 L 376,416 L 456,428 L 496,476 L 496,536 L 456,576 L 376,596 L 316,576 L 296,496 Z',
                 'city_slug' => 'katowice',
                 'city_name' => 'Katowice',
                 'service' => 'Hydraulik',
@@ -423,7 +423,7 @@ get_header();
             [
                 'slug' => 'lodzkie',
                 'name' => 'Lodzkie',
-                'd' => 'M 228,188 L 288,188 L 328,198 L 348,228 L 348,258 L 318,278 L 278,288 L 238,268 Z',
+                'd' => 'M 456,376 L 576,376 L 656,396 L 696,456 L 696,516 L 636,556 L 556,576 L 476,536 Z',
                 'city_slug' => 'warszawa',
                 'city_name' => 'Warszawa',
                 'service' => 'Remonty',
@@ -433,7 +433,7 @@ get_header();
             [
                 'slug' => 'lubelskie',
                 'name' => 'Lubelskie',
-                'd' => 'M 388,198 L 438,202 L 478,218 L 498,248 L 502,288 L 468,318 L 428,328 L 398,298 L 388,258 Z',
+                'd' => 'M 776,396 L 876,404 L 956,436 L 996,496 L 1004,576 L 936,636 L 856,656 L 796,596 L 776,516 Z',
                 'city_slug' => 'warszawa',
                 'city_name' => 'Warszawa',
                 'service' => 'Instalacje',
@@ -443,7 +443,7 @@ get_header();
             [
                 'slug' => 'slaskie',
                 'name' => 'Slaskie',
-                'd' => 'M 144,288 L 188,284 L 228,292 L 248,318 L 238,352 L 198,368 L 158,362 L 138,328 Z',
+                'd' => 'M 288,576 L 376,568 L 456,584 L 496,636 L 476,704 L 396,736 L 316,724 L 276,656 Z',
                 'city_slug' => 'katowice',
                 'city_name' => 'Katowice',
                 'service' => 'Mechanik',
@@ -453,7 +453,7 @@ get_header();
             [
                 'slug' => 'malopolskie',
                 'name' => 'Malopolskie',
-                'd' => 'M 232,298 L 288,302 L 338,318 L 358,348 L 338,378 L 288,388 L 248,378 L 238,338 Z',
+                'd' => 'M 464,596 L 576,604 L 676,636 L 716,696 L 676,756 L 576,776 L 476,756 L 476,676 Z',
                 'city_slug' => 'krakow',
                 'city_name' => 'Krakow',
                 'service' => 'Hydraulik',
@@ -463,7 +463,7 @@ get_header();
             [
                 'slug' => 'swietokrzyskie',
                 'name' => 'Swietokrzyskie',
-                'd' => 'M 318,268 L 368,268 L 398,288 L 408,318 L 378,348 L 338,342 L 318,308 Z',
+                'd' => 'M 636,536 L 736,536 L 796,576 L 816,636 L 756,696 L 676,684 L 636,616 Z',
                 'city_slug' => 'krakow',
                 'city_name' => 'Krakow',
                 'service' => 'Elektryk',
@@ -473,7 +473,7 @@ get_header();
             [
                 'slug' => 'podkarpackie',
                 'name' => 'Podkarpackie',
-                'd' => 'M 398,298 L 448,308 L 488,328 L 502,358 L 478,388 L 428,398 L 388,378 L 388,338 Z',
+                'd' => 'M 796,596 L 896,616 L 976,656 L 1004,716 L 956,776 L 856,796 L 776,756 L 776,676 Z',
                 'city_slug' => 'krakow',
                 'city_name' => 'Krakow',
                 'service' => 'Remonty',
@@ -485,7 +485,7 @@ get_header();
         ?>
         <div class="pt24-map-live-stage">
             <div class="pt24-map-live-canvas" role="application" aria-label="Interaktywna mapa wojewodztw Polski">
-                <svg class="pt24-map-poland-svg" viewBox="0 0 520 420" aria-hidden="true" focusable="false">
+                <svg class="pt24-map-poland-svg" viewBox="0 0 1040 840" preserveAspectRatio="xMidYMid meet" aria-hidden="true" focusable="false">
                     <?php foreach ($pt24_map_regions as $region_index => $region_item) : ?>
                         <?php $region_url = home_url('/hydraulik-dla-firm-' . $region_item['city_slug'] . '/'); ?>
                         <path

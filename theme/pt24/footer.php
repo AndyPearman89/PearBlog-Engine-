@@ -33,6 +33,9 @@ $powered_logo = content_url('mu-plugins/pearblog-engine/assets/images/pearblog-l
                     <li><a href="/uslugi/elektryk/" class="hover:text-slate-900">Elektryk</a></li>
                     <li><a href="/uslugi/mechanik/" class="hover:text-slate-900">Mechanik</a></li>
                     <li><a href="/uslugi/klimatyzacja/" class="hover:text-slate-900">Klimatyzacja</a></li>
+                    <li><a href="/hydraulik-dla-firm/" class="hover:text-slate-900">Leady hydraulik</a></li>
+                    <li><a href="/elektryk-dla-firm/" class="hover:text-slate-900">Leady elektryk</a></li>
+                    <li><a href="/hydraulik-dla-firm-warszawa/" class="hover:text-slate-900">Hydraulik Warszawa B2B</a></li>
                     <li><a href="/uslugi/" class="hover:text-slate-900">Wszystkie usługi</a></li>
                 </ul>
             </div>
@@ -54,6 +57,9 @@ $powered_logo = content_url('mu-plugins/pearblog-engine/assets/images/pearblog-l
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-900">Informacje</h3>
                 <ul class="mt-3 space-y-2 text-sm text-slate-500">
                     <li><a href="/dla-fachowcow/" class="hover:text-slate-900">Dla fachowców</a></li>
+                    <li><a href="/jak-to-dziala/" class="hover:text-slate-900">Jak to działa</a></li>
+                    <li><a href="/cennik/" class="hover:text-slate-900">Cennik</a></li>
+                    <li><a href="/faq/" class="hover:text-slate-900">FAQ</a></li>
                     <li><a href="/panel-firmy/" class="hover:text-slate-900">Panel firmy</a></li>
                     <li><a href="/kontakt/" class="hover:text-slate-900">Kontakt</a></li>
                     <li><a href="/regulamin/" class="hover:text-slate-900">Regulamin</a></li>

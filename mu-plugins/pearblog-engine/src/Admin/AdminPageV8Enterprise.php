@@ -1169,20 +1169,22 @@ class AdminPageV8Enterprise {
 											<th><?php esc_html_e( 'Contact', 'pearblog-engine' ); ?></th>
 											<th><?php esc_html_e( 'Service', 'pearblog-engine' ); ?></th>
 											<th><?php esc_html_e( 'City', 'pearblog-engine' ); ?></th>
+											<th><?php esc_html_e( 'Source', 'pearblog-engine' ); ?></th>
 											<th><?php esc_html_e( 'Status', 'pearblog-engine' ); ?></th>
 										</tr>
 									</thead>
 									<tbody>
 										<?php
 										foreach ( $leads as $lead ) :
-											$status = (string) ( $lead->status ?? 'new' );
+											$status = isset( $lead['status'] ) ? (string) $lead['status'] : 'new';
 											$badge  = $this->lead_status_badge( $status );
-											$phone  = (string) ( $lead->phone ?? '' );
-											$email  = (string) ( $lead->email ?? '' );
+											$phone  = isset( $lead['phone'] ) ? (string) $lead['phone'] : '';
+											$email  = isset( $lead['email'] ) ? (string) $lead['email'] : '';
+											$source = isset( $lead['source'] ) ? (string) $lead['source'] : '';
 											?>
 											<tr>
-												<td><?php echo esc_html( mysql2date( 'Y-m-d H:i', (string) $lead->created_at ) ); ?></td>
-												<td><strong><?php echo esc_html( (string) $lead->name ); ?></strong></td>
+												<td><?php echo esc_html( mysql2date( 'Y-m-d H:i', isset( $lead['created_at'] ) ? (string) $lead['created_at'] : '' ) ); ?></td>
+												<td><strong><?php echo esc_html( isset( $lead['name'] ) ? (string) $lead['name'] : '' ); ?></strong></td>
 												<td>
 													<?php if ( '' !== $phone ) : ?>
 														<a href="<?php echo esc_url( 'tel:' . preg_replace( '/[^0-9+]/', '', $phone ) ); ?>"><?php echo esc_html( $phone ); ?></a>
@@ -1191,12 +1193,13 @@ class AdminPageV8Enterprise {
 														<br><a href="<?php echo esc_url( 'mailto:' . $email ); ?>"><?php echo esc_html( $email ); ?></a>
 													<?php endif; ?>
 												</td>
-												<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', (string) $lead->service ) ) ); ?></td>
-												<td><?php echo esc_html( ucfirst( (string) $lead->city ) ); ?></td>
+												<td><?php echo esc_html( ucfirst( str_replace( '-', ' ', isset( $lead['service'] ) ? (string) $lead['service'] : '' ) ) ); ?></td>
+												<td><?php echo esc_html( ucfirst( isset( $lead['city'] ) ? (string) $lead['city'] : '' ) ); ?></td>
+												<td><?php echo esc_html( $source ); ?></td>
 												<td>
 													<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="pt24-admin-inline-form">
 														<input type="hidden" name="action" value="pt24_update_lead_status">
-														<input type="hidden" name="lead_id" value="<?php echo (int) $lead->id; ?>">
+														<input type="hidden" name="lead_id" value="<?php echo isset( $lead['id'] ) ? (int) $lead['id'] : 0; ?>">
 														<?php wp_nonce_field( 'pt24_update_lead_status' ); ?>
 														<span class="pb-v8-badge pb-v8-badge-<?php echo esc_attr( $badge ); ?>"><?php echo esc_html( $status ); ?></span>
 														<select name="status" onchange="this.form.submit()">
@@ -1246,7 +1249,7 @@ class AdminPageV8Enterprise {
 	 */
 	private function get_pt24_leads_data(): array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'pt24_leads';
+		$table = $this->get_pt24_leads_table_name();
 		$out   = [ 'table_exists' => false, 'total' => 0, 'new' => 0, 'today' => 0, 'week' => 0, 'rows' => [] ];
 
 		$found = $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) );
@@ -1254,15 +1257,142 @@ class AdminPageV8Enterprise {
 			return $out;
 		}
 		$out['table_exists'] = true;
+		$columns             = $this->get_pt24_table_columns( $table );
 
 		// Table name is built from the trusted DB prefix (no user input).
 		$out['total'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
-		$out['new']   = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s", 'new' ) );
-		$out['today'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m-d' ) . ' 00:00:00' ) );
-		$out['week']  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) - 7 * DAY_IN_SECONDS ) ) );
-		$out['rows']  = (array) $wpdb->get_results( "SELECT id, name, email, phone, city, service, source, status, created_at FROM `{$table}` ORDER BY created_at DESC LIMIT 50" );
+
+		if ( isset( $columns['status'] ) ) {
+			$out['new'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE LOWER(status) = 'new'" );
+		}
+
+		$created_at_type = isset( $columns['created_at'] ) ? (string) $columns['created_at'] : '';
+		if ( '' !== $created_at_type ) {
+			if ( false !== stripos( $created_at_type, 'int' ) ) {
+				$out['today'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %d", strtotime( current_time( 'Y-m-d' ) . ' 00:00:00' ) ) );
+				$out['week']  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %d", current_time( 'timestamp' ) - 7 * DAY_IN_SECONDS ) );
+			} else {
+				$out['today'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m-d' ) . ' 00:00:00' ) );
+				$out['week']  = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", gmdate( 'Y-m-d H:i:s', current_time( 'timestamp' ) - 7 * DAY_IN_SECONDS ) ) );
+			}
+		}
+
+		$order_by = isset( $columns['created_at'] ) ? 'created_at' : 'id';
+		$raw_rows = (array) $wpdb->get_results( "SELECT * FROM `{$table}` ORDER BY {$order_by} DESC LIMIT 50" );
+		foreach ( $raw_rows as $row ) {
+			$out['rows'][] = $this->normalize_pt24_lead_row( $row, $columns );
+		}
 
 		return $out;
+	}
+
+	/**
+	 * Resolve PT24 leads table using runtime resolver when available.
+	 */
+	private function get_pt24_leads_table_name(): string {
+		global $wpdb;
+
+		if ( function_exists( 'pt24_resolve_table_name' ) ) {
+			$resolved = (string) pt24_resolve_table_name( 'pt24_leads' );
+			if ( '' !== $resolved ) {
+				return $resolved;
+			}
+		}
+
+		return $wpdb->prefix . 'pt24_leads';
+	}
+
+	/**
+	 * Return table columns map (name => type).
+	 *
+	 * @return array<string, string>
+	 */
+	private function get_pt24_table_columns( string $table ): array {
+		global $wpdb;
+
+		$rows = (array) $wpdb->get_results( "SHOW COLUMNS FROM `{$table}`", ARRAY_A );
+		$out  = [];
+		foreach ( $rows as $col ) {
+			$name = isset( $col['Field'] ) ? (string) $col['Field'] : '';
+			$type = isset( $col['Type'] ) ? (string) $col['Type'] : '';
+			if ( '' !== $name ) {
+				$out[ $name ] = $type;
+			}
+		}
+
+		return $out;
+	}
+
+	/**
+	 * Normalize lead row for UI/export across schema variants.
+	 *
+	 * @param object $row Raw DB row.
+	 * @param array<string, string> $columns Table columns map.
+	 * @return array<string, string|int>
+	 */
+	private function normalize_pt24_lead_row( object $row, array $columns ): array {
+		$meta_raw = isset( $row->metadata ) ? (string) $row->metadata : '';
+		$meta     = json_decode( $meta_raw, true );
+		if ( ! is_array( $meta ) ) {
+			$meta = [];
+		}
+
+		$service = '';
+		if ( isset( $row->service ) && '' !== (string) $row->service ) {
+			$service = (string) $row->service;
+		} elseif ( isset( $row->category ) && '' !== (string) $row->category ) {
+			$service = (string) $row->category;
+		} elseif ( isset( $meta['service_slug'] ) ) {
+			$service = (string) $meta['service_slug'];
+		}
+
+		$city = '';
+		if ( isset( $row->city ) && '' !== (string) $row->city ) {
+			$city = (string) $row->city;
+		} elseif ( isset( $row->location ) && '' !== (string) $row->location ) {
+			$city = (string) $row->location;
+		} elseif ( isset( $meta['city'] ) ) {
+			$city = (string) $meta['city'];
+		}
+
+		$name = isset( $row->name ) ? (string) $row->name : '';
+		if ( '' === $name && isset( $meta['name'] ) ) {
+			$name = (string) $meta['name'];
+		}
+
+		$email = isset( $row->email ) ? (string) $row->email : '';
+		if ( '' === $email && isset( $meta['email'] ) ) {
+			$email = (string) $meta['email'];
+		}
+
+		$phone = isset( $row->phone ) ? (string) $row->phone : '';
+		if ( '' === $phone && isset( $meta['phone'] ) ) {
+			$phone = (string) $meta['phone'];
+		}
+
+		$source = isset( $row->source ) ? (string) $row->source : '';
+		if ( '' === $source && isset( $meta['source'] ) ) {
+			$source = (string) $meta['source'];
+		}
+
+		$created_at_raw = isset( $row->created_at ) ? (string) $row->created_at : '';
+		$created_at     = $created_at_raw;
+		if ( '' !== $created_at_raw && isset( $columns['created_at'] ) && false !== stripos( (string) $columns['created_at'], 'int' ) ) {
+			$created_at = gmdate( 'Y-m-d H:i:s', (int) $created_at_raw );
+		}
+
+		return [
+			'id'         => isset( $row->id ) ? (int) $row->id : 0,
+			'name'       => $name,
+			'email'      => $email,
+			'phone'      => $phone,
+			'city'       => $city,
+			'service'    => $service,
+			'message'    => isset( $row->message ) ? (string) $row->message : '',
+			'source'     => $source,
+			'status'     => isset( $row->status ) ? strtolower( (string) $row->status ) : 'new',
+			'created_at' => $created_at,
+		];
 	}
 
 	/**
@@ -1502,15 +1632,18 @@ class AdminPageV8Enterprise {
 
 		if ( $lead_id > 0 && in_array( $status, $allowed, true ) ) {
 			global $wpdb;
-			$table = $wpdb->prefix . 'pt24_leads';
+			$table = $this->get_pt24_leads_table_name();
 			if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) {
-				$wpdb->update(
-					$table,
-					[ 'status' => $status, 'updated_at' => current_time( 'mysql' ) ],
-					[ 'id' => $lead_id ],
-					[ '%s', '%s' ],
-					[ '%d' ]
-				);
+				$columns = $this->get_pt24_table_columns( $table );
+				$data    = [ 'status' => $status ];
+				$formats = [ '%s' ];
+
+				if ( isset( $columns['updated_at'] ) ) {
+					$data['updated_at'] = current_time( 'mysql' );
+					$formats[]          = '%s';
+				}
+
+				$wpdb->update( $table, $data, [ 'id' => $lead_id ], $formats, [ '%d' ] );
 				$notice = 'updated';
 			}
 		}
@@ -1532,13 +1665,27 @@ class AdminPageV8Enterprise {
 		check_admin_referer( 'pt24_export_leads' );
 
 		global $wpdb;
-		$table = $wpdb->prefix . 'pt24_leads';
+		$table = $this->get_pt24_leads_table_name();
 		$rows  = [];
 		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) === $table ) {
-			$rows = (array) $wpdb->get_results(
-				"SELECT id, name, phone, email, service, city, message, source, status, created_at FROM `{$table}` ORDER BY created_at DESC",
-				ARRAY_A
-			);
+			$columns = $this->get_pt24_table_columns( $table );
+			$order_by = isset( $columns['created_at'] ) ? 'created_at' : 'id';
+			$raw_rows = (array) $wpdb->get_results( "SELECT * FROM `{$table}` ORDER BY {$order_by} DESC" );
+			foreach ( $raw_rows as $raw_row ) {
+				$norm = $this->normalize_pt24_lead_row( $raw_row, $columns );
+				$rows[] = [
+					'ID'      => $norm['id'],
+					'Imię'    => $norm['name'],
+					'Telefon' => $norm['phone'],
+					'E-mail'  => $norm['email'],
+					'Usługa'  => $norm['service'],
+					'Miasto'  => $norm['city'],
+					'Opis'    => $norm['message'],
+					'Źródło'  => $norm['source'],
+					'Status'  => $norm['status'],
+					'Data'    => $norm['created_at'],
+				];
+			}
 		}
 
 		nocache_headers();
@@ -1549,7 +1696,18 @@ class AdminPageV8Enterprise {
 		fwrite( $output, "\xEF\xBB\xBF" ); // UTF-8 BOM for Excel.
 		fputcsv( $output, [ 'ID', 'Imię', 'Telefon', 'E-mail', 'Usługa', 'Miasto', 'Opis', 'Źródło', 'Status', 'Data' ] );
 		foreach ( $rows as $row ) {
-			fputcsv( $output, (array) $row );
+			fputcsv( $output, [
+				$row['ID'] ?? '',
+				$row['Imię'] ?? '',
+				$row['Telefon'] ?? '',
+				$row['E-mail'] ?? '',
+				$row['Usługa'] ?? '',
+				$row['Miasto'] ?? '',
+				$row['Opis'] ?? '',
+				$row['Źródło'] ?? '',
+				$row['Status'] ?? '',
+				$row['Data'] ?? '',
+			] );
 		}
 		fclose( $output );
 		exit;
@@ -1656,7 +1814,7 @@ class AdminPageV8Enterprise {
 	 */
 	private function get_pt24_analytics_data(): array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'pt24_leads';
+		$table = $this->get_pt24_leads_table_name();
 		$out   = [
 			'table_exists' => false,
 			'total'        => 0,
@@ -1674,26 +1832,52 @@ class AdminPageV8Enterprise {
 		}
 		$out['table_exists'] = true;
 
-		$out['total']      = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
-		$out['won']        = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s", 'won' ) );
-		$out['lost']       = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s", 'lost' ) );
-		$out['this_month'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m' ) . '-01 00:00:00' ) );
+		$columns = $this->get_pt24_table_columns( $table );
+		$service_col = isset( $columns['service'] ) ? 'service' : ( isset( $columns['category'] ) ? 'category' : null );
+		$city_col    = isset( $columns['city'] ) ? 'city' : ( isset( $columns['location'] ) ? 'location' : null );
 
-		$out['by_service'] = (array) $wpdb->get_results( "SELECT service AS label, COUNT(*) AS c FROM `{$table}` GROUP BY service ORDER BY c DESC LIMIT 12", ARRAY_A );
-		$out['by_city']    = (array) $wpdb->get_results( "SELECT city AS label, COUNT(*) AS c FROM `{$table}` GROUP BY city ORDER BY c DESC LIMIT 12", ARRAY_A );
-		$out['by_status']  = (array) $wpdb->get_results( "SELECT status AS label, COUNT(*) AS c FROM `{$table}` GROUP BY status ORDER BY c DESC", ARRAY_A );
+		$out['total'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}`" );
 
-		$since = gmdate( 'Y-m-d 00:00:00', current_time( 'timestamp' ) - 13 * DAY_IN_SECONDS );
-		$daily = (array) $wpdb->get_results(
-			$wpdb->prepare( "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY DATE(created_at)", $since ),
-			OBJECT_K
-		);
-		for ( $i = 13; $i >= 0; $i-- ) {
-			$day = gmdate( 'Y-m-d', current_time( 'timestamp' ) - $i * DAY_IN_SECONDS );
-			$out['trend'][] = [
-				'date'  => $day,
-				'count' => isset( $daily[ $day ] ) ? (int) $daily[ $day ]->c : 0,
-			];
+		if ( isset( $columns['status'] ) ) {
+			$out['won']  = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE LOWER(status) = 'won'" );
+			$out['lost'] = (int) $wpdb->get_var( "SELECT COUNT(*) FROM `{$table}` WHERE LOWER(status) = 'lost'" );
+		}
+
+		if ( isset( $columns['created_at'] ) ) {
+			$created_at_type = (string) $columns['created_at'];
+			if ( false !== stripos( $created_at_type, 'int' ) ) {
+				$month_start = (int) strtotime( current_time( 'Y-m' ) . '-01 00:00:00' );
+				$out['this_month'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %d", $month_start ) );
+				$since_ts    = current_time( 'timestamp' ) - 13 * DAY_IN_SECONDS;
+				$since_str   = gmdate( 'Y-m-d 00:00:00', $since_ts );
+				$daily_query = $wpdb->prepare( "SELECT DATE(FROM_UNIXTIME(created_at)) AS d, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %d GROUP BY DATE(FROM_UNIXTIME(created_at))", $since_ts );
+			} else {
+				$out['this_month'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", current_time( 'Y-m' ) . '-01 00:00:00' ) );
+				$since_ts    = current_time( 'timestamp' ) - 13 * DAY_IN_SECONDS;
+				$since_str   = gmdate( 'Y-m-d 00:00:00', $since_ts );
+				$daily_query = $wpdb->prepare( "SELECT DATE(created_at) AS d, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY DATE(created_at)", $since_str );
+			}
+
+			$daily = (array) $wpdb->get_results( $daily_query, OBJECT_K );
+			for ( $i = 13; $i >= 0; $i-- ) {
+				$day = gmdate( 'Y-m-d', current_time( 'timestamp' ) - $i * DAY_IN_SECONDS );
+				$out['trend'][] = [
+					'date'  => $day,
+					'count' => isset( $daily[ $day ] ) ? (int) $daily[ $day ]->c : 0,
+				];
+			}
+		}
+
+		if ( null !== $service_col ) {
+			$out['by_service'] = (array) $wpdb->get_results( "SELECT `{$service_col}` AS label, COUNT(*) AS c FROM `{$table}` GROUP BY `{$service_col}` ORDER BY c DESC LIMIT 12", ARRAY_A );
+		}
+
+		if ( null !== $city_col ) {
+			$out['by_city'] = (array) $wpdb->get_results( "SELECT `{$city_col}` AS label, COUNT(*) AS c FROM `{$table}` GROUP BY `{$city_col}` ORDER BY c DESC LIMIT 12", ARRAY_A );
+		}
+
+		if ( isset( $columns['status'] ) ) {
+			$out['by_status'] = (array) $wpdb->get_results( "SELECT status AS label, COUNT(*) AS c FROM `{$table}` GROUP BY status ORDER BY c DESC", ARRAY_A );
 		}
 
 		return $out;
@@ -1933,7 +2117,7 @@ class AdminPageV8Enterprise {
 	 */
 	private function get_pt24_report_data( int $days ): array {
 		global $wpdb;
-		$table = $wpdb->prefix . 'pt24_leads';
+		$table = $this->get_pt24_leads_table_name();
 		$out   = [ 'table_exists' => false, 'days' => $days, 'total' => 0, 'won' => 0, 'by_service' => [], 'by_city' => [] ];
 
 		if ( $wpdb->get_var( $wpdb->prepare( 'SHOW TABLES LIKE %s', $table ) ) !== $table ) {
@@ -1941,11 +2125,38 @@ class AdminPageV8Enterprise {
 		}
 		$out['table_exists'] = true;
 
-		$since = gmdate( 'Y-m-d 00:00:00', current_time( 'timestamp' ) - ( $days - 1 ) * DAY_IN_SECONDS );
-		$out['total']      = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", $since ) );
-		$out['won']        = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE status = %s AND created_at >= %s", 'won', $since ) );
-		$out['by_service'] = (array) $wpdb->get_results( $wpdb->prepare( "SELECT service AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY service ORDER BY c DESC LIMIT 10", $since ), ARRAY_A );
-		$out['by_city']    = (array) $wpdb->get_results( $wpdb->prepare( "SELECT city AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY city ORDER BY c DESC LIMIT 10", $since ), ARRAY_A );
+		$columns     = $this->get_pt24_table_columns( $table );
+		$service_col = isset( $columns['service'] ) ? 'service' : ( isset( $columns['category'] ) ? 'category' : null );
+		$city_col    = isset( $columns['city'] ) ? 'city' : ( isset( $columns['location'] ) ? 'location' : null );
+
+		$since_ts            = current_time( 'timestamp' ) - ( $days - 1 ) * DAY_IN_SECONDS;
+		$created_at_type     = isset( $columns['created_at'] ) ? (string) $columns['created_at'] : '';
+		$is_int_timestamp    = false !== stripos( $created_at_type, 'int' );
+
+		if ( $is_int_timestamp ) {
+			$out['total'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %d", $since_ts ) );
+			if ( isset( $columns['status'] ) ) {
+				$out['won'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE LOWER(status) = 'won' AND created_at >= %d", $since_ts ) );
+			}
+			if ( null !== $service_col ) {
+				$out['by_service'] = (array) $wpdb->get_results( $wpdb->prepare( "SELECT `{$service_col}` AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %d GROUP BY `{$service_col}` ORDER BY c DESC LIMIT 10", $since_ts ), ARRAY_A );
+			}
+			if ( null !== $city_col ) {
+				$out['by_city'] = (array) $wpdb->get_results( $wpdb->prepare( "SELECT `{$city_col}` AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %d GROUP BY `{$city_col}` ORDER BY c DESC LIMIT 10", $since_ts ), ARRAY_A );
+			}
+		} else {
+			$since_str = gmdate( 'Y-m-d 00:00:00', $since_ts );
+			$out['total'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE created_at >= %s", $since_str ) );
+			if ( isset( $columns['status'] ) ) {
+				$out['won'] = (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM `{$table}` WHERE LOWER(status) = 'won' AND created_at >= %s", $since_str ) );
+			}
+			if ( null !== $service_col ) {
+				$out['by_service'] = (array) $wpdb->get_results( $wpdb->prepare( "SELECT `{$service_col}` AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY `{$service_col}` ORDER BY c DESC LIMIT 10", $since_str ), ARRAY_A );
+			}
+			if ( null !== $city_col ) {
+				$out['by_city'] = (array) $wpdb->get_results( $wpdb->prepare( "SELECT `{$city_col}` AS label, COUNT(*) AS c FROM `{$table}` WHERE created_at >= %s GROUP BY `{$city_col}` ORDER BY c DESC LIMIT 10", $since_str ), ARRAY_A );
+			}
+		}
 
 		return $out;
 	}

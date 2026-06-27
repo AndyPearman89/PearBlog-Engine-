@@ -17,7 +17,9 @@ $is_logged_in = is_user_logged_in();
 $user_email   = $is_logged_in ? wp_get_current_user()->user_email : '';
 
 global $wpdb;
-$leads_table = $wpdb->prefix . 'pt24_leads';
+$leads_table = function_exists('pt24_resolve_table_name')
+    ? pt24_resolve_table_name('pt24_leads')
+    : $wpdb->prefix . 'pt24_leads';
 
 // Count user's leads by email (if available in metadata).
 $my_inquiries   = 0;

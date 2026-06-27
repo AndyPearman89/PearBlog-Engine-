@@ -230,6 +230,10 @@ function pt24_filter_wpseo_public_url($url) {
         return pt24_public_base_url() . '/' . sanitize_title((string) $segments[0]) . '/';
     }
 
+    if (! empty($segments) && is_array(pt24_get_frontend_page_by_slug((string) $segments[0]))) {
+        return pt24_public_base_url() . '/' . sanitize_title((string) $segments[0]) . '/';
+    }
+
     return pt24_filter_public_frontend_url($url);
 }
 add_filter('wpseo_canonical', 'pt24_filter_wpseo_public_url', 20);
@@ -274,9 +278,274 @@ function pt24_pre_get_document_title($title) {
         return 'Panel administratora - PT24.PRO';
     }
 
+    if (! empty($segments)) {
+        $page = pt24_get_frontend_page_by_slug((string) $segments[0]);
+        if (isset($page['title']) && is_string($page['title']) && $page['title'] !== '') {
+            return $page['title'] . ' - PT24.PRO';
+        }
+    }
+
     return $title;
 }
 add_filter('pre_get_document_title', 'pt24_pre_get_document_title', 20);
+
+/**
+ * PT24 static marketing pages config.
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function pt24_get_static_frontend_pages() {
+    return [
+        'jak-to-dziala' => [
+            'title' => 'Jak Dziala PT24',
+            'eyebrow' => 'Proces',
+            'lead' => 'PT24 skraca droge od problemu do realizacji. W 60 sekund wysylasz jedno zapytanie, a nasz silnik dopasowuje lokalnych specjalistow gotowych do szybkiej odpowiedzi.',
+            'highlights' => ['Formularz 60 sekund', 'Dopasowanie po miescie i usludze', 'Pierwsze oferty nawet w 15 min'],
+            'sections' => [
+                ['title' => 'Krok 1: Brief zlecenia', 'text' => 'Wpisujesz czego potrzebujesz, gdzie i na kiedy. Formularz prowadzi Cie przez najwazniejsze dane, ktore przyspieszaja wycene.'],
+                ['title' => 'Krok 2: Matchmaking AI', 'text' => 'Algorytm wybiera wykonawcow po specjalizacji, lokalizacji i aktywnosci. Zapytanie trafia tylko do firm, ktore realnie moga je obsluzyc.'],
+                ['title' => 'Krok 3: Porownanie ofert', 'text' => 'Otrzymujesz odpowiedzi z terminem i orientacyjna cena. Wybierasz najkorzystniejsza opcje i kontaktujesz sie bezposrednio z firma.'],
+            ],
+        ],
+        'dla-firm' => [
+            'title' => 'Dla Firm',
+            'eyebrow' => 'B2B',
+            'lead' => 'Pozyskuj klientow bez przepalania budzetu reklamowego. PT24 dostarcza intencyjne leady lokalne i daje pełna kontrole kosztu pozyskania przez model kredytowy.',
+            'highlights' => ['Leady intencyjne', 'Panel firmy i CRM', 'Rozliczenie per przypisanie'],
+            'sections' => [
+                ['title' => 'Leady gotowe do obslugi', 'text' => 'Nowe zapytania wpadaja do panelu firmy od klientow, ktorzy szukaja wykonawcy teraz, a nie za kilka miesiecy.'],
+                ['title' => 'Widocznosc skutecznosci', 'text' => 'Widzisz konwersje, liczbe przypisanych leadow, saldo kredytow i historie transakcji w jednym miejscu.'],
+                ['title' => 'Skalowanie bez chaosu', 'text' => 'Zmiana planu i dokupienie pakietu trwa chwile, dzieki czemu mozesz zwiekszac wolumen wtedy, gdy rosnie popyt.'],
+            ],
+        ],
+        'hydraulik-dla-firm' => [
+            'title' => 'Hydraulik Dla Firm',
+            'eyebrow' => 'SEO Lead Page',
+            'lead' => 'Leady dla hydraulikow z Twojego miasta: awarie, przecieki, montaze i serwis. Otrzymuj zgloszenia od klientow, ktorzy szukaja pomocy teraz.',
+            'highlights' => ['Awarie 24/7', 'Zapytania lokalne', 'Mniej przypadkowych kontaktow'],
+            'sections' => [
+                ['title' => 'Jakie zapytania trafiaja do hydraulika', 'text' => 'Najczesciej sa to pilne awarie, udraznianie, montaz armatury i modernizacje instalacji w mieszkaniach oraz domach.'],
+                ['title' => 'Dlaczego konwersja jest wyzsza', 'text' => 'Klient zostawia konkretne dane i opis usterki, dzieki czemu szybciej przygotujesz wycene i termin realizacji.'],
+                ['title' => 'Model rozliczen dla hydraulika', 'text' => 'Placisz za przypisane leady. W panelu widzisz saldo, historie rozliczen i skutecznosc odpowiedzi.'],
+            ],
+        ],
+        'elektryk-dla-firm' => [
+            'title' => 'Elektryk Dla Firm',
+            'eyebrow' => 'SEO Lead Page',
+            'lead' => 'Pozyskuj leady dla elektryka bez czekania na polecenia. PT24 kieruje do Ciebie zapytania z montazu, napraw i modernizacji instalacji.',
+            'highlights' => ['Zlecenia instalacyjne', 'Modernizacje i awarie', 'Kontrola kosztu pozyskania'],
+            'sections' => [
+                ['title' => 'Typowe zlecenia dla elektryka', 'text' => 'Awarie pradu, wymiana rozdzielni, podlaczenia sprzetu i instalacje w nowych lokalach.'],
+                ['title' => 'Priorytet szybkiej odpowiedzi', 'text' => 'W branzy elektrycznej szybki kontakt daje przewage. PT24 skraca czas od zapytania do pierwszej rozmowy.'],
+                ['title' => 'Skalowanie kampanii leadowej', 'text' => 'W okresach wiekszego popytu dokupujesz kredyty i zwiekszasz wolumen bez przebudowy procesu sprzedazy.'],
+            ],
+        ],
+        'mechanik-dla-firm' => [
+            'title' => 'Mechanik Dla Firm',
+            'eyebrow' => 'SEO Lead Page',
+            'lead' => 'Leady dla warsztatow i mechanikow z Twojego regionu. Otrzymuj zapytania o diagnostyke, naprawy i szybkie interwencje.',
+            'highlights' => ['Zapytania motoryzacyjne', 'Lokalny zasieg', 'Wiecej terminow w grafiku'],
+            'sections' => [
+                ['title' => 'Jakie leady dostaje mechanik', 'text' => 'Klienci pytaja o wyceny napraw, wymiany eksploatacyjne, diagnostyke i pomoc przy naglych awariach.'],
+                ['title' => 'Lepsza organizacja warsztatu', 'text' => 'Dzieki czytelnym danym klienta i opisu problemu szybciej kwalifikujesz przypadek i planujesz termin.'],
+                ['title' => 'Przewidywalnosc kosztow', 'text' => 'Model kredytowy pozwala oszacowac koszt pozyskania klienta i porownac go z wartoscia zlecenia.'],
+            ],
+        ],
+        'remonty-dla-firm' => [
+            'title' => 'Remonty Dla Firm',
+            'eyebrow' => 'SEO Lead Page',
+            'lead' => 'Zbieraj leady remontowe o wyzszym budzecie: lazienki, kuchnie, wykonczenia i kompleksowe prace modernizacyjne.',
+            'highlights' => ['Wyzsze koszyki zlecen', 'Zapytania z zakresem prac', 'Lepsze planowanie ekip'],
+            'sections' => [
+                ['title' => 'Jakie projekty remontowe trafiaja do PT24', 'text' => 'Od drobnych poprawek po kompleksowe remonty z harmonogramem i orientacyjnym zakresem budzetowym.'],
+                ['title' => 'Dlaczego to dobre zrodlo leadow', 'text' => 'Klient porownuje oferty i jest gotowy do decyzji, a Ty dostajesz konkretne zapytanie zamiast ogolnej prosby.'],
+                ['title' => 'Jak rosnac na leadach remontowych', 'text' => 'Budujesz pipeline zlecen, analizujesz skutecznosc i wzmacniasz widocznosc firmy w najbardziej dochodowych segmentach.'],
+            ],
+        ],
+        'dla-fachowcow' => [
+            'title' => 'Dla Fachowcow',
+            'eyebrow' => 'Wykonawcy',
+            'lead' => 'Jesli jestes hydraulikiem, elektrykiem, mechanikiem lub wykonawca remontowym, PT24 pomaga zamienic puste okna w kalendarzu na realne zlecenia.',
+            'highlights' => ['Lokalne zlecenia', 'Szybkie uruchomienie profilu', 'Przewidywalny koszt leada'],
+            'sections' => [
+                ['title' => 'Profil ekspercki', 'text' => 'Dodajesz zakres uslug, miasta dzialania i dane kontaktowe. Klient od razu wie, w czym sie specjalizujesz.'],
+                ['title' => 'Leady zgodne z profilem', 'text' => 'Dostajesz tylko zapytania z pasujacej kategorii i lokalizacji, co poprawia skutecznosc odpowiedzi.'],
+                ['title' => 'Wzrost przychodu', 'text' => 'Szybkie odpowiedzi i profesjonalna obsluga leada przekladaja sie na wyzsza konwersje i wiecej realizacji.'],
+            ],
+        ],
+        'o-nas' => [
+            'title' => 'O Nas',
+            'eyebrow' => 'Zespol',
+            'lead' => 'PT24 to polski marketplace uslug lokalnych, ktory laczy klienta z wykonawca szybciej niz klasyczne katalogi i ogloszenia.',
+            'highlights' => ['Marketplace lokalny', 'Silnik dopasowania', 'Podejscie data-driven'],
+            'sections' => [
+                ['title' => 'Dlaczego powstal PT24', 'text' => 'Wielu klientow traci czas na dziesiatki telefonow. U nas jedno zapytanie otwiera dostep do wielu ofert.'],
+                ['title' => 'Jakosc i zaufanie', 'text' => 'Wspieramy proces od pierwszego kontaktu po wybor wykonawcy, stawiajac na transparentnosc i konkret.'],
+                ['title' => 'Roadmapa', 'text' => 'Rozwijamy kolejne miasta, nowe kategorie oraz automatyzacje dla firm, aby podnosic jakosc leadow.'],
+            ],
+        ],
+        'kontakt' => [
+            'title' => 'Kontakt',
+            'eyebrow' => 'Pomoc',
+            'lead' => 'Skontaktuj sie z nami w sprawie obslugi zlecen, partnerstw, wdrozen B2B i wsparcia technicznego dla kont firmowych.',
+            'highlights' => ['Wsparcie platformy', 'Partnerstwa B2B', 'Onboarding firm'],
+            'sections' => [
+                ['title' => 'Kontakt ogolny', 'text' => 'kontakt@pt24.pro'],
+                ['title' => 'Dzial firmy i partnerstwa', 'text' => 'business@pt24.pro'],
+                ['title' => 'Godziny wsparcia', 'text' => 'Poniedzialek-Piatek, 8:00-17:00, odpowiedz zwykle tego samego dnia'],
+            ],
+        ],
+        'cennik' => [
+            'title' => 'Cennik',
+            'eyebrow' => 'Monetyzacja',
+            'lead' => 'Wybierz model wzrostu dopasowany do skali firmy. Startujesz od planu bazowego i dokupujesz kredyty wtedy, gdy potrzebujesz wiekszego wolumenu leadow.',
+            'highlights' => ['Free, Starter, Pro, Enterprise', 'Pakiety kredytowe 25/60/150', 'Pelen wglad w historie rozliczen'],
+            'sections' => [
+                ['title' => 'Plany abonamentowe', 'text' => 'Plan okresla podstawowe limity i dostep do funkcji panelu. Upgrade i downgrade robisz samodzielnie.'],
+                ['title' => 'Kredyty leadowe', 'text' => 'Przypisanie leada konsumuje kredyt. System zapisuje transakcje i pilnuje, aby saldo nie schodzilo ponizej zera.'],
+                ['title' => 'ROI i kontrola kosztow', 'text' => 'Masz pelny podglad kosztu pozyskania klienta i mozesz skalowac budzet tylko tam, gdzie widzisz zwrot.'],
+            ],
+        ],
+        'faq' => [
+            'title' => 'FAQ',
+            'eyebrow' => 'Pytania',
+            'lead' => 'Zebrane odpowiedzi na pytania klientow i firm o dzialanie leadow, szybkosci odpowiedzi, rozliczenia i jakosc zapytan.',
+            'highlights' => ['Pytania klientow', 'Pytania firm', 'Operacje i rozliczenia'],
+            'sections' => [
+                ['title' => 'Czy PT24 jest darmowe dla klienta?', 'text' => 'Tak, zglaszanie zapytan i porownywanie ofert jest bezplatne dla klientow.'],
+                ['title' => 'Jak szybko firma dostaje lead?', 'text' => 'Lead trafia do panelu po dopasowaniu, zazwyczaj natychmiast. Najlepsze firmy odpowiadaja nawet w kilkanascie minut.'],
+                ['title' => 'Czy moge zmienic plan firmy?', 'text' => 'Tak, plan i pakiety kredytow zmieniasz bezposrednio w panelu firmy, bez kontaktu z supportem.'],
+            ],
+        ],
+        'regulamin' => [
+            'title' => 'Regulamin',
+            'eyebrow' => 'Prawo',
+            'lead' => 'Dokument okresla zasady korzystania z platformy PT24 przez klientow i firmy oraz warunki swiadczenia uslug online.',
+            'highlights' => ['Warunki platformy', 'Odpowiedzialnosc stron', 'Konta i platnosci'],
+            'sections' => [
+                ['title' => 'Zakres uslugi', 'text' => 'PT24 jest platforma posredniczaca i nie jest strona umowy o wykonanie uslugi.'],
+                ['title' => 'Konta i profile', 'text' => 'Uzytkownik odpowiada za prawdziwosc danych, legalnosc publikowanych informacji i bezpieczenstwo konta.'],
+                ['title' => 'Postanowienia koncowe', 'text' => 'Aktualna wersja regulaminu obowiazuje od dnia publikacji i moze byc aktualizowana wraz z rozwojem uslugi.'],
+            ],
+        ],
+        'polityka-prywatnosci' => [
+            'title' => 'Polityka Prywatnosci',
+            'eyebrow' => 'RODO',
+            'lead' => 'Wyjasniamy jakie dane zbieramy, jak je chronimy i jakie prawa przysluguja Ci jako uzytkownikowi zgodnie z RODO.',
+            'highlights' => ['Zakres danych', 'Podstawa prawna', 'Prawa uzytkownika'],
+            'sections' => [
+                ['title' => 'Zakres danych', 'text' => 'Przetwarzamy dane kontaktowe i operacyjne niezbedne do obslugi zapytan i przekazania ich do wykonawcow.'],
+                ['title' => 'Podstawa prawna', 'text' => 'Podstawa przetwarzania to zgoda, realizacja umowy oraz uzasadniony interes administratora.'],
+                ['title' => 'Twoje prawa', 'text' => 'Masz prawo dostepu do danych, ich poprawienia, usuniecia, ograniczenia przetwarzania i wniesienia sprzeciwu.'],
+            ],
+        ],
+    ];
+}
+
+/**
+ * Supported v5 service segments for B2B pages.
+ *
+ * @return array<string, string>
+ */
+function pt24_get_segment_service_titles() {
+    return [
+        'hydraulik' => 'Hydraulik',
+        'elektryk' => 'Elektryk',
+        'mechanik' => 'Mechanik',
+        'remonty' => 'Remonty',
+    ];
+}
+
+/**
+ * Supported v5 city segments for B2B pages.
+ *
+ * @return array<string, string>
+ */
+function pt24_get_segment_city_titles() {
+    return [
+        'warszawa' => 'Warszawa',
+        'krakow' => 'Krakow',
+        'wroclaw' => 'Wroclaw',
+        'poznan' => 'Poznan',
+        'gdansk' => 'Gdansk',
+        'katowice' => 'Katowice',
+    ];
+}
+
+/**
+ * Parse dynamic segment page slug into structured data.
+ *
+ * @param string $slug Slug candidate.
+ * @return array<string, string>|null
+ */
+function pt24_parse_segment_page_slug($slug) {
+    $slug = sanitize_title((string) $slug);
+    if ($slug === '') {
+        return null;
+    }
+
+    $services = pt24_get_segment_service_titles();
+    $cities = pt24_get_segment_city_titles();
+    $service_pattern = implode('|', array_map('preg_quote', array_keys($services)));
+    $city_pattern = implode('|', array_map('preg_quote', array_keys($cities)));
+
+    $regex = '/^(' . $service_pattern . ')-dla-firm-(' . $city_pattern . ')$/';
+    if (preg_match($regex, $slug, $m) !== 1) {
+        return null;
+    }
+
+    $service_slug = sanitize_key((string) $m[1]);
+    $city_slug = sanitize_key((string) $m[2]);
+
+    return [
+        'service_slug' => $service_slug,
+        'service_title' => isset($services[$service_slug]) ? $services[$service_slug] : ucfirst($service_slug),
+        'city_slug' => $city_slug,
+        'city_title' => isset($cities[$city_slug]) ? $cities[$city_slug] : ucfirst($city_slug),
+    ];
+}
+
+/**
+ * Resolve a frontend marketing page by slug.
+ *
+ * Supports static pages and dynamic city variants, e.g.:
+ * - hydraulik-dla-firm-warszawa
+ * - elektryk-dla-firm-krakow
+ *
+ * @param string $slug Page slug.
+ * @return array<string, mixed>|null
+ */
+function pt24_get_frontend_page_by_slug($slug) {
+    $slug = sanitize_title((string) $slug);
+    if ($slug === '') {
+        return null;
+    }
+
+    $pages = pt24_get_static_frontend_pages();
+    if (isset($pages[$slug]) && is_array($pages[$slug])) {
+        return $pages[$slug];
+    }
+
+    $parsed_segment = pt24_parse_segment_page_slug($slug);
+    if (is_array($parsed_segment)) {
+        $service = (string) $parsed_segment['service_title'];
+        $city = (string) $parsed_segment['city_title'];
+
+        return [
+            'title' => $service . ' Dla Firm ' . $city,
+            'eyebrow' => 'SEO Local',
+            'lead' => 'Lokalne leady dla branzy ' . strtolower($service) . ' w miescie ' . $city . '. Docieraj do klientow, ktorzy chca zamowic usluge teraz.',
+            'highlights' => ['Leady ' . $city, 'Szybkie zapytania lokalne', 'Kontrola kosztu pozyskania'],
+            'sections' => [
+                ['title' => 'Popyt lokalny: ' . $city, 'text' => 'Klienci z miasta ' . $city . ' szukaja sprawdzonych wykonawcow i porownuja oferty online.'],
+                ['title' => 'Leady dla ' . strtolower($service), 'text' => 'Zapytania zawieraja kluczowe dane: lokalizacje, zakres prac i pilnosc, co przyspiesza kontakt handlowy.'],
+                ['title' => 'Wzrost firmy w ' . $city, 'text' => 'Staly doplyw zapytan pomaga wypelnic grafik, poprawic konwersje i stabilizowac przychody w danym miescie.'],
+            ],
+        ];
+    }
+
+    return null;
+}
 
 /**
  * Rewrite any remaining origin-host URLs in final frontend HTML.
@@ -462,6 +731,7 @@ function pt24_register_panel_routes() {
     add_rewrite_rule('^(katowice|gliwice|zabrze|bytom|krakow|warszawa)/?$', 'index.php?pt24_city_landing=$matches[1]', 'top');
     add_rewrite_rule('^(montaz-klimatyzacji|udraznianie-kanalizacji|awaria-pradu|wymiana-dachu)/?$', 'index.php?pt24_specific_service=$matches[1]', 'top');
     add_rewrite_rule('^(montaz-klimatyzacji|udraznianie-kanalizacji|awaria-pradu|wymiana-dachu)/(katowice|gliwice|zabrze|bytom|krakow|warszawa)/?$', 'index.php?pt24_specific_service=$matches[1]&pt24_city_landing=$matches[2]', 'top');
+    add_rewrite_rule('^segment-pages-sitemap\.xml$', 'index.php?pt24_segment_sitemap=1', 'top');
 }
 add_action('init', 'pt24_register_panel_routes');
 
@@ -476,6 +746,7 @@ function pt24_add_panel_query_var($vars) {
     $vars[] = 'pt24_specific_service';
     $vars[] = 'pt24_category';
     $vars[] = 'pt24_city';
+    $vars[] = 'pt24_segment_sitemap';
     return $vars;
 }
 add_filter('query_vars', 'pt24_add_panel_query_var');
@@ -540,6 +811,16 @@ function pt24_panel_template_include($template) {
 
     if (isset($segments[0]) && pt24_is_reserved_route_segment((string) $segments[0])) {
         return $template;
+    }
+
+    if (isset($segments[0]) && ! isset($segments[1]) && is_array(pt24_get_frontend_page_by_slug((string) $segments[0]))) {
+        $static_template = PT24_DIR . '/static-page.php';
+        if (file_exists($static_template)) {
+            set_query_var('pt24_static_page', sanitize_title((string) $segments[0]));
+            status_header(200);
+            nocache_headers();
+            return $static_template;
+        }
     }
 
     if (isset($segments[0]) && strtolower((string) $segments[0]) === 'uslugi') {
@@ -659,7 +940,7 @@ add_filter('template_include', 'pt24_panel_template_include', 999);
  * Flush rewrite rules after route changes.
  */
 function pt24_maybe_flush_panel_rewrites() {
-    $version = 'panel-routes-v5';
+    $version = 'panel-routes-v6';
     if (get_option('pt24_panel_routes_version') !== $version) {
         pt24_register_panel_routes();
         flush_rewrite_rules(false);
@@ -667,6 +948,92 @@ function pt24_maybe_flush_panel_rewrites() {
     }
 }
 add_action('init', 'pt24_maybe_flush_panel_rewrites', 99);
+
+/**
+ * Build full URL list for segment pages (base + city variants).
+ *
+ * @return array<int, string>
+ */
+function pt24_get_segment_page_urls() {
+    $urls = [];
+
+    $base_pages = pt24_get_static_frontend_pages();
+    foreach (array_keys($base_pages) as $slug) {
+        if (str_ends_with((string) $slug, '-dla-firm')) {
+            $urls[] = home_url('/' . sanitize_title((string) $slug) . '/');
+        }
+    }
+
+    $services = pt24_get_segment_service_titles();
+    $cities = pt24_get_segment_city_titles();
+
+    foreach (array_keys($services) as $service_slug) {
+        foreach (array_keys($cities) as $city_slug) {
+            $urls[] = home_url('/' . $service_slug . '-dla-firm-' . $city_slug . '/');
+        }
+    }
+
+    $urls = array_values(array_unique(array_map('esc_url_raw', $urls)));
+    return array_values(array_filter($urls));
+}
+
+/**
+ * Serve XML sitemap for segment pages.
+ */
+function pt24_maybe_output_segment_sitemap() {
+    $is_target = ((string) get_query_var('pt24_segment_sitemap') === '1');
+    if (! $is_target) {
+        $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+        $request_path = strtolower((string) wp_parse_url($request_uri, PHP_URL_PATH));
+        $is_target = (rtrim($request_path, '/') === '/segment-pages-sitemap.xml');
+    }
+
+    if (! $is_target) {
+        return;
+    }
+
+    $urls = pt24_get_segment_page_urls();
+    $lastmod = gmdate('c');
+
+    status_header(200);
+    header('Content-Type: application/xml; charset=UTF-8');
+    echo "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n";
+    echo "<urlset xmlns=\"http://www.sitemaps.org/schemas/sitemap/0.9\">\n";
+
+    foreach ($urls as $url) {
+        echo "  <url>\n";
+        echo '    <loc>' . esc_html($url) . "</loc>\n";
+        echo '    <lastmod>' . esc_html($lastmod) . "</lastmod>\n";
+        echo "    <changefreq>daily</changefreq>\n";
+        echo "    <priority>0.7</priority>\n";
+        echo "  </url>\n";
+    }
+
+    echo "</urlset>\n";
+    exit;
+}
+add_action('template_redirect', 'pt24_maybe_output_segment_sitemap', 0);
+
+/**
+ * Advertise segment sitemap in robots.txt.
+ *
+ * @param string $output Robots output.
+ * @param bool   $public Is blog public.
+ * @return string
+ */
+function pt24_append_segment_sitemap_to_robots($output, $public) {
+    if (! $public) {
+        return $output;
+    }
+
+    $line = 'Sitemap: ' . home_url('/segment-pages-sitemap.xml');
+    if (strpos($output, $line) !== false) {
+        return $output;
+    }
+
+    return rtrim((string) $output) . "\n" . $line . "\n";
+}
+add_filter('robots_txt', 'pt24_append_segment_sitemap_to_robots', 20, 2);
 
 /**
  * Remove author archives from native WP sitemap on PT24.
@@ -829,6 +1196,221 @@ function pt24_handle_service_inquiry_form() {
 }
 add_action('admin_post_pt24_service_inquiry', 'pt24_handle_service_inquiry_form');
 add_action('admin_post_nopriv_pt24_service_inquiry', 'pt24_handle_service_inquiry_form');
+
+/**
+ * Insert marketing lead from frontend segment pages.
+ *
+ * @param array<string, string> $payload Lead payload.
+ * @return bool
+ */
+function pt24_insert_marketing_lead($payload) {
+    global $wpdb;
+
+    $leads_table = pt24_resolve_table_name('pt24_leads');
+    if (! pt24_table_exists($leads_table)) {
+        return false;
+    }
+
+    if (function_exists('pt24_ensure_leads_billing_columns')) {
+        pt24_ensure_leads_billing_columns($leads_table);
+    }
+
+    $columns = (array) $wpdb->get_col("SHOW COLUMNS FROM {$leads_table}", 0);
+    if (empty($columns)) {
+        return false;
+    }
+
+    $name = isset($payload['name']) ? sanitize_text_field((string) $payload['name']) : '';
+    $email = isset($payload['email']) ? sanitize_email((string) $payload['email']) : '';
+    $phone = isset($payload['phone']) ? sanitize_text_field((string) $payload['phone']) : '';
+    $city = isset($payload['city']) ? sanitize_text_field((string) $payload['city']) : '';
+    $service_slug = isset($payload['service_slug']) ? sanitize_title((string) $payload['service_slug']) : '';
+    $page_slug = isset($payload['page_slug']) ? sanitize_title((string) $payload['page_slug']) : '';
+    $message = isset($payload['message']) ? sanitize_textarea_field((string) $payload['message']) : '';
+    $source = 'segment-form:' . $page_slug;
+
+    $metadata = [
+        'name' => $name,
+        'email' => $email,
+        'phone' => $phone,
+        'city' => $city,
+        'service_slug' => $service_slug,
+        'page_slug' => $page_slug,
+        'source' => $source,
+    ];
+
+    $data = [];
+    $formats = [];
+
+    // LeadAI schema variant.
+    if (in_array('category', $columns, true)) {
+        $location = sanitize_title($city !== '' ? $city : 'polska');
+
+        if (in_array('category', $columns, true)) {
+            $data['category'] = $service_slug !== '' ? $service_slug : 'ogolne';
+            $formats[] = '%s';
+        }
+        if (in_array('location', $columns, true)) {
+            $data['location'] = $location;
+            $formats[] = '%s';
+        }
+        if (in_array('message', $columns, true)) {
+            $data['message'] = $message;
+            $formats[] = '%s';
+        }
+        if (in_array('status', $columns, true)) {
+            $data['status'] = 'NEW';
+            $formats[] = '%s';
+        }
+        if (in_array('score', $columns, true)) {
+            $data['score'] = 0;
+            $formats[] = '%d';
+        }
+        if (in_array('urgency', $columns, true)) {
+            $data['urgency'] = 'MEDIUM';
+            $formats[] = '%s';
+        }
+        if (in_array('package_type', $columns, true)) {
+            $data['package_type'] = 'FREE';
+            $formats[] = '%s';
+        }
+        if (in_array('created_at', $columns, true)) {
+            $data['created_at'] = time();
+            $formats[] = '%d';
+        }
+        if (in_array('metadata', $columns, true)) {
+            $data['metadata'] = wp_json_encode($metadata);
+            $formats[] = '%s';
+        }
+    } else {
+        // Classic schema variant.
+        if (in_array('name', $columns, true)) {
+            $data['name'] = $name;
+            $formats[] = '%s';
+        }
+        if (in_array('email', $columns, true)) {
+            $data['email'] = $email;
+            $formats[] = '%s';
+        }
+        if (in_array('phone', $columns, true)) {
+            $data['phone'] = $phone;
+            $formats[] = '%s';
+        }
+        if (in_array('city', $columns, true)) {
+            $data['city'] = $city;
+            $formats[] = '%s';
+        }
+        if (in_array('service', $columns, true)) {
+            $data['service'] = $service_slug;
+            $formats[] = '%s';
+        }
+        if (in_array('message', $columns, true)) {
+            $data['message'] = $message;
+            $formats[] = '%s';
+        }
+        if (in_array('source', $columns, true)) {
+            $data['source'] = $source;
+            $formats[] = '%s';
+        }
+        if (in_array('status', $columns, true)) {
+            $data['status'] = 'new';
+            $formats[] = '%s';
+        }
+        if (in_array('created_at', $columns, true)) {
+            $data['created_at'] = current_time('mysql');
+            $formats[] = '%s';
+        }
+        if (in_array('updated_at', $columns, true)) {
+            $data['updated_at'] = current_time('mysql');
+            $formats[] = '%s';
+        }
+        if (in_array('metadata', $columns, true)) {
+            $data['metadata'] = wp_json_encode($metadata);
+            $formats[] = '%s';
+        }
+    }
+
+    if (empty($data)) {
+        return false;
+    }
+
+    return $wpdb->insert($leads_table, $data, $formats) !== false;
+}
+
+/**
+ * Handle marketing lead form from static segment pages.
+ */
+function pt24_handle_marketing_lead_form() {
+    $redirect = wp_get_referer();
+    if (! is_string($redirect) || $redirect === '') {
+        $redirect = home_url('/kontakt/');
+    }
+    $redirect = remove_query_arg('form', $redirect);
+
+    $nonce = isset($_POST['pt24_marketing_lead_nonce']) ? sanitize_text_field((string) $_POST['pt24_marketing_lead_nonce']) : '';
+    if (! wp_verify_nonce($nonce, 'pt24_marketing_lead')) {
+        wp_safe_redirect(add_query_arg('form', 'error', $redirect));
+        exit;
+    }
+
+    $name = isset($_POST['name']) ? sanitize_text_field((string) $_POST['name']) : '';
+    $email = isset($_POST['email']) ? sanitize_email((string) $_POST['email']) : '';
+    $message = isset($_POST['message']) ? sanitize_textarea_field((string) $_POST['message']) : '';
+
+    if ($name === '' || $email === '' || $message === '' || ! is_email($email)) {
+        wp_safe_redirect(add_query_arg('form', 'error', $redirect));
+        exit;
+    }
+
+    $phone = isset($_POST['phone']) ? sanitize_text_field((string) $_POST['phone']) : '';
+    $city = isset($_POST['city']) ? sanitize_text_field((string) $_POST['city']) : '';
+    $service_slug = isset($_POST['service_slug']) ? sanitize_title((string) $_POST['service_slug']) : '';
+    $page_slug = isset($_POST['page_slug']) ? sanitize_title((string) $_POST['page_slug']) : '';
+
+    $inserted = pt24_insert_marketing_lead([
+        'name' => $name,
+        'email' => $email,
+        'phone' => $phone,
+        'city' => $city,
+        'service_slug' => $service_slug,
+        'page_slug' => $page_slug,
+        'message' => $message,
+    ]);
+
+    if ($inserted) {
+        $notify_enabled = get_option('pt24_notify_enabled', '1');
+        if ($notify_enabled !== '0') {
+            $notify_email = (string) get_option('pt24_notify_email', '');
+            if ($notify_email === '' || ! is_email($notify_email)) {
+                $notify_email = (string) get_option('admin_email');
+            }
+
+            $service_label = $service_slug !== ''
+                ? ucfirst(str_replace('-', ' ', $service_slug))
+                : 'nieokreslonej uslugi';
+
+            $subject = sprintf('[PT24] Nowe zapytanie z formularza segmentowego — %s', $service_label . ($city !== '' ? ' / ' . $city : ''));
+            $body  = "Imie i nazwisko: {$name}\n";
+            $body .= "Email: {$email}\n";
+            $body .= "Telefon: {$phone}\n";
+            $body .= "Miasto: {$city}\n";
+            $body .= "Usluga: {$service_label}\n";
+            $body .= "Strona: {$page_slug}\n\n";
+            $body .= "Tresc:\n{$message}\n";
+            $headers = [
+                'Reply-To: ' . $name . ' <' . $email . '>',
+                'Content-Type: text/plain; charset=UTF-8',
+            ];
+
+            wp_mail($notify_email, $subject, $body, $headers);
+        }
+    }
+
+    wp_safe_redirect(add_query_arg('form', $inserted ? 'sent' : 'error', $redirect));
+    exit;
+}
+add_action('admin_post_pt24_marketing_lead', 'pt24_handle_marketing_lead_form');
+add_action('admin_post_nopriv_pt24_marketing_lead', 'pt24_handle_marketing_lead_form');
 
 /**
  * Lead pricing matrix for core PT24 service categories.
@@ -1097,23 +1679,122 @@ function pt24_resolve_table_name($logical_name) {
 
     global $wpdb;
     $candidates = [
-        $wpdb->prefix . $logical_name,
         strpos($logical_name, 'pt24_') === 0 ? $wpdb->prefix . substr($logical_name, 5) : '',
+        $wpdb->prefix . $logical_name,
         $wpdb->base_prefix . $logical_name,
     ];
 
     $candidates = array_values(array_unique(array_filter($candidates)));
+    $existing_candidates = [];
 
     foreach ($candidates as $table_name) {
         $exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
         if ($exists === $table_name) {
-            $cache[$logical_name] = $table_name;
-            return $table_name;
+            $existing_candidates[] = $table_name;
         }
+    }
+
+    if (! empty($existing_candidates)) {
+        $required_columns = [];
+        if ($logical_name === 'pt24_leads') {
+            $required_columns = ['assigned_contractor_id'];
+        } elseif ($logical_name === 'pt24_contractors') {
+            $required_columns = ['id', 'email'];
+        }
+
+        if (! empty($required_columns)) {
+            foreach ($existing_candidates as $table_name) {
+                $columns = $wpdb->get_col("SHOW COLUMNS FROM {$table_name}", 0);
+                $has_all_required = true;
+                foreach ($required_columns as $required) {
+                    if (! in_array($required, (array) $columns, true)) {
+                        $has_all_required = false;
+                        break;
+                    }
+                }
+                if ($has_all_required) {
+                    $cache[$logical_name] = $table_name;
+                    return $table_name;
+                }
+            }
+        }
+
+        $cache[$logical_name] = $existing_candidates[0];
+        return $cache[$logical_name];
     }
 
     $cache[$logical_name] = $candidates[0];
     return $cache[$logical_name];
+}
+
+/**
+ * Check whether a table exists.
+ *
+ * @param string $table_name Table name.
+ * @return bool
+ */
+function pt24_table_exists($table_name) {
+    global $wpdb;
+    $table_name = (string) $table_name;
+    if ($table_name === '') {
+        return false;
+    }
+
+    $exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
+    return $exists === $table_name;
+}
+
+/**
+ * Create contractors table when missing.
+ *
+ * @param string $table_name Table name.
+ */
+function pt24_ensure_contractors_table($table_name) {
+    if ($table_name === '' || pt24_table_exists($table_name)) {
+        return;
+    }
+
+    global $wpdb;
+    $charset_collate = $wpdb->get_charset_collate();
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    $sql = "CREATE TABLE IF NOT EXISTS {$table_name} (
+        id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+        name VARCHAR(255) NOT NULL,
+        email VARCHAR(255) NOT NULL,
+        phone VARCHAR(20) DEFAULT NULL,
+        package_type VARCHAR(20) DEFAULT 'FREE',
+        status VARCHAR(20) DEFAULT 'active',
+        created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+        metadata TEXT DEFAULT NULL,
+        PRIMARY KEY (id),
+        KEY email (email),
+        KEY status (status)
+    ) {$charset_collate};";
+    dbDelta($sql);
+}
+
+/**
+ * Ensure leads table contains columns required for billing sync.
+ *
+ * @param string $table_name Leads table name.
+ */
+function pt24_ensure_leads_billing_columns($table_name) {
+    if ($table_name === '' || ! pt24_table_exists($table_name)) {
+        return;
+    }
+
+    global $wpdb;
+    $columns = (array) $wpdb->get_col("SHOW COLUMNS FROM {$table_name}", 0);
+
+    if (! in_array('assigned_contractor_id', $columns, true)) {
+        $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN assigned_contractor_id BIGINT UNSIGNED DEFAULT NULL");
+        $wpdb->query("ALTER TABLE {$table_name} ADD KEY assigned_contractor_id (assigned_contractor_id)");
+    }
+
+    if (! in_array('metadata', $columns, true)) {
+        $wpdb->query("ALTER TABLE {$table_name} ADD COLUMN metadata LONGTEXT DEFAULT NULL");
+    }
 }
 
 /**
@@ -1133,6 +1814,21 @@ function pt24_sync_lead_billing_events() {
     global $wpdb;
     $leads_table = pt24_resolve_table_name('pt24_leads');
     $contractors_table = pt24_resolve_table_name('pt24_contractors');
+
+    if (! pt24_table_exists($leads_table)) {
+        return;
+    }
+
+    pt24_ensure_leads_billing_columns($leads_table);
+    $lead_columns = (array) $wpdb->get_col("SHOW COLUMNS FROM {$leads_table}", 0);
+    if (! in_array('assigned_contractor_id', $lead_columns, true) || ! in_array('metadata', $lead_columns, true)) {
+        return;
+    }
+
+    pt24_ensure_contractors_table($contractors_table);
+    if (! pt24_table_exists($contractors_table)) {
+        return;
+    }
 
     $rows = $wpdb->get_results(
         "SELECT l.id, l.assigned_contractor_id, l.metadata, c.email

@@ -17,8 +17,12 @@ $is_logged_in  = is_user_logged_in();
 $current_email = $is_logged_in ? wp_get_current_user()->user_email : '';
 
 global $wpdb;
-$contractors_table = $wpdb->prefix . 'pt24_contractors';
-$leads_table       = $wpdb->prefix . 'pt24_leads';
+$contractors_table = function_exists('pt24_resolve_table_name')
+    ? pt24_resolve_table_name('pt24_contractors')
+    : $wpdb->prefix . 'pt24_contractors';
+$leads_table       = function_exists('pt24_resolve_table_name')
+    ? pt24_resolve_table_name('pt24_leads')
+    : $wpdb->prefix . 'pt24_leads';
 $stats_table       = $wpdb->prefix . 'pt24_business_stats';
 
 // Try to find contractor profile.
@@ -71,6 +75,10 @@ $monetization_state = $is_logged_in && function_exists('pt24_get_company_monetiz
 $current_plan = isset($monetization_state['plan']) ? (string) $monetization_state['plan'] : 'free';
 $current_credits = isset($monetization_state['credits']) ? (int) $monetization_state['credits'] : 0;
 $included_leads = isset($monetization_state['included']) ? (int) $monetization_state['included'] : 0;
+$billing_history = $is_logged_in ? get_user_meta(get_current_user_id(), 'pt24_company_billing_history', true) : [];
+if (! is_array($billing_history)) {
+    $billing_history = [];
+}
 ?>
 
 <section class="pt24-panel-page">
@@ -178,6 +186,33 @@ $included_leads = isset($monetization_state['included']) ? (int) $monetization_s
                             <button type="submit">Kup pakiet</button>
                         </form>
                     </div>
+                </div>
+
+                <div class="pt24-panel-card">
+                    <h2>Historia rozliczen</h2>
+                    <?php if (! empty($billing_history)) : ?>
+                        <div class="pt24-panel-billing-history">
+                            <?php foreach (array_slice($billing_history, 0, 12) as $event) : ?>
+                                <div class="pt24-panel-billing-row">
+                                    <strong><?php echo esc_html(isset($event['type']) ? (string) $event['type'] : 'event'); ?></strong>
+                                    <span>
+                                        <?php echo esc_html(isset($event['created_at']) ? (string) $event['created_at'] : ''); ?>
+                                        <?php if (isset($event['amount'])) : ?>
+                                            • <?php echo esc_html((string) $event['amount']); ?> <?php echo esc_html(isset($event['currency']) ? (string) $event['currency'] : ''); ?>
+                                        <?php endif; ?>
+                                        <?php if (isset($event['credits_after'])) : ?>
+                                            • saldo: <?php echo esc_html((string) $event['credits_after']); ?>
+                                        <?php endif; ?>
+                                        <?php if (isset($event['lead_id'])) : ?>
+                                            • lead #<?php echo esc_html((string) $event['lead_id']); ?>
+                                        <?php endif; ?>
+                                    </span>
+                                </div>
+                            <?php endforeach; ?>
+                        </div>
+                    <?php else : ?>
+                        <p>Brak historii rozliczen dla tego konta.</p>
+                    <?php endif; ?>
                 </div>
                 <?php endif; ?>
             </main>
