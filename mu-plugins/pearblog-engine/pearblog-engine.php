@@ -58,5 +58,9 @@ spl_autoload_register( function ( string $class ): void {
 
 // Bootstrap.
 add_action( 'plugins_loaded', function (): void {
-	\PearBlogEngine\Core\Plugin::get_instance()->boot();
+	try {
+		\PearBlogEngine\Core\Plugin::get_instance()->boot();
+	} catch ( \Throwable $e ) {
+		error_log( sprintf( '[PearBlogEngine] Bootstrap failed: %s in %s:%d', $e->getMessage(), $e->getFile(), $e->getLine() ) );
+	}
 } );
