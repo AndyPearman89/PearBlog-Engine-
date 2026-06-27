@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       CONNECT_TIMEOUT_SECONDS: "20"
-      DEPLOY_TIMEOUT_MINUTES: "8"
+      DEPLOY_TIMEOUT_MINUTES: "30"
 
     steps:
       - name: Checkout repository
@@ -66,9 +66,10 @@ jobs:
           # Use lftp with plain FTP
           LFTP_OPEN="open ftp://$FTP_USER:$FTP_PASS@$FTP_HOST:$FTP_PORT"
           LFTP_SETTINGS="set net:timeout 30; set ftp:passive-mode yes; set ssl:verify-certificate no"
+          MIRROR_EXCLUDES="--exclude-glob .git* --exclude-glob .github/** --exclude-glob node_modules/** --exclude-glob vendor/** --exclude-glob tests/** --exclude-glob docs/** --exclude-glob *.md --exclude-glob *.log"
 
           echo "=== Deploying mu-plugins/pearblog-engine/ ==="
-          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./mu-plugins/pearblog-engine/ /pt24/wp-content/mu-plugins/pearblog-engine/; bye"
+          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete $MIRROR_EXCLUDES ./mu-plugins/pearblog-engine/ /pt24/wp-content/mu-plugins/pearblog-engine/; bye"
 
           echo "=== Deploying root mu-plugin files ==="
           REMOTE="/pt24/wp-content/mu-plugins"
@@ -92,9 +93,9 @@ jobs:
           done
 
           echo "=== Deploying theme/pt24/ ==="
-          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./theme/pt24/ /pt24/wp-content/themes/pt24/; bye"
+          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete $MIRROR_EXCLUDES ./theme/pt24/ /pt24/wp-content/themes/pt24/; bye"
 
           echo "=== Deploying theme/pearblog-theme/ ==="
-          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./theme/pearblog-theme/ /pt24/wp-content/themes/pearblog-theme/; bye"
+          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete $MIRROR_EXCLUDES ./theme/pearblog-theme/ /pt24/wp-content/themes/pearblog-theme/; bye"
 
           echo "=== All deployments complete ==="
