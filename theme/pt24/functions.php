@@ -470,6 +470,12 @@ function pt24_panel_template_include($template) {
     }
 
     if (isset($segments[0]) && strtolower((string) $segments[0]) === 'uslugi') {
+        if (isset($segments[1]) && $segments[1] !== '') {
+            set_query_var('pt24_service_hub', sanitize_title((string) $segments[1]));
+        } else {
+            set_query_var('pt24_service_hub', 'index');
+        }
+
         $service_template = (isset($segments[1]) && $segments[1] !== '')
             ? PT24_DIR . '/services-single.php'
             : PT24_DIR . '/services-archive.php';
