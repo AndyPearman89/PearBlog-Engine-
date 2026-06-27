@@ -168,39 +168,74 @@
         },
 
         /**
-         * Send tracking data to WordPress AJAX endpoint
+         * Send tracking data to PT24 REST API endpoint
          */
         sendTrackingData: function(eventType, data) {
-            // Check if we have WordPress AJAX available
-            if (typeof ajaxurl === 'undefined' && typeof pearblogData === 'undefined') {
-                console.warn('PT24: WordPress AJAX not available');
+            // Use REST API configuration if available
+            var config = typeof pt24ApiConfig !== 'undefined' ? pt24ApiConfig : null;
+
+            if (!config) {
+                // Fallback: check legacy pearblogData
+                if (typeof pearblogData === 'undefined' && typeof ajaxurl === 'undefined') {
+                    console.warn('PT24: API configuration not available');
+                    return;
+                }
+                // Legacy admin-ajax fallback
+                var ajaxUrl = typeof pearblogData !== 'undefined' ? pearblogData.ajaxurl : ajaxurl;
+                var nonce = typeof pearblogData !== 'undefined' ? pearblogData.nonce : '';
+
+                var formData = new FormData();
+                formData.append('action', 'pt24_track_click');
+                formData.append('nonce', nonce);
+                formData.append('event_type', eventType);
+                formData.append('service', data.service);
+                formData.append('city', data.city);
+                formData.append('post_id', data.post_id);
+                formData.append('url', data.url || '');
+                formData.append('cta_id', data.cta_id || '');
+                formData.append('cta_style', data.cta_style || '');
+                formData.append('timestamp', data.timestamp);
+
+                if (navigator.sendBeacon) {
+                    var params = new URLSearchParams(formData);
+                    navigator.sendBeacon(ajaxUrl, params);
+                } else {
+                    fetch(ajaxUrl, {
+                        method: 'POST',
+                        body: formData,
+                    }).catch(function(error) {
+                        console.warn('PT24: Tracking request failed', error);
+                    });
+                }
                 return;
             }
 
-            const ajaxUrl = typeof pearblogData !== 'undefined' ? pearblogData.ajaxurl : ajaxurl;
-            const nonce = typeof pearblogData !== 'undefined' ? pearblogData.nonce : '';
+            // REST API path — POST /wp-json/pearblog/v1/pt24/track-click
+            var endpoint = config.engineUrl + 'track-click';
+            var payload = JSON.stringify({
+                content_id: parseInt(data.post_id, 10) || 0,
+                link_type: eventType,
+                link_url: data.url || window.location.href,
+                service: data.service || '',
+                city: data.city || '',
+                cta_id: data.cta_id || '',
+                cta_style: data.cta_style || '',
+                timestamp: data.timestamp,
+            });
 
-            const formData = new FormData();
-            formData.append('action', 'pt24_track_click');
-            formData.append('nonce', nonce);
-            formData.append('event_type', eventType);
-            formData.append('service', data.service);
-            formData.append('city', data.city);
-            formData.append('post_id', data.post_id);
-            formData.append('url', data.url || '');
-            formData.append('cta_id', data.cta_id || '');
-            formData.append('cta_style', data.cta_style || '');
-            formData.append('timestamp', data.timestamp);
-
-            // Send beacon (non-blocking)
+            // Use sendBeacon with Blob for non-blocking requests
             if (navigator.sendBeacon) {
-                const params = new URLSearchParams(formData);
-                navigator.sendBeacon(ajaxUrl, params);
+                var blob = new Blob([payload], { type: 'application/json' });
+                navigator.sendBeacon(endpoint + '?_wpnonce=' + encodeURIComponent(config.nonce), blob);
             } else {
-                // Fallback to fetch
-                fetch(ajaxUrl, {
+                fetch(endpoint, {
                     method: 'POST',
-                    body: formData,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': config.nonce,
+                    },
+                    body: payload,
+                    keepalive: true,
                 }).catch(function(error) {
                     console.warn('PT24: Tracking request failed', error);
                 });

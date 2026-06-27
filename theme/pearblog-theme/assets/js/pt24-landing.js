@@ -102,22 +102,66 @@
                 submitButton.disabled = true;
                 submitButton.textContent = 'Wysyłanie...';
 
-                // Collect form data
+                // Collect form data as JSON
                 const formData = new FormData(form);
+                const payload = {};
+                formData.forEach(function(value, key) {
+                    if (key !== 'action' && key !== 'nonce' && key !== '_wpnonce' && key !== '_wp_http_referer') {
+                        payload[key] = value;
+                    }
+                });
 
-                // Get AJAX URL
-                const ajaxUrl = typeof pearblogData !== 'undefined' ? pearblogData.ajaxurl : '/wp-admin/admin-ajax.php';
+                // Map 'description' to 'message' for REST API compatibility
+                if (payload.description && !payload.message) {
+                    payload.message = payload.description;
+                    delete payload.description;
+                }
 
-                // Send AJAX request
-                fetch(ajaxUrl, {
-                    method: 'POST',
-                    body: formData
-                })
+                // Determine API endpoint
+                var config = typeof pt24ApiConfig !== 'undefined' ? pt24ApiConfig : null;
+                var endpoint, headers;
+
+                if (config) {
+                    // REST API: POST /wp-json/pt24/v1/leads/submit
+                    endpoint = config.restUrl + 'leads/submit';
+                    headers = {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': config.nonce,
+                    };
+                } else {
+                    // Legacy fallback
+                    endpoint = typeof pearblogData !== 'undefined' ? pearblogData.ajaxurl : '/wp-admin/admin-ajax.php';
+                    headers = { 'Content-Type': 'application/x-www-form-urlencoded' };
+                }
+
+                var fetchOptions;
+                if (config) {
+                    fetchOptions = {
+                        method: 'POST',
+                        headers: headers,
+                        body: JSON.stringify(payload),
+                        credentials: 'same-origin',
+                    };
+                } else {
+                    fetchOptions = {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin',
+                    };
+                }
+
+                fetch(endpoint, fetchOptions)
                 .then(function(response) {
                     return response.json();
                 })
                 .then(function(data) {
-                    if (data.success) {
+                    // REST API returns { success: true, lead_id: ... } directly
+                    var isSuccess = config ? data.success : (data.success || false);
+                    var leadId = config ? (data.lead_id || '') : (data.data && data.data.lead_id || '');
+                    var redirectUrl = config ? '/dziekujemy' : (data.data && data.data.redirect_url || '/dziekujemy');
+                    var errorMsg = config ? (data.message || 'Wystąpił błąd. Spróbuj ponownie.') : (data.data && data.data.message || 'Wystąpił błąd. Spróbuj ponownie.');
+
+                    if (isSuccess) {
                         // Show success message
                         PT24Landing.showMessage('success', 'Dziękujemy! Twoje zgłoszenie zostało wysłane. Skontaktujemy się z Tobą wkrótce.');
 
@@ -127,19 +171,18 @@
                         // Track conversion
                         if (typeof gtag !== 'undefined') {
                             gtag('event', 'conversion', {
-                                'send_to': 'AW-XXXXX/XXXXX', // Replace with actual conversion ID
-                                'transaction_id': data.data.lead_id || ''
+                                'send_to': 'AW-XXXXX/XXXXX',
+                                'transaction_id': leadId
                             });
                         }
 
                         // Redirect after 2 seconds
                         setTimeout(function() {
-                            window.location.href = data.data.redirect_url || '/dziekujemy';
+                            window.location.href = redirectUrl;
                         }, 2000);
 
                     } else {
-                        // Show error message
-                        PT24Landing.showMessage('error', data.data.message || 'Wystąpił błąd. Spróbuj ponownie.');
+                        PT24Landing.showMessage('error', errorMsg);
                     }
                 })
                 .catch(function(error) {

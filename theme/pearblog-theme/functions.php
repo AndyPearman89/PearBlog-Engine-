@@ -192,6 +192,13 @@ function pearblog_enqueue_assets() {
     wp_enqueue_style('pt24-cta', PEARBLOG_URI . '/assets/css/pt24-cta.css', array(), PEARBLOG_VERSION);
     wp_enqueue_script('pt24-tracking', PEARBLOG_URI . '/assets/js/pt24-cta-tracking.js', array(), PEARBLOG_VERSION, true);
 
+    // PT24 REST API configuration for frontend scripts
+    wp_localize_script('pt24-tracking', 'pt24ApiConfig', array(
+        'restUrl'   => esc_url_raw(rest_url('pt24/v1/')),
+        'engineUrl' => esc_url_raw(rest_url('pearblog/v1/pt24/')),
+        'nonce'     => wp_create_nonce('wp_rest'),
+    ));
+
     // PT24.PRO unified site styles — landings + static pages + homepage.
     // Host-guarded: load only on the PT24 install (home_url path contains 'pt24'),
     // so the shared theme on poradnik.pro / mucharski.pl is unaffected.
@@ -219,6 +226,28 @@ function pearblog_enqueue_assets() {
         if ( function_exists( 'wp_script_add_data' ) ) {
             wp_script_add_data( 'pt24-ux', 'strategy', 'defer' );
         }
+
+        // PT24 Businesses dynamic listing module — loaded on landing/firm templates
+        $pt24_biz_path = PEARBLOG_DIR . '/assets/js/pt24-businesses.js';
+        $pt24_biz_ver = file_exists( $pt24_biz_path ) ? (string) filemtime( $pt24_biz_path ) : PEARBLOG_VERSION;
+        wp_enqueue_script('pt24-businesses', PEARBLOG_URI . '/assets/js/pt24-businesses.js', array('pt24-tracking'), $pt24_biz_ver, true);
+
+        if ( function_exists( 'wp_script_add_data' ) ) {
+            wp_script_add_data( 'pt24-businesses', 'strategy', 'defer' );
+        }
+
+        // Pass default filter context from current page to businesses module
+        $pt24_biz_config = array(
+            'service' => get_query_var('pt24_service', ''),
+            'city'    => get_query_var('pt24_city', ''),
+            'perPage' => 10,
+        );
+        wp_localize_script('pt24-businesses', 'pt24BusinessesConfig', $pt24_biz_config);
+
+        // PT24 Landing form script
+        $pt24_landing_path = PEARBLOG_DIR . '/assets/js/pt24-landing.js';
+        $pt24_landing_ver = file_exists( $pt24_landing_path ) ? (string) filemtime( $pt24_landing_path ) : PEARBLOG_VERSION;
+        wp_enqueue_script('pt24-landing', PEARBLOG_URI . '/assets/js/pt24-landing.js', array('pt24-tracking'), $pt24_landing_ver, true);
     }
 
     // Poradnik V4 HI-PRO Content Hub

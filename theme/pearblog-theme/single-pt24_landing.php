@@ -303,7 +303,7 @@ for ( $i = 0; $i < 3; $i++ ) {
     );
 }
 
-$ajax_url = admin_url( 'admin-ajax.php' );
+$ajax_url = esc_url_raw( rest_url( 'pt24/v1/leads/submit' ) );
 ?>
 <div class="pt24-scroll-progress" aria-hidden="true"></div>
 <noscript><style>.pt24-section{opacity:1;transform:none}.pt24-scroll-progress,.pt24-sticky-cta,.pt24-scroll-top{display:none}</style></noscript>
@@ -653,15 +653,48 @@ $ajax_url = admin_url( 'admin-ajax.php' );
         var result = form.querySelector('.pt24-leadform__result');
         var btn = form.querySelector('button[type=submit]');
         btn.disabled = true; btn.textContent = 'Wysyłanie…';
-        fetch(form.action, { method:'POST', body: new FormData(form), credentials:'same-origin' })
+
+        // Collect form fields as JSON payload for REST API
+        var formData = new FormData(form);
+        var payload = {};
+        formData.forEach(function(value, key) {
+            if (key !== 'action' && key !== 'nonce' && key !== '_wpnonce' && key !== '_wp_http_referer') {
+                payload[key] = value;
+            }
+        });
+        // Map 'description' to 'message' for REST API
+        if (payload.description && !payload.message) {
+            payload.message = payload.description;
+            delete payload.description;
+        }
+
+        var config = typeof pt24ApiConfig !== 'undefined' ? pt24ApiConfig : null;
+        var endpoint = config ? config.restUrl + 'leads/submit' : form.action;
+        var nonce = config ? config.nonce : '';
+
+        var fetchOptions;
+        if (config) {
+            fetchOptions = {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'X-WP-Nonce': nonce },
+                body: JSON.stringify(payload),
+                credentials: 'same-origin'
+            };
+        } else {
+            fetchOptions = { method: 'POST', body: new FormData(form), credentials: 'same-origin' };
+        }
+
+        fetch(endpoint, fetchOptions)
             .then(function(r){ return r.json(); })
             .then(function(json){
+                var isSuccess = config ? json.success : (json && json.success);
+                var msg = config ? (json.message || 'Dziękujemy! Skontaktujemy się wkrótce.') : ((json && json.data && json.data.message) ? json.data.message : 'Dziękujemy! Skontaktujemy się wkrótce.');
                 if(result){
                     result.hidden = false;
-                    result.textContent = (json && json.data && json.data.message) ? json.data.message : 'Dziękujemy! Skontaktujemy się wkrótce.';
-                    result.style.color = (json && json.success) ? '#16a34a' : '#dc2626';
+                    result.textContent = msg;
+                    result.style.color = isSuccess ? '#16a34a' : '#dc2626';
                 }
-                if(json && json.success){ form.reset(); btn.textContent = 'Wysłano ✓'; }
+                if(isSuccess){ form.reset(); btn.textContent = 'Wysłano ✓'; }
                 else { btn.disabled = false; btn.textContent = 'Wyślij zapytanie'; }
             })
             .catch(function(){
