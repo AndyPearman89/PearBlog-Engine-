@@ -106,7 +106,11 @@ $top_services_in_city = $wpdb->get_results( $wpdb->prepare(
 					$f_jobs    = (int) get_post_meta( get_the_ID(), 'pt24_firm_jobs', true );
 					$f_services_csv = (string) get_post_meta( get_the_ID(), 'pt24_firm_services', true );
 					$f_svc_arr = array_filter( array_map( 'trim', explode( ',', $f_services_csv ) ) );
-					$f_svc_names = array_map( function( $s ) use ( $services ) { return $services[ $s ] ?? ucfirst( str_replace( '-', ' ', $s ) ); }, array_slice( $f_svc_arr, 0, 3 ) );
+					$f_svc_short = array_slice( $f_svc_arr, 0, 3 );
+					$f_svc_names = [];
+					foreach ( $f_svc_short as $s ) {
+						$f_svc_names[] = $services[ $s ] ?? ucfirst( str_replace( '-', ' ', $s ) );
+					}
 				?>
 					<div class="pt24-firm">
 						<div class="pt24-firm__head">

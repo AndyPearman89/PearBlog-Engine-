@@ -282,18 +282,24 @@ get_header();
                 $pt24_svc_map = [ 'hydraulik' => 'Hydraulik', 'elektryk' => 'Elektryk', 'mechanik' => 'Mechanik' ];
             }
 
+            // Pre-fetch all firm services in a single query to avoid N+1.
+            global $wpdb;
+            $pt24_all_firm_services = $wpdb->get_col( $wpdb->prepare(
+                "SELECT meta_value FROM {$wpdb->postmeta} pm
+                 JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+                 WHERE p.post_type = %s AND p.post_status = %s AND pm.meta_key = 'pt24_firm_services'",
+                'pt24_firm', 'publish'
+            ) );
+            // Count occurrences of each service slug across all firms.
+            $pt24_svc_counts = [];
+            foreach ( $pt24_all_firm_services as $csv ) {
+                foreach ( array_filter( array_map( 'trim', explode( ',', (string) $csv ) ) ) as $s ) {
+                    $pt24_svc_counts[ $s ] = ( $pt24_svc_counts[ $s ] ?? 0 ) + 1;
+                }
+            }
+
             foreach ( $pt24_svc_map as $pt24_cat_slug => $pt24_cat_name ) :
-                // Count firms with this service in meta.
-                $pt24_cat_count = (int) ( new WP_Query( [
-                    'post_type'      => 'pt24_firm',
-                    'post_status'    => 'publish',
-                    'meta_key'       => 'pt24_firm_services',
-                    'meta_value'     => $pt24_cat_slug,
-                    'meta_compare'   => 'LIKE',
-                    'posts_per_page' => 1,
-                    'fields'         => 'ids',
-                    'no_found_rows'  => false,
-                ] ) )->found_posts;
+                $pt24_cat_count = $pt24_svc_counts[ $pt24_cat_slug ] ?? 0;
                 $pt24_cat_icon = $pt24_icon_map[ $pt24_cat_slug ] ?? '🔹';
             ?>
             <a href="<?php echo esc_url( home_url( '/' . $pt24_cat_slug . '/' ) ); ?>" class="pt24-category-card">
@@ -385,7 +391,7 @@ get_header();
                     <span class="text-amber-400">★★★★★</span>
                 </div>
                 <p class="mt-4 text-slate-700"><?php echo esc_html( $review_item['text'] ); ?></p>
-                <p class="mt-3 text-sm font-semibold text-slate-900"><?php echo esc_html( $review_item['author'] ?? '' ); ?> · <?php echo esc_html( $review_item['location'] ); ?></p>
+                <p class="mt-3 text-sm font-semibold text-slate-900"><?php echo esc_html( $review_item['author'] ?? '' ); ?> · <?php echo esc_html( $review_item['location'] ?? '' ); ?></p>
             </article>
             <?php endforeach; ?>
         </div>

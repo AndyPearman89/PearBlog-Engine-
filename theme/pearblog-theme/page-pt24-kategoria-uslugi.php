@@ -49,18 +49,25 @@ if ( '' === $service_slug ) :
 	<div class="pb-container pt24-page">
 		<section class="pt24-section">
 			<div class="pt24-firms">
-				<?php foreach ( $services as $slug => $name ) :
+				<?php
+				// Pre-fetch all firm services in a single query.
+				global $wpdb;
+				$all_firm_services = $wpdb->get_col( $wpdb->prepare(
+					"SELECT meta_value FROM {$wpdb->postmeta} pm
+					 JOIN {$wpdb->posts} p ON p.ID = pm.post_id
+					 WHERE p.post_type = %s AND p.post_status = %s AND pm.meta_key = 'pt24_firm_services'",
+					'pt24_firm', 'publish'
+				) );
+				$svc_counts = [];
+				foreach ( $all_firm_services as $csv ) {
+					foreach ( array_filter( array_map( 'trim', explode( ',', (string) $csv ) ) ) as $s ) {
+						$svc_counts[ $s ] = ( $svc_counts[ $s ] ?? 0 ) + 1;
+					}
+				}
+
+				foreach ( $services as $slug => $name ) :
 					$icon = $icon_map[ $slug ] ?? '🔹';
-					// Count firms offering this service.
-					$firm_count = (int) ( new WP_Query( [
-						'post_type'      => 'pt24_firm',
-						'post_status'    => 'publish',
-						'meta_key'       => 'pt24_firm_services',
-						'meta_value'     => $slug,
-						'meta_compare'   => 'LIKE',
-						'posts_per_page' => 1,
-						'fields'         => 'ids',
-					] ) )->found_posts;
+					$firm_count = $svc_counts[ $slug ] ?? 0;
 				?>
 					<div class="pt24-firm">
 						<div class="pt24-firm__head">
