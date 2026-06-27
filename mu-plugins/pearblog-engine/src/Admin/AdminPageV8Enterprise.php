@@ -348,12 +348,32 @@ class AdminPageV8Enterprise {
 	 */
 	private function render_topbar(): void {
 		$unread_notifications = $this->get_unread_notifications_count();
+		$white_label_enabled  = (bool) get_option( 'pearblog_wl_enabled', false );
+		$brand_name           = $white_label_enabled
+			? (string) get_option( 'pearblog_wl_brand_name', 'PearBlog Enterprise' )
+			: 'PearBlog Enterprise';
+		if ( '' === trim( $brand_name ) ) {
+			$brand_name = 'PearBlog Enterprise';
+		}
+		$custom_logo_url = $white_label_enabled ? (string) get_option( 'pearblog_wl_logo_url', '' ) : '';
+		$logo_url        = '' !== trim( $custom_logo_url )
+			? $custom_logo_url
+			: PEARBLOG_ENGINE_URL . 'assets/images/pearblog-logo.png';
 		?>
 		<div class="pb-v8-topbar">
 			<div class="pb-v8-logo-section">
-				<span class="pb-v8-logo">🍐</span>
+				<span class="pb-v8-logo-wrap">
+					<img
+						class="pb-v8-logo-image"
+						src="<?php echo esc_url( $logo_url ); ?>"
+						alt="<?php echo esc_attr( $brand_name ); ?>"
+						loading="eager"
+						decoding="async"
+						onerror="this.style.display='none'; this.nextElementSibling.style.display='inline-flex';">
+					<span class="pb-v8-logo pb-v8-logo-fallback">🍐</span>
+				</span>
 				<h1 class="pb-v8-title">
-					PearBlog Enterprise
+					<?php echo esc_html( $brand_name ); ?>
 					<span class="pb-v8-version-badge">
 						⚡ v<?php echo esc_html( self::VERSION ); ?> MAX
 					</span>
