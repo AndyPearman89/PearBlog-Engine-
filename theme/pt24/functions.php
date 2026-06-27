@@ -363,7 +363,7 @@ function pt24_maybe_flush_panel_rewrites() {
         update_option('pt24_panel_routes_version', $version, false);
     }
 }
-add_action('admin_init', 'pt24_maybe_flush_panel_rewrites');
+add_action('init', 'pt24_maybe_flush_panel_rewrites', 99);
 
 /**
  * Handle company profile contact form submissions.
