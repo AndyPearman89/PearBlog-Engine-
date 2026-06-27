@@ -63,10 +63,17 @@ jobs:
         run: |
           set -euo pipefail
 
-          LFTP_CMD="set net:timeout 30; set sftp:auto-confirm yes; open -u '$FTP_USER','$FTP_PASS' -p '$FTP_PORT' sftp://$FTP_HOST"
+          # Write credentials to netrc to avoid shell quoting issues
+          mkdir -p ~/.ssh
+          echo "machine $FTP_HOST login $FTP_USER password $FTP_PASS" > ~/.netrc
+          chmod 600 ~/.netrc
+
+          # Base lftp settings
+          LFTP_SETTINGS="set net:timeout 30; set sftp:auto-confirm yes; set sftp:connect-program \"ssh -o StrictHostKeyChecking=no -p $FTP_PORT\""
+          LFTP_OPEN="open sftp://$FTP_USER:$FTP_PASS@$FTP_HOST -p $FTP_PORT"
 
           echo "=== Deploying mu-plugins/pearblog-engine/ ==="
-          lftp -c "$LFTP_CMD; mirror -R --verbose --delete ./mu-plugins/pearblog-engine/ /pt24/wp-content/mu-plugins/pearblog-engine/; bye"
+          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./mu-plugins/pearblog-engine/ /pt24/wp-content/mu-plugins/pearblog-engine/; bye"
 
           echo "=== Deploying root mu-plugin files ==="
           REMOTE="/pt24/wp-content/mu-plugins"
@@ -83,16 +90,18 @@ jobs:
             mu-plugins/pt24-scale-data.php; do
             if [ -f "$f" ]; then
               echo "Uploading $f ..."
-              lftp -c "$LFTP_CMD; put '$f' -o '$REMOTE/$(basename $f)'; bye"
+              lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; put '$f' -o '$REMOTE/$(basename $f)'; bye"
             else
               echo "Skipping $f (not found)"
             fi
           done
 
           echo "=== Deploying theme/pt24/ ==="
-          lftp -c "$LFTP_CMD; mirror -R --verbose --delete ./theme/pt24/ /pt24/wp-content/themes/pt24/; bye"
+          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./theme/pt24/ /pt24/wp-content/themes/pt24/; bye"
 
           echo "=== Deploying theme/pearblog-theme/ ==="
-          lftp -c "$LFTP_CMD; mirror -R --verbose --delete ./theme/pearblog-theme/ /pt24/wp-content/themes/pearblog-theme/; bye"
+          lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./theme/pearblog-theme/ /pt24/wp-content/themes/pearblog-theme/; bye"
 
+          # Cleanup
+          rm -f ~/.netrc
           echo "=== All deployments complete ==="
