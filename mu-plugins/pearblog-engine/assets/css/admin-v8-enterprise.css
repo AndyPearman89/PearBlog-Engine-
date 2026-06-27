@@ -37,6 +37,7 @@
 	--pb-v8-bg-primary: #ffffff;
 	--pb-v8-bg-secondary: #f8f9fa;
 	--pb-v8-bg-tertiary: #e9ecef;
+	--pb-v8-bg-card: #ffffff;
 	--pb-v8-text-primary: #1a1a1a;
 	--pb-v8-text-secondary: #6c757d;
 	--pb-v8-text-tertiary: #adb5bd;
@@ -91,6 +92,7 @@
 	--pb-v8-bg-primary: #0a0e1a;
 	--pb-v8-bg-secondary: #141825;
 	--pb-v8-bg-tertiary: #1e2433;
+	--pb-v8-bg-card: #141825;
 	--pb-v8-text-primary: #ffffff;
 	--pb-v8-text-secondary: #b4bcd0;
 	--pb-v8-text-tertiary: #6b7280;
@@ -152,10 +154,34 @@
 	gap: var(--pb-v8-space-sm);
 }
 
+.pb-v8-logo-wrap {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 56px;
+	height: 56px;
+	border-radius: 14px;
+	background: #ffffff;
+	border: 1px solid var(--pb-v8-border);
+	box-shadow: var(--pb-v8-shadow-sm);
+	overflow: hidden;
+}
+
+.pb-v8-logo-image {
+	display: block;
+	width: 100%;
+	height: 100%;
+	object-fit: contain;
+}
+
 .pb-v8-logo {
 	font-size: 36px;
 	line-height: 1;
 	animation: pb-v8-pulse 3s ease-in-out infinite;
+}
+
+.pb-v8-logo-fallback {
+	display: none;
 }
 
 @keyframes pb-v8-pulse {
@@ -198,6 +224,20 @@
 	display: flex;
 	align-items: center;
 	gap: var(--pb-v8-space-sm);
+}
+
+.pb-v8-user-profile {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.pb-v8-avatar {
+	width: 40px;
+	height: 40px;
+	border-radius: 50%;
+	border: 2px solid var(--pb-v8-glass-border);
+	box-shadow: var(--pb-v8-shadow-sm);
 }
 
 /* Theme Toggle Button */
@@ -359,6 +399,57 @@
 .pb-v8-tab-icon {
 	font-size: 18px;
 	line-height: 1;
+}
+
+.pb-v8-tab-label {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.pb-v8-tab-content {
+	margin-top: var(--pb-v8-space-md);
+}
+
+.pb-v8-section-title {
+	margin-bottom: var(--pb-v8-space-md);
+	font-size: 26px;
+	font-weight: 800;
+	line-height: 1.2;
+	color: var(--pb-v8-text-primary);
+	letter-spacing: -0.02em;
+}
+
+.pb-v8-dashboard,
+.pb-v8-realtime,
+.pb-v8-security,
+.pb-v8-reporting,
+.pb-v8-integrations {
+	display: block;
+}
+
+.pb-v8-charts-grid {
+	display: grid;
+	grid-template-columns: 2fr 1fr;
+	gap: var(--pb-v8-space-lg);
+	margin-top: var(--pb-v8-space-lg);
+}
+
+.pb-v8-coming-soon {
+	border-radius: var(--pb-v8-radius-lg);
+	border: 1px dashed var(--pb-v8-border);
+	background: var(--pb-v8-bg-card);
+}
+
+.pb-v8-activity-feed {
+	display: grid;
+	gap: 0;
+	border-radius: var(--pb-v8-radius-md);
+	overflow: hidden;
+	border: 1px solid var(--pb-v8-border);
+}
+
+.pb-v8-activity-item {
+	background: var(--pb-v8-bg-card);
 }
 
 /* ==========================================
@@ -721,6 +812,53 @@
 }
 
 /* ==========================================
+   Notification Center
+   ========================================== */
+.pb-v8-notification-center {
+	position: fixed;
+	top: 86px;
+	right: 24px;
+	width: 380px;
+	max-width: calc(100vw - 24px);
+	max-height: calc(100vh - 120px);
+	background: var(--pb-v8-glass-bg);
+	border: 1px solid var(--pb-v8-glass-border);
+	border-radius: var(--pb-v8-radius-lg);
+	box-shadow: var(--pb-v8-shadow-xl);
+	backdrop-filter: var(--pb-v8-glass-blur);
+	-webkit-backdrop-filter: var(--pb-v8-glass-blur);
+	z-index: var(--pb-v8-z-popover);
+	overflow: hidden;
+}
+
+.pb-v8-notification-header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 14px 16px;
+	border-bottom: 1px solid var(--pb-v8-border);
+}
+
+.pb-v8-notification-header h3 {
+	margin: 0;
+	font-size: 15px;
+	font-weight: 700;
+}
+
+.pb-v8-notification-header button {
+	background: transparent;
+	border: 0;
+	color: var(--pb-v8-text-secondary);
+	font-size: 20px;
+	cursor: pointer;
+}
+
+.pb-v8-notification-list {
+	overflow-y: auto;
+	max-height: calc(100vh - 190px);
+}
+
+/* ==========================================
    Loading Skeleton
    ========================================== */
 .pb-v8-skeleton {
@@ -751,6 +889,10 @@
 	.pb-v8-metrics-grid {
 		grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
 	}
+
+	.pb-v8-charts-grid {
+		grid-template-columns: 1fr;
+	}
 }
 
 @media (max-width: 768px) {
@@ -774,6 +916,15 @@
 
 	.pb-v8-metrics-grid {
 		grid-template-columns: 1fr;
+	}
+
+	.pb-v8-notification-center {
+		top: 16px;
+		right: 12px;
+		left: 12px;
+		width: auto;
+		max-width: none;
+		max-height: calc(100vh - 32px);
 	}
 }
 
