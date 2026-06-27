@@ -50,6 +50,44 @@ if (count($tax_query) > 1) {
 }
 $contractors = new WP_Query($contractor_args);
 
+if (! $contractors->have_posts() && is_object($city_term) && isset($city_term->term_id)) {
+    $contractors = new WP_Query([
+        'post_type' => 'pt24_business',
+        'post_status' => 'publish',
+        'posts_per_page' => 10,
+        'tax_query' => [
+            [
+                'taxonomy' => 'pt24_city',
+                'field' => 'term_id',
+                'terms' => [(int) $city_term->term_id],
+            ],
+        ],
+    ]);
+}
+
+if (! $contractors->have_posts() && is_object($service_term) && isset($service_term->term_id)) {
+    $contractors = new WP_Query([
+        'post_type' => 'pt24_business',
+        'post_status' => 'publish',
+        'posts_per_page' => 10,
+        'tax_query' => [
+            [
+                'taxonomy' => 'pt24_service_cat',
+                'field' => 'term_id',
+                'terms' => [(int) $service_term->term_id],
+            ],
+        ],
+    ]);
+}
+
+if (! $contractors->have_posts()) {
+    $contractors = new WP_Query([
+        'post_type' => 'pt24_business',
+        'post_status' => 'publish',
+        'posts_per_page' => 10,
+    ]);
+}
+
 $pricing = [
     'Podstawowa usługa: od 200 zł',
     'Standardowa realizacja: 500–1800 zł',
@@ -112,7 +150,7 @@ $notice = isset($_GET['inquiry']) ? sanitize_key((string) $_GET['inquiry']) : ''
                         </div>
                         <?php wp_reset_postdata(); ?>
                     <?php else : ?>
-                        <p class="pt24-service-empty">Brak wykonawców dla tego zestawienia usługi i miasta.</p>
+                        <p class="pt24-service-empty">Brak wykonawców w bazie danych.</p>
                     <?php endif; ?>
                 </section>
 

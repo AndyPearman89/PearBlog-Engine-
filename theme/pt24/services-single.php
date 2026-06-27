@@ -134,6 +134,29 @@ if ($service_term_id > 0) {
 
 $companies = new WP_Query($companies_args);
 
+if (! $companies->have_posts() && $service_slug !== '') {
+    $companies = new WP_Query([
+        'post_type' => 'pt24_business',
+        'post_status' => 'publish',
+        'posts_per_page' => 8,
+        'meta_query' => [
+            [
+                'key' => 'pt24_firm_services',
+                'value' => $service_slug,
+                'compare' => 'LIKE',
+            ],
+        ],
+    ]);
+}
+
+if (! $companies->have_posts()) {
+    $companies = new WP_Query([
+        'post_type' => 'pt24_business',
+        'post_status' => 'publish',
+        'posts_per_page' => 8,
+    ]);
+}
+
 $guides = new WP_Query([
     'post_type' => 'post',
     'post_status' => 'publish',
@@ -223,7 +246,7 @@ $lead_price = function_exists('pt24_calculate_lead_price')
                         </div>
                         <?php wp_reset_postdata(); ?>
                     <?php else : ?>
-                        <p class="pt24-service-empty">Brak firm przypisanych do tej usługi.</p>
+                        <p class="pt24-service-empty">Brak firm w bazie danych dla tej usługi.</p>
                     <?php endif; ?>
                 </section>
 

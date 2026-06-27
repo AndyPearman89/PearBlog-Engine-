@@ -45,6 +45,14 @@ if ($city_term_id > 0) {
 }
 $recommended_companies = new WP_Query($company_query_args);
 
+if (! $recommended_companies->have_posts()) {
+    $recommended_companies = new WP_Query([
+        'post_type' => 'pt24_business',
+        'post_status' => 'publish',
+        'posts_per_page' => 6,
+    ]);
+}
+
 $stats_companies = (int) $recommended_companies->found_posts;
 $stats_services = count($popular_services);
 $stats_requests = (int) $wpdb->get_var( $wpdb->prepare(
