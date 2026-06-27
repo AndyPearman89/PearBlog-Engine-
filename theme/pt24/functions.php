@@ -659,6 +659,42 @@ function pt24_filter_sitemaps_taxonomies($taxonomies) {
 add_filter('wp_sitemaps_taxonomies', 'pt24_filter_sitemaps_taxonomies');
 
 /**
+ * Force 404 status for legacy archive paths not used on PT24.
+ */
+function pt24_force_404_for_legacy_archives() {
+    if (is_admin() || wp_doing_ajax()) {
+        return;
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $segments = array_values(array_filter(explode('/', trim($request_path, '/'))));
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'pt24') {
+        array_shift($segments);
+    }
+
+    if (empty($segments)) {
+        return;
+    }
+
+    $legacy = ['author', 'category', 'tag'];
+    $first = strtolower((string) $segments[0]);
+
+    if (! in_array($first, $legacy, true)) {
+        return;
+    }
+
+    global $wp_query;
+    if (isset($wp_query) && is_object($wp_query)) {
+        $wp_query->set_404();
+    }
+    status_header(404);
+    nocache_headers();
+}
+add_action('template_redirect', 'pt24_force_404_for_legacy_archives', 0);
+
+/**
  * Handle company profile contact form submissions.
  */
 function pt24_handle_business_contact_form() {
