@@ -16,59 +16,139 @@ get_header();
 ?>
 
 <!-- ═══════════════════════════════════════════════════════════════
-     HERO SECTION
+     HERO SECTION (PREMIUM ENTERPRISE SAAS)
 ═══════════════════════════════════════════════════════════════ -->
-<section class="relative overflow-hidden bg-slate-950">
-    <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_rgba(20,100,244,0.25),transparent_50%),radial-gradient(ellipse_at_bottom_left,_rgba(122,79,211,0.2),transparent_50%)]"></div>
-    <div class="absolute inset-0 bg-[url('data:image/svg+xml,%3Csvg%20width%3D%2230%22%20height%3D%2230%22%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%3E%3Ccircle%20cx%3D%221%22%20cy%3D%221%22%20r%3D%220.5%22%20fill%3D%22rgba(255%2C255%2C255%2C0.04)%22/%3E%3C/svg%3E')]"></div>
+<section class="pt24-hero relative overflow-hidden">
+    <div class="pt24-hero-grid absolute inset-0"></div>
+    <div class="pt24-hero-particles absolute inset-0"></div>
 
-    <div class="relative mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-8 lg:py-24">
-        <div class="space-y-8 text-white">
-            <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.15em] backdrop-blur-sm">
-                <span class="h-2 w-2 rounded-full bg-pear-green animate-pulse"></span>
-                Marketplace usług lokalnych 24h
+    <div class="relative mx-auto grid max-w-7xl gap-10 px-4 py-14 sm:px-6 lg:grid-cols-[0.9fr_1.1fr] lg:items-center lg:gap-14 lg:px-8 lg:py-20">
+        <!-- Left column -->
+        <div class="space-y-7">
+            <div class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-[#D6E3F5] backdrop-blur-xl">
+                <span class="h-2 w-2 rounded-full bg-[#2ED3C6] pt24-dot-pulse"></span>
+                PT24.PRO
             </div>
 
-            <h1 class="font-display text-4xl font-bold leading-[1.1] sm:text-5xl lg:text-6xl">
-                Znajdź fachowca<br>
-                <span class="bg-gradient-to-r from-pear-blue to-pear-green bg-clip-text text-transparent">w swojej okolicy.</span>
+            <h1 class="max-w-xl font-display text-4xl font-bold leading-[1.08] text-white sm:text-5xl lg:text-[3.45rem]">
+                Znajdź sprawdzonego fachowca w swojej okolicy.
             </h1>
 
-            <p class="max-w-lg text-base text-slate-300 sm:text-lg">
-                Zweryfikowani specjaliści dostępni 24/7. Porównaj profile, sprawdź opinie i zleć usługę bez stresu.
+            <p class="max-w-xl text-base leading-relaxed text-[#D6E3F5] sm:text-lg">
+                Wyślij jedno zgłoszenie, a lokalni specjaliści sami prześlą Ci swoje oferty.
+                Bez telefonów. Bez szukania. Szybko i wygodnie.
             </p>
 
-            <!-- Search form -->
-            <form action="<?php echo esc_url(home_url('/')); ?>" method="get" class="rounded-2xl border border-white/10 bg-white p-2 shadow-soft sm:p-3">
+            <div class="flex flex-wrap gap-3">
+                <a href="/dodaj-zlecenie/" class="pt24-hero-btn inline-flex items-center justify-center rounded-2xl px-6 py-3.5 text-sm font-semibold text-[#081426]">
+                    Dodaj zapytanie
+                </a>
+                <a href="#uslugi" class="inline-flex items-center justify-center rounded-2xl border border-white/20 bg-white/5 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-xl transition hover:border-[#2ED3C6]/60 hover:bg-white/10">
+                    Znajdź fachowca
+                </a>
+            </div>
+
+            <div class="grid gap-2 text-sm text-[#D6E3F5] sm:grid-cols-2">
+                <div class="inline-flex items-center gap-2"><span class="text-[#00E6B8]">✔</span> Zweryfikowane firmy</div>
+                <div class="inline-flex items-center gap-2"><span class="text-[#00E6B8]">✔</span> Odpowiedzi nawet w 15 minut</div>
+                <div class="inline-flex items-center gap-2"><span class="text-[#00E6B8]">✔</span> Tysiące wykonawców</div>
+            </div>
+
+            <form action="<?php echo esc_url(home_url('/')); ?>" method="get" class="rounded-3xl border border-white/15 bg-white/10 p-3 backdrop-blur-xl">
                 <div class="grid gap-2 sm:grid-cols-[1fr_1fr_auto]">
-                    <input type="text" name="usluga" placeholder="Czego szukasz? np. hydraulik" aria-label="Rodzaj usługi" required minlength="2"
-                        class="h-12 rounded-xl border-0 bg-slate-50 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-start/30 focus:outline-none">
-                    <input type="text" name="lokalizacja" placeholder="Miasto lub dzielnica" aria-label="Lokalizacja" required minlength="2"
-                        class="h-12 rounded-xl border-0 bg-slate-50 px-4 text-sm text-slate-900 placeholder:text-slate-400 focus:ring-2 focus:ring-brand-start/30 focus:outline-none">
-                    <button type="submit" class="h-12 rounded-xl bg-gradient-to-r from-brand-start to-brand-end px-6 text-sm font-semibold text-white transition hover:shadow-glow">
+                    <input
+                        type="text"
+                        name="lokalizacja"
+                        placeholder="Lokalizacja"
+                        aria-label="Lokalizacja"
+                        required
+                        minlength="2"
+                        class="h-12 rounded-2xl border border-white/10 bg-[#0D1F38]/80 px-4 text-sm text-white placeholder:text-[#D6E3F5]/70 focus:border-[#2ED3C6] focus:outline-none">
+                    <input
+                        type="text"
+                        name="kategoria"
+                        placeholder="Kategoria"
+                        aria-label="Kategoria"
+                        required
+                        minlength="2"
+                        class="h-12 rounded-2xl border border-white/10 bg-[#0D1F38]/80 px-4 text-sm text-white placeholder:text-[#D6E3F5]/70 focus:border-[#2ED3C6] focus:outline-none">
+                    <button type="submit" class="pt24-hero-btn h-12 rounded-2xl px-6 text-sm font-semibold text-[#081426]">
                         Szukaj
                     </button>
                 </div>
             </form>
 
-            <!-- Stats -->
-            <div class="flex flex-wrap gap-6 text-sm text-slate-400">
-                <div><span class="text-lg font-bold text-white">12 500+</span><br>fachowców</div>
-                <div><span class="text-lg font-bold text-white">87 000+</span><br>zleceń</div>
-                <div><span class="text-lg font-bold text-white">4.8/5</span><br>średnia ocena</div>
+            <div class="flex flex-wrap gap-2.5">
+                <?php foreach ( [ 'Hydraulik', 'Elektryk', 'Mechanik', 'Dekarz', 'Pompy Ciepła', 'Fotowoltaika', 'Prawo', 'Remonty' ] as $popular_cat ) : ?>
+                    <a href="<?php echo esc_url( home_url( '/' . sanitize_title( $popular_cat ) . '/' ) ); ?>" class="rounded-xl border border-white/15 bg-white/5 px-3 py-1.5 text-xs font-medium text-[#D6E3F5] transition hover:border-[#2ED3C6]/70 hover:bg-white/10">
+                        <?php echo esc_html( $popular_cat ); ?>
+                    </a>
+                <?php endforeach; ?>
             </div>
         </div>
 
-        <!-- Hero image -->
+        <!-- Right column -->
         <div class="relative hidden lg:block">
-            <div class="absolute -inset-4 rounded-3xl bg-gradient-to-br from-brand-start/30 to-brand-end/30 blur-3xl"></div>
-            <img
-                src="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&w=800&q=80"
-                alt="Fachowiec przygotowujący narzędzia"
-                class="relative rounded-3xl object-cover shadow-soft ring-1 ring-white/10"
-                width="640" height="480"
-                loading="eager"
-            >
+            <div class="pt24-map-stage">
+                <div class="pt24-map-poland"></div>
+
+                <div class="pt24-connection-line pt24-line-1"></div>
+                <div class="pt24-connection-line pt24-line-2"></div>
+                <div class="pt24-connection-line pt24-line-3"></div>
+
+                <div class="pt24-map-marker pt24-m1"><span>Warszawa</span></div>
+                <div class="pt24-map-marker pt24-m2"><span>Kraków</span></div>
+                <div class="pt24-map-marker pt24-m3"><span>Wrocław</span></div>
+                <div class="pt24-map-marker pt24-m4"><span>Poznań</span></div>
+                <div class="pt24-map-marker pt24-m5"><span>Gdańsk</span></div>
+                <div class="pt24-map-marker pt24-m6"><span>Katowice</span></div>
+
+                <div class="pt24-float-card pt24-c1">
+                    <strong>Hydraulik</strong>
+                    <small>⭐ 4.9 · Odpowiedź za 8 min</small>
+                </div>
+                <div class="pt24-float-card pt24-c2">
+                    <strong>Mechanik</strong>
+                    <small>Nowa oferta</small>
+                </div>
+                <div class="pt24-float-card pt24-c3">
+                    <strong>Elektryk</strong>
+                    <small>Zweryfikowany ✔</small>
+                </div>
+                <div class="pt24-float-card pt24-c4">
+                    <strong>Klimatyzacja</strong>
+                    <small>5 ofert</small>
+                </div>
+                <div class="pt24-float-card pt24-c5">
+                    <strong>AI Matching</strong>
+                    <small>Dopasowano 12 wykonawców</small>
+                </div>
+                <div class="pt24-float-card pt24-c6">
+                    <strong>Lead #92841</strong>
+                    <small>Nowe zapytanie · 2 min temu</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="relative mx-auto mt-2 max-w-7xl px-4 pb-10 sm:px-6 lg:px-8">
+        <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
+                <div class="text-3xl font-bold text-white" data-counter-target="12000">12 000+</div>
+                <div class="mt-1 text-sm text-[#D6E3F5]">Specjalistów</div>
+            </div>
+            <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
+                <div class="text-3xl font-bold text-white" data-counter-target="150000">150 000+</div>
+                <div class="mt-1 text-sm text-[#D6E3F5]">Zapytania</div>
+            </div>
+            <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
+                <div class="text-3xl font-bold text-white" data-counter-target="98">98%</div>
+                <div class="mt-1 text-sm text-[#D6E3F5]">Pozytywnych opinii</div>
+            </div>
+            <div class="rounded-2xl border border-white/15 bg-white/10 p-5 backdrop-blur-xl">
+                <div class="text-3xl font-bold text-white" data-counter-target="500">500+</div>
+                <div class="mt-1 text-sm text-[#D6E3F5]">Miast</div>
+            </div>
         </div>
     </div>
 </section>
