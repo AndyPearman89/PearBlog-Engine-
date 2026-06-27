@@ -196,3 +196,34 @@ function pt24_get_testimonials() {
         ],
     ];
 }
+
+/**
+ * Yandex Metrica tracking code.
+ * Set counter ID via: wp option update pt24_yandex_metrica_id YOUR_ID
+ */
+function pt24_yandex_metrica() {
+    $counter_id = get_option('pt24_yandex_metrica_id', '');
+    if (empty($counter_id) || is_admin()) {
+        return;
+    }
+    ?>
+    <!-- Yandex.Metrika counter -->
+    <script type="text/javascript">
+        (function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};
+        m[i].l=1*new Date();
+        for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r)return;}
+        k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})
+        (window, document, "script", "https://mc.yandex.ru/metrika/tag.js", "ym");
+
+        ym(<?php echo esc_js($counter_id); ?>, "init", {
+            clickmap:true,
+            trackLinks:true,
+            accurateTrackBounce:true,
+            webvisor:true
+        });
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/<?php echo esc_attr($counter_id); ?>" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    <!-- /Yandex.Metrika counter -->
+    <?php
+}
+add_action('wp_head', 'pt24_yandex_metrica', 99);

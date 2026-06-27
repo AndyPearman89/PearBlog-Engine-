@@ -73,6 +73,7 @@ class AdminPageV8Enterprise {
 		add_action( 'admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'network_admin_menu', [ $this, 'add_menu' ] );
 		add_action( 'admin_init', [ $this, 'register_settings' ] );
+		add_action( 'admin_init', [ $this, 'redirect_legacy_slug' ] );
 		add_action( 'admin_enqueue_scripts', [ $this, 'enqueue_assets' ] );
 
 		// AJAX handlers for real-time features
@@ -141,6 +142,21 @@ class AdminPageV8Enterprise {
 		}
 
 		return $capability;
+	}
+
+	/**
+	 * Redirect legacy ?page=pearblog-engine to V8 Enterprise panel.
+	 */
+	public function redirect_legacy_slug(): void {
+		if ( ! is_admin() ) {
+			return;
+		}
+		$page = $_GET['page'] ?? '';
+		if ( 'pearblog-engine' === $page ) {
+			$tab = isset( $_GET['tab'] ) ? '&tab=' . sanitize_key( $_GET['tab'] ) : '';
+			wp_safe_redirect( admin_url( 'admin.php?page=' . self::MENU_SLUG . $tab ) );
+			exit;
+		}
 	}
 
 	/**
