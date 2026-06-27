@@ -237,6 +237,8 @@ class AdminPageV8Enterprise {
 		wp_localize_script( 'pearblog-admin-v8-js', 'pbV8Data', [
 			'ajaxUrl'           => $this->get_admin_ajax_url(),
 			'nonce'             => wp_create_nonce( 'pb_v8_nonce' ),
+			'restRoot'          => esc_url_raw( rest_url( 'pearblog/v1/' ) ),
+			'restNonce'         => wp_create_nonce( 'wp_rest' ),
 			'currentTab'        => isset( $_GET['tab'] ) ? sanitize_key( wp_unslash( $_GET['tab'] ) ) : 'dashboard',
 			'theme'             => get_option( 'pearblog_v8_theme', 'light' ),
 			'language'          => get_option( 'pearblog_v8_language', 'en' ),
@@ -565,6 +567,8 @@ class AdminPageV8Enterprise {
 			<!-- KPI Metrics Grid -->
 			<div class="pb-v8-metrics-grid">
 				<?php $this->render_metric_card( [
+					'id'     => 'kpiRevenue',
+					'change_id' => 'kpiRevenueChange',
 					'label'  => __( 'Revenue Today', 'pearblog-engine' ),
 					'value'  => '$' . number_format( $stats['revenue_today'], 2 ),
 					'change' => $stats['revenue_change'],
@@ -573,6 +577,8 @@ class AdminPageV8Enterprise {
 				] ); ?>
 
 				<?php $this->render_metric_card( [
+					'id'     => 'kpiViews',
+					'change_id' => 'kpiViewsChange',
 					'label'  => __( 'Active Users', 'pearblog-engine' ),
 					'value'  => number_format( $stats['active_users'] ),
 					'change' => $stats['users_change'],
@@ -581,6 +587,8 @@ class AdminPageV8Enterprise {
 				] ); ?>
 
 				<?php $this->render_metric_card( [
+					'id'     => 'kpiArticles',
+					'change_id' => 'kpiArticlesChange',
 					'label'  => __( 'Content Generated', 'pearblog-engine' ),
 					'value'  => number_format( $stats['content_generated'] ),
 					'change' => $stats['content_change'],
@@ -589,6 +597,8 @@ class AdminPageV8Enterprise {
 				] ); ?>
 
 				<?php $this->render_metric_card( [
+					'id'     => 'kpiRpm',
+					'change_id' => 'kpiRpmChange',
 					'label'  => __( 'AI Cost', 'pearblog-engine' ),
 					'value'  => '$' . number_format( $stats['ai_cost'], 2 ),
 					'change' => $stats['cost_change'],
@@ -3321,6 +3331,8 @@ class AdminPageV8Enterprise {
 	 */
 	private function render_metric_card( array $args ): void {
 		$defaults = [
+			'id'     => '',
+			'change_id' => '',
 			'label'  => '',
 			'value'  => '',
 			'change' => null,
@@ -3334,9 +3346,9 @@ class AdminPageV8Enterprise {
 				<span class="pb-v8-metric-label"><?php echo esc_html( $args['label'] ); ?></span>
 				<span class="pb-v8-metric-icon"><?php echo esc_html( $args['icon'] ); ?></span>
 			</div>
-			<div class="pb-v8-metric-value"><?php echo esc_html( $args['value'] ); ?></div>
+			<div class="pb-v8-metric-value"<?php echo '' !== $args['id'] ? ' id="' . esc_attr( (string) $args['id'] ) . '"' : ''; ?>><?php echo esc_html( $args['value'] ); ?></div>
 			<?php if ( null !== $args['change'] ) : ?>
-				<span class="pb-v8-metric-change <?php echo $args['change'] >= 0 ? 'positive' : 'negative'; ?>">
+				<span class="pb-v8-metric-change <?php echo $args['change'] >= 0 ? 'positive' : 'negative'; ?>"<?php echo '' !== $args['change_id'] ? ' id="' . esc_attr( (string) $args['change_id'] ) . '"' : ''; ?>>
 					<?php echo $args['change'] >= 0 ? '↑' : '↓'; ?>
 					<?php echo esc_html( (string) abs( $args['change'] ) ); ?>%
 				</span>
@@ -3454,6 +3466,23 @@ class AdminPageV8Enterprise {
 	 * Get dashboard stats
 	 */
 	private function get_dashboard_stats(): array {
+		try {
+			$kpis = DashboardTab::get_kpis( 30 );
+
+			return [
+				'revenue_today'      => (float) ( $kpis['total_revenue'] ?? 0.0 ),
+				'revenue_change'     => (float) ( $kpis['revenue_trend']['percentage'] ?? 0.0 ),
+				'active_users'       => (int) ( $kpis['total_views'] ?? 0 ),
+				'users_change'       => 0.0,
+				'content_generated'  => (int) ( $kpis['articles_published'] ?? 0 ),
+				'content_change'     => (float) ( $kpis['articles_trend']['percentage'] ?? 0.0 ),
+				'ai_cost'            => (float) get_option( 'pearblog_ai_cost_monthly_estimate', 0.0 ),
+				'cost_change'        => 0.0,
+			];
+		} catch ( \Throwable $e ) {
+			// Fall back to static seed values if KPI tables are not yet provisioned.
+		}
+
 		return [
 			'revenue_today'      => 1247.50,
 			'revenue_change'     => 12.5,
@@ -3470,24 +3499,26 @@ class AdminPageV8Enterprise {
 	 * Get recent activities
 	 */
 	private function get_recent_activities(): array {
+		$stats = $this->get_realtime_stats();
+
 		return [
 			[
-				'icon'        => '✍️',
-				'title'       => __( 'Content Published', 'pearblog-engine' ),
-				'description' => __( '5 new articles generated and published', 'pearblog-engine' ),
-				'time'        => __( '5 minutes ago', 'pearblog-engine' ),
+				'icon'        => '👁️',
+				'title'       => __( 'Live Traffic Snapshot', 'pearblog-engine' ),
+				'description' => sprintf( __( '%d active visitors in last 5 minutes', 'pearblog-engine' ), (int) $stats['visitors'] ),
+				'time'        => __( 'just now', 'pearblog-engine' ),
 			],
 			[
 				'icon'        => '💰',
-				'title'       => __( 'Revenue Milestone', 'pearblog-engine' ),
-				'description' => __( 'Reached $1,000 in daily revenue', 'pearblog-engine' ),
-				'time'        => __( '1 hour ago', 'pearblog-engine' ),
+				'title'       => __( 'Revenue Snapshot', 'pearblog-engine' ),
+				'description' => sprintf( __( '$%s tracked in last hour', 'pearblog-engine' ), number_format( (float) $stats['revenue'], 2 ) ),
+				'time'        => __( 'last hour', 'pearblog-engine' ),
 			],
 			[
-				'icon'        => '🔍',
-				'title'       => __( 'SEO Improvement', 'pearblog-engine' ),
-				'description' => __( '3 articles ranked in top 10', 'pearblog-engine' ),
-				'time'        => __( '2 hours ago', 'pearblog-engine' ),
+				'icon'        => '🎯',
+				'title'       => __( 'Conversion Snapshot', 'pearblog-engine' ),
+				'description' => sprintf( __( '%d lead conversions in last hour', 'pearblog-engine' ), (int) $stats['conversions'] ),
+				'time'        => __( 'last hour', 'pearblog-engine' ),
 			],
 		];
 	}
@@ -3496,7 +3527,43 @@ class AdminPageV8Enterprise {
 	 * Get unread notifications count
 	 */
 	private function get_unread_notifications_count(): int {
-		return 3; // Mock data
+		return count( $this->build_notifications() );
+	}
+
+	/**
+	 * Build dynamic notifications for Admin V8.
+	 *
+	 * @return array<int, array<string, int|string>>
+	 */
+	private function build_notifications(): array {
+		$stats = $this->get_realtime_stats();
+		$notifications = [];
+
+		$notifications[] = [
+			'id'      => 1,
+			'type'    => 'success',
+			'title'   => __( 'Live Visitors', 'pearblog-engine' ),
+			'message' => sprintf( __( '%d active visitors tracked in last 5 minutes.', 'pearblog-engine' ), (int) $stats['visitors'] ),
+			'time'    => time() - 120,
+		];
+
+		$notifications[] = [
+			'id'      => 2,
+			'type'    => ( (float) $stats['errors'] >= 2.0 ) ? 'warning' : 'success',
+			'title'   => __( 'Platform Health', 'pearblog-engine' ),
+			'message' => sprintf( __( 'Current error rate: %s%%.', 'pearblog-engine' ), number_format( (float) $stats['errors'], 1 ) ),
+			'time'    => time() - 300,
+		];
+
+		$notifications[] = [
+			'id'      => 3,
+			'type'    => 'info',
+			'title'   => __( 'Lead Conversions', 'pearblog-engine' ),
+			'message' => sprintf( __( '%d conversions recorded in the last hour.', 'pearblog-engine' ), (int) $stats['conversions'] ),
+			'time'    => time() - 600,
+		];
+
+		return $notifications;
 	}
 
 	/**
@@ -3616,24 +3683,7 @@ class AdminPageV8Enterprise {
 	public function ajax_get_notifications(): void {
 		check_ajax_referer( 'pb_v8_nonce', 'nonce' );
 
-		$notifications = [
-			[
-				'id'      => 1,
-				'type'    => 'success',
-				'title'   => __( 'Content Generated', 'pearblog-engine' ),
-				'message' => __( '5 new articles published successfully', 'pearblog-engine' ),
-				'time'    => time() - 300,
-			],
-			[
-				'id'      => 2,
-				'type'    => 'warning',
-				'title'   => __( 'API Limit Warning', 'pearblog-engine' ),
-				'message' => __( 'Approaching monthly API limit', 'pearblog-engine' ),
-				'time'    => time() - 1800,
-			],
-		];
-
-		wp_send_json_success( $notifications );
+		wp_send_json_success( $this->build_notifications() );
 	}
 
 	/**

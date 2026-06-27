@@ -22,9 +22,92 @@
 		init() {
 			this.setupEventListeners();
 			this.initializeCharts();
+			this.loadBackendDashboardData();
 			this.loadSavedTheme();
 			this.startRealtimeUpdates();
 			console.log('🚀 PearBlog Enterprise v8.0 initialized');
+		},
+
+		/**
+		 * Generic REST GET helper for the v8 dashboard.
+		 */
+		apiGet(path, params = {}) {
+			if (typeof pbV8Data === 'undefined' || !pbV8Data.restRoot) {
+				return Promise.reject(new Error('REST root is not available'));
+			}
+
+			const base = pbV8Data.restRoot.endsWith('/') ? pbV8Data.restRoot : `${pbV8Data.restRoot}/`;
+			const url = new URL(`${base}${path}`);
+
+			Object.entries(params).forEach(([key, value]) => {
+				if (value !== undefined && value !== null && value !== '') {
+					url.searchParams.set(key, value);
+				}
+			});
+
+			return fetch(url.toString(), {
+				credentials: 'same-origin',
+				headers: {
+					'X-WP-Nonce': pbV8Data.restNonce || ''
+				}
+			}).then((response) => {
+				if (!response.ok) {
+					throw new Error(`REST ${path} failed with status ${response.status}`);
+				}
+				return response.json();
+			});
+		},
+
+		/**
+		 * Pull dashboard KPIs/charts from backend APIs.
+		 */
+		loadBackendDashboardData() {
+			this.apiGet('dashboard/kpis', { days: 30 })
+				.then((kpis) => this.renderKpisFromBackend(kpis))
+				.catch(() => {
+					// Keep server-rendered values if API is unavailable.
+				});
+
+			this.initializeDashboardCharts();
+		},
+
+		renderKpisFromBackend(kpis) {
+			if (!kpis || typeof kpis !== 'object') {
+				return;
+			}
+
+			const revenue = Number(kpis.total_revenue || 0);
+			const views = Number(kpis.total_views || 0);
+			const articles = Number(kpis.articles_published || 0);
+			const rpm = Number(kpis.rpm || 0);
+
+			const setText = (id, value) => {
+				const el = document.getElementById(id);
+				if (el) {
+					el.textContent = value;
+				}
+			};
+
+			setText('kpiRevenue', `$${revenue.toFixed(2)}`);
+			setText('kpiViews', views.toLocaleString());
+			setText('kpiArticles', articles.toLocaleString());
+			setText('kpiRpm', `$${rpm.toFixed(2)}`);
+
+			const applyTrend = (id, trend) => {
+				const el = document.getElementById(id);
+				if (!el || !trend) {
+					return;
+				}
+
+				const pct = Math.abs(Number(trend.percentage || 0)).toFixed(1);
+				const direction = trend.direction === 'down' ? 'down' : 'up';
+				el.classList.remove('positive', 'negative');
+				el.classList.add(direction === 'down' ? 'negative' : 'positive');
+				el.textContent = `${direction === 'down' ? '↓' : '↑'} ${pct}%`;
+			};
+
+			applyTrend('kpiRevenueChange', kpis.revenue_trend);
+			applyTrend('kpiArticlesChange', kpis.articles_trend);
 		},
 
 		/**
@@ -112,26 +195,33 @@
 			const canvas = document.getElementById('revenueChart');
 			if (!canvas) return;
 
-			// Generate mock data
-			const days = 30;
-			const labels = [];
-			const data = [];
+			this.apiGet('dashboard/revenue-chart', { days: 30 })
+				.then((chart) => {
+					const labels = Array.isArray(chart.labels) ? chart.labels : [];
+					const data = Array.isArray(chart.data) ? chart.data : [];
+					this.renderRevenueChart(canvas, labels, data);
+				})
+				.catch(() => {
+					this.renderRevenueChart(canvas, [], []);
+				});
+		},
 
-			for (let i = days; i >= 0; i--) {
-				const date = new Date();
-				date.setDate(date.getDate() - i);
-				labels.push(date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-				data.push(Math.random() * 500 + 500);
+		renderRevenueChart(canvas, labels, data) {
+			const safeLabels = labels.length ? labels : ['No data'];
+			const safeData = data.length ? data : [0];
+			const ctx = canvas.getContext('2d');
+
+			if (this.charts.revenue) {
+				this.charts.revenue.destroy();
 			}
 
-			const ctx = canvas.getContext('2d');
 			this.charts.revenue = new Chart(ctx, {
 				type: 'line',
 				data: {
-					labels: labels,
+					labels: safeLabels,
 					datasets: [{
 						label: 'Revenue ($)',
-						data: data,
+						data: safeData,
 						borderColor: '#0066ff',
 						backgroundColor: 'rgba(0, 102, 255, 0.1)',
 						borderWidth: 3,
@@ -145,28 +235,10 @@
 					responsive: true,
 					maintainAspectRatio: false,
 					plugins: {
-						legend: {
-							display: false
-						},
-						tooltip: {
-							mode: 'index',
-							intersect: false,
-							backgroundColor: 'rgba(0, 0, 0, 0.8)',
-							padding: 12,
-							borderRadius: 8,
-							callbacks: {
-								label: function(context) {
-									return '$' + context.parsed.y.toFixed(2);
-								}
-							}
-						}
+						legend: { display: false }
 					},
 					scales: {
-						x: {
-							grid: {
-								display: false
-							}
-						},
+						x: { grid: { display: false } },
 						y: {
 							beginAtZero: true,
 							ticks: {
@@ -175,11 +247,6 @@
 								}
 							}
 						}
-					},
-					interaction: {
-						mode: 'nearest',
-						axis: 'x',
-						intersect: false
 					}
 				}
 			});
@@ -192,19 +259,32 @@
 			const canvas = document.getElementById('contentChart');
 			if (!canvas) return;
 
+			this.apiGet('dashboard/revenue-by-source', { days: 30 })
+				.then((items) => {
+					const list = Array.isArray(items) ? items : [];
+					const labels = list.map((item) => item.source || 'Unknown');
+					const data = list.map((item) => Number(item.revenue || 0));
+					this.renderContentChart(canvas, labels, data);
+				})
+				.catch(() => {
+					this.renderContentChart(canvas, ['No data'], [1]);
+				});
+		},
+
+		renderContentChart(canvas, labels, data) {
 			const ctx = canvas.getContext('2d');
+
+			if (this.charts.content) {
+				this.charts.content.destroy();
+			}
+
 			this.charts.content = new Chart(ctx, {
 				type: 'doughnut',
 				data: {
-					labels: ['Published', 'Draft', 'Scheduled', 'In Progress'],
+					labels,
 					datasets: [{
-						data: [65, 20, 10, 5],
-						backgroundColor: [
-							'#00c853',
-							'#ffa726',
-							'#0066ff',
-							'#ff3d00'
-						],
+						data,
+						backgroundColor: ['#00c853', '#ffa726', '#0066ff', '#ff3d00', '#7b61ff', '#00acc1'],
 						borderWidth: 0,
 						hoverOffset: 8
 					}]
@@ -221,18 +301,6 @@
 								font: {
 									size: 13,
 									weight: '600'
-								}
-							}
-						},
-						tooltip: {
-							backgroundColor: 'rgba(0, 0, 0, 0.8)',
-							padding: 12,
-							borderRadius: 8,
-							callbacks: {
-								label: function(context) {
-									const total = context.dataset.data.reduce((a, b) => a + b, 0);
-									const percentage = ((context.parsed / total) * 100).toFixed(1);
-									return context.label + ': ' + percentage + '%';
 								}
 							}
 						}
