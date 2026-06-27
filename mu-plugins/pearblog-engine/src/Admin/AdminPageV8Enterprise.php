@@ -2453,8 +2453,14 @@ class AdminPageV8Enterprise {
 		);
 		$total_urls = 1 + $page_count + $post_count + $landing_count + $firm_count + 1; // +home, +/firmy/
 		$canonical_host    = 'pt24.pro';
-		$seo_meta_active   = class_exists( 'PT24_SEO_Meta' ) || function_exists( 'pt24_output_seo_meta' );
+		$seo_meta_active   = class_exists( 'PT24_SEO_Meta' )
+			|| function_exists( 'pt24_output_seo_meta' )
+			|| defined( 'WPSEO_VERSION' )
+			|| function_exists( 'pt24_filter_wpseo_public_url' );
 		$sitemap_active    = function_exists( 'pt24_sitemap_entries' ) || function_exists( 'wp_sitemaps_get_server' );
+		$og_brand_active   = file_exists( get_template_directory() . '/assets/brand/pt24-og.png' )
+			|| file_exists( get_stylesheet_directory() . '/assets/brand/pt24-og.png' )
+			|| file_exists( WP_CONTENT_DIR . '/themes/pearblog-theme/assets/brand/pt24-og.png' );
 		$ads_pub           = (string) get_option( 'pt24_adsense_pub_id', '' );
 		$this->render_pt24_admin_styles();
 		?>
@@ -2489,7 +2495,7 @@ class AdminPageV8Enterprise {
 									[ 'SEO Meta (pt24-seo-meta.php)',  $seo_meta_active,          'canonical, og:title, og:image, FAQPage schema' ],
 									[ 'Sitemap XML (/sitemap.xml)',     $sitemap_active,           $total_urls . ' URL — ' . $sitemap_url ],
 									[ 'Canonical host',                 true,                      'pt24.pro (bez origin wordpress2614653)' ],
-									[ 'og:image brandowany',           file_exists( get_template_directory() . '/assets/brand/pt24-og.png' ), 'assets/brand/pt24-og.png (1200×630)' ],
+									[ 'og:image brandowany',           $og_brand_active,          'assets/brand/pt24-og.png (1200×630)' ],
 									[ 'FAQ Schema (landingi)',          $landing_count > 0,        'FAQPage JSON-LD na każdym landingu' ],
 									[ 'AdSense Publisher ID',           '' !== $ads_pub,            '' !== $ads_pub ? $ads_pub : 'Nie skonfigurowano — przejdź do Settings' ],
 									[ 'robots.txt Sitemap',             true,                      'Serwowany przez Cloudflare (dodaj ręcznie w panelu CF)' ],
