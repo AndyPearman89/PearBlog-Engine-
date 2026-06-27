@@ -42,6 +42,9 @@ if (! defined('ABSPATH')) {
 
             <!-- CTA -->
             <div class="flex items-center gap-3">
+                <a href="/panel/" class="hidden rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 xl:inline-flex">Panel</a>
+                <a href="/panel-firmy/" class="hidden rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 xl:inline-flex">Panel firmy</a>
+                <a href="/admin/" class="hidden rounded-xl border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 xl:inline-flex">Admin</a>
                 <a href="/dodaj-zlecenie/" class="rounded-xl bg-gradient-to-r from-brand-start to-brand-end px-5 py-2.5 text-sm font-semibold text-white shadow-soft transition hover:shadow-glow">Dodaj zlecenie</a>
             </div>
         </div>
@@ -54,6 +57,9 @@ if (! defined('ABSPATH')) {
                 <a href="#dla-fachowcow" class="rounded-lg bg-slate-100 px-3 py-1.5">Dla fachowców</a>
                 <a href="#opinie" class="rounded-lg bg-slate-100 px-3 py-1.5">Opinie</a>
                 <a href="#kontakt" class="rounded-lg bg-slate-100 px-3 py-1.5">Kontakt</a>
+                <a href="/panel/" class="rounded-lg bg-slate-100 px-3 py-1.5">Panel</a>
+                <a href="/panel-firmy/" class="rounded-lg bg-slate-100 px-3 py-1.5">Firma</a>
+                <a href="/admin/" class="rounded-lg bg-slate-100 px-3 py-1.5">Admin</a>
             </div>
         </nav>
     </header>

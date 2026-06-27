@@ -227,3 +227,64 @@ function pt24_yandex_metrica() {
     <?php
 }
 add_action('wp_head', 'pt24_yandex_metrica', 99);
+
+/**
+ * Register custom panel routes.
+ */
+function pt24_register_panel_routes() {
+    add_rewrite_rule('^panel/?$', 'index.php?pt24_panel=user', 'top');
+    add_rewrite_rule('^panel-firmy/?$', 'index.php?pt24_panel=company', 'top');
+    add_rewrite_rule('^admin/?$', 'index.php?pt24_panel=admin', 'top');
+}
+add_action('init', 'pt24_register_panel_routes');
+
+/**
+ * Add query var for custom panel routing.
+ */
+function pt24_add_panel_query_var($vars) {
+    $vars[] = 'pt24_panel';
+    return $vars;
+}
+add_filter('query_vars', 'pt24_add_panel_query_var');
+
+/**
+ * Route custom panel slugs to dedicated templates.
+ */
+function pt24_panel_template_include($template) {
+    $panel = get_query_var('pt24_panel');
+    if (! is_string($panel) || $panel === '') {
+        return $template;
+    }
+
+    if ($panel === 'user') {
+        $candidate = PT24_DIR . '/panel-user.php';
+    } elseif ($panel === 'company') {
+        $candidate = PT24_DIR . '/panel-company.php';
+    } elseif ($panel === 'admin') {
+        $candidate = PT24_DIR . '/panel-admin.php';
+    } else {
+        $candidate = '';
+    }
+
+    if ($candidate !== '' && file_exists($candidate)) {
+        status_header(200);
+        nocache_headers();
+        return $candidate;
+    }
+
+    return $template;
+}
+add_filter('template_include', 'pt24_panel_template_include');
+
+/**
+ * Flush rewrite rules after route changes.
+ */
+function pt24_maybe_flush_panel_rewrites() {
+    $version = 'panel-routes-v1';
+    if (get_option('pt24_panel_routes_version') !== $version) {
+        pt24_register_panel_routes();
+        flush_rewrite_rules(false);
+        update_option('pt24_panel_routes_version', $version, false);
+    }
+}
+add_action('admin_init', 'pt24_maybe_flush_panel_rewrites');
