@@ -10,7 +10,7 @@ if (! defined('ABSPATH')) {
     exit;
 }
 
-define('PT24_VERSION', '1.0.1');
+define('PT24_VERSION', '1.0.2');
 define('PT24_DIR', get_template_directory());
 define('PT24_URI', get_template_directory_uri());
 
