@@ -279,17 +279,22 @@ get_header();
                 'sprzatanie' => '🧹', 'przeprowadzki' => '📦',
                 'pompa-ciepla' => '♨️', 'remont-lazienki' => '🚿',
             ];
-            $pt24_all_services = function_exists( 'pt24_get_categories' )
-                ? pt24_get_categories()
-                : [];
-
             // Use CPT services if available, else theme helper.
             if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
                 $pt24_svc_map = PearBlog_PT24_Landing_CPT::get_services();
             } elseif ( class_exists( 'PearBlog_PT24_Pro_Routing' ) ) {
                 $pt24_svc_map = PearBlog_PT24_Pro_Routing::get_all_services();
             } else {
-                $pt24_svc_map = [ 'hydraulik' => 'Hydraulik', 'elektryk' => 'Elektryk', 'mechanik' => 'Mechanik' ];
+                $pt24_svc_map = [
+                    'hydraulik' => 'Hydraulik',
+                    'elektryk' => 'Elektryk',
+                    'mechanik' => 'Mechanik',
+                    'dekarz' => 'Dekarz',
+                    'klimatyzacja' => 'Klimatyzacja',
+                    'pompy-ciepla' => 'Pompy Ciepla',
+                    'fotowoltaika' => 'Fotowoltaika',
+                    'remonty' => 'Remonty',
+                ];
             }
 
             // Pre-fetch all firm services in a single query to avoid N+1.
@@ -309,10 +314,14 @@ get_header();
             }
 
             foreach ( $pt24_svc_map as $pt24_cat_slug => $pt24_cat_name ) :
+                $pt24_cat_slug = sanitize_title( (string) $pt24_cat_slug );
+                if ( '' === $pt24_cat_slug ) {
+                    continue;
+                }
                 $pt24_cat_count = $pt24_svc_counts[ $pt24_cat_slug ] ?? 0;
                 $pt24_cat_icon = $pt24_icon_map[ $pt24_cat_slug ] ?? '🔹';
             ?>
-            <a href="<?php echo esc_url( home_url( '/' . $pt24_cat_slug . '/' ) ); ?>" class="pt24-category-card">
+            <a href="<?php echo esc_url( home_url( '/uslugi/' . $pt24_cat_slug . '/' ) ); ?>" class="pt24-category-card">
                 <span class="pt24-category-icon"><?php echo esc_html( $pt24_cat_icon ); ?></span>
                 <span class="pt24-category-title"><?php echo esc_html( $pt24_cat_name ); ?></span>
                 <span class="pt24-category-meta"><?php echo (int) $pt24_cat_count; ?> firm</span>

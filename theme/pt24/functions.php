@@ -668,15 +668,15 @@ function pt24_get_colors() {
  */
 function pt24_get_categories() {
     return [
-        ['name' => 'Hydraulik',                'slug' => '/hydraulik/',      'icon' => '💧'],
-        ['name' => 'Elektryk',                 'slug' => '/elektryk/',       'icon' => '⚡'],
-        ['name' => 'Mechanik samochodowy',     'slug' => '/mechanik/',       'icon' => '🔧'],
-        ['name' => 'Klimatyzacja i wentylacja','slug' => '/klimatyzacja/',   'icon' => '❄️'],
-        ['name' => 'Informatyk / IT',          'slug' => '/informatyk/',     'icon' => '💻'],
-        ['name' => 'Złota rączka',             'slug' => '/zlota-raczka/',   'icon' => '🛠️'],
-        ['name' => 'Malarz / Wykończenia',     'slug' => '/malarz/',         'icon' => '🎨'],
-        ['name' => 'Przeprowadzki',            'slug' => '/przeprowadzki/',  'icon' => '📦'],
-        ['name' => 'Ogrodnik',                 'slug' => '/ogrodnik/',       'icon' => '🌱'],
+        ['name' => 'Hydraulik',                'slug' => '/uslugi/hydraulik/',      'icon' => '💧'],
+        ['name' => 'Elektryk',                 'slug' => '/uslugi/elektryk/',       'icon' => '⚡'],
+        ['name' => 'Mechanik samochodowy',     'slug' => '/uslugi/mechanik/',       'icon' => '🔧'],
+        ['name' => 'Klimatyzacja i wentylacja','slug' => '/uslugi/klimatyzacja/',   'icon' => '❄️'],
+        ['name' => 'Dekarz',                   'slug' => '/uslugi/dekarz/',         'icon' => '🏠'],
+        ['name' => 'Pompy ciepła',             'slug' => '/uslugi/pompy-ciepla/',   'icon' => '♨️'],
+        ['name' => 'Fotowoltaika',             'slug' => '/uslugi/fotowoltaika/',   'icon' => '☀️'],
+        ['name' => 'Remonty',                  'slug' => '/uslugi/remonty/',        'icon' => '🛠️'],
+        ['name' => 'Brukarz',                  'slug' => '/uslugi/brukarz/',        'icon' => '🧱'],
     ];
 }
 
