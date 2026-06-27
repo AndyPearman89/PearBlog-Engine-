@@ -328,3 +328,54 @@ input:focus-visible {
     0%, 100% { transform: translateY(0); }
     50% { transform: translateY(-7px); }
 }
+
+.pt24-mobile-map {
+    margin-top: 8px;
+}
+
+.pt24-mobile-map-inner {
+    position: relative;
+    height: 190px;
+    border-radius: 22px;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background:
+        radial-gradient(circle at 30% 20%, rgba(59, 130, 246, 0.34), transparent 45%),
+        radial-gradient(circle at 80% 70%, rgba(46, 211, 198, 0.24), transparent 40%),
+        rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(14px);
+    overflow: hidden;
+}
+
+.pt24-mobile-glow {
+    position: absolute;
+    inset: 22% 18%;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.45), rgba(46, 211, 198, 0.35));
+    filter: blur(2px);
+}
+
+.pt24-mobile-marker {
+    position: absolute;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    background: rgba(8, 20, 38, 0.82);
+    padding: 4px 9px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #d6e3f5;
+}
+
+.pt24-mobile-marker.m1 { top: 24%; left: 16%; }
+.pt24-mobile-marker.m2 { top: 58%; left: 55%; }
+.pt24-mobile-marker.m3 { top: 38%; left: 69%; }
+
+@media (prefers-reduced-motion: reduce) {
+    .pt24-hero-particles,
+    .pt24-dot-pulse,
+    .pt24-map-stage,
+    .pt24-map-marker,
+    .pt24-connection-line,
+    .pt24-float-card {
+        animation: none !important;
+    }
+}
