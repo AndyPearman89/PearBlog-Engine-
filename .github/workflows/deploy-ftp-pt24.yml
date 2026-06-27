@@ -40,12 +40,12 @@ jobs:
             echo "Add them under Settings → Secrets and variables → Actions"
             exit 1
           fi
-          PROTOCOL="${FTP_PROTOCOL_SECRET:-ftp}"
+          PROTOCOL="$(printf '%s' "${FTP_PROTOCOL_SECRET:-ftp}" | tr '[:upper:]' '[:lower:]' | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')"
           case "$PROTOCOL" in
             ftp|ftps|sftp) ;;
             *)
-              echo "::error::Invalid FTP_PROTOCOL value '$PROTOCOL'. Use one of: ftp, ftps, sftp."
-              exit 1
+              echo "::warning::Invalid FTP_PROTOCOL value; falling back to ftp. Use one of: ftp, ftps, sftp."
+              PROTOCOL="ftp"
               ;;
           esac
           if [[ -n "${{ secrets.FTP_PORT }}" && ! "${{ secrets.FTP_PORT }}" =~ ^[0-9]+$ ]]; then
