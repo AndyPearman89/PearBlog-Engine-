@@ -836,3 +836,187 @@ input:focus-visible {
     color: #d6e3f5;
     font-size: 0.82rem;
 }
+
+/* ================================================== */
+/* COMPANY PROFILE (/firma/{slug})                    */
+/* ================================================== */
+.pt24-company-page {
+    background: linear-gradient(180deg, #f8fbff 0%, #eef4fb 100%);
+}
+
+.pt24-company-hero {
+    border-radius: 22px;
+    border: 1px solid #dbeafe;
+    background: #fff;
+    box-shadow: 0 18px 40px -28px rgba(15, 23, 42, 0.35);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+    padding: 22px;
+}
+
+.pt24-company-title {
+    color: #0f172a;
+    font-size: 2rem;
+    font-weight: 800;
+}
+
+.pt24-company-meta {
+    margin-top: 6px;
+    color: #64748b;
+    font-size: 0.95rem;
+}
+
+.pt24-company-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.pt24-company-badges span {
+    border-radius: 999px;
+    border: 1px solid #bfdbfe;
+    background: #eff6ff;
+    color: #1d4ed8;
+    padding: 6px 10px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+.pt24-company-layout {
+    margin-top: 14px;
+    display: grid;
+    gap: 14px;
+}
+
+@media (min-width: 1024px) {
+    .pt24-company-layout {
+        grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.65fr);
+    }
+}
+
+.pt24-company-main,
+.pt24-company-side {
+    display: grid;
+    gap: 12px;
+}
+
+.pt24-company-card {
+    border-radius: 18px;
+    border: 1px solid #e2e8f0;
+    background: #fff;
+    padding: 18px;
+    box-shadow: 0 14px 30px -26px rgba(15, 23, 42, 0.35);
+}
+
+.pt24-company-card h2,
+.pt24-company-card h3 {
+    color: #0f172a;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.pt24-company-card h3 {
+    font-size: 1.05rem;
+}
+
+.pt24-company-gallery {
+    margin-top: 12px;
+    display: grid;
+    gap: 10px;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.pt24-company-gallery img {
+    width: 100%;
+    height: 170px;
+    object-fit: cover;
+    border-radius: 12px;
+}
+
+.pt24-company-list {
+    margin-top: 12px;
+    display: grid;
+    gap: 8px;
+    color: #334155;
+}
+
+.pt24-company-map {
+    margin-top: 10px;
+    border-radius: 12px;
+    overflow: hidden;
+    border: 1px solid #dbeafe;
+}
+
+.pt24-company-map iframe {
+    width: 100%;
+    height: 240px;
+    border: 0;
+}
+
+.pt24-company-form {
+    margin-top: 10px;
+    display: grid;
+    gap: 10px;
+}
+
+.pt24-company-form label {
+    display: grid;
+    gap: 6px;
+    color: #334155;
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.pt24-company-form input,
+.pt24-company-form textarea {
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #0f172a;
+    padding: 10px 12px;
+}
+
+.pt24-company-form button {
+    border-radius: 12px;
+    border: 0;
+    background: linear-gradient(135deg, #2ed3c6, #00e6b8);
+    color: #081426;
+    font-weight: 700;
+    padding: 11px 14px;
+}
+
+.pt24-company-card pre {
+    margin-top: 10px;
+    white-space: pre-wrap;
+    color: #334155;
+    font-family: inherit;
+}
+
+.pt24-company-success {
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #86efac;
+    background: #f0fdf4;
+    color: #166534;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+}
+
+.pt24-company-error {
+    margin-top: 10px;
+    border-radius: 10px;
+    border: 1px solid #fca5a5;
+    background: #fef2f2;
+    color: #991b1b;
+    padding: 8px 10px;
+    font-size: 0.85rem;
+}
+
+.pt24-company-empty {
+    color: #64748b;
+    font-size: 0.9rem;
+    margin-top: 10px;
+}

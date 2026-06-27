@@ -288,3 +288,53 @@ function pt24_maybe_flush_panel_rewrites() {
     }
 }
 add_action('admin_init', 'pt24_maybe_flush_panel_rewrites');
+
+/**
+ * Handle company profile contact form submissions.
+ */
+function pt24_handle_business_contact_form() {
+    $business_id = isset($_POST['business_id']) ? (int) $_POST['business_id'] : 0;
+    if ($business_id <= 0) {
+        wp_safe_redirect(home_url('/?contact=error'));
+        exit;
+    }
+
+    $nonce = isset($_POST['pt24_contact_nonce']) ? sanitize_text_field((string) $_POST['pt24_contact_nonce']) : '';
+    if (! wp_verify_nonce($nonce, 'pt24_business_contact_' . $business_id)) {
+        wp_safe_redirect(get_permalink($business_id) . '?contact=error');
+        exit;
+    }
+
+    $name = isset($_POST['name']) ? sanitize_text_field((string) $_POST['name']) : '';
+    $email = isset($_POST['email']) ? sanitize_email((string) $_POST['email']) : '';
+    $phone = isset($_POST['phone']) ? sanitize_text_field((string) $_POST['phone']) : '';
+    $message = isset($_POST['message']) ? sanitize_textarea_field((string) $_POST['message']) : '';
+
+    if ($name === '' || $email === '' || $message === '' || ! is_email($email)) {
+        wp_safe_redirect(get_permalink($business_id) . '?contact=error');
+        exit;
+    }
+
+    $recipient = (string) get_post_meta($business_id, 'pt24_contact_email', true);
+    if ($recipient === '' || ! is_email($recipient)) {
+        $author_id = (int) get_post_field('post_author', $business_id);
+        $recipient = $author_id > 0 ? (string) get_the_author_meta('user_email', $author_id) : '';
+    }
+
+    if ($recipient === '' || ! is_email($recipient)) {
+        $recipient = (string) get_option('admin_email');
+    }
+
+    $subject = sprintf('Nowe zapytanie do firmy: %s', get_the_title($business_id));
+    $body = "Imię i nazwisko: {$name}\n";
+    $body .= "Email: {$email}\n";
+    $body .= "Telefon: {$phone}\n\n";
+    $body .= "Wiadomość:\n{$message}\n";
+    $headers = ['Reply-To: ' . $name . ' <' . $email . '>'];
+
+    $sent = wp_mail($recipient, $subject, $body, $headers);
+    wp_safe_redirect(get_permalink($business_id) . '?contact=' . ($sent ? 'sent' : 'error'));
+    exit;
+}
+add_action('admin_post_pt24_business_contact', 'pt24_handle_business_contact_form');
+add_action('admin_post_nopriv_pt24_business_contact', 'pt24_handle_business_contact_form');
