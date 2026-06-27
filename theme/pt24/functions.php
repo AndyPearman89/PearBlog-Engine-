@@ -64,7 +64,7 @@ function pt24_scripts() {
         false
     );
 
-    // Tailwind config
+    // Tailwind config — must appear right after the CDN script
     wp_add_inline_script('pt24-tailwind', pt24_tailwind_config());
 
     // Theme CSS
@@ -85,6 +85,22 @@ function pt24_scripts() {
     );
 }
 add_action('wp_enqueue_scripts', 'pt24_scripts');
+
+/**
+ * Prevent WordPress from deferring the Tailwind CDN script.
+ * Tailwind CDN must execute synchronously before the page renders.
+ */
+function pt24_prevent_tailwind_defer($tag, $handle) {
+    if ($handle === 'pt24-tailwind') {
+        // Remove any defer/async attributes WP may add
+        $tag = str_replace(' defer', '', $tag);
+        $tag = str_replace(' async', '', $tag);
+        // Ensure blocking render
+        $tag = str_replace(' type="text/javascript"', '', $tag);
+    }
+    return $tag;
+}
+add_filter('script_loader_tag', 'pt24_prevent_tailwind_defer', 10, 2);
 
 /**
  * Tailwind configuration inline script
