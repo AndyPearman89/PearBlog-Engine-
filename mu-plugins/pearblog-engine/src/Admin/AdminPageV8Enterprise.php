@@ -2454,7 +2454,7 @@ class AdminPageV8Enterprise {
 		$total_urls = 1 + $page_count + $post_count + $landing_count + $firm_count + 1; // +home, +/firmy/
 		$canonical_host    = 'pt24.pro';
 		$seo_meta_active   = class_exists( 'PT24_SEO_Meta' ) || function_exists( 'pt24_output_seo_meta' );
-		$sitemap_active    = function_exists( 'pt24_sitemap_entries' );
+		$sitemap_active    = function_exists( 'pt24_sitemap_entries' ) || function_exists( 'wp_sitemaps_get_server' );
 		$ads_pub           = (string) get_option( 'pt24_adsense_pub_id', '' );
 		$this->render_pt24_admin_styles();
 		?>
