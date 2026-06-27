@@ -375,7 +375,13 @@ input:focus-visible {
     .pt24-map-stage,
     .pt24-map-marker,
     .pt24-connection-line,
-    .pt24-float-card {
+    .pt24-float-card,
+    .pt24-map-live-line,
+    .pt24-map-live-marker,
+    .pt24-map-live-chip,
+    .pt24-final-bg,
+    .pt24-final-map-glow,
+    .pt24-final-particle {
         animation: none !important;
     }
 }
@@ -524,6 +530,17 @@ input:focus-visible {
     filter: saturate(1.15);
 }
 
+.pt24-map-live-line {
+    position: absolute;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(0, 230, 184, 0.88), transparent);
+    animation: pt24-line-flow 2.8s linear infinite;
+}
+
+.pt24-map-live-line.l1 { top: 33%; left: 18%; width: 52%; transform: rotate(-7deg); }
+.pt24-map-live-line.l2 { top: 53%; left: 24%; width: 46%; transform: rotate(11deg); animation-delay: 0.7s; }
+.pt24-map-live-line.l3 { top: 42%; left: 35%; width: 30%; transform: rotate(24deg); animation-delay: 1.4s; }
+
 .pt24-map-live-marker {
     position: absolute;
     border-radius: 999px;
@@ -539,6 +556,33 @@ input:focus-visible {
 .pt24-map-live-marker.m2 { top: 35%; right: 14%; animation-delay: 0.4s; }
 .pt24-map-live-marker.m3 { bottom: 26%; right: 28%; animation-delay: 0.9s; }
 .pt24-map-live-marker.m4 { bottom: 22%; left: 23%; animation-delay: 1.3s; }
+
+.pt24-map-live-chip {
+    position: absolute;
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.22);
+    background: rgba(255, 255, 255, 0.1);
+    padding: 6px 10px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #d6e3f5;
+    backdrop-filter: blur(8px);
+    animation: pt24-float-card 3.6s ease-in-out infinite;
+}
+
+.pt24-map-live-chip.c1 { top: 14%; left: 8%; }
+.pt24-map-live-chip.c2 { top: 18%; right: 8%; animation-delay: 0.8s; }
+.pt24-map-live-chip.c3 { bottom: 10%; right: 16%; animation-delay: 1.3s; }
+
+.pt24-live-feed-item {
+    border-radius: 14px;
+    border: 1px solid rgba(255, 255, 255, 0.17);
+    background: rgba(255, 255, 255, 0.07);
+    padding: 10px 12px;
+    color: #d6e3f5;
+    font-size: 0.82rem;
+    backdrop-filter: blur(8px);
+}
 
 .pt24-benefit-card {
     border-radius: 20px;
@@ -634,6 +678,31 @@ input:focus-visible {
     animation: pt24-float-map 10s ease-in-out infinite;
 }
 
+.pt24-final-map-glow {
+    position: absolute;
+    inset: 30% 24% auto 24%;
+    height: 180px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, rgba(59, 130, 246, 0.3), rgba(46, 211, 198, 0.28));
+    filter: blur(20px);
+    opacity: 0.85;
+    animation: pt24-float-map 7.5s ease-in-out infinite;
+}
+
+.pt24-final-particle {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgba(46, 211, 198, 0.8);
+    box-shadow: 0 0 18px rgba(46, 211, 198, 0.9);
+    animation: pt24-final-particle 6s ease-in-out infinite;
+}
+
+.pt24-final-particle.p1 { top: 20%; left: 16%; }
+.pt24-final-particle.p2 { top: 34%; right: 19%; animation-delay: 1.2s; }
+.pt24-final-particle.p3 { bottom: 22%; left: 54%; animation-delay: 2s; }
+
 @keyframes pt24-upload-dash {
     0% { transform: scale(0.98); opacity: 0.55; }
     50% { transform: scale(1.01); opacity: 1; }
@@ -643,4 +712,9 @@ input:focus-visible {
 @keyframes pt24-network-pan {
     0% { background-position: 0 0, 0 0, 0 0, -200px 0; }
     100% { background-position: 0 0, 0 0, 0 0, 200px 0; }
+}
+
+@keyframes pt24-final-particle {
+    0%, 100% { transform: translateY(0) scale(1); opacity: 0.75; }
+    50% { transform: translateY(-12px) scale(1.2); opacity: 1; }
 }
