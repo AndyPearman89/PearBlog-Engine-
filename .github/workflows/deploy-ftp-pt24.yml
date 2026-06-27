@@ -37,23 +37,23 @@ jobs:
             echo "Add them under Settings → Secrets and variables → Actions"
             exit 1
           fi
-          echo "All secrets present. Using SFTP protocol."
+          echo "All secrets present."
 
       - name: Install FTP diagnostics tools
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y -qq lftp netcat-openbsd
 
-      - name: Validate SFTP connectivity
+      - name: Validate FTP connectivity
         run: |
           HOST="${{ secrets.FTP_HOST }}"
           PORT="${{ secrets.FTP_PORT }}"
           TIMEOUT="${CONNECT_TIMEOUT_SECONDS}"
           echo "TCP check: $HOST:$PORT"
           nc -z -w "$TIMEOUT" "$HOST" "$PORT" || { echo "::error::Endpoint unreachable"; exit 1; }
-          echo "TCP OK — SFTP endpoint reachable"
+          echo "TCP OK — FTP endpoint reachable"
 
-      - name: Deploy all files via SFTP
+      - name: Deploy all files via FTP
         timeout-minutes: ${{ fromJSON(env.DEPLOY_TIMEOUT_MINUTES) }}
         env:
           FTP_HOST: ${{ secrets.FTP_HOST }}
@@ -63,14 +63,9 @@ jobs:
         run: |
           set -euo pipefail
 
-          # Write credentials to netrc to avoid shell quoting issues
-          mkdir -p ~/.ssh
-          echo "machine $FTP_HOST login $FTP_USER password $FTP_PASS" > ~/.netrc
-          chmod 600 ~/.netrc
-
-          # Base lftp settings
-          LFTP_SETTINGS="set net:timeout 30; set sftp:auto-confirm yes; set sftp:connect-program \"ssh -o StrictHostKeyChecking=no -p $FTP_PORT\""
-          LFTP_OPEN="open sftp://$FTP_USER:$FTP_PASS@$FTP_HOST -p $FTP_PORT"
+          # Use lftp with plain FTP
+          LFTP_OPEN="open ftp://$FTP_USER:$FTP_PASS@$FTP_HOST:$FTP_PORT"
+          LFTP_SETTINGS="set net:timeout 30; set ftp:passive-mode yes; set ssl:verify-certificate no"
 
           echo "=== Deploying mu-plugins/pearblog-engine/ ==="
           lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./mu-plugins/pearblog-engine/ /pt24/wp-content/mu-plugins/pearblog-engine/; bye"
@@ -102,6 +97,4 @@ jobs:
           echo "=== Deploying theme/pearblog-theme/ ==="
           lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete ./theme/pearblog-theme/ /pt24/wp-content/themes/pearblog-theme/; bye"
 
-          # Cleanup
-          rm -f ~/.netrc
           echo "=== All deployments complete ==="
