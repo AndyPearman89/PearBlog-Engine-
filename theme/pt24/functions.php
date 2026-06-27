@@ -47,6 +47,11 @@ add_action('after_setup_theme', 'pt24_setup');
  * Enqueue scripts and styles
  */
 function pt24_scripts() {
+    $pt24_theme_css_path = PT24_DIR . '/assets/css/pt24-theme.css';
+    $pt24_theme_js_path = PT24_DIR . '/assets/js/pt24-theme.js';
+    $pt24_theme_css_ver = file_exists($pt24_theme_css_path) ? (string) filemtime($pt24_theme_css_path) : PT24_VERSION;
+    $pt24_theme_js_ver = file_exists($pt24_theme_js_path) ? (string) filemtime($pt24_theme_js_path) : PT24_VERSION;
+
     // Google Fonts
     wp_enqueue_style(
         'pt24-google-fonts',
@@ -72,7 +77,7 @@ function pt24_scripts() {
         'pt24-theme',
         PT24_URI . '/assets/css/pt24-theme.css',
         [],
-        PT24_VERSION
+        $pt24_theme_css_ver
     );
 
     // Theme JS
@@ -80,7 +85,7 @@ function pt24_scripts() {
         'pt24-theme',
         PT24_URI . '/assets/js/pt24-theme.js',
         [],
-        PT24_VERSION,
+        $pt24_theme_js_ver,
         true
     );
 }
@@ -305,6 +310,17 @@ function pt24_get_static_frontend_pages() {
                 ['title' => 'Krok 1: Brief zlecenia', 'text' => 'Wpisujesz czego potrzebujesz, gdzie i na kiedy. Formularz prowadzi Cie przez najwazniejsze dane, ktore przyspieszaja wycene.'],
                 ['title' => 'Krok 2: Matchmaking AI', 'text' => 'Algorytm wybiera wykonawcow po specjalizacji, lokalizacji i aktywnosci. Zapytanie trafia tylko do firm, ktore realnie moga je obsluzyc.'],
                 ['title' => 'Krok 3: Porownanie ofert', 'text' => 'Otrzymujesz odpowiedzi z terminem i orientacyjna cena. Wybierasz najkorzystniejsza opcje i kontaktujesz sie bezposrednio z firma.'],
+            ],
+        ],
+        'rankingi' => [
+            'title' => 'Rankingi Fachowcow',
+            'eyebrow' => 'Rankingi',
+            'lead' => 'Przegladaj rankingi wykonawcow wedlug specjalizacji i miasta. Zobacz kto odpowiada najszybciej i ma najlepsze oceny od klientow.',
+            'highlights' => ['Rankingi wg uslug', 'Porownanie miast', 'Oceny i czas odpowiedzi'],
+            'sections' => [
+                ['title' => 'Jak czytac rankingi', 'text' => 'Pozycja firmy zalezy od ocen, aktywnosci oraz szybkosci odpowiedzi na zapytania klientow.'],
+                ['title' => 'Najpopularniejsze kategorie', 'text' => 'Hydraulik, elektryk, mechanik, dekarz i klimatyzacja to kategorie z najwieksza liczba aktywnych wykonawcow.'],
+                ['title' => 'Ranking lokalny', 'text' => 'Wybierz miasto i kategorie uslugi, aby zobaczyc firmy, ktore realnie dzialaja w Twojej okolicy.'],
             ],
         ],
         'dla-firm' => [
