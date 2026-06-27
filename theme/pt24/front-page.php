@@ -166,216 +166,217 @@ get_header();
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     TRUST BAR
-═══════════════════════════════════════════════════════════════ -->
-<section class="border-b border-slate-200 bg-white">
-    <div class="mx-auto grid max-w-7xl grid-cols-2 gap-3 px-4 py-8 sm:px-6 lg:grid-cols-4 lg:px-8">
-        <div class="flex items-center gap-3 rounded-xl p-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-pear-green/10">
-                <svg class="h-5 w-5 text-pear-green" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
-            </div>
-            <span class="text-sm font-semibold text-slate-800">Zweryfikowani fachowcy</span>
-        </div>
-        <div class="flex items-center gap-3 rounded-xl p-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-start/10">
-                <svg class="h-5 w-5 text-brand-start" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <span class="text-sm font-semibold text-slate-800">Dostępność 24/7</span>
-        </div>
-        <div class="flex items-center gap-3 rounded-xl p-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-brand-end/10">
-                <svg class="h-5 w-5 text-brand-end" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M11.049 2.927c.3-.921 1.603-.921 1.902 0l1.519 4.674a1 1 0 00.95.69h4.915c.969 0 1.371 1.24.588 1.81l-3.976 2.888a1 1 0 00-.363 1.118l1.518 4.674c.3.922-.755 1.688-1.538 1.118l-3.976-2.888a1 1 0 00-1.176 0l-3.976 2.888c-.783.57-1.838-.197-1.538-1.118l1.518-4.674a1 1 0 00-.363-1.118l-3.976-2.888c-.784-.57-.38-1.81.588-1.81h4.914a1 1 0 00.951-.69l1.519-4.674z"/></svg>
-            </div>
-            <span class="text-sm font-semibold text-slate-800">Gwarancja jakości</span>
-        </div>
-        <div class="flex items-center gap-3 rounded-xl p-3">
-            <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-pear-blue/10">
-                <svg class="h-5 w-5 text-pear-blue" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
-            </div>
-            <span class="text-sm font-semibold text-slate-800">Bezpieczne płatności</span>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     CATEGORIES
-═══════════════════════════════════════════════════════════════ -->
-<section id="uslugi" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-    <div class="mb-8 text-center">
-        <h2 class="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Kategorie usług</h2>
-        <p class="mt-2 text-sm text-slate-500">Wybierz branżę i znajdź specjalistę</p>
-    </div>
-    <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <?php foreach (pt24_get_categories() as $cat) : ?>
-        <a href="<?php echo esc_url($cat['slug']); ?>" class="group flex items-center gap-4 rounded-2xl border border-slate-200 bg-white p-5 shadow-card transition hover:-translate-y-0.5 hover:shadow-soft hover:border-brand-start/30">
-            <span class="flex h-12 w-12 items-center justify-center rounded-xl bg-slate-50 text-2xl group-hover:bg-brand-start/5"><?php echo $cat['icon']; ?></span>
-            <span class="text-sm font-semibold text-slate-900"><?php echo esc_html($cat['name']); ?></span>
-            <svg class="ml-auto h-4 w-4 text-slate-300 transition group-hover:text-brand-start" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5l7 7-7 7"/></svg>
-        </a>
-        <?php endforeach; ?>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     HOW IT WORKS
-═══════════════════════════════════════════════════════════════ -->
-<section id="jak-to-dziala" class="bg-white">
-    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
+<!-- SECTION 2 — HOW IT WORKS -->
+<section id="jak-to-dziala" class="pt24-section bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
         <div class="mb-10 text-center">
-            <h2 class="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Jak to działa</h2>
-            <p class="mt-2 text-sm text-slate-500">3 proste kroki do wykonania zlecenia</p>
+            <h2 class="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Jak działa PT24.pro?</h2>
+            <p class="mt-2 text-sm text-slate-500 sm:text-base">Trzy proste kroki do znalezienia najlepszego wykonawcy.</p>
         </div>
-        <div class="grid gap-6 md:grid-cols-3">
-            <article class="relative rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
-                <span class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-start to-brand-mid text-lg font-bold text-white shadow-glow">1</span>
-                <h3 class="text-lg font-bold text-slate-900">Opisz zlecenie</h3>
-                <p class="mt-2 text-sm text-slate-500">Podaj rodzaj usługi i lokalizację. Możesz dodać zdjęcia i szczegóły.</p>
+        <div class="grid gap-6 lg:grid-cols-3">
+            <article class="pt24-glass-card p-7">
+                <div class="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-cyan-400 to-blue-500 text-2xl">📝</div>
+                <h3 class="text-xl font-bold text-slate-900">Dodaj zapytanie</h3>
+                <p class="mt-3 text-sm leading-relaxed text-slate-600">Opisz czego potrzebujesz. Dodaj zdjęcia, lokalizację i termin wykonania.</p>
+                <div class="pt24-upload-anim mt-5" aria-hidden="true"></div>
             </article>
-            <article class="relative rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
-                <span class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-brand-mid to-brand-end text-lg font-bold text-white shadow-glow">2</span>
-                <h3 class="text-lg font-bold text-slate-900">Porównaj oferty</h3>
-                <p class="mt-2 text-sm text-slate-500">Otrzymaj wyceny od lokalnych specjalistów. Sprawdź opinie i certyfikaty.</p>
+            <article class="pt24-glass-card p-7">
+                <div class="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-500 text-2xl">🤖</div>
+                <h3 class="text-xl font-bold text-slate-900">AI dopasowuje specjalistów</h3>
+                <p class="mt-3 text-sm leading-relaxed text-slate-600">System automatycznie wyszukuje firmy z odpowiedniej branży i wysyła zapytanie tylko do najbardziej dopasowanych wykonawców.</p>
+                <div class="pt24-ai-network mt-5" aria-hidden="true"></div>
             </article>
-            <article class="relative rounded-2xl border border-slate-200 bg-slate-50 p-8 text-center">
-                <span class="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-pear-blue to-pear-green text-lg font-bold text-white shadow-glow">3</span>
-                <h3 class="text-lg font-bold text-slate-900">Zleć i oceń</h3>
-                <p class="mt-2 text-sm text-slate-500">Wybierz najlepszą ofertę. Po wykonaniu usługi oceń fachowca.</p>
+            <article class="pt24-glass-card p-7">
+                <div class="mb-5 inline-flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-400 to-blue-600 text-2xl">💬</div>
+                <h3 class="text-xl font-bold text-slate-900">Otrzymujesz oferty</h3>
+                <p class="mt-3 text-sm leading-relaxed text-slate-600">Firmy kontaktują się z Tobą z wyceną. Porównujesz ceny i wybierasz najlepszą ofertę.</p>
+                <div class="pt24-notify-stack mt-5" aria-hidden="true">
+                    <span>Nowa oferta · Hydraulik</span>
+                    <span>Zweryfikowana firma · Elektryk</span>
+                    <span>4 odpowiedzi · Remont</span>
+                </div>
             </article>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     POPULAR SEARCHES
-═══════════════════════════════════════════════════════════════ -->
-<section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-    <div class="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/60 sm:p-8">
-        <h2 class="mb-5 text-xl font-bold text-slate-900">Popularne wyszukiwania</h2>
-        <div class="flex flex-wrap gap-2 text-sm">
-            <?php foreach (pt24_get_popular_searches() as $term) :
-                $slug = sanitize_title($term);
+<!-- SECTION 3 — MARKETPLACE STATISTICS -->
+<section class="bg-slate-950">
+    <div class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-16">
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <div class="pt24-kpi-card">
+                <div class="pt24-kpi-number" data-counter-target="12000">12 000+</div>
+                <div class="pt24-kpi-label">Zweryfikowanych firm</div>
+            </div>
+            <div class="pt24-kpi-card">
+                <div class="pt24-kpi-number" data-counter-target="150000">150 000+</div>
+                <div class="pt24-kpi-label">Wysłanych zapytań</div>
+            </div>
+            <div class="pt24-kpi-card">
+                <div class="pt24-kpi-number" data-counter-target="500">500+</div>
+                <div class="pt24-kpi-label">Miast</div>
+            </div>
+            <div class="pt24-kpi-card">
+                <div class="pt24-kpi-number" data-counter-target="98">98%</div>
+                <div class="pt24-kpi-label">Pozytywnych opinii</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 4 — CATEGORIES -->
+<section id="uslugi" class="bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div class="mb-10 text-center">
+            <h2 class="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Kategorie</h2>
+        </div>
+        <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+            <?php
+            $categories_grid = [
+                [ 'Hydraulik', '🔧', '1 220 firm' ],
+                [ 'Elektryk', '⚡', '980 firm' ],
+                [ 'Mechanik', '🚗', '1 050 firm' ],
+                [ 'Dekarz', '🏠', '460 firm' ],
+                [ 'Pompy Ciepła', '♨️', '520 firm' ],
+                [ 'Fotowoltaika', '☀️', '690 firm' ],
+                [ 'Klimatyzacja', '❄️', '610 firm' ],
+                [ 'Brukarz', '🧱', '330 firm' ],
+                [ 'Remonty', '🛠️', '1 480 firm' ],
+                [ 'Ogrodnik', '🌿', '390 firm' ],
+                [ 'Malarz', '🎨', '420 firm' ],
+                [ 'Geodeta', '📐', '210 firm' ],
+                [ 'Kominiarz', '🏭', '190 firm' ],
+                [ 'Stolarz', '🪚', '350 firm' ],
+                [ 'Szklarz', '🪟', '240 firm' ],
+                [ 'Alarmy', '🔐', '280 firm' ],
+                [ 'Monitoring', '📹', '300 firm' ],
+                [ 'Rolety', '🪟', '270 firm' ],
+                [ 'Instalacje Gazowe', '🔥', '260 firm' ],
+                [ 'Serwis AGD', '🧰', '540 firm' ],
+            ];
+            foreach ( $categories_grid as $cat_item ) :
             ?>
-            <a href="/<?php echo esc_attr($slug); ?>/" class="rounded-full border border-slate-200 bg-slate-50 px-4 py-2 font-medium text-slate-700 transition hover:border-brand-start/40 hover:bg-brand-start/5 hover:text-brand-start"><?php echo esc_html($term); ?></a>
+            <a href="<?php echo esc_url( home_url( '/' . sanitize_title( $cat_item[0] ) . '/' ) ); ?>" class="pt24-category-card">
+                <span class="pt24-category-icon"><?php echo esc_html( $cat_item[1] ); ?></span>
+                <span class="pt24-category-title"><?php echo esc_html( $cat_item[0] ); ?></span>
+                <span class="pt24-category-meta"><?php echo esc_html( $cat_item[2] ); ?></span>
+            </a>
             <?php endforeach; ?>
         </div>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     TESTIMONIALS
-═══════════════════════════════════════════════════════════════ -->
-<section id="opinie" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-    <div class="mb-8 text-center">
-        <h2 class="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Co mówią nasi użytkownicy</h2>
+<!-- SECTION 5 — INTERACTIVE POLAND MAP -->
+<section class="pt24-map-live relative overflow-hidden">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-24">
+        <div class="mb-8 text-center">
+            <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Interaktywna mapa Polski</h2>
+        </div>
+        <div class="pt24-map-live-stage">
+            <div class="pt24-map-live-shape"></div>
+            <div class="pt24-map-live-marker m1">Katowice · Nowe zapytanie · Hydraulik</div>
+            <div class="pt24-map-live-marker m2">Warszawa · 4 nowe oferty</div>
+            <div class="pt24-map-live-marker m3">Kraków · Zweryfikowana firma</div>
+            <div class="pt24-map-live-marker m4">Poznań · Nowy specjalista</div>
+        </div>
     </div>
-    <div class="grid gap-5 md:grid-cols-3">
-        <?php foreach (pt24_get_testimonials() as $testimonial) : ?>
-        <article class="rounded-2xl bg-white p-6 shadow-card ring-1 ring-slate-200/60">
-            <div class="mb-3 flex gap-0.5 text-amber-400">★★★★★</div>
-            <p class="text-sm leading-relaxed text-slate-600"><?php echo esc_html($testimonial['text']); ?></p>
-            <p class="mt-4 text-sm font-semibold text-slate-900"><?php echo esc_html($testimonial['author']); ?></p>
-            <p class="text-xs text-slate-400"><?php echo esc_html($testimonial['location']); ?></p>
-        </article>
+</section>
+
+<!-- SECTION 6 — BENEFITS -->
+<section class="bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-4">
+            <article class="pt24-benefit-card"><h3>Save Time</h3><p>One request reaches many companies.</p></article>
+            <article class="pt24-benefit-card"><h3>Verified Companies</h3><p>Reviews and verification system.</p></article>
+            <article class="pt24-benefit-card"><h3>Competitive Prices</h3><p>Compare multiple offers.</p></article>
+            <article class="pt24-benefit-card"><h3>Fast Contact</h3><p>Receive offers within minutes.</p></article>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 7 — FOR COMPANIES -->
+<section id="dla-fachowcow" class="bg-slate-950">
+    <div class="mx-auto grid max-w-7xl gap-10 px-4 py-16 sm:px-6 lg:grid-cols-2 lg:items-center lg:px-8 lg:py-20">
+        <div>
+            <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Pozyskuj nowych klientów każdego dnia.</h2>
+            <p class="mt-4 text-[#D6E3F5]">Dashboard leadów, przychodów i konwersji w jednym miejscu. Skup się na realizacji zleceń, a PT24 zadba o dopływ klientów.</p>
+            <div class="mt-7 flex flex-wrap gap-3">
+                <a href="/rejestracja-fachowiec/" class="pt24-hero-btn rounded-2xl px-6 py-3 text-sm font-semibold text-[#081426]">Dołącz jako firma</a>
+                <a href="/dla-fachowcow/" class="rounded-2xl border border-white/25 bg-white/5 px-6 py-3 text-sm font-semibold text-white">Dowiedz się więcej</a>
+            </div>
+        </div>
+        <div class="pt24-dashboard-mock">
+            <div class="pt24-chart">Leady: +42%</div>
+            <div class="pt24-chart">Revenue: +31%</div>
+            <div class="pt24-chart">Conversion: 18.4%</div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 8 — REVIEWS -->
+<section id="opinie" class="bg-white">
+    <div class="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <div class="mb-10 text-center">
+            <h2 class="font-display text-3xl font-bold text-slate-900 sm:text-4xl">Opinie klientów</h2>
+        </div>
+        <div class="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
+            <?php
+            $reviews = [
+                [ 'Świetny kontakt. W 10 minut miałem 3 konkretne oferty.', 'Katowice' ],
+                [ 'Bardzo szybkie dopasowanie fachowca i transparentna wycena.', 'Warszawa' ],
+                [ 'Najwygodniejszy sposób na znalezienie wykonawcy bez stresu.', 'Kraków' ],
+            ];
+            foreach ( $reviews as $review_item ) :
+            ?>
+            <article class="pt24-review-card">
+                <div class="pt24-review-head">
+                    <span class="pt24-review-avatar"></span>
+                    <span class="text-amber-400">★★★★★</span>
+                </div>
+                <p class="mt-4 text-slate-700"><?php echo esc_html( $review_item[0] ); ?></p>
+                <p class="mt-3 text-sm font-semibold text-slate-900"><?php echo esc_html( $review_item[1] ); ?></p>
+            </article>
+            <?php endforeach; ?>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 9 — FAQ -->
+<section class="bg-slate-50">
+    <div class="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8 lg:py-20">
+        <h2 class="mb-8 text-center font-display text-3xl font-bold text-slate-900 sm:text-4xl">FAQ</h2>
+        <?php
+        $faq_items = [
+            [ 'Jak dodać zapytanie?', 'Kliknij przycisk „Dodaj zapytanie”, opisz usługę i wybierz lokalizację.' ],
+            [ 'Czy PT24.pro jest darmowe dla klientów?', 'Tak, dodanie zapytania i otrzymywanie ofert jest bezpłatne.' ],
+            [ 'Ile czasu czeka się na odpowiedzi?', 'Pierwsze odpowiedzi zwykle pojawiają się w ciągu kilkunastu minut.' ],
+            [ 'Czy firmy są zweryfikowane?', 'Tak, prowadzimy proces weryfikacji i ocen użytkowników.' ],
+            [ 'Czy mogę porównać oferty?', 'Tak, otrzymujesz kilka ofert i wybierasz najkorzystniejszą.' ],
+            [ 'W jakich miastach działa PT24?', 'Platforma działa w setkach miast w całej Polsce.' ],
+            [ 'Jak działa AI dopasowanie?', 'Silnik analizuje branżę, lokalizację i dostępność wykonawców.' ],
+            [ 'Czy mogę dodać zdjęcia do zapytania?', 'Tak, zdjęcia pomagają szybciej i dokładniej wycenić usługę.' ],
+            [ 'Jak firma może dołączyć do PT24?', 'Wystarczy rejestracja konta firmowego i uzupełnienie profilu.' ],
+            [ 'Czy mogę edytować zapytanie po wysłaniu?', 'Tak, po zalogowaniu możesz aktualizować treść zapytania.' ],
+        ];
+        foreach ( $faq_items as $faq_item ) :
+        ?>
+        <details class="pt24-faq-item">
+            <summary><?php echo esc_html( $faq_item[0] ); ?></summary>
+            <p><?php echo esc_html( $faq_item[1] ); ?></p>
+        </details>
         <?php endforeach; ?>
     </div>
 </section>
 
-<!-- ═══════════════════════════════════════════════════════════════
-     FOR PROFESSIONALS CTA
-═══════════════════════════════════════════════════════════════ -->
-<section id="dla-fachowcow" class="mx-auto max-w-7xl px-4 py-6 sm:px-6 lg:px-8">
-    <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-brand-start via-brand-mid to-brand-end p-8 text-white shadow-soft sm:p-12">
-        <div class="absolute -right-20 -top-20 h-64 w-64 rounded-full bg-white/5 blur-3xl"></div>
-        <div class="absolute -bottom-10 -left-10 h-48 w-48 rounded-full bg-white/5 blur-2xl"></div>
-        <div class="relative">
-            <p class="text-xs font-semibold uppercase tracking-[0.2em] text-blue-100">Dla fachowców i firm</p>
-            <h2 class="mt-4 max-w-lg font-display text-2xl font-bold sm:text-3xl">Pozyskuj nowych klientów lokalnie i buduj wiarygodność marki.</h2>
-            <p class="mt-3 max-w-lg text-sm text-blue-100">Dołącz do 12 000+ zweryfikowanych specjalistów. Twój profil widoczny dla tysięcy klientów szukających usług w Twojej okolicy.</p>
-            <div class="mt-8 flex flex-wrap gap-3">
-                <a href="/dla-fachowcow/" class="inline-flex rounded-xl bg-white px-6 py-3 text-sm font-semibold text-slate-900 transition hover:bg-slate-100">Sprawdź pakiety</a>
-                <a href="/rejestracja-fachowiec/" class="inline-flex rounded-xl border border-white/30 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white/10">Załóż konto →</a>
-            </div>
+<!-- SECTION 10 — FINAL CTA -->
+<section class="pt24-final-cta relative overflow-hidden">
+    <div class="pt24-final-bg absolute inset-0"></div>
+    <div class="relative mx-auto max-w-5xl px-4 py-16 text-center sm:px-6 lg:px-8 lg:py-24">
+        <h2 class="font-display text-3xl font-bold text-white sm:text-4xl">Dodaj zapytanie i otrzymaj pierwsze oferty jeszcze dziś.</h2>
+        <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <a href="/dodaj-zlecenie/" class="pt24-hero-btn rounded-2xl px-8 py-4 text-base font-semibold text-[#081426]">Dodaj zapytanie</a>
+            <a href="#uslugi" class="rounded-2xl border border-white/30 bg-white/5 px-8 py-4 text-base font-semibold text-white">Znajdź specjalistę</a>
         </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     PREMIUM PLANS
-═══════════════════════════════════════════════════════════════ -->
-<section id="premium" class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-    <div class="mb-10 text-center">
-        <p class="text-xs font-semibold uppercase tracking-[0.2em] text-brand-start">Pakiety Premium</p>
-        <h2 class="mt-2 font-display text-3xl font-bold text-slate-900 sm:text-4xl">Wybierz plan dla siebie</h2>
-        <p class="mt-2 text-sm text-slate-500">Więcej widoczności = więcej zleceń. Anuluj w dowolnym momencie.</p>
-    </div>
-    <div class="grid gap-6 md:grid-cols-3">
-        <!-- Free -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
-            <h3 class="text-lg font-bold text-slate-900">Start</h3>
-            <p class="mt-1 text-sm text-slate-500">Dla początkujących fachowców</p>
-            <div class="mt-5">
-                <span class="text-3xl font-bold text-slate-900">0 zł</span>
-                <span class="text-sm text-slate-400">/mies.</span>
-            </div>
-            <ul class="mt-6 space-y-3 text-sm text-slate-600">
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Podstawowy profil firmy</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Do 3 kategorii usług</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Widoczność w wynikach</li>
-                <li class="flex items-center gap-2"><span class="text-slate-300">✗</span> Bez wyróżnienia</li>
-            </ul>
-            <a href="/rejestracja-fachowiec/" class="mt-8 block rounded-xl border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Załóż konto</a>
-        </div>
-
-        <!-- Premium -->
-        <div class="relative rounded-2xl border-2 border-brand-start bg-white p-6 shadow-soft ring-1 ring-brand-start/20">
-            <span class="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gradient-to-r from-brand-start to-brand-end px-4 py-1 text-xs font-semibold text-white">Najpopularniejszy</span>
-            <h3 class="text-lg font-bold text-slate-900">Premium</h3>
-            <p class="mt-1 text-sm text-slate-500">Dla aktywnych specjalistów</p>
-            <div class="mt-5">
-                <span class="text-3xl font-bold text-slate-900">49 zł</span>
-                <span class="text-sm text-slate-400">/mies.</span>
-            </div>
-            <ul class="mt-6 space-y-3 text-sm text-slate-600">
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Rozszerzony profil + galeria</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Nielimitowane kategorie</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Wyróżnienie w wynikach</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Odznaka „Zweryfikowany"</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Priorytetowe powiadomienia o zleceniach</li>
-            </ul>
-            <a href="/premium/" class="mt-8 block rounded-xl bg-gradient-to-r from-brand-start to-brand-end py-3 text-center text-sm font-semibold text-white shadow-soft transition hover:shadow-glow">Wybierz Premium</a>
-        </div>
-
-        <!-- Business -->
-        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-card">
-            <h3 class="text-lg font-bold text-slate-900">Business</h3>
-            <p class="mt-1 text-sm text-slate-500">Dla firm i zespołów</p>
-            <div class="mt-5">
-                <span class="text-3xl font-bold text-slate-900">149 zł</span>
-                <span class="text-sm text-slate-400">/mies.</span>
-            </div>
-            <ul class="mt-6 space-y-3 text-sm text-slate-600">
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Wszystko z Premium</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Top pozycja w mieście</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Dedykowana strona firmowa</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Panel analityczny</li>
-                <li class="flex items-center gap-2"><span class="text-pear-green">✓</span> Wsparcie priorytetowe</li>
-            </ul>
-            <a href="/business/" class="mt-8 block rounded-xl border border-slate-200 py-3 text-center text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Wybierz Business</a>
-        </div>
-    </div>
-</section>
-
-<!-- ═══════════════════════════════════════════════════════════════
-     FINAL CTA
-═══════════════════════════════════════════════════════════════ -->
-<section class="mx-auto max-w-7xl px-4 py-14 sm:px-6 lg:px-8 lg:py-20">
-    <div class="rounded-3xl bg-slate-900 px-6 py-12 text-center text-white sm:px-12">
-        <h2 class="font-display text-2xl font-bold sm:text-3xl">Potrzebujesz pomocy teraz?</h2>
-        <p class="mx-auto mt-3 max-w-md text-sm text-slate-300">Dodaj zlecenie za darmo i otrzymaj odpowiedzi od sprawdzonych specjalistów z Twojej okolicy w kilka minut.</p>
-        <a href="/dodaj-zlecenie/" class="mt-8 inline-flex rounded-xl bg-gradient-to-r from-brand-start to-brand-end px-8 py-3.5 text-sm font-semibold text-white shadow-soft transition hover:shadow-glow">
-            Dodaj zlecenie — za darmo
-        </a>
     </div>
 </section>
 
