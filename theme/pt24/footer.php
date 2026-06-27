@@ -9,6 +9,8 @@
 if (! defined('ABSPATH')) {
     exit;
 }
+
+$powered_logo = content_url('mu-plugins/pearblog-engine/assets/images/pearblog-logo.png');
 ?>
     </main>
 
@@ -27,11 +29,11 @@ if (! defined('ABSPATH')) {
             <div>
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-900">Usługi</h3>
                 <ul class="mt-3 space-y-2 text-sm text-slate-500">
-                    <li><a href="/hydraulik/" class="hover:text-slate-900">Hydraulik</a></li>
-                    <li><a href="/elektryk/" class="hover:text-slate-900">Elektryk</a></li>
-                    <li><a href="/mechanik/" class="hover:text-slate-900">Mechanik</a></li>
-                    <li><a href="/klimatyzacja/" class="hover:text-slate-900">Klimatyzacja</a></li>
-                    <li><a href="/informatyk/" class="hover:text-slate-900">Informatyk</a></li>
+                    <li><a href="/uslugi/hydraulik/" class="hover:text-slate-900">Hydraulik</a></li>
+                    <li><a href="/uslugi/elektryk/" class="hover:text-slate-900">Elektryk</a></li>
+                    <li><a href="/uslugi/mechanik/" class="hover:text-slate-900">Mechanik</a></li>
+                    <li><a href="/uslugi/klimatyzacja/" class="hover:text-slate-900">Klimatyzacja</a></li>
+                    <li><a href="/uslugi/" class="hover:text-slate-900">Wszystkie usługi</a></li>
                 </ul>
             </div>
 
@@ -42,8 +44,8 @@ if (! defined('ABSPATH')) {
                     <li><a href="/warszawa/" class="hover:text-slate-900">Warszawa</a></li>
                     <li><a href="/krakow/" class="hover:text-slate-900">Kraków</a></li>
                     <li><a href="/katowice/" class="hover:text-slate-900">Katowice</a></li>
-                    <li><a href="/wroclaw/" class="hover:text-slate-900">Wrocław</a></li>
-                    <li><a href="/poznan/" class="hover:text-slate-900">Poznań</a></li>
+                    <li><a href="/gliwice/" class="hover:text-slate-900">Gliwice</a></li>
+                    <li><a href="/miasta/" class="hover:text-slate-900">Wszystkie miasta</a></li>
                 </ul>
             </div>
 
@@ -52,6 +54,7 @@ if (! defined('ABSPATH')) {
                 <h3 class="text-xs font-semibold uppercase tracking-wider text-slate-900">Informacje</h3>
                 <ul class="mt-3 space-y-2 text-sm text-slate-500">
                     <li><a href="/dla-fachowcow/" class="hover:text-slate-900">Dla fachowców</a></li>
+                    <li><a href="/panel-firmy/" class="hover:text-slate-900">Panel firmy</a></li>
                     <li><a href="/kontakt/" class="hover:text-slate-900">Kontakt</a></li>
                     <li><a href="/regulamin/" class="hover:text-slate-900">Regulamin</a></li>
                     <li><a href="/polityka-prywatnosci/" class="hover:text-slate-900">Prywatność</a></li>
@@ -61,10 +64,12 @@ if (! defined('ABSPATH')) {
 
         <div class="border-t border-slate-100 py-5 text-center text-xs text-slate-400">
             &copy; <?php echo esc_html(gmdate('Y')); ?> PT24.PRO &mdash; Powered by
-            <svg class="inline-block h-3.5 w-auto align-text-bottom" width="80" height="14" viewBox="0 0 1200 210" fill="none" xmlns="http://www.w3.org/2000/svg" aria-label="PearBlog">
-                <text x="0" y="170" font-family="Poppins,sans-serif" font-size="180" font-weight="800" fill="#1f2937">Pear</text>
-                <text x="500" y="170" font-family="Poppins,sans-serif" font-size="180" font-weight="800" fill="#60A5FA">Blog</text>
-            </svg>
+            <img
+                src="<?php echo esc_url($powered_logo); ?>"
+                alt="PearBlog"
+                class="inline-block h-4 w-auto align-text-bottom"
+                loading="lazy"
+                decoding="async">
         </div>
     </footer>
 </div>
