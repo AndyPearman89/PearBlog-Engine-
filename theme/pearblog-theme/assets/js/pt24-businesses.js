@@ -235,7 +235,7 @@
                 if (rating >= i) {
                     html += '★';
                 } else if (rating >= i - 0.5) {
-                    html += '☆';
+                    html += '⯨';
                 } else {
                     html += '☆';
                 }
