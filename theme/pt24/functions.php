@@ -179,10 +179,64 @@ add_filter('get_shortlink', 'pt24_filter_public_frontend_url', 20);
  * Keep Yoast canonical and OG URL on the public PT24 domain.
  */
 function pt24_filter_wpseo_public_url($url) {
+    if (! pt24_should_rewrite_public_urls()) {
+        return $url;
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $segments = array_values(array_filter(explode('/', trim($request_path, '/'))));
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'pt24') {
+        array_shift($segments);
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'uslugi') {
+        if (isset($segments[1]) && $segments[1] !== '') {
+            return pt24_public_base_url() . '/uslugi/' . sanitize_title((string) $segments[1]) . '/';
+        }
+        return pt24_public_base_url() . '/uslugi/';
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'miasta') {
+        return pt24_public_base_url() . '/miasta/';
+    }
+
     return pt24_filter_public_frontend_url($url);
 }
 add_filter('wpseo_canonical', 'pt24_filter_wpseo_public_url', 20);
 add_filter('wpseo_opengraph_url', 'pt24_filter_wpseo_public_url', 20);
+
+/**
+ * Route-aware title correction for PT24 custom paths.
+ */
+function pt24_pre_get_document_title($title) {
+    if (! pt24_should_rewrite_public_urls()) {
+        return $title;
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $segments = array_values(array_filter(explode('/', trim($request_path, '/'))));
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'pt24') {
+        array_shift($segments);
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'uslugi') {
+        if (isset($segments[1]) && $segments[1] !== '') {
+            return ucfirst(str_replace('-', ' ', sanitize_title((string) $segments[1]))) . ' - PT24.PRO';
+        }
+        return 'Usługi - PT24.PRO';
+    }
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'miasta') {
+        return 'Miasta - PT24.PRO';
+    }
+
+    return $title;
+}
+add_filter('pre_get_document_title', 'pt24_pre_get_document_title', 20);
 
 /**
  * Rewrite any remaining origin-host URLs in final frontend HTML.
@@ -395,6 +449,47 @@ function pt24_panel_template_include($template) {
     $service_category = get_query_var('pt24_category');
     $service_city = get_query_var('pt24_city');
 
+    // Fallback routing for environments where rewrite query vars are not
+    // propagated consistently (e.g. proxy/subdirectory setups).
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+    $segments = array_values(array_filter(explode('/', trim($request_path, '/'))));
+
+    if (!empty($segments) && strtolower((string) $segments[0]) === 'pt24') {
+        array_shift($segments);
+    }
+
+    if (empty($segments) && function_exists('home_url')) {
+        $home_path = (string) wp_parse_url(home_url('/'), PHP_URL_PATH);
+        if ($home_path && '/' !== $home_path) {
+            $normalized_home_path = trim($home_path, '/');
+            if ($normalized_home_path !== '') {
+                $segments = array_values(array_filter(explode('/', $normalized_home_path)));
+            }
+        }
+    }
+
+    if (isset($segments[0]) && strtolower((string) $segments[0]) === 'uslugi') {
+        $service_template = (isset($segments[1]) && $segments[1] !== '')
+            ? PT24_DIR . '/services-single.php'
+            : PT24_DIR . '/services-archive.php';
+
+        if (file_exists($service_template)) {
+            status_header(200);
+            nocache_headers();
+            return $service_template;
+        }
+    }
+
+    if (isset($segments[0]) && strtolower((string) $segments[0]) === 'miasta' && !isset($segments[1])) {
+        $cities_template = PT24_DIR . '/cities-archive.php';
+        if (file_exists($cities_template)) {
+            status_header(200);
+            nocache_headers();
+            return $cities_template;
+        }
+    }
+
     if (is_string($specific_service) && $specific_service !== '' && is_string($city_landing) && $city_landing !== '') {
         $specific_city_template = PT24_DIR . '/specific-service-city.php';
         if (file_exists($specific_city_template)) {
@@ -479,7 +574,7 @@ function pt24_panel_template_include($template) {
 
     return $template;
 }
-add_filter('template_include', 'pt24_panel_template_include');
+add_filter('template_include', 'pt24_panel_template_include', 999);
 
 /**
  * Flush rewrite rules after route changes.
