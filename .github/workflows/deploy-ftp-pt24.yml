@@ -65,8 +65,8 @@ jobs:
 
           # Use lftp with plain FTP
           LFTP_OPEN="open ftp://$FTP_USER:$FTP_PASS@$FTP_HOST:$FTP_PORT"
-          LFTP_SETTINGS="set net:timeout 30; set ftp:passive-mode yes; set ssl:verify-certificate no"
-          MIRROR_EXCLUDES="--exclude-glob .git* --exclude-glob .github/** --exclude-glob node_modules/** --exclude-glob vendor/** --exclude-glob tests/** --exclude-glob docs/** --exclude-glob *.md --exclude-glob *.log"
+          LFTP_SETTINGS="set net:timeout 30; set ftp:passive-mode yes; set ssl:verify-certificate no; set mirror:no-perms yes"
+          MIRROR_EXCLUDES="--exclude-glob .git* --exclude-glob .github/** --exclude-glob node_modules/** --exclude-glob vendor/** --exclude-glob tests/** --exclude-glob docs/** --exclude-glob *.md"
 
           echo "=== Deploying mu-plugins/pearblog-engine/ ==="
           lftp -e "$LFTP_SETTINGS; $LFTP_OPEN; mirror -R --verbose --delete $MIRROR_EXCLUDES ./mu-plugins/pearblog-engine/ /pt24/wp-content/mu-plugins/pearblog-engine/; bye"
