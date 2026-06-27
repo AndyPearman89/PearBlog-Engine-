@@ -47,7 +47,11 @@ $recommended_companies = new WP_Query($company_query_args);
 
 $stats_companies = (int) $recommended_companies->found_posts;
 $stats_services = count($popular_services);
-$stats_requests = random_int(40, 180);
+$stats_requests = (int) $wpdb->get_var( $wpdb->prepare(
+    "SELECT COUNT(*) FROM {$wpdb->prefix}pt24_leads WHERE city = %s AND created_at >= %s",
+    $city_slug,
+    gmdate( 'Y-m-d H:i:s', strtotime( '-30 days' ) )
+) );
 $stats_avg_time = '15 min';
 
 $recent_requests = [

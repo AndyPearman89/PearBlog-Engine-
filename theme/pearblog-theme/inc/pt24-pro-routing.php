@@ -216,6 +216,15 @@ class PearBlog_PT24_Pro_Routing {
     }
 
     /**
+     * Alias for get_services() used by templates.
+     *
+     * @return array Slug => Name pairs.
+     */
+    public static function get_all_services() {
+        return self::$services;
+    }
+
+    /**
      * Get all registered cities
      *
      * @return array Slug => Name pairs.
