@@ -12,42 +12,35 @@ if (! defined('ABSPATH')) {
 $service_slug = sanitize_title((string) get_query_var('pt24_service_hub'));
 $service_term = get_term_by('slug', $service_slug, 'pt24_service_cat');
 
-if (! is_object($service_term) || is_wp_error($service_term)) {
-    global $wp_query;
-    $wp_query->set_404();
-    status_header(404);
-    nocache_headers();
-    get_header();
-    ?>
-    <section class="pt24-services-page">
-        <div class="mx-auto max-w-4xl px-4 py-16 text-center sm:px-6 lg:px-8">
-            <h1 class="text-3xl font-bold text-slate-900">Nie znaleziono usługi</h1>
-            <p class="mt-4 text-slate-600">Ta kategoria usługi nie istnieje lub została usunięta.</p>
-            <a class="mt-8 inline-flex rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white" href="<?php echo esc_url(home_url('/uslugi/')); ?>">Wróć do listy usług</a>
-        </div>
-    </section>
-    <?php
-    get_footer();
-    return;
-}
-
 get_header();
 
-$service_name = (string) $service_term->name;
-$service_description = trim((string) $service_term->description);
+$service_term_valid = is_object($service_term) && ! is_wp_error($service_term);
+$service_term_id = $service_term_valid && isset($service_term->term_id) ? (int) $service_term->term_id : 0;
 
-$service_posts = get_posts([
+$service_name = $service_term_valid && isset($service_term->name)
+    ? (string) $service_term->name
+    : ucfirst(str_replace('-', ' ', $service_slug));
+$service_description = $service_term_valid && isset($service_term->description)
+    ? trim((string) $service_term->description)
+    : '';
+
+$service_posts_args = [
     'post_type' => 'pt24_service',
     'posts_per_page' => 1,
     'post_status' => 'publish',
-    'tax_query' => [
+];
+
+if ($service_term_id > 0) {
+    $service_posts_args['tax_query'] = [
         [
             'taxonomy' => 'pt24_service_cat',
             'field' => 'term_id',
-            'terms' => [(int) $service_term->term_id],
+            'terms' => [$service_term_id],
         ],
-    ],
-]);
+    ];
+}
+
+$service_posts = get_posts($service_posts_args);
 
 $service_post = ! empty($service_posts) ? $service_posts[0] : null;
 
@@ -123,18 +116,23 @@ if (empty($faq_items)) {
     ];
 }
 
-$companies = new WP_Query([
+$companies_args = [
     'post_type' => 'pt24_business',
     'post_status' => 'publish',
     'posts_per_page' => 8,
-    'tax_query' => [
+];
+
+if ($service_term_id > 0) {
+    $companies_args['tax_query'] = [
         [
             'taxonomy' => 'pt24_service_cat',
             'field' => 'term_id',
-            'terms' => [(int) $service_term->term_id],
+            'terms' => [$service_term_id],
         ],
-    ],
-]);
+    ];
+}
+
+$companies = new WP_Query($companies_args);
 
 $guides = new WP_Query([
     'post_type' => 'post',
