@@ -789,3 +789,158 @@ function pt24_handle_service_inquiry_form() {
 }
 add_action('admin_post_pt24_service_inquiry', 'pt24_handle_service_inquiry_form');
 add_action('admin_post_nopriv_pt24_service_inquiry', 'pt24_handle_service_inquiry_form');
+
+/**
+ * Lead pricing matrix for core PT24 service categories.
+ *
+ * @return array<string, array{label:string,min:int,max:int}>
+ */
+function pt24_get_lead_pricing_matrix() {
+    return [
+        'hydraulik' => ['label' => 'Hydraulik', 'min' => 20, 'max' => 40],
+        'elektryk' => ['label' => 'Elektryk', 'min' => 25, 'max' => 50],
+        'mechanik' => ['label' => 'Mechanik', 'min' => 20, 'max' => 60],
+        'remont' => ['label' => 'Remont', 'min' => 50, 'max' => 150],
+        'dach' => ['label' => 'Dach', 'min' => 80, 'max' => 250],
+        'pompy-ciepla' => ['label' => 'Pompy ciepla', 'min' => 150, 'max' => 350],
+        'fotowoltaika' => ['label' => 'Fotowoltaika', 'min' => 100, 'max' => 300],
+    ];
+}
+
+/**
+ * SaaS subscription plans for PT24 companies.
+ *
+ * @return array<string, array{name:string,price:int,period:string,features:string[]}>
+ */
+function pt24_get_subscription_plans() {
+    return [
+        'free' => [
+            'name' => 'Free',
+            'price' => 0,
+            'period' => 'monthly',
+            'features' => [
+                'Profil firmy',
+                'Opinie',
+                'Podstawowa widocznosc',
+            ],
+        ],
+        'starter' => [
+            'name' => 'Starter',
+            'price' => 49,
+            'period' => 'monthly',
+            'features' => [
+                'Wiecej zdjec',
+                'Statystyki',
+                'Podstawowy CRM',
+            ],
+        ],
+        'pro' => [
+            'name' => 'Pro',
+            'price' => 149,
+            'period' => 'monthly',
+            'features' => [
+                'Wiecej leadow',
+                'Priorytet',
+                'AI',
+                'Kalendarz',
+            ],
+        ],
+        'enterprise' => [
+            'name' => 'Enterprise',
+            'price' => 499,
+            'period' => 'monthly',
+            'features' => [
+                'Wiele oddzialow',
+                'API',
+                'Wielu pracownikow',
+                'Integracje CRM',
+            ],
+        ],
+    ];
+}
+
+/**
+ * Premium listing upsells.
+ *
+ * @return array<string, array{label:string,price:int,period:string}>
+ */
+function pt24_get_premium_listing_packages() {
+    return [
+        'top3' => ['label' => 'TOP 3', 'price' => 299, 'period' => 'monthly'],
+        'sponsored' => ['label' => 'Sponsorowana firma', 'price' => 199, 'period' => 'monthly'],
+        'recommended' => ['label' => 'Polecana firma', 'price' => 149, 'period' => 'monthly'],
+        'badge' => ['label' => 'Premium Badge', 'price' => 79, 'period' => 'monthly'],
+        'highlight' => ['label' => 'Kolorowe wyroznienie', 'price' => 99, 'period' => 'monthly'],
+    ];
+}
+
+/**
+ * Calculate dynamic lead price for a service slug.
+ *
+ * @param string $service_slug Service slug.
+ * @param string $quality      Lead quality: standard|high|exclusive.
+ * @return array{service_slug:string,min:int,max:int,suggested:int,currency:string,quality:string}
+ */
+function pt24_calculate_lead_price($service_slug, $quality = 'standard') {
+    $service_slug = sanitize_title((string) $service_slug);
+    $quality = sanitize_key((string) $quality);
+
+    $matrix = pt24_get_lead_pricing_matrix();
+    $range = isset($matrix[$service_slug]) ? $matrix[$service_slug] : ['min' => 20, 'max' => 40];
+
+    $multiplier = 1.0;
+    if ($quality === 'high') {
+        $multiplier = 1.2;
+    } elseif ($quality === 'exclusive') {
+        $multiplier = 1.5;
+    }
+
+    $min = (int) round(((int) $range['min']) * $multiplier);
+    $max = (int) round(((int) $range['max']) * $multiplier);
+    $suggested = (int) round(($min + $max) / 2);
+
+    return [
+        'service_slug' => $service_slug,
+        'min' => $min,
+        'max' => $max,
+        'suggested' => $suggested,
+        'currency' => 'PLN',
+        'quality' => $quality,
+    ];
+}
+
+/**
+ * REST: return monetization config and dynamic lead pricing.
+ */
+function pt24_register_monetization_rest_routes() {
+    register_rest_route('pt24/v1', '/monetization', [
+        'methods' => 'GET',
+        'permission_callback' => '__return_true',
+        'callback' => function (WP_REST_Request $request) {
+            $service = sanitize_title((string) $request->get_param('service'));
+            $quality = sanitize_key((string) $request->get_param('quality'));
+
+            if ($quality === '') {
+                $quality = 'standard';
+            }
+
+            return [
+                'leadPricing' => pt24_get_lead_pricing_matrix(),
+                'plans' => pt24_get_subscription_plans(),
+                'premiumListings' => pt24_get_premium_listing_packages(),
+                'dynamicLeadPrice' => pt24_calculate_lead_price($service, $quality),
+                'revenueMixTarget' => [
+                    'leadEngine' => 40,
+                    'saas' => 20,
+                    'premiumProfiles' => 10,
+                    'adsense' => 8,
+                    'affiliate' => 7,
+                    'aiPremium' => 7,
+                    'marketingServices' => 5,
+                    'apiWhiteLabel' => 3,
+                ],
+            ];
+        },
+    ]);
+}
+add_action('rest_api_init', 'pt24_register_monetization_rest_routes');

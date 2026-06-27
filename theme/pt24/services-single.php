@@ -144,6 +144,9 @@ $guides = new WP_Query([
 $notice = isset($_GET['inquiry']) ? sanitize_key((string) $_GET['inquiry']) : '';
 $companies_count = (int) $companies->found_posts;
 $guides_count = (int) $guides->found_posts;
+$lead_price = function_exists('pt24_calculate_lead_price')
+    ? pt24_calculate_lead_price($service_slug, 'standard')
+    : ['min' => 20, 'max' => 40, 'currency' => 'PLN'];
 ?>
 
 <section class="pt24-service-page">
@@ -200,6 +203,11 @@ $guides_count = (int) $guides->found_posts;
                             <li>• <?php echo esc_html($price); ?></li>
                         <?php endforeach; ?>
                     </ul>
+
+                    <div class="pt24-service-stat" style="margin-top:12px;">
+                        <strong><?php echo esc_html((string) $lead_price['min']); ?>-<?php echo esc_html((string) $lead_price['max']); ?> <?php echo esc_html((string) $lead_price['currency']); ?></strong>
+                        <span>Szacunkowy koszt leada dla firmy (model marketplace)</span>
+                    </div>
                 </section>
 
                 <section class="pt24-service-card">
