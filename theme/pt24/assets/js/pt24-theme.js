@@ -65,4 +65,51 @@
             }
         }, { passive: true });
     }
+
+    /**
+     * Counter animation
+     */
+    function animateCounter(el) {
+        var target = parseInt(el.getAttribute('data-counter-target') || '0', 10);
+        if (!target || el.dataset.counterDone === '1') {
+            return;
+        }
+
+        var startTime = null;
+        var duration = 1300;
+        var suffix = el.textContent.indexOf('%') !== -1 ? '%' : '+';
+
+        function step(timestamp) {
+            if (!startTime) startTime = timestamp;
+            var progress = Math.min((timestamp - startTime) / duration, 1);
+            var eased = 1 - Math.pow(1 - progress, 3);
+            var current = Math.floor(target * eased);
+
+            el.textContent = current.toLocaleString('pl-PL') + suffix;
+
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                el.dataset.counterDone = '1';
+            }
+        }
+
+        window.requestAnimationFrame(step);
+    }
+
+    var counterEls = document.querySelectorAll('[data-counter-target]');
+    if ('IntersectionObserver' in window && counterEls.length) {
+        var counterObserver = new IntersectionObserver(function (entries) {
+            entries.forEach(function (entry) {
+                if (entry.isIntersecting) {
+                    animateCounter(entry.target);
+                    counterObserver.unobserve(entry.target);
+                }
+            });
+        }, { threshold: 0.3 });
+
+        counterEls.forEach(function (counterEl) {
+            counterObserver.observe(counterEl);
+        });
+    }
 })();
