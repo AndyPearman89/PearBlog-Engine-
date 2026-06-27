@@ -363,6 +363,7 @@ function pt24_register_panel_routes() {
     add_rewrite_rule('^admin/?$', 'index.php?pt24_panel=admin', 'top');
     add_rewrite_rule('^uslugi/?$', 'index.php?pt24_service_hub=index', 'top');
     add_rewrite_rule('^uslugi/([^/]+)/?$', 'index.php?pt24_service_hub=$matches[1]', 'top');
+    add_rewrite_rule('^([^/]+)/([^/]+)/?$', 'index.php?pt24_category=$matches[1]&pt24_city=$matches[2]', 'top');
     add_rewrite_rule('^miasta/?$', 'index.php?pt24_geo=city-index', 'top');
     add_rewrite_rule('^(katowice|gliwice|zabrze|bytom|krakow|warszawa)/?$', 'index.php?pt24_city_landing=$matches[1]', 'top');
     add_rewrite_rule('^(montaz-klimatyzacji|udraznianie-kanalizacji|awaria-pradu|wymiana-dachu)/?$', 'index.php?pt24_specific_service=$matches[1]', 'top');
@@ -379,6 +380,8 @@ function pt24_add_panel_query_var($vars) {
     $vars[] = 'pt24_geo';
     $vars[] = 'pt24_city_landing';
     $vars[] = 'pt24_specific_service';
+    $vars[] = 'pt24_category';
+    $vars[] = 'pt24_city';
     return $vars;
 }
 add_filter('query_vars', 'pt24_add_panel_query_var');
@@ -482,7 +485,7 @@ add_filter('template_include', 'pt24_panel_template_include');
  * Flush rewrite rules after route changes.
  */
 function pt24_maybe_flush_panel_rewrites() {
-    $version = 'panel-routes-v3';
+    $version = 'panel-routes-v4';
     if (get_option('pt24_panel_routes_version') !== $version) {
         pt24_register_panel_routes();
         flush_rewrite_rules(false);
