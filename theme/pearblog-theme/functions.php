@@ -65,8 +65,19 @@ require_once PEARBLOG_DIR . '/inc/poradnik-pro-routing.php';
 // Navigation & Footer
 require_once PEARBLOG_DIR . '/inc/poradnik-pro-navigation.php';
 
-// PT24.PRO platform — the theme is SHARED with poradnik.pro, so the PT24
-// directory subsystem must load ONLY for the PT24 install. The install lives
+// The company profile CPT (`pt24_firm`) backs both the PT24 install AND the
+// shared homepage's "Sprawdzone firmy PT24" section (page-poradnik-pro-home.php),
+// so it must be registered regardless of host — otherwise the homepage firm
+// query returns nothing and /firma/{slug}/ profiles 404 wherever the section is
+// used. The heavier PT24-only subsystem (branding, SEO override, host rewriting,
+// sitemap, …) stays host-guarded below.
+require_once PEARBLOG_DIR . '/inc/pt24-firm-cpt.php';          // Company profile CPT (/firma/{slug}/).
+if ( class_exists( 'PearBlog_PT24_Firm_CPT' ) ) {
+    PearBlog_PT24_Firm_CPT::init();
+}
+
+// PT24.PRO platform — the theme is SHARED with poradnik.pro, so the rest of the
+// PT24 directory subsystem must load ONLY for the PT24 install. The install lives
 // at home_url() = https://wordpress2614653.home.pl/pt24 (the 'pt24' marker is in
 // the PATH, not the host), so match against the full home_url string — this is
 // stable regardless of the proxy/Cloudflare Host header.
@@ -82,7 +93,6 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     require_once PEARBLOG_DIR . '/inc/pt24-sitemap.php';       // XML sitemap + robots.txt.
     require_once PEARBLOG_DIR . '/inc/pt24-adsense.php';       // Configurable AdSense + ads.txt.
     require_once PEARBLOG_DIR . '/inc/pt24-blog.php';          // Blog archive routing.
-    require_once PEARBLOG_DIR . '/inc/pt24-firm-cpt.php';      // Company profile CPT (/firma/{slug}/).
     require_once PEARBLOG_DIR . '/inc/pt24-add-firm.php';      // "Dodaj firmę" form + AJAX handler.
     require_once PEARBLOG_DIR . '/inc/pt24-search.php';        // Finder / search page.
 
@@ -94,10 +104,6 @@ if ( false !== stripos( $pearblog_active_url, 'pt24' ) ) {
     // rules are actually created.
     if ( class_exists( 'PearBlog_PT24_Landing_CPT' ) ) {
         PearBlog_PT24_Landing_CPT::init();
-    }
-
-    if ( class_exists( 'PearBlog_PT24_Firm_CPT' ) ) {
-        PearBlog_PT24_Firm_CPT::init();
     }
 
     if ( class_exists( 'PearBlog_PT24_Add_Firm' ) ) {

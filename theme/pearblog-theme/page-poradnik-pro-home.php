@@ -30,6 +30,17 @@ $pp_recent = get_posts(
 	)
 );
 
+$pp_firms = get_posts(
+	array(
+		'post_type'      => 'pt24_firm',
+		'post_status'    => 'publish',
+		'numberposts'    => 6,
+		'orderby'        => 'date',
+		'order'          => 'DESC',
+		'suppress_filters' => true,
+	)
+);
+
 $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
 ?>
 <!DOCTYPE html>
@@ -457,6 +468,60 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
         .btn-profile:hover {
             border-color: var(--purple-primary);
             color: var(--purple-primary);
+        }
+
+        .firm-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 20px;
+        }
+        .firm-card {
+            background: #fff;
+            border: 1px solid var(--gray-200);
+            border-radius: var(--radius-md);
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            transition: box-shadow 0.2s, transform 0.2s;
+        }
+        .firm-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+        .firm-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+        .firm-badge {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--purple-primary);
+        }
+        .firm-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--gray-900);
+            margin: 0;
+        }
+        .firm-name a {
+            color: inherit;
+        }
+        .firm-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            font-size: 13px;
+            color: var(--gray-600);
+        }
+        .firm-services {
+            font-size: 13px;
+            color: var(--gray-500);
+            line-height: 1.5;
         }
 
         /* ===== QUESTIONS & RANKINGS ===== */
@@ -1009,6 +1074,49 @@ $pp_dot_colors = array( 'purple', 'orange', 'blue', 'green' );
                 </div>
             </a>
         </div>
+    </div>
+</section>
+
+<!-- ===== PT24 FIRMS ===== -->
+<section class="section" style="background:#fff;">
+    <div class="container">
+        <div class="section-header">
+            <h2 class="section-title">Sprawdzone firmy PT24</h2>
+            <a href="<?php echo esc_url( home_url( '/firmy/' ) ); ?>" class="section-link">Zobacz wszystkie firmy</a>
+        </div>
+        <?php if ( ! empty( $pp_firms ) ) : ?>
+        <div class="firm-grid">
+            <?php foreach ( $pp_firms as $post ) : setup_postdata( $post );
+                $f_rating     = (string) get_post_meta( $post->ID, 'pt24_firm_rating', true );
+                $f_jobs       = (int) get_post_meta( $post->ID, 'pt24_firm_jobs', true );
+                $f_services   = (string) get_post_meta( $post->ID, 'pt24_firm_services', true );
+                $f_services   = array_filter( array_map( 'trim', explode( ',', $f_services ) ) );
+                $f_services   = array_slice( $f_services, 0, 3 );
+                $f_services   = ! empty( $f_services ) ? implode( ', ', $f_services ) : '';
+            ?>
+                <div class="firm-card">
+                    <div class="firm-card-header">
+                        <h3 class="firm-name"><a href="<?php the_permalink(); ?>"><?php the_title(); ?></a></h3>
+                        <span class="firm-badge">Firma</span>
+                    </div>
+                    <div class="firm-meta">
+                        <?php if ( '' !== $f_rating ) : ?>
+                            <span>★ <?php echo esc_html( $f_rating ); ?></span>
+                        <?php endif; ?>
+                        <?php if ( $f_jobs ) : ?>
+                            <span><?php echo (int) $f_jobs; ?> zleceń</span>
+                        <?php endif; ?>
+                    </div>
+                    <?php if ( $f_services ) : ?>
+                        <p class="firm-services"><?php echo esc_html( $f_services ); ?></p>
+                    <?php endif; ?>
+                    <a href="<?php the_permalink(); ?>" class="btn-profile">Zobacz profil</a>
+                </div>
+            <?php endforeach; wp_reset_postdata(); ?>
+        </div>
+        <?php else : ?>
+            <p>Brak aktualnych firm PT24. <a href="<?php echo esc_url( home_url( '/dodaj-firme/' ) ); ?>">Dodaj firmę</a> już dziś.</p>
+        <?php endif; ?>
     </div>
 </section>
 
