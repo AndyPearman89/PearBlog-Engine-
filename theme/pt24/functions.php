@@ -103,12 +103,36 @@ function pt24_should_rewrite_public_urls() {
         return false;
     }
 
+    // wp-login.php is outside wp-admin, but must keep core URL/cookie behavior intact.
+    $pagenow = isset($GLOBALS['pagenow']) ? (string) $GLOBALS['pagenow'] : '';
+    if ($pagenow === 'wp-login.php' || $pagenow === 'wp-register.php') {
+        return false;
+    }
+
     if (defined('REST_REQUEST') && REST_REQUEST) {
         return false;
     }
 
     if (defined('WP_CLI') && WP_CLI) {
         return false;
+    }
+
+    $request_uri = isset($_SERVER['REQUEST_URI']) ? (string) wp_unslash($_SERVER['REQUEST_URI']) : '';
+    if ($request_uri !== '') {
+        $request_path = (string) wp_parse_url($request_uri, PHP_URL_PATH);
+        $core_prefixes = [
+            '/wp-admin',
+            '/wp-login.php',
+            '/wp-register.php',
+            '/wp-json',
+            '/xmlrpc.php',
+        ];
+
+        foreach ($core_prefixes as $prefix) {
+            if (strpos($request_path, $prefix) === 0) {
+                return false;
+            }
+        }
     }
 
     return true;
@@ -966,6 +990,212 @@ function pt24_set_company_monetization_state($user_id, $plan, $credits, $include
 }
 
 /**
+ * Append billing event to company history.
+ *
+ * @param int   $user_id User ID.
+ * @param array $entry   Billing event payload.
+ */
+function pt24_append_company_billing_history($user_id, $entry) {
+    $user_id = (int) $user_id;
+    if ($user_id <= 0 || ! is_array($entry)) {
+        return;
+    }
+
+    $history = get_user_meta($user_id, 'pt24_company_billing_history', true);
+    if (! is_array($history)) {
+        $history = [];
+    }
+
+    $entry['created_at'] = current_time('mysql');
+    array_unshift($history, $entry);
+    $history = array_slice($history, 0, 60);
+    update_user_meta($user_id, 'pt24_company_billing_history', $history);
+}
+
+/**
+ * Consume one lead credit for company user.
+ *
+ * @param int $user_id User ID.
+ * @param int $lead_id Lead ID.
+ * @return bool
+ */
+function pt24_consume_company_lead_credit($user_id, $lead_id = 0) {
+    $user_id = (int) $user_id;
+    if ($user_id <= 0) {
+        return false;
+    }
+
+    $state = pt24_get_company_monetization_state($user_id);
+    $credits = (int) $state['credits'];
+
+    if ($credits <= 0) {
+        pt24_append_company_billing_history($user_id, [
+            'type' => 'lead_overdraft',
+            'lead_id' => (int) $lead_id,
+            'plan' => (string) $state['plan'],
+            'credits_after' => 0,
+            'amount' => 0,
+            'currency' => 'PLN',
+        ]);
+        return false;
+    }
+
+    $credits--;
+    pt24_set_company_monetization_state($user_id, (string) $state['plan'], $credits, (int) $state['included']);
+
+    pt24_append_company_billing_history($user_id, [
+        'type' => 'lead_consumed',
+        'lead_id' => (int) $lead_id,
+        'plan' => (string) $state['plan'],
+        'credits_after' => $credits,
+        'amount' => 1,
+        'currency' => 'CREDIT',
+    ]);
+
+    return true;
+}
+
+/**
+ * Parse JSON lead metadata.
+ *
+ * @param string|null $raw Raw metadata string.
+ * @return array
+ */
+function pt24_parse_lead_metadata($raw) {
+    $raw = is_string($raw) ? trim($raw) : '';
+    if ($raw === '') {
+        return [];
+    }
+
+    $decoded = json_decode($raw, true);
+    if (is_array($decoded)) {
+        return $decoded;
+    }
+
+    return ['legacy_meta' => $raw];
+}
+
+/**
+ * Resolve PT24 table name across prefix conventions.
+ *
+ * Supports both `{prefix}pt24_*` and `{prefix}*` variants used by some installs.
+ *
+ * @param string $logical_name Logical table suffix, e.g. `pt24_leads`.
+ * @return string
+ */
+function pt24_resolve_table_name($logical_name) {
+    static $cache = [];
+
+    $logical_name = sanitize_key((string) $logical_name);
+    if ($logical_name === '') {
+        return '';
+    }
+
+    if (isset($cache[$logical_name])) {
+        return $cache[$logical_name];
+    }
+
+    global $wpdb;
+    $candidates = [
+        $wpdb->prefix . $logical_name,
+        strpos($logical_name, 'pt24_') === 0 ? $wpdb->prefix . substr($logical_name, 5) : '',
+        $wpdb->base_prefix . $logical_name,
+    ];
+
+    $candidates = array_values(array_unique(array_filter($candidates)));
+
+    foreach ($candidates as $table_name) {
+        $exists = $wpdb->get_var($wpdb->prepare('SHOW TABLES LIKE %s', $table_name));
+        if ($exists === $table_name) {
+            $cache[$logical_name] = $table_name;
+            return $table_name;
+        }
+    }
+
+    $cache[$logical_name] = $candidates[0];
+    return $cache[$logical_name];
+}
+
+/**
+ * Sync unbilled assigned leads and consume credits once per lead.
+ */
+function pt24_sync_lead_billing_events() {
+    static $processed = false;
+    if ($processed) {
+        return;
+    }
+    $processed = true;
+
+    if (is_admin() && ! wp_doing_ajax()) {
+        return;
+    }
+
+    global $wpdb;
+    $leads_table = pt24_resolve_table_name('pt24_leads');
+    $contractors_table = pt24_resolve_table_name('pt24_contractors');
+
+    $rows = $wpdb->get_results(
+        "SELECT l.id, l.assigned_contractor_id, l.metadata, c.email
+        FROM {$leads_table} l
+        LEFT JOIN {$contractors_table} c ON c.id = l.assigned_contractor_id
+        WHERE l.assigned_contractor_id IS NOT NULL
+          AND (
+            l.metadata IS NULL
+            OR l.metadata = ''
+            OR l.metadata NOT LIKE '%\\\"billing_processed\\\":1%'
+          )
+        ORDER BY l.id ASC
+        LIMIT 25"
+    );
+
+    if (! is_array($rows) || empty($rows)) {
+        return;
+    }
+
+    foreach ($rows as $row) {
+        $lead_id = isset($row->id) ? (int) $row->id : 0;
+        $email = isset($row->email) ? sanitize_email((string) $row->email) : '';
+        $meta = pt24_parse_lead_metadata(isset($row->metadata) ? (string) $row->metadata : '');
+
+        if ($lead_id <= 0) {
+            continue;
+        }
+
+        $user = $email !== '' ? get_user_by('email', $email) : false;
+        if (! $user || ! isset($user->ID)) {
+            $meta['billing_processed'] = 1;
+            $meta['billing_charged'] = 0;
+            $meta['billing_note'] = 'missing_user';
+            $meta['billing_at'] = current_time('mysql');
+
+            $wpdb->update(
+                $leads_table,
+                ['metadata' => wp_json_encode($meta)],
+                ['id' => $lead_id],
+                ['%s'],
+                ['%d']
+            );
+            continue;
+        }
+
+        $charged = pt24_consume_company_lead_credit((int) $user->ID, $lead_id);
+        $meta['billing_processed'] = 1;
+        $meta['billing_charged'] = $charged ? 1 : 0;
+        $meta['billing_user_id'] = (int) $user->ID;
+        $meta['billing_at'] = current_time('mysql');
+
+        $wpdb->update(
+            $leads_table,
+            ['metadata' => wp_json_encode($meta)],
+            ['id' => $lead_id],
+            ['%s'],
+            ['%d']
+        );
+    }
+}
+add_action('init', 'pt24_sync_lead_billing_events', 30);
+
+/**
  * Handle company plan change from panel.
  */
 function pt24_handle_company_plan_change() {
@@ -995,6 +1225,13 @@ function pt24_handle_company_plan_change() {
     $credits = max((int) $state['credits'], $included);
 
     pt24_set_company_monetization_state($user_id, $next_plan, $credits, $included);
+    pt24_append_company_billing_history($user_id, [
+        'type' => 'plan_changed',
+        'plan' => $next_plan,
+        'credits_after' => $credits,
+        'amount' => isset($plans[$next_plan]['price']) ? (int) $plans[$next_plan]['price'] : 0,
+        'currency' => 'PLN',
+    ]);
     wp_safe_redirect(home_url('/panel-firmy/?billing=plan-updated'));
     exit;
 }
@@ -1028,6 +1265,15 @@ function pt24_handle_company_buy_lead_pack() {
     $credits = (int) $state['credits'] + (int) $packages[$pack_key]['credits'];
 
     pt24_set_company_monetization_state($user_id, (string) $state['plan'], $credits, (int) $state['included']);
+    pt24_append_company_billing_history($user_id, [
+        'type' => 'credits_purchased',
+        'plan' => (string) $state['plan'],
+        'pack' => $pack_key,
+        'credits_added' => (int) $packages[$pack_key]['credits'],
+        'credits_after' => $credits,
+        'amount' => (int) $packages[$pack_key]['price'],
+        'currency' => (string) $packages[$pack_key]['currency'],
+    ]);
     wp_safe_redirect(home_url('/panel-firmy/?billing=credits-added'));
     exit;
 }
